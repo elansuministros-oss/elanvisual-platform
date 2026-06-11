@@ -23,11 +23,36 @@ import { emitirEventoCRM } from '../bridge/CentralBridge.js';
 const Ctx = createContext(null);
 const key = 'elanvisual_state_v2';
 
+function uid(prefix = 'ID') {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+}
+
+function hoyISO() {
+  return new Date().toISOString();
+}
+
+function inventarioDesdeMateriales(materiales = []) {
+  return materiales.map((m) => ({
+    id: `INV-${m.id}`,
+    materialId: m.id,
+    nombre: m.nombre || 'Material',
+    unidad: m.unidad || 'unidad',
+    existencia: Number(m.stock || 0),
+    stockMinimo: Number(m.stockMinimo || 0),
+    costo: Number(m.costo || 0),
+    proveedor: m.proveedor || '',
+    estado: 'Activo',
+    actualizado: hoyISO(),
+  }));
+}
+
 const inicial = {
   categorias: categoriasIniciales || [],
   productos: productosIniciales || [],
   proveedores: proveedoresIniciales || [],
   materiales: materialesIniciales || [],
+  inventario: inventarioDesdeMateriales(materialesIniciales || []),
+  movimientosInventario: [],
   vendedores: vendedoresIniciales || [],
   banners: bannersIniciales || [],
   bancos: bancosIniciales || [],
@@ -46,14 +71,6 @@ const inicial = {
   sesion: null,
 };
 
-function uid(prefix = 'ID') {
-  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
-}
-
-function hoyISO() {
-  return new Date().toISOString();
-}
-
 export function convertirAMetros(valor, unidad = 'm') {
   const numero = Number(valor || 0);
   const u = String(unidad || 'm').toLowerCase().trim();
@@ -71,7 +88,19 @@ function load() {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return inicial;
-    return { ...inicial, ...JSON.parse(raw) };
+
+    const parsed = JSON.parse(raw);
+    const merged = { ...inicial, ...parsed };
+
+    if (!Array.isArray(merged.inventario) || merged.inventario.length === 0) {
+      merged.inventario = inventarioDesdeMateriales(merged.materiales || []);
+    }
+
+    if (!Array.isArray(merged.movimientosInventario)) {
+      merged.movimientosInventario = [];
+    }
+
+    return merged;
   } catch {
     return inicial;
   }
@@ -92,15 +121,211 @@ export function ElanProvider({ children }) {
   };
 
   const login = (usuario) => patch({ sesion: usuario });
-
   const logout = () => patch({ sesion: null });
+
+  const guardarCliente = (data = {}) => {
+    const cliente = {
+      id: data.id || uid('CLI'),
+      fecha: data.fecha || hoyISO(),
+      estado: data.estado || 'Activo',
+      tipo: data.tipo || 'Cliente',
+      nombre: data.nombre || data.clienteNombre || 'Cliente sin nombre',
+      empresa: data.empresa || '',
+      contacto: data.contacto || '',
+      whatsapp: data.whatsapp || '',
+      correo: data.correo || '',
+      direccion: data.direccion || '',
+      observaciones: data.observaciones || '',
+      unidad: 'ELANVISUAL',
+      ...data,
+    };
+
+    patch((prev) => {
+      const existe = prev.clientes.some((x) => x.id === cliente.id);
+      return {
+        clientes: existe
+          ? prev.clientes.map((x) => (x.id === cliente.id ? { ...x, ...cliente, actualizado: hoyISO() } : x))
+          : [cliente, ...prev.clientes],
+      };
+    });
+
+    emitirEventoCRM('cliente_guardado', cliente);
+    return cliente;
+  };
+
+  const actualizarCliente = (id, cambios = {}) => {
+    let actualizado = null;
+
+    patch((prev) => ({
+      clientes: prev.clientes.map((c) => {
+        if (c.id !== id) return c;
+        actualizado = { ...c, ...cambios, actualizado: hoyISO() };
+        return actualizado;
+      }),
+    }));
+
+    if (actualizado) emitirEventoCRM('cliente_actualizado', actualizado);
+    return actualizado;
+  };
+
+  const eliminarCliente = (id) => {
+    patch((prev) => ({
+      clientes: prev.clientes.filter((c) => c.id !== id),
+    }));
+
+    emitirEventoCRM('cliente_eliminado', { id, unidad: 'ELANVISUAL' });
+    return true;
+  };
+
+  const guardarUsuario = (data = {}) => {
+    const usuario = {
+      id: data.id || uid('USR'),
+      fecha: data.fecha || hoyISO(),
+      nombre: data.nombre || 'Usuario',
+      correo: data.correo || '',
+      password: data.password || '',
+      rol: data.rol || 'vendedor',
+      estado: data.estado || 'Activo',
+      vendedorId: data.vendedorId || '',
+      permisos: data.permisos || [],
+      unidad: 'ELANVISUAL',
+      ...data,
+    };
+
+    patch((prev) => {
+      const existe = prev.usuarios.some((x) => x.id === usuario.id);
+      return {
+        usuarios: existe
+          ? prev.usuarios.map((x) => (x.id === usuario.id ? { ...x, ...usuario, actualizado: hoyISO() } : x))
+          : [usuario, ...prev.usuarios],
+      };
+    });
+
+    emitirEventoCRM('usuario_guardado', usuario);
+    return usuario;
+  };
+
+  const actualizarUsuario = (id, cambios = {}) => {
+    let actualizado = null;
+
+    patch((prev) => ({
+      usuarios: prev.usuarios.map((u) => {
+        if (u.id !== id) return u;
+        actualizado = { ...u, ...cambios, actualizado: hoyISO() };
+        return actualizado;
+      }),
+    }));
+
+    if (actualizado) emitirEventoCRM('usuario_actualizado', actualizado);
+    return actualizado;
+  };
+
+  const eliminarUsuario = (id) => {
+    patch((prev) => ({
+      usuarios: prev.usuarios.filter((u) => u.id !== id),
+    }));
+
+    emitirEventoCRM('usuario_eliminado', { id, unidad: 'ELANVISUAL' });
+    return true;
+  };
+
+  const guardarInventario = (data = {}) => {
+    const item = {
+      id: data.id || uid('INV'),
+      materialId: data.materialId || '',
+      nombre: data.nombre || 'Material',
+      unidad: data.unidad || 'unidad',
+      existencia: Number(data.existencia ?? data.stock ?? 0),
+      stockMinimo: Number(data.stockMinimo || 0),
+      costo: Number(data.costo || 0),
+      proveedor: data.proveedor || '',
+      estado: data.estado || 'Activo',
+      actualizado: hoyISO(),
+      ...data,
+    };
+
+    patch((prev) => {
+      const existe = prev.inventario.some((x) => x.id === item.id);
+      return {
+        inventario: existe
+          ? prev.inventario.map((x) => (x.id === item.id ? { ...x, ...item } : x))
+          : [item, ...prev.inventario],
+      };
+    });
+
+    emitirEventoCRM('inventario_guardado', item);
+    return item;
+  };
+
+  const actualizarInventario = (id, cambios = {}) => {
+    let actualizado = null;
+
+    patch((prev) => ({
+      inventario: prev.inventario.map((i) => {
+        if (i.id !== id) return i;
+        actualizado = { ...i, ...cambios, actualizado: hoyISO() };
+        return actualizado;
+      }),
+    }));
+
+    if (actualizado) emitirEventoCRM('inventario_actualizado', actualizado);
+    return actualizado;
+  };
+
+  const registrarMovimientoInventario = (data = {}) => {
+    const tipo = data.tipo || 'Salida';
+    const cantidad = Number(data.cantidad || 0);
+    const inventarioId = data.inventarioId || data.id || '';
+
+    const movimiento = {
+      id: uid('MOV'),
+      fecha: hoyISO(),
+      tipo,
+      inventarioId,
+      materialId: data.materialId || '',
+      nombre: data.nombre || '',
+      cantidad,
+      unidad: data.unidad || '',
+      referencia: data.referencia || '',
+      ordenId: data.ordenId || '',
+      pedidoId: data.pedidoId || '',
+      responsable: data.responsable || '',
+      observaciones: data.observaciones || '',
+      unidadNegocio: 'ELANVISUAL',
+      ...data,
+    };
+
+    patch((prev) => ({
+      movimientosInventario: [movimiento, ...prev.movimientosInventario],
+      inventario: prev.inventario.map((item) => {
+        if (item.id !== inventarioId && item.materialId !== movimiento.materialId) return item;
+
+        const actual = Number(item.existencia || 0);
+        const nuevaExistencia =
+          tipo === 'Entrada'
+            ? actual + cantidad
+            : tipo === 'Ajuste'
+              ? cantidad
+              : Math.max(actual - cantidad, 0);
+
+        return {
+          ...item,
+          existencia: nuevaExistencia,
+          actualizado: hoyISO(),
+        };
+      }),
+    }));
+
+    emitirEventoCRM('movimiento_inventario_registrado', movimiento);
+    return movimiento;
+  };
 
   const agregarCarrito = (producto, cantidad = 1) => {
     const item = {
       id: uid('CART'),
       productoId: producto?.id,
       nombre: producto?.nombre || 'Producto',
-      precio: Number(producto?.precio || 0),
+      precio: Number(producto?.precio || producto?.precioVenta || 0),
       cantidad: Number(cantidad || 1),
       fecha: hoyISO(),
     };
@@ -486,9 +711,39 @@ export function ElanProvider({ children }) {
         materiales: existe
           ? prev.materiales.map((x) => (x.id === item.id ? item : x))
           : [item, ...prev.materiales],
+        inventario: existe
+          ? prev.inventario.map((i) =>
+              i.materialId === item.id
+                ? {
+                    ...i,
+                    nombre: item.nombre || i.nombre,
+                    unidad: item.unidad || i.unidad,
+                    stockMinimo: Number(item.stockMinimo ?? i.stockMinimo ?? 0),
+                    costo: Number(item.costo ?? i.costo ?? 0),
+                    proveedor: item.proveedor || i.proveedor,
+                    actualizado: hoyISO(),
+                  }
+                : i
+            )
+          : [
+              {
+                id: `INV-${item.id}`,
+                materialId: item.id,
+                nombre: item.nombre || 'Material',
+                unidad: item.unidad || 'unidad',
+                existencia: Number(item.stock || 0),
+                stockMinimo: Number(item.stockMinimo || 0),
+                costo: Number(item.costo || 0),
+                proveedor: item.proveedor || '',
+                estado: 'Activo',
+                actualizado: hoyISO(),
+              },
+              ...prev.inventario,
+            ],
       };
     });
 
+    emitirEventoCRM('material_guardado', item);
     return item;
   };
 
@@ -528,6 +783,18 @@ export function ElanProvider({ children }) {
 
       login,
       logout,
+
+      guardarCliente,
+      actualizarCliente,
+      eliminarCliente,
+
+      guardarUsuario,
+      actualizarUsuario,
+      eliminarUsuario,
+
+      guardarInventario,
+      actualizarInventario,
+      registrarMovimientoInventario,
 
       agregarCarrito,
 
