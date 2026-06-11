@@ -13,6 +13,9 @@ import SeguimientoCRM from '../../CRM/Seguimiento.jsx';
 import UsuariosPermisosCRM from '../../CRM/UsuariosPermisos.jsx';
 import ConsumoMaterialesCRM from '../../CRM/ConsumoMateriales.jsx';
 
+import ListaCostosCRM from '../../CRM/ListaCostos.jsx';
+import FormulasCostoCRM from '../../CRM/FormulasCosto.jsx';
+
 import CotizacionesCRM from '../../CRM/Cotizaciones.jsx';
 import PedidosCRM from '../../CRM/Pedidos.jsx';
 import OrdenesTrabajoCRM from '../../CRM/OrdenesTrabajo.jsx';
@@ -79,6 +82,14 @@ export function UsuariosPermisos() {
 
 export function ConsumoMateriales() {
   return <ConsumoMaterialesCRM />;
+}
+
+export function ListaCostos() {
+  return <ListaCostosCRM />;
+}
+
+export function FormulasCosto() {
+  return <FormulasCostoCRM />;
 }
 
 export function Productos() {
@@ -208,9 +219,7 @@ export function Pagos() {
             <span>{p.estado}</span>
 
             {p.estado !== 'Validado' && (
-              <button onClick={() => validarPago(p)}>
-                Validar pago
-              </button>
+              <button onClick={() => validarPago(p)}>Validar pago</button>
             )}
           </div>
         ))

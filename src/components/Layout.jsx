@@ -49,6 +49,8 @@ const admin = [
   { label: 'Materiales', to: '/admin/materiales' },
   { label: 'Inventario', to: '/admin/inventario' },
   { label: 'Consumo Materiales', to: '/admin/consumo-materiales' },
+  { label: 'Lista Costos', to: '/admin/lista-costos' },
+  { label: 'Fórmulas Costo', to: '/admin/formulas-costo' },
   { label: 'Clientes', to: '/admin/clientes' },
   { label: 'Leads', to: '/admin/leads' },
   { label: 'Seguimiento CRM', to: '/admin/seguimiento' },
@@ -64,7 +66,6 @@ const admin = [
   { label: 'Banners', to: '/admin/banners' },
   { label: 'Showroom', to: '/admin/showroom' },
   { label: 'Usuarios', to: '/admin/usuarios' },
-  { label: 'Costos', to: '/admin/costos' },
   { label: 'Configuración', to: '/admin/configuracion' },
   { label: 'CRM Central', to: '/admin/crm-central' },
 ];

@@ -26,7 +26,6 @@ import {
   Dashboard,
   Productos,
   Categorias,
-  Materiales,
   Proveedores,
   Vendedores,
   Leads,
@@ -39,6 +38,8 @@ import {
   SimpleAdmin,
   Configuracion,
   CRM,
+  ListaCostos,
+  FormulasCosto,
 } from './pages/admin/AdminPages.jsx';
 
 import ClientesCRM from './CRM/Clientes.jsx';
@@ -90,9 +91,15 @@ export default function App() {
         <Route path="categorias" element={<Categorias />} />
 
         <Route path="materiales" element={<MaterialesCRM />} />
-        <Route path="costos" element={<SimpleAdmin titulo="Lista de Costos" />} />
+        <Route path="inventario" element={<InventarioCRM />} />
+        <Route path="consumo-materiales" element={<ConsumoMaterialesCRM />} />
+        <Route path="lista-costos" element={<ListaCostos />} />
+        <Route path="formulas-costo" element={<FormulasCosto />} />
+        <Route path="costos" element={<ListaCostos />} />
+
         <Route path="clientes" element={<ClientesCRM />} />
         <Route path="leads" element={<Leads />} />
+        <Route path="seguimiento" element={<SeguimientoCRM />} />
 
         <Route path="cotizador-interno" element={<CotizadorInterno />} />
         <Route path="cotizaciones" element={<Cotizaciones />} />
@@ -101,10 +108,6 @@ export default function App() {
         <Route path="ordenes-trabajo" element={<Ordenes />} />
         <Route path="produccion" element={<Produccion />} />
         <Route path="comisiones" element={<Comisiones />} />
-
-        <Route path="inventario" element={<InventarioCRM />} />
-        <Route path="consumo-materiales" element={<ConsumoMaterialesCRM />} />
-        <Route path="seguimiento" element={<SeguimientoCRM />} />
 
         <Route path="proveedores" element={<Proveedores />} />
         <Route path="vendedores" element={<Vendedores />} />
