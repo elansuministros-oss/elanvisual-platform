@@ -1,8 +1,191 @@
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useNavigate,
+} from 'react-router-dom';
 
-import{Link,NavLink,Outlet,useNavigate}from'react-router-dom';import{useElan}from'../core/context/ElanContext.jsx';
-export function PublicLayout(){const{carrito}=useElan();return <><header className="topbar public"><Link className="brand" to="/">✣ ELANVISUAL</Link><nav><NavLink to="/">Inicio</NavLink><NavLink to="/catalogo">Catálogo</NavLink><NavLink to="/showroom">Showroom</NavLink><NavLink to="/nosotros">Nosotros</NavLink><NavLink to="/contacto">Contacto</NavLink><NavLink className="cart" to="/carrito">🛒 {carrito.length}</NavLink><NavLink to="/login">Login</NavLink></nav></header><Outlet/><footer className="footer">ELANVISUAL · Rotulación, impresión y proyectos visuales · Nicaragua</footer></>}
-const admin=['Dashboard','Catálogo','Productos','Categorías','Materiales','Costos','Clientes','Leads','Cotizador Interno','Cotizaciones','Pedidos','Pagos','Órdenes Trabajo','Producción','Inventario','Proveedores','Vendedores','Comisiones','Banners','Showroom','Usuarios','Configuración','CRM Central'];
-const path=t=>'/admin/'+t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replaceAll(' ','-');
-export function AdminLayout(){const{logout}=useElan();const nav=useNavigate();return <div className="admin-shell"><aside className="sidebar"><Link className="brand adminbrand" to="/admin">✣ ELANVISUAL</Link>{admin.map(i=><NavLink key={i} to={i==='Dashboard'?'/admin':path(i)}>{i}</NavLink>)}<button onClick={()=>{logout();nav('/')}}>Salir</button></aside><main className="admin-main"><Outlet/></main></div>}
-export function VendorLayout(){return <div className="admin-shell"><aside className="sidebar"><Link className="brand adminbrand" to="/vendedor">VENDEDOR</Link>{['Dashboard','QR','Clientes','Leads','Cotizador Interno','Cotizaciones','Pedidos','Comisiones','Perfil'].map(i=><NavLink key={i} to={i==='Dashboard'?'/vendedor':'/vendedor/'+i.toLowerCase().replaceAll(' ','-')}>{i}</NavLink>)}</aside><main className="admin-main"><Outlet/></main></div>}
-export function ProductionLayout(){return <div className="admin-shell"><aside className="sidebar"><Link className="brand adminbrand" to="/produccion">PRODUCCIÓN</Link><NavLink to="/produccion">Dashboard</NavLink><NavLink to="/produccion/ordenes">Órdenes</NavLink><NavLink to="/produccion/inventario">Inventario</NavLink><NavLink to="/produccion/entregas">Entregas</NavLink></aside><main className="admin-main"><Outlet/></main></div>}
+import { useElan } from '../core/context/ElanContext.jsx';
+
+export function PublicLayout() {
+  const { carrito } = useElan();
+
+  return (
+    <>
+      <header className="topbar public">
+        <Link className="brand" to="/">
+          ✣ ELANVISUAL
+        </Link>
+
+        <nav>
+          <NavLink to="/">Inicio</NavLink>
+          <NavLink to="/catalogo">Catálogo</NavLink>
+          <NavLink to="/showroom">Showroom</NavLink>
+          <NavLink to="/nosotros">Nosotros</NavLink>
+          <NavLink to="/contacto">Contacto</NavLink>
+
+          <NavLink className="cart" to="/carrito">
+            🛒 {carrito.length}
+          </NavLink>
+
+          <NavLink to="/login">Login</NavLink>
+        </nav>
+      </header>
+
+      <Outlet />
+
+      <footer className="footer">
+        ELANVISUAL · Rotulación, impresión y proyectos visuales · Nicaragua
+      </footer>
+    </>
+  );
+}
+
+const admin = [
+  'Dashboard',
+  'Catálogo',
+  'Productos',
+  'Categorías',
+  'Materiales',
+  'Costos',
+  'Clientes',
+  'Leads',
+  'Cotizador Interno',
+  'Cotizaciones',
+  'Pedidos',
+  'Pagos',
+  'Órdenes Trabajo',
+  'Producción',
+  'Inventario',
+  'Proveedores',
+  'Vendedores',
+  'Comisiones',
+  'Banners',
+  'Showroom',
+  'Usuarios',
+  'Configuración',
+  'CRM Central',
+];
+
+const path = (t) =>
+  '/admin/' +
+  t
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replaceAll(' ', '-');
+
+export function AdminLayout() {
+  const { logout } = useElan();
+  const nav = useNavigate();
+
+  return (
+    <div className="admin-shell">
+      <aside className="sidebar">
+        <Link className="brand adminbrand" to="/admin">
+          ✣ ELANVISUAL
+        </Link>
+
+        {admin.map((i) => (
+          <NavLink
+            key={i}
+            to={i === 'Dashboard' ? '/admin' : path(i)}
+          >
+            {i}
+          </NavLink>
+        ))}
+
+        <button
+          onClick={() => {
+            logout();
+            nav('/');
+          }}
+        >
+          Salir
+        </button>
+      </aside>
+
+      <main className="admin-main">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+
+export function VendorLayout() {
+  const items = [
+    'Dashboard',
+    'QR',
+    'Clientes',
+    'Leads',
+    'Cotizador Interno',
+    'Cotizaciones',
+    'Pedidos',
+    'Comisiones',
+    'Perfil',
+  ];
+
+  return (
+    <div className="admin-shell">
+      <aside className="sidebar">
+        <Link className="brand adminbrand" to="/vendedor">
+          VENDEDOR
+        </Link>
+
+        {items.map((i) => (
+          <NavLink
+            key={i}
+            to={
+              i === 'Dashboard'
+                ? '/vendedor'
+                : '/vendedor/' +
+                  i.toLowerCase().replaceAll(' ', '-')
+            }
+          >
+            {i}
+          </NavLink>
+        ))}
+      </aside>
+
+      <main className="admin-main">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+
+export function ProductionLayout() {
+  return (
+    <div className="admin-shell">
+      <aside className="sidebar">
+        <Link className="brand adminbrand" to="/produccion">
+          PRODUCCIÓN
+        </Link>
+
+        <NavLink to="/produccion">
+          Dashboard
+        </NavLink>
+
+        <NavLink to="/produccion/ordenes">
+          Órdenes
+        </NavLink>
+
+        <NavLink to="/produccion/seguimiento">
+          Seguimiento
+        </NavLink>
+
+        <NavLink to="/produccion/inventario">
+          Inventario
+        </NavLink>
+
+        <NavLink to="/produccion/entregas">
+          Entregas
+        </NavLink>
+      </aside>
+
+      <main className="admin-main">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
