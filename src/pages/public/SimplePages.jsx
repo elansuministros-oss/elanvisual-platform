@@ -1,0 +1,7 @@
+
+import{useParams}from'react-router-dom';import{useElan}from'../../core/context/ElanContext.jsx';
+export function Showroom(){const{productos}=useElan();return <main className="container"><h1>Showroom</h1><div className="grid products">{productos.map(p=><article className="product" key={p.id}><img src={p.imagen}/><h3>{p.nombre}</h3></article>)}</div></main>}
+export function Nosotros(){return <main className="container narrow"><h1>Nosotros</h1><p>ELANVISUAL integra rotulación, impresión digital, CNC, acrílicos, PVC, fachadas, displays y proyectos especiales con enfoque técnico y productivo.</p></main>}
+export function Contacto(){return <main className="container narrow"><h1>Contacto</h1><p>Solicitá tu cotización con medidas, ubicación, material deseado y fecha requerida.</p></main>}
+export function Seguimiento(){const{codigo}=useParams();const{ordenes}=useElan();const ot=ordenes.find(o=>o.codigo===codigo)||{};return <main className="container narrow"><h1>Seguimiento {codigo}</h1><section className="card"><h2>{ot.estado||'Orden no encontrada'}</h2><p>Fecha estimada: {ot.fechaEstimada||'Por definir'}</p>{(ot.historial||[]).map((h,i)=><p key={i}>• {h.estado} · {new Date(h.fecha).toLocaleString()}</p>)}</section></main>}
+export function VendedorQRPublico(){const{codigoVendedor}=useParams();return <main className="container narrow"><h1>ELANVISUAL</h1><p>Atención asignada al vendedor {codigoVendedor}.</p></main>}
