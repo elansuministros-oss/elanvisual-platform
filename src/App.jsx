@@ -41,6 +41,13 @@ import {
   CRM,
 } from './pages/admin/AdminPages.jsx';
 
+import ClientesCRM from './CRM/Clientes.jsx';
+import InventarioCRM from './CRM/Inventario.jsx';
+import MaterialesCRM from './CRM/Materiales.jsx';
+import SeguimientoCRM from './CRM/Seguimiento.jsx';
+import UsuariosPermisosCRM from './CRM/UsuariosPermisos.jsx';
+import ConsumoMaterialesCRM from './CRM/ConsumoMateriales.jsx';
+
 import {
   VendorDashboard,
   VendorQR,
@@ -81,9 +88,10 @@ export default function App() {
         <Route path="catalogo" element={<Productos />} />
         <Route path="productos" element={<Productos />} />
         <Route path="categorias" element={<Categorias />} />
-        <Route path="materiales" element={<Materiales />} />
+
+        <Route path="materiales" element={<MaterialesCRM />} />
         <Route path="costos" element={<SimpleAdmin titulo="Lista de Costos" />} />
-        <Route path="clientes" element={<SimpleAdmin titulo="Clientes" />} />
+        <Route path="clientes" element={<ClientesCRM />} />
         <Route path="leads" element={<Leads />} />
 
         <Route path="cotizador-interno" element={<CotizadorInterno />} />
@@ -94,13 +102,16 @@ export default function App() {
         <Route path="produccion" element={<Produccion />} />
         <Route path="comisiones" element={<Comisiones />} />
 
-        <Route path="inventario" element={<Materiales />} />
+        <Route path="inventario" element={<InventarioCRM />} />
+        <Route path="consumo-materiales" element={<ConsumoMaterialesCRM />} />
+        <Route path="seguimiento" element={<SeguimientoCRM />} />
+
         <Route path="proveedores" element={<Proveedores />} />
         <Route path="vendedores" element={<Vendedores />} />
 
         <Route path="banners" element={<SimpleAdmin titulo="Banners" />} />
         <Route path="showroom" element={<SimpleAdmin titulo="Showroom" />} />
-        <Route path="usuarios" element={<SimpleAdmin titulo="Usuarios" />} />
+        <Route path="usuarios" element={<UsuariosPermisosCRM />} />
         <Route path="configuracion" element={<Configuracion />} />
         <Route path="crm-central" element={<CRM />} />
       </Route>
@@ -108,7 +119,7 @@ export default function App() {
       <Route path="/vendedor" element={<VendorLayout />}>
         <Route index element={<VendorDashboard />} />
         <Route path="qr" element={<VendorQR />} />
-        <Route path="clientes" element={<VendorSimple titulo="Mis clientes" />} />
+        <Route path="clientes" element={<ClientesCRM />} />
         <Route path="leads" element={<VendorSimple titulo="Mis leads" />} />
 
         <Route path="cotizador-interno" element={<VendorCotizador />} />
@@ -123,10 +134,7 @@ export default function App() {
         <Route index element={<ProductionDashboard />} />
         <Route path="ordenes" element={<ProductionOrders />} />
         <Route path="seguimiento" element={<ProductionTracking />} />
-        <Route
-          path="inventario"
-          element={<ProductionSimple titulo="Inventario producción" />}
-        />
+        <Route path="inventario" element={<InventarioCRM />} />
         <Route
           path="entregas"
           element={<ProductionSimple titulo="Entregas e instalaciones" />}

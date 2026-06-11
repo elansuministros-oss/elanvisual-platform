@@ -42,38 +42,32 @@ export function PublicLayout() {
 }
 
 const admin = [
-  'Dashboard',
-  'Catálogo',
-  'Productos',
-  'Categorías',
-  'Materiales',
-  'Costos',
-  'Clientes',
-  'Leads',
-  'Cotizador Interno',
-  'Cotizaciones',
-  'Pedidos',
-  'Pagos',
-  'Órdenes Trabajo',
-  'Producción',
-  'Inventario',
-  'Proveedores',
-  'Vendedores',
-  'Comisiones',
-  'Banners',
-  'Showroom',
-  'Usuarios',
-  'Configuración',
-  'CRM Central',
+  { label: 'Dashboard', to: '/admin' },
+  { label: 'Catálogo', to: '/admin/catalogo' },
+  { label: 'Productos', to: '/admin/productos' },
+  { label: 'Categorías', to: '/admin/categorias' },
+  { label: 'Materiales', to: '/admin/materiales' },
+  { label: 'Inventario', to: '/admin/inventario' },
+  { label: 'Consumo Materiales', to: '/admin/consumo-materiales' },
+  { label: 'Clientes', to: '/admin/clientes' },
+  { label: 'Leads', to: '/admin/leads' },
+  { label: 'Seguimiento CRM', to: '/admin/seguimiento' },
+  { label: 'Cotizador Interno', to: '/admin/cotizador-interno' },
+  { label: 'Cotizaciones', to: '/admin/cotizaciones' },
+  { label: 'Pedidos', to: '/admin/pedidos' },
+  { label: 'Pagos', to: '/admin/pagos' },
+  { label: 'Órdenes Trabajo', to: '/admin/ordenes-trabajo' },
+  { label: 'Producción', to: '/admin/produccion' },
+  { label: 'Proveedores', to: '/admin/proveedores' },
+  { label: 'Vendedores', to: '/admin/vendedores' },
+  { label: 'Comisiones', to: '/admin/comisiones' },
+  { label: 'Banners', to: '/admin/banners' },
+  { label: 'Showroom', to: '/admin/showroom' },
+  { label: 'Usuarios', to: '/admin/usuarios' },
+  { label: 'Costos', to: '/admin/costos' },
+  { label: 'Configuración', to: '/admin/configuracion' },
+  { label: 'CRM Central', to: '/admin/crm-central' },
 ];
-
-const path = (t) =>
-  '/admin/' +
-  t
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replaceAll(' ', '-');
 
 export function AdminLayout() {
   const { logout } = useElan();
@@ -86,12 +80,13 @@ export function AdminLayout() {
           ✣ ELANVISUAL
         </Link>
 
-        {admin.map((i) => (
+        {admin.map((item) => (
           <NavLink
-            key={i}
-            to={i === 'Dashboard' ? '/admin' : path(i)}
+            key={item.to}
+            to={item.to}
+            end={item.to === '/admin'}
           >
-            {i}
+            {item.label}
           </NavLink>
         ))}
 
@@ -141,6 +136,7 @@ export function VendorLayout() {
                 : '/vendedor/' +
                   i.toLowerCase().replaceAll(' ', '-')
             }
+            end={i === 'Dashboard'}
           >
             {i}
           </NavLink>
@@ -162,7 +158,7 @@ export function ProductionLayout() {
           PRODUCCIÓN
         </Link>
 
-        <NavLink to="/produccion">
+        <NavLink to="/produccion" end>
           Dashboard
         </NavLink>
 
@@ -176,6 +172,10 @@ export function ProductionLayout() {
 
         <NavLink to="/produccion/inventario">
           Inventario
+        </NavLink>
+
+        <NavLink to="/admin/consumo-materiales">
+          Consumo Materiales
         </NavLink>
 
         <NavLink to="/produccion/entregas">

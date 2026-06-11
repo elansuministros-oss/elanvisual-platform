@@ -6,6 +6,13 @@ import {
   configurarBridge,
 } from '../../core/bridge/CentralBridge.js';
 
+import ClientesCRM from '../../CRM/Clientes.jsx';
+import InventarioCRM from '../../CRM/Inventario.jsx';
+import MaterialesCRM from '../../CRM/Materiales.jsx';
+import SeguimientoCRM from '../../CRM/Seguimiento.jsx';
+import UsuariosPermisosCRM from '../../CRM/UsuariosPermisos.jsx';
+import ConsumoMaterialesCRM from '../../CRM/ConsumoMateriales.jsx';
+
 import CotizacionesCRM from '../../CRM/Cotizaciones.jsx';
 import PedidosCRM from '../../CRM/Pedidos.jsx';
 import OrdenesTrabajoCRM from '../../CRM/OrdenesTrabajo.jsx';
@@ -15,6 +22,10 @@ import ComisionesCRM from '../../CRM/Comisiones.jsx';
 export function Dashboard() {
   const s = useElan();
 
+  const materialesCriticos = (s.inventario || []).filter(
+    (item) => Number(item.existencia || 0) <= Number(item.stockMinimo || 0)
+  ).length;
+
   return (
     <main>
       <h1>Dashboard ELANVISUAL</h1>
@@ -22,11 +33,14 @@ export function Dashboard() {
       <div className="kpis">
         {[
           ['Productos', s.productos.length],
+          ['Clientes', s.clientes?.length || 0],
           ['Leads', s.leads.length],
           ['Cotizaciones', s.cotizaciones.length],
           ['Pedidos', s.pedidos.length],
           ['OT', s.ordenes.length],
           ['Producción', s.producciones?.length || 0],
+          ['Inventario', s.inventario?.length || 0],
+          ['Materiales críticos', materialesCriticos],
           ['Comisiones', s.comisiones.length],
           [
             'Pagos pendientes',
@@ -41,6 +55,30 @@ export function Dashboard() {
       </div>
     </main>
   );
+}
+
+export function Clientes() {
+  return <ClientesCRM />;
+}
+
+export function Inventario() {
+  return <InventarioCRM />;
+}
+
+export function Materiales() {
+  return <MaterialesCRM />;
+}
+
+export function SeguimientoAdmin() {
+  return <SeguimientoCRM />;
+}
+
+export function UsuariosPermisos() {
+  return <UsuariosPermisosCRM />;
+}
+
+export function ConsumoMateriales() {
+  return <ConsumoMaterialesCRM />;
 }
 
 export function Productos() {
@@ -72,25 +110,6 @@ export function Categorias() {
         { key: 'nombre', label: 'Categoría' },
         { key: 'subcategorias', label: 'Subcategorías' },
         { key: 'estado', label: 'Estado' },
-      ]}
-    />
-  );
-}
-
-export function Materiales() {
-  const { materiales } = useElan();
-
-  return (
-    <CrudTable
-      title="Materiales / Inventario"
-      rows={materiales}
-      fields={[
-        { key: 'nombre', label: 'Material' },
-        { key: 'unidad', label: 'Unidad' },
-        { key: 'stock', label: 'Stock' },
-        { key: 'stockMinimo', label: 'Mínimo' },
-        { key: 'costo', label: 'Costo' },
-        { key: 'proveedor', label: 'Proveedor' },
       ]}
     />
   );
