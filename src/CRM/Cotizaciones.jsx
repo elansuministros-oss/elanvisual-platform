@@ -3,6 +3,25 @@ import { useElan } from '../core/context/ElanContext.jsx';
 
 const fechaActual = () => new Date().toISOString().slice(0, 10);
 
+function nombreCliente(cotizacion) {
+  return (
+    cotizacion.clienteNombre ||
+    cotizacion.cliente ||
+    cotizacion.nombreCliente ||
+    'Sin cliente'
+  );
+}
+
+function descripcionCotizacion(cotizacion) {
+  if (cotizacion.descripcion) return cotizacion.descripcion;
+
+  if (Array.isArray(cotizacion.items) && cotizacion.items.length > 0) {
+    return cotizacion.items.map((item) => item.producto || item.nombre).join(', ');
+  }
+
+  return cotizacion.notas || cotizacion.observacion || '-';
+}
+
 export default function Cotizaciones() {
   const {
     cotizaciones,
@@ -25,7 +44,7 @@ export default function Cotizaciones() {
 
   const resumen = useMemo(() => {
     const total = cotizaciones.reduce(
-      (acc, item) => acc + Number(item.total || 0),
+      (acc, item) => acc + Number(item.total || item.subtotal || 0),
       0
     );
 
@@ -72,11 +91,15 @@ export default function Cotizaciones() {
   const guardar = (e) => {
     e.preventDefault();
 
-    if (!form.clienteNombre.trim() || !form.descripcion.trim()) return;
+    if (!form.clienteNombre.trim() || !form.descripcion.trim()) {
+      alert('Ingrese cliente y descripción');
+      return;
+    }
 
     guardarCotizacion({
       codigo: `COT-${Date.now()}`,
       clienteNombre: form.clienteNombre.trim(),
+      cliente: form.clienteNombre.trim(),
       descripcion: form.descripcion.trim(),
       subtotal: Number(form.subtotal || 0),
       descuento: Number(form.descuento || 0),
@@ -89,8 +112,10 @@ export default function Cotizaciones() {
         {
           id: `ITEM-${Date.now()}`,
           nombre: form.descripcion.trim(),
+          producto: form.descripcion.trim(),
           cantidad: 1,
           precio: Number(form.subtotal || 0),
+          precioVenta: Number(form.total || form.subtotal || 0),
         },
       ],
     });
@@ -98,14 +123,32 @@ export default function Cotizaciones() {
     limpiar();
   };
 
-  const aprobar = (cotizacion) => {
-    actualizarCotizacion(cotizacion.id, { estado: 'Aprobada' });
-  };
+  const aprobarYCrearPedido = (cotizacion) => {
+    if (cotizacion.pedidoId) {
+      alert('Esta cotización ya tiene pedido generado.');
+      return;
+    }
 
-  const convertirPedido = (cotizacion) => {
+    actualizarCotizacion(cotizacion.id, {
+      estado: 'Aprobada',
+      fechaAprobacion: new Date().toISOString(),
+    });
+
     crearPedidoDesdeCotizacion(cotizacion.id, {
       anticipo: 0,
-      notas: cotizacion.notas || '',
+      notas:
+        cotizacion.notas ||
+        cotizacion.observacion ||
+        'Pedido generado automáticamente desde cotización aprobada.',
+    });
+
+    alert('Cotización aprobada. Pedido y Orden de Trabajo generados.');
+  };
+
+  const soloAprobar = (cotizacion) => {
+    actualizarCotizacion(cotizacion.id, {
+      estado: 'Aprobada',
+      fechaAprobacion: new Date().toISOString(),
     });
   };
 
@@ -114,7 +157,9 @@ export default function Cotizaciones() {
       <div className="page-header">
         <div>
           <h2>Cotizaciones</h2>
-          <p>Registro comercial previo a pedido y orden de trabajo.</p>
+          <p>
+            Registro comercial previo a pedido, orden de trabajo y producción.
+          </p>
         </div>
       </div>
 
@@ -126,7 +171,7 @@ export default function Cotizaciones() {
 
         <div className="crm-card">
           <span>Total cotizado</span>
-          <strong>C$ {resumen.total.toFixed(2)}</strong>
+          <strong>US$ {resumen.total.toFixed(2)}</strong>
         </div>
 
         <div className="crm-card">
@@ -261,7 +306,7 @@ export default function Cotizaciones() {
               <th>Descripción</th>
               <th>Total</th>
               <th>Estado</th>
-              <th>Pedido</th>
+              <th>Pedido / OT</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -275,25 +320,28 @@ export default function Cotizaciones() {
               cotizaciones.map((cotizacion) => (
                 <tr key={cotizacion.id}>
                   <td>{cotizacion.codigo}</td>
-                  <td>{cotizacion.clienteNombre || 'Sin cliente'}</td>
-                  <td>{cotizacion.descripcion || cotizacion.notas || '-'}</td>
-                  <td>C$ {Number(cotizacion.total || 0).toFixed(2)}</td>
+                  <td>{nombreCliente(cotizacion)}</td>
+                  <td>{descripcionCotizacion(cotizacion)}</td>
+                  <td>
+                    US$ {Number(cotizacion.total || cotizacion.subtotal || 0).toFixed(2)}
+                  </td>
                   <td>{cotizacion.estado || 'Borrador'}</td>
                   <td>{cotizacion.pedidoId ? 'Generado' : 'Pendiente'}</td>
                   <td>
                     <button
                       type="button"
-                      onClick={() => aprobar(cotizacion)}
+                      onClick={() => soloAprobar(cotizacion)}
+                      disabled={cotizacion.estado === 'Aprobada'}
                     >
                       Aprobar
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => convertirPedido(cotizacion)}
+                      onClick={() => aprobarYCrearPedido(cotizacion)}
                       disabled={Boolean(cotizacion.pedidoId)}
                     >
-                      Crear pedido
+                      Aprobar + OT
                     </button>
                   </td>
                 </tr>
