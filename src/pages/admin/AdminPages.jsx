@@ -24,6 +24,57 @@ import ComisionesCRM from '../../CRM/Comisiones.jsx';
 
 const STORAGE_KEY = 'elanvisual_state_v2';
 
+const formStyles = {
+  grid: {
+    display: 'grid',
+    gap: '18px',
+  },
+  field: {
+    display: 'grid',
+    gap: '8px',
+  },
+  label: {
+    fontWeight: 700,
+    fontSize: '14px',
+    color: '#172033',
+  },
+  row: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '18px',
+  },
+  actions: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '12px',
+    marginTop: '6px',
+  },
+  bannerItem: {
+    display: 'grid',
+    gridTemplateColumns: '1fr auto',
+    gap: '14px',
+    alignItems: 'center',
+    padding: '16px',
+    border: '1px solid #e6e9ef',
+    borderRadius: '16px',
+    marginBottom: '14px',
+    background: '#fff',
+  },
+  bannerMeta: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '10px',
+    marginTop: '6px',
+    fontSize: '13px',
+    color: '#667085',
+  },
+  bannerActions: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '10px',
+  },
+};
+
 function leerEstadoStorage() {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -486,110 +537,132 @@ export function Banners() {
     <main>
       <h1>Banners principales</h1>
 
-      <section className="card form">
+      <section className="card form" style={formStyles.grid}>
         <h2>{form.id ? 'Editar banner' : 'Nuevo banner'}</h2>
 
-        <input
-          placeholder="Título principal"
-          value={form.titulo}
-          onChange={(e) => setForm({ ...form, titulo: e.target.value })}
-        />
+        <div style={formStyles.field}>
+          <label style={formStyles.label}>Título principal</label>
+          <input
+            placeholder="Ej: Todo para la imagen de tu negocio"
+            value={form.titulo}
+            onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+          />
+        </div>
 
-        <input
-          placeholder="Subtítulo"
-          value={form.subtitulo}
-          onChange={(e) => setForm({ ...form, subtitulo: e.target.value })}
-        />
+        <div style={formStyles.field}>
+          <label style={formStyles.label}>Subtítulo</label>
+          <input
+            placeholder="Ej: Rotulación, impresión digital y soluciones visuales"
+            value={form.subtitulo}
+            onChange={(e) => setForm({ ...form, subtitulo: e.target.value })}
+          />
+        </div>
 
-        <input
-          placeholder="Texto del botón"
-          value={form.boton}
-          onChange={(e) => setForm({ ...form, boton: e.target.value })}
-        />
+        <div style={formStyles.row}>
+          <div style={formStyles.field}>
+            <label style={formStyles.label}>Texto del botón</label>
+            <input
+              placeholder="Ej: Ver Catálogo"
+              value={form.boton}
+              onChange={(e) => setForm({ ...form, boton: e.target.value })}
+            />
+          </div>
 
-        <input
-          placeholder="Enlace del botón. Ej: /catalogo"
-          value={form.enlace}
-          onChange={(e) => setForm({ ...form, enlace: e.target.value })}
-        />
+          <div style={formStyles.field}>
+            <label style={formStyles.label}>Enlace del botón</label>
+            <input
+              placeholder="Ej: /catalogo"
+              value={form.enlace}
+              onChange={(e) => setForm({ ...form, enlace: e.target.value })}
+            />
+          </div>
+        </div>
 
-        <label className="card">
-          <b>Imagen Desktop</b>
+        <div style={formStyles.row}>
+          <div style={formStyles.field}>
+            <label style={formStyles.label}>Imagen Desktop</label>
+            <select
+              value={form.imagenDesktop}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  imagenDesktop: e.target.value,
+                  imagen: e.target.value || form.imagen,
+                })
+              }
+            >
+              <option value="">Seleccionar imagen desktop</option>
 
-          <select
-            value={form.imagenDesktop}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                imagenDesktop: e.target.value,
-                imagen: e.target.value || form.imagen,
-              })
-            }
-          >
-            <option value="">Seleccionar imagen desktop</option>
+              {imagenesDesktop.map((m) => (
+                <option key={m.id} value={obtenerImagenMedia(m)}>
+                  {m.nombre || m.titulo || m.id}
+                </option>
+              ))}
+            </select>
 
-            {imagenesDesktop.map((m) => (
-              <option key={m.id} value={obtenerImagenMedia(m)}>
-                {m.nombre || m.titulo || m.id}
-              </option>
-            ))}
-          </select>
+            {imagenesDesktop.length === 0 && (
+              <p>
+                No hay imágenes activas en Multimedia con categoría Banner
+                Desktop, Banner o General.
+              </p>
+            )}
+          </div>
 
-          {imagenesDesktop.length === 0 && (
-            <p>
-              No hay imágenes activas en Multimedia con categoría Banner
-              Desktop, Banner o General.
-            </p>
-          )}
-        </label>
+          <div style={formStyles.field}>
+            <label style={formStyles.label}>Imagen Mobile</label>
+            <select
+              value={form.imagenMobile}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  imagenMobile: e.target.value,
+                })
+              }
+            >
+              <option value="">Seleccionar imagen mobile</option>
 
-        <label className="card">
-          <b>Imagen Mobile</b>
+              {imagenesMobile.map((m) => (
+                <option key={m.id} value={obtenerImagenMedia(m)}>
+                  {m.nombre || m.titulo || m.id}
+                </option>
+              ))}
+            </select>
 
-          <select
-            value={form.imagenMobile}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                imagenMobile: e.target.value,
-              })
-            }
-          >
-            <option value="">Seleccionar imagen mobile</option>
+            {imagenesMobile.length === 0 && (
+              <p>
+                No hay imágenes activas en Multimedia con categoría Banner
+                Mobile, Banner o General.
+              </p>
+            )}
+          </div>
+        </div>
 
-            {imagenesMobile.map((m) => (
-              <option key={m.id} value={obtenerImagenMedia(m)}>
-                {m.nombre || m.titulo || m.id}
-              </option>
-            ))}
-          </select>
+        <div style={formStyles.row}>
+          <div style={formStyles.field}>
+            <label style={formStyles.label}>Estado</label>
+            <select
+              value={form.estado}
+              onChange={(e) => setForm({ ...form, estado: e.target.value })}
+            >
+              <option>Activo</option>
+              <option>Inactivo</option>
+            </select>
+          </div>
 
-          {imagenesMobile.length === 0 && (
-            <p>
-              No hay imágenes activas en Multimedia con categoría Banner Mobile,
-              Banner o General.
-            </p>
-          )}
-        </label>
-
-        <select
-          value={form.estado}
-          onChange={(e) => setForm({ ...form, estado: e.target.value })}
-        >
-          <option>Activo</option>
-          <option>Inactivo</option>
-        </select>
-
-        <input
-          type="number"
-          placeholder="Orden"
-          value={form.orden}
-          onChange={(e) => setForm({ ...form, orden: e.target.value })}
-        />
+          <div style={formStyles.field}>
+            <label style={formStyles.label}>Orden</label>
+            <input
+              type="number"
+              placeholder="Orden"
+              value={form.orden}
+              onChange={(e) => setForm({ ...form, orden: e.target.value })}
+            />
+          </div>
+        </div>
 
         {previewDesktop && (
-          <>
-            <h3>Vista Desktop</h3>
+          <div style={formStyles.field}>
+            <label style={formStyles.label}>Vista Desktop</label>
             <img
               src={previewDesktop}
               alt="Vista previa desktop"
@@ -598,14 +671,15 @@ export function Banners() {
                 maxHeight: 280,
                 objectFit: 'cover',
                 borderRadius: 16,
+                border: '1px solid #e6e9ef',
               }}
             />
-          </>
+          </div>
         )}
 
         {previewMobile && (
-          <>
-            <h3>Vista Mobile</h3>
+          <div style={formStyles.field}>
+            <label style={formStyles.label}>Vista Mobile</label>
             <img
               src={previewMobile}
               alt="Vista previa mobile"
@@ -615,18 +689,21 @@ export function Banners() {
                 maxHeight: 520,
                 objectFit: 'cover',
                 borderRadius: 16,
+                border: '1px solid #e6e9ef',
               }}
             />
-          </>
+          </div>
         )}
 
-        <button type="button" onClick={guardar}>
-          Guardar banner
-        </button>
+        <div style={formStyles.actions}>
+          <button type="button" onClick={guardar}>
+            Guardar banner
+          </button>
 
-        <button type="button" onClick={limpiar}>
-          Limpiar
-        </button>
+          <button type="button" onClick={limpiar}>
+            Limpiar
+          </button>
+        </div>
       </section>
 
       <section className="card">
@@ -636,26 +713,36 @@ export function Banners() {
           <p>No hay banners registrados.</p>
         ) : (
           listaOrdenada.map((b) => (
-            <div className="line" key={b.id}>
-              <b>{b.titulo}</b>
-              <span>{b.estado}</span>
-              <span>Orden {b.orden || 1}</span>
+            <div style={formStyles.bannerItem} key={b.id}>
+              <div>
+                <b>{b.titulo}</b>
 
-              <button type="button" onClick={() => editar(b)}>
-                Editar
-              </button>
+                {b.subtitulo && <p>{b.subtitulo}</p>}
 
-              <button type="button" onClick={() => activar(b.id)}>
-                Activar único
-              </button>
+                <div style={formStyles.bannerMeta}>
+                  <span>Estado: {b.estado}</span>
+                  <span>Orden: {b.orden || 1}</span>
+                  <span>Botón: {b.boton}</span>
+                </div>
+              </div>
 
-              <button type="button" onClick={() => cambiarEstado(b.id)}>
-                {b.estado === 'Activo' ? 'Desactivar' : 'Activar'}
-              </button>
+              <div style={formStyles.bannerActions}>
+                <button type="button" onClick={() => editar(b)}>
+                  Editar
+                </button>
 
-              <button type="button" onClick={() => eliminar(b.id)}>
-                Eliminar
-              </button>
+                <button type="button" onClick={() => activar(b.id)}>
+                  Activar único
+                </button>
+
+                <button type="button" onClick={() => cambiarEstado(b.id)}>
+                  {b.estado === 'Activo' ? 'Desactivar' : 'Activar'}
+                </button>
+
+                <button type="button" onClick={() => eliminar(b.id)}>
+                  Eliminar
+                </button>
+              </div>
             </div>
           ))
         )}
