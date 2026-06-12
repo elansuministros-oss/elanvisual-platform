@@ -35,6 +35,7 @@ import {
   Ordenes,
   Produccion,
   Comisiones,
+  Banners,
   SimpleAdmin,
   Configuracion,
   CRM,
@@ -112,7 +113,7 @@ export default function App() {
         <Route path="proveedores" element={<Proveedores />} />
         <Route path="vendedores" element={<Vendedores />} />
 
-        <Route path="banners" element={<SimpleAdmin titulo="Banners" />} />
+        <Route path="banners" element={<Banners />} />
         <Route path="showroom" element={<SimpleAdmin titulo="Showroom" />} />
         <Route path="usuarios" element={<UsuariosPermisosCRM />} />
         <Route path="configuracion" element={<Configuracion />} />

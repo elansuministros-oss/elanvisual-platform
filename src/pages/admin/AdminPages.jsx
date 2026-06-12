@@ -22,6 +22,20 @@ import OrdenesTrabajoCRM from '../../CRM/OrdenesTrabajo.jsx';
 import ProduccionCRM from '../../CRM/Produccion.jsx';
 import ComisionesCRM from '../../CRM/Comisiones.jsx';
 
+const STORAGE_KEY = 'elanvisual_state_v2';
+
+function actualizarBannersStorage(nuevosBanners) {
+  const actual = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      ...actual,
+      banners: nuevosBanners,
+    })
+  );
+}
+
 export function Dashboard() {
   const s = useElan();
 
@@ -225,6 +239,234 @@ export function Pagos() {
         ))
       )}
     </section>
+  );
+}
+
+export function Banners() {
+  const { banners } = useElan();
+
+  const [lista, setLista] = useState(banners || []);
+
+  const [form, setForm] = useState({
+    id: '',
+    titulo: '',
+    subtitulo: '',
+    boton: 'Ver Catálogo',
+    enlace: '/catalogo',
+    imagen: '',
+    estado: 'Activo',
+    orden: 1,
+  });
+
+  function sincronizar(nuevaLista) {
+    setLista(nuevaLista);
+    actualizarBannersStorage(nuevaLista);
+  }
+
+  function limpiar() {
+    setForm({
+      id: '',
+      titulo: '',
+      subtitulo: '',
+      boton: 'Ver Catálogo',
+      enlace: '/catalogo',
+      imagen: '',
+      estado: 'Activo',
+      orden: lista.length + 1,
+    });
+  }
+
+  function guardar() {
+    if (!form.titulo.trim()) {
+      alert('Escribí el título del banner.');
+      return;
+    }
+
+    if (!form.imagen.trim()) {
+      alert('Pegá la URL de la imagen del banner.');
+      return;
+    }
+
+    const bannerGuardado = {
+      ...form,
+      titulo: form.titulo.trim(),
+      subtitulo: form.subtitulo.trim(),
+      boton: form.boton.trim() || 'Ver Catálogo',
+      enlace: form.enlace.trim() || '/catalogo',
+      imagen: form.imagen.trim(),
+      estado: form.estado || 'Activo',
+      orden: Number(form.orden || 1),
+    };
+
+    const nuevaLista = form.id
+      ? lista.map((b) => (b.id === form.id ? bannerGuardado : b))
+      : [
+          ...lista,
+          {
+            ...bannerGuardado,
+            id: `ban-${Date.now()}`,
+          },
+        ];
+
+    sincronizar(nuevaLista);
+    limpiar();
+
+    alert('Banner guardado. Recargá el Home para verlo aplicado.');
+  }
+
+  function editar(banner) {
+    setForm({
+      id: banner.id || '',
+      titulo: banner.titulo || '',
+      subtitulo: banner.subtitulo || '',
+      boton: banner.boton || 'Ver Catálogo',
+      enlace: banner.enlace || '/catalogo',
+      imagen: banner.imagen || '',
+      estado: banner.estado || 'Activo',
+      orden: Number(banner.orden || 1),
+    });
+  }
+
+  function activar(id) {
+    const nuevaLista = lista.map((b) => ({
+      ...b,
+      estado: b.id === id ? 'Activo' : 'Inactivo',
+    }));
+
+    sincronizar(nuevaLista);
+    alert('Banner activado. Recargá el Home para verlo.');
+  }
+
+  function cambiarEstado(id) {
+    const nuevaLista = lista.map((b) =>
+      b.id === id
+        ? {
+            ...b,
+            estado: b.estado === 'Activo' ? 'Inactivo' : 'Activo',
+          }
+        : b
+    );
+
+    sincronizar(nuevaLista);
+  }
+
+  function eliminar(id) {
+    if (!confirm('¿Eliminar este banner?')) return;
+
+    const nuevaLista = lista.filter((b) => b.id !== id);
+    sincronizar(nuevaLista);
+  }
+
+  const listaOrdenada = lista
+    .slice()
+    .sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0));
+
+  return (
+    <main>
+      <h1>Banners principales</h1>
+
+      <section className="card form">
+        <h2>{form.id ? 'Editar banner' : 'Nuevo banner'}</h2>
+
+        <input
+          placeholder="Título principal"
+          value={form.titulo}
+          onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+        />
+
+        <input
+          placeholder="Subtítulo"
+          value={form.subtitulo}
+          onChange={(e) => setForm({ ...form, subtitulo: e.target.value })}
+        />
+
+        <input
+          placeholder="Texto del botón"
+          value={form.boton}
+          onChange={(e) => setForm({ ...form, boton: e.target.value })}
+        />
+
+        <input
+          placeholder="Enlace del botón. Ej: /catalogo"
+          value={form.enlace}
+          onChange={(e) => setForm({ ...form, enlace: e.target.value })}
+        />
+
+        <input
+          placeholder="URL de imagen del banner"
+          value={form.imagen}
+          onChange={(e) => setForm({ ...form, imagen: e.target.value })}
+        />
+
+        <select
+          value={form.estado}
+          onChange={(e) => setForm({ ...form, estado: e.target.value })}
+        >
+          <option>Activo</option>
+          <option>Inactivo</option>
+        </select>
+
+        <input
+          type="number"
+          placeholder="Orden"
+          value={form.orden}
+          onChange={(e) => setForm({ ...form, orden: e.target.value })}
+        />
+
+        {form.imagen && (
+          <img
+            src={form.imagen}
+            alt="Vista previa banner"
+            style={{
+              width: '100%',
+              maxHeight: 260,
+              objectFit: 'cover',
+              borderRadius: 16,
+            }}
+          />
+        )}
+
+        <button type="button" onClick={guardar}>
+          Guardar banner
+        </button>
+
+        <button type="button" onClick={limpiar}>
+          Limpiar
+        </button>
+      </section>
+
+      <section className="card">
+        <h2>Banners registrados</h2>
+
+        {listaOrdenada.length === 0 ? (
+          <p>No hay banners registrados.</p>
+        ) : (
+          listaOrdenada.map((b) => (
+            <div className="line" key={b.id}>
+              <b>{b.titulo}</b>
+              <span>{b.estado}</span>
+              <span>Orden {b.orden || 1}</span>
+
+              <button type="button" onClick={() => editar(b)}>
+                Editar
+              </button>
+
+              <button type="button" onClick={() => activar(b.id)}>
+                Activar único
+              </button>
+
+              <button type="button" onClick={() => cambiarEstado(b.id)}>
+                {b.estado === 'Activo' ? 'Desactivar' : 'Activar'}
+              </button>
+
+              <button type="button" onClick={() => eliminar(b.id)}>
+                Eliminar
+              </button>
+            </div>
+          ))
+        )}
+      </section>
+    </main>
   );
 }
 
