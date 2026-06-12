@@ -23,6 +23,157 @@ import { emitirEventoCRM } from '../bridge/CentralBridge.js';
 const Ctx = createContext(null);
 const key = 'elanvisual_state_v2';
 
+const SUPABASE_URL = String(import.meta.env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
+const SUPABASE_KEY = String(
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+    import.meta.env.VITE_SUPABASE_KEY ||
+    import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY ||
+    ''
+);
+
+const SUPABASE_HEADERS = {
+  apikey: SUPABASE_KEY,
+  Authorization: `Bearer ${SUPABASE_KEY}`,
+  'Content-Type': 'application/json',
+};
+
+const TABLAS_SUPABASE = [
+  'categorias',
+  'productos',
+  'proveedores',
+  'materiales',
+  'inventario',
+  'vendedores',
+  'banners',
+  'bancos',
+  'usuarios',
+  'clientes',
+  'leads',
+  'cotizaciones',
+  'pedidos',
+  'pagos',
+  'ordenes',
+  'producciones',
+  'comisiones',
+  'showroom',
+  'multimedia',
+];
+
+function supabaseActivo() {
+  return Boolean(SUPABASE_URL && SUPABASE_KEY);
+}
+
+function normalizarRegistroSupabase(row = {}) {
+  if (row && typeof row.data === 'object' && row.data !== null) {
+    return {
+      id: row.id || row.data.id,
+      ...row.data,
+    };
+  }
+
+  return row;
+}
+
+async function leerTablaSupabase(tabla) {
+  if (!supabaseActivo()) return [];
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabla}?select=*`, {
+      headers: SUPABASE_HEADERS,
+    });
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+    return Array.isArray(data) ? data.map(normalizarRegistroSupabase) : [];
+  } catch {
+    return [];
+  }
+}
+
+async function guardarRegistroSupabase(tabla, item = {}) {
+  if (!supabaseActivo() || !item?.id) return null;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${tabla}?on_conflict=id`, {
+      method: 'POST',
+      headers: {
+        ...SUPABASE_HEADERS,
+        Prefer: 'resolution=merge-duplicates,return=representation',
+      },
+      body: JSON.stringify(item),
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    return Array.isArray(data) ? normalizarRegistroSupabase(data[0]) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function eliminarRegistroSupabase(tabla, id) {
+  if (!supabaseActivo() || !id) return false;
+
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/${tabla}?id=eq.${encodeURIComponent(id)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          ...SUPABASE_HEADERS,
+          Prefer: 'return=minimal',
+        },
+      }
+    );
+
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function cargarEstadoSupabase() {
+  if (!supabaseActivo()) return null;
+
+  const remoto = {};
+
+  await Promise.all(
+    TABLAS_SUPABASE.map(async (tabla) => {
+      const filas = await leerTablaSupabase(tabla);
+      if (filas.length > 0) remoto[tabla] = filas;
+    })
+  );
+
+  return Object.keys(remoto).length > 0 ? remoto : null;
+}
+
+function mezclarEstado(prev, remoto) {
+  const merged = { ...prev, ...(remoto || {}) };
+
+  merged.usuarios = unirUsuariosBase(merged.usuarios || []);
+
+  if (!Array.isArray(merged.inventario) || merged.inventario.length === 0) {
+    merged.inventario = inventarioDesdeMateriales(merged.materiales || []);
+  }
+
+  if (!Array.isArray(merged.movimientosInventario)) {
+    merged.movimientosInventario = [];
+  }
+
+  if (!Array.isArray(merged.producciones)) {
+    merged.producciones = [];
+  }
+
+  if (!Array.isArray(merged.multimedia)) {
+    merged.multimedia = [];
+  }
+
+  return merged;
+}
+
+
 const usuariosAccesoBase = [
   {
     id: 'USR-ADMIN-ELANVISUAL',
@@ -162,6 +313,31 @@ function load() {
 
 export function ElanProvider({ children }) {
   const [state, setState] = useState(load);
+  const [cargandoSupabase, setCargandoSupabase] = useState(false);
+
+  useEffect(() => {
+    let vivo = true;
+
+    async function iniciarSupabase() {
+      if (!supabaseActivo()) return;
+
+      setCargandoSupabase(true);
+
+      const remoto = await cargarEstadoSupabase();
+
+      if (vivo && remoto) {
+        setState((prev) => mezclarEstado(prev, remoto));
+      }
+
+      if (vivo) setCargandoSupabase(false);
+    }
+
+    iniciarSupabase();
+
+    return () => {
+      vivo = false;
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(key, JSON.stringify(state));
@@ -714,6 +890,7 @@ export function ElanProvider({ children }) {
       };
     });
 
+    guardarRegistroSupabase('productos', item);
     emitirEventoCRM('producto_guardado', item);
     return item;
   };
@@ -730,6 +907,7 @@ export function ElanProvider({ children }) {
       };
     });
 
+    guardarRegistroSupabase('categorias', item);
     return item;
   };
 
@@ -745,6 +923,7 @@ export function ElanProvider({ children }) {
       };
     });
 
+    guardarRegistroSupabase('proveedores', item);
     return item;
   };
 
@@ -789,6 +968,7 @@ export function ElanProvider({ children }) {
       };
     });
 
+    guardarRegistroSupabase('materiales', item);
     emitirEventoCRM('material_guardado', item);
     return item;
   };
@@ -805,6 +985,7 @@ export function ElanProvider({ children }) {
       };
     });
 
+    guardarRegistroSupabase('vendedores', item);
     return item;
   };
 
@@ -820,6 +1001,7 @@ export function ElanProvider({ children }) {
       };
     });
 
+    guardarRegistroSupabase('bancos', item);
     return item;
   };
 
@@ -837,6 +1019,7 @@ export function ElanProvider({ children }) {
       multimedia: [item, ...(prev.multimedia || [])],
     }));
 
+    guardarRegistroSupabase('multimedia', item);
     emitirEventoCRM('multimedia_agregada', item);
     return item;
   };
@@ -852,7 +1035,10 @@ export function ElanProvider({ children }) {
       }),
     }));
 
-    if (actualizado) emitirEventoCRM('multimedia_actualizada', actualizado);
+    if (actualizado) {
+      guardarRegistroSupabase('multimedia', actualizado);
+      emitirEventoCRM('multimedia_actualizada', actualizado);
+    }
     return actualizado;
   };
 
@@ -861,6 +1047,7 @@ export function ElanProvider({ children }) {
       multimedia: (prev.multimedia || []).filter((item) => item.id !== id),
     }));
 
+    eliminarRegistroSupabase('multimedia', id);
     emitirEventoCRM('multimedia_eliminada', { id, unidad: 'ELANVISUAL' });
     return true;
   };
@@ -868,6 +1055,8 @@ export function ElanProvider({ children }) {
   const value = useMemo(
     () => ({
       ...state,
+      cargandoSupabase,
+      supabaseConectado: supabaseActivo(),
       login,
       logout,
       guardarCliente,
