@@ -13,9 +13,19 @@ function normalizarBanner(banner) {
   if (!banner) return null;
 
   const imagen = limpiarValor(banner.imagen);
-  const imagenDesktop = limpiarValor(banner.imagenDesktop) || imagen;
+  const imagenDesktop =
+    limpiarValor(banner.imagenDesktop) ||
+    limpiarValor(banner.imagenEscritorio) ||
+    limpiarValor(banner.desktop) ||
+    imagen;
+
   const imagenMobile =
     limpiarValor(banner.imagenMobile) ||
+    limpiarValor(banner.imagenMovil) ||
+    limpiarValor(banner.imagen_movil) ||
+    limpiarValor(banner.mobile) ||
+    limpiarValor(banner.bannerMobile) ||
+    limpiarValor(banner.imagenCelular) ||
     imagenDesktop ||
     imagen;
 
@@ -34,72 +44,41 @@ function obtenerBannerActivo(banners = []) {
 
   const activos = lista.filter((x) => x.estado === 'Activo');
 
-  return (
-    activos.find((x) => x.imagenMobile && x.imagenDesktop) ||
-    activos.find((x) => x.imagenMobile) ||
-    activos[0] ||
-    lista.find((x) => x.imagenMobile && x.imagenDesktop) ||
-    lista.find((x) => x.imagenMobile) ||
-    lista[0] ||
-    null
-  );
+  return activos[0] || lista[0] || null;
 }
 
 export default function Home() {
-  const { banners, categorias, productos } = useElan();
+  const { banners = [], categorias = [], productos = [] } = useElan();
 
-  const [esMovil, setEsMovil] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(max-width: 850px)').matches;
+  const [ancho, setAncho] = useState(() => {
+    if (typeof window === 'undefined') return 1200;
+    return window.innerWidth;
   });
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
 
-    const media = window.matchMedia('(max-width: 850px)');
-
-    const actualizar = () => {
-      setEsMovil(media.matches);
-    };
+    const actualizar = () => setAncho(window.innerWidth);
 
     actualizar();
+    window.addEventListener('resize', actualizar);
+    window.addEventListener('orientationchange', actualizar);
 
-    if (media.addEventListener) {
-      media.addEventListener('change', actualizar);
-      return () => media.removeEventListener('change', actualizar);
-    }
-
-    media.addListener(actualizar);
-    return () => media.removeListener(actualizar);
+    return () => {
+      window.removeEventListener('resize', actualizar);
+      window.removeEventListener('orientationchange', actualizar);
+    };
   }, []);
+
+  const esMovil = ancho <= 850;
 
   const bannerActivo = useMemo(() => obtenerBannerActivo(banners), [banners]);
 
   const imagenBanner =
     (esMovil
-      ? bannerActivo?.imagenMobile ||
-        bannerActivo?.imagenDesktop ||
-        bannerActivo?.imagen
-      : bannerActivo?.imagenDesktop ||
-        bannerActivo?.imagen ||
-        bannerActivo?.imagenMobile) ||
+      ? bannerActivo?.imagenMobile || bannerActivo?.imagenDesktop || bannerActivo?.imagen
+      : bannerActivo?.imagenDesktop || bannerActivo?.imagen || bannerActivo?.imagenMobile) ||
     FALLBACK_BANNER;
-
-  const tituloBanner =
-    bannerActivo?.titulo ||
-    'Rotulación, impresión y proyectos visuales';
-
-  const subtituloBanner =
-    bannerActivo?.subtitulo ||
-    'Fabricamos soluciones visuales reales para negocios, fachadas, interiores, vehículos y puntos de venta.';
-
-  const botonBanner =
-    bannerActivo?.boton ||
-    'Ver catálogo';
-
-  const enlaceBanner =
-    bannerActivo?.enlace ||
-    '/catalogo';
 
   return (
     <main>
@@ -112,12 +91,17 @@ export default function Home() {
         <div className="hero-copy">
           <span>ELANVISUAL</span>
 
-          <h1>{tituloBanner}</h1>
+          <h1>
+            {bannerActivo?.titulo || 'Rotulación, impresión y proyectos visuales'}
+          </h1>
 
-          <p>{subtituloBanner}</p>
+          <p>
+            {bannerActivo?.subtitulo ||
+              'Fabricamos soluciones visuales reales para negocios, fachadas, interiores, vehículos y puntos de venta.'}
+          </p>
 
-          <Link className="primary" to={enlaceBanner}>
-            {botonBanner}
+          <Link className="primary" to={bannerActivo?.enlace || '/catalogo'}>
+            {bannerActivo?.boton || 'Ver catálogo'}
           </Link>
         </div>
       </section>
