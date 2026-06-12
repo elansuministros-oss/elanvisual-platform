@@ -772,3 +772,57 @@ form button{
     height:44px !important;
   }
 }
+/* HITO-0038 — FIX FORZADO HEADER MOBILE */
+@media (max-width: 850px){
+
+  header button,
+  .public-header button,
+  .site-header button,
+  .topbar button,
+  nav button,
+  button[aria-label*="menú"],
+  button[aria-label*="menu"],
+  button[aria-label*="Menu"],
+  button[aria-label*="Menú"]{
+    width:76px !important;
+    height:76px !important;
+    min-width:76px !important;
+    min-height:76px !important;
+    max-width:76px !important;
+    max-height:76px !important;
+    padding:0 !important;
+    border-radius:18px !important;
+    font-size:42px !important;
+    line-height:1 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+  }
+
+  header button svg,
+  header button img,
+  .public-header button svg,
+  .public-header button img,
+  .site-header button svg,
+  .site-header button img,
+  .topbar button svg,
+  .topbar button img,
+  nav button svg,
+  nav button img{
+    width:42px !important;
+    height:42px !important;
+    min-width:42px !important;
+    min-height:42px !important;
+  }
+
+  .hero-copy h1{
+    font-size:36px !important;
+    line-height:1.02 !important;
+    max-width:360px !important;
+  }
+
+  .hero-copy p{
+    font-size:15px !important;
+    line-height:1.35 !important;
+  }
+}
