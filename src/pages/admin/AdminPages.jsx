@@ -392,11 +392,30 @@ export function Banners() {
           onChange={(e) => setForm({ ...form, enlace: e.target.value })}
         />
 
-        <input
-          placeholder="URL de imagen del banner"
-          value={form.imagen}
-          onChange={(e) => setForm({ ...form, imagen: e.target.value })}
-        />
+        <label className="card">
+  <b>Imagen del banner</b>
+
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      const archivo = e.target.files?.[0];
+
+      if (!archivo) return;
+
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        setForm((prev) => ({
+          ...prev,
+          imagen: reader.result,
+        }));
+      };
+
+      reader.readAsDataURL(archivo);
+    }}
+  />
+</label>
 
         <select
           value={form.estado}
@@ -425,6 +444,36 @@ export function Banners() {
             }}
           />
         )}
+
+{form.imagen && (
+  <section
+    style={{
+      minHeight: '260px',
+      borderRadius: '16px',
+      overflow: 'hidden',
+      backgroundImage: `linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.35)),url(${form.imagen})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      padding: '40px',
+      color: '#fff',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    }}
+  >
+    <span>ELANVISUAL</span>
+
+    <h2>{form.titulo || 'Título del banner'}</h2>
+
+    <p>{form.subtitulo || 'Subtítulo del banner'}</p>
+
+    <div>
+      <button type="button">
+        {form.boton || 'Ver catálogo'}
+      </button>
+    </div>
+  </section>
+)}
 
         <button type="button" onClick={guardar}>
           Guardar banner
