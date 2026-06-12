@@ -8,54 +8,88 @@ function limpiarValor(valor) {
   return typeof valor === 'string' ? valor.trim() : '';
 }
 
-function normalizarBanner(banner) {
-  if (!banner) return null;
+function obtenerImagen(item) {
+  if (!item) return '';
 
-  const imagen =
-    limpiarValor(banner.imagen) ||
-    limpiarValor(banner.image) ||
-    limpiarValor(banner.url);
+  return (
+    limpiarValor(item.imagen) ||
+    limpiarValor(item.imagenDesktop) ||
+    limpiarValor(item.imagenMobile) ||
+    limpiarValor(item.url) ||
+    limpiarValor(item.src) ||
+    limpiarValor(item.image) ||
+    limpiarValor(item.archivo) ||
+    limpiarValor(item.file) ||
+    ''
+  );
+}
+
+function estaActivo(item) {
+  return item?.estado === 'Activo' || item?.activo === true || item?.active === true;
+}
+
+function porCategoria(lista, categoriaBuscada) {
+  if (!Array.isArray(lista)) return null;
+
+  const normalizada = categoriaBuscada.toLowerCase();
+
+  return (
+    lista.find(
+      (item) =>
+        estaActivo(item) &&
+        limpiarValor(item.categoria).toLowerCase() === normalizada
+    ) ||
+    lista.find(
+      (item) =>
+        limpiarValor(item.categoria).toLowerCase() === normalizada
+    ) ||
+    null
+  );
+}
+
+function normalizarBanner(banner, multimedia = []) {
+  const multimediaDesktop = porCategoria(multimedia, 'Banner');
+  const multimediaMobile = porCategoria(multimedia, 'Banner Mobile');
+
+  const imagenBase = obtenerImagen(banner);
 
   const imagenDesktop =
-    limpiarValor(banner.imagenDesktop) ||
-    limpiarValor(banner.imagenEscritorio) ||
-    limpiarValor(banner.desktop) ||
-    limpiarValor(banner.bannerDesktop) ||
-    limpiarValor(banner.imageDesktop) ||
-    imagen ||
+    limpiarValor(banner?.imagenDesktop) ||
+    limpiarValor(banner?.imagenEscritorio) ||
+    limpiarValor(banner?.desktop) ||
+    limpiarValor(banner?.bannerDesktop) ||
+    limpiarValor(banner?.imageDesktop) ||
+    obtenerImagen(multimediaDesktop) ||
+    imagenBase ||
     LOCAL_BANNER_DESKTOP;
 
   const imagenMobile =
-    limpiarValor(banner.imagenMobile) ||
-    limpiarValor(banner.imagenMovil) ||
-    limpiarValor(banner.imagen_movil) ||
-    limpiarValor(banner.imagen_mobile) ||
-    limpiarValor(banner.mobile) ||
-    limpiarValor(banner.bannerMobile) ||
-    limpiarValor(banner.bannerMovil) ||
-    limpiarValor(banner.imageMobile) ||
-    limpiarValor(banner.image_mobile) ||
-    limpiarValor(banner.fotoMobile) ||
-    limpiarValor(banner.fotoMovil) ||
+    limpiarValor(banner?.imagenMobile) ||
+    limpiarValor(banner?.imagenMovil) ||
+    limpiarValor(banner?.imagen_movil) ||
+    limpiarValor(banner?.imagen_mobile) ||
+    limpiarValor(banner?.mobile) ||
+    limpiarValor(banner?.bannerMobile) ||
+    limpiarValor(banner?.bannerMovil) ||
+    limpiarValor(banner?.imageMobile) ||
+    obtenerImagen(multimediaMobile) ||
     imagenDesktop ||
     LOCAL_BANNER_MOBILE;
 
   return {
-    ...banner,
-    imagen,
+    ...(banner || {}),
+    imagen: imagenBase || imagenDesktop,
     imagenDesktop,
     imagenMobile,
   };
 }
 
-function obtenerBannerActivo(banners = []) {
+function obtenerBannerActivo(banners = [], multimedia = []) {
   const lista = Array.isArray(banners)
-    ? banners.map(normalizarBanner).filter(Boolean)
+    ? banners.map((banner) => normalizarBanner(banner, multimedia))
     : [];
 
-  const activos = lista.filter(
-    (banner) => banner.estado === 'Activo' || banner.activo === true
-  );
+  const activos = lista.filter(estaActivo);
 
   const ordenados = [...activos].sort((a, b) => {
     const ordenA = Number(a.orden ?? 0);
@@ -63,13 +97,26 @@ function obtenerBannerActivo(banners = []) {
     return ordenA - ordenB;
   });
 
-  return ordenados[0] || activos[0] || lista[0] || null;
+  return ordenados[0] || activos[0] || lista[0] || normalizarBanner(null, multimedia);
 }
 
 export default function Home() {
-  const { banners = [], categorias = [], productos = [] } = useElan();
+  const {
+    banners = [],
+    multimedia = [],
+    media = [],
+    archivos = [],
+    categorias = [],
+    productos = [],
+  } = useElan();
 
-  const bannerActivo = obtenerBannerActivo(banners);
+  const bibliotecaMultimedia = [
+    ...(Array.isArray(multimedia) ? multimedia : []),
+    ...(Array.isArray(media) ? media : []),
+    ...(Array.isArray(archivos) ? archivos : []),
+  ];
+
+  const bannerActivo = obtenerBannerActivo(banners, bibliotecaMultimedia);
 
   const desktopBanner =
     bannerActivo?.imagenDesktop ||

@@ -699,3 +699,42 @@ form button{
     font-size:56px !important;
   }
 }
+@media (max-width: 850px){
+  .elan-menu-mobile,
+  button.elan-menu-mobile,
+  .mobile-menu,
+  .mobile-menu-btn,
+  .hamburger,
+  .hamburger-btn{
+    width:82px !important;
+    height:82px !important;
+    min-width:82px !important;
+    min-height:82px !important;
+    max-width:82px !important;
+    max-height:82px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    font-size:42px !important;
+    line-height:1 !important;
+    padding:0 !important;
+    border-radius:22px !important;
+    flex-shrink:0 !important;
+  }
+
+  .elan-menu-mobile svg,
+  .elan-menu-mobile img,
+  .mobile-menu svg,
+  .mobile-menu img,
+  .mobile-menu-btn svg,
+  .mobile-menu-btn img,
+  .hamburger svg,
+  .hamburger img,
+  .hamburger-btn svg,
+  .hamburger-btn img{
+    width:46px !important;
+    height:46px !important;
+    min-width:46px !important;
+    min-height:46px !important;
+  }
+}
