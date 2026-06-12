@@ -12,27 +12,39 @@ function limpiarValor(valor) {
 function normalizarBanner(banner) {
   if (!banner) return null;
 
-  const imagen = limpiarValor(banner.imagen);
+  const imagen =
+    limpiarValor(banner.imagen) ||
+    limpiarValor(banner.image) ||
+    limpiarValor(banner.url);
+
   const imagenDesktop =
     limpiarValor(banner.imagenDesktop) ||
     limpiarValor(banner.imagenEscritorio) ||
     limpiarValor(banner.desktop) ||
+    limpiarValor(banner.bannerDesktop) ||
+    limpiarValor(banner.imageDesktop) ||
     imagen;
 
   const imagenMobile =
     limpiarValor(banner.imagenMobile) ||
     limpiarValor(banner.imagenMovil) ||
     limpiarValor(banner.imagen_movil) ||
+    limpiarValor(banner.imagen_mobile) ||
     limpiarValor(banner.mobile) ||
     limpiarValor(banner.bannerMobile) ||
-    limpiarValor(banner.imagenCelular) ||
+    limpiarValor(banner.bannerMovil) ||
+    limpiarValor(banner.imageMobile) ||
+    limpiarValor(banner.image_mobile) ||
+    limpiarValor(banner.fotoMobile) ||
+    limpiarValor(banner.fotoMovil) ||
     imagenDesktop ||
-    imagen;
+    imagen ||
+    FALLBACK_BANNER;
 
   return {
     ...banner,
-    imagen,
-    imagenDesktop,
+    imagen: imagen || FALLBACK_BANNER,
+    imagenDesktop: imagenDesktop || imagen || FALLBACK_BANNER,
     imagenMobile,
   };
 }
@@ -42,7 +54,7 @@ function obtenerBannerActivo(banners = []) {
     ? banners.map(normalizarBanner).filter(Boolean)
     : [];
 
-  const activos = lista.filter((x) => x.estado === 'Activo');
+  const activos = lista.filter((x) => x.estado === 'Activo' || x.activo === true);
 
   return activos[0] || lista[0] || null;
 }
@@ -76,8 +88,9 @@ export default function Home() {
 
   const imagenBanner =
     (esMovil
-      ? bannerActivo?.imagenMobile || bannerActivo?.imagenDesktop || bannerActivo?.imagen
-      : bannerActivo?.imagenDesktop || bannerActivo?.imagen || bannerActivo?.imagenMobile) ||
+      ? bannerActivo?.imagenMobile
+      : bannerActivo?.imagenDesktop) ||
+    bannerActivo?.imagen ||
     FALLBACK_BANNER;
 
   return (
