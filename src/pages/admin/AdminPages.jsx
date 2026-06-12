@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useElan } from '../../core/context/ElanContext.jsx';
 import CrudTable from '../../components/CrudTable.jsx';
 import {
@@ -24,8 +24,16 @@ import ComisionesCRM from '../../CRM/Comisiones.jsx';
 
 const STORAGE_KEY = 'elanvisual_state_v2';
 
+function leerEstadoStorage() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
 function actualizarBannersStorage(nuevosBanners) {
-  const actual = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  const actual = leerEstadoStorage();
 
   localStorage.setItem(
     STORAGE_KEY,
@@ -34,6 +42,42 @@ function actualizarBannersStorage(nuevosBanners) {
       banners: nuevosBanners,
     })
   );
+
+  window.dispatchEvent(new Event('elanvisual:banners-updated'));
+}
+
+function normalizarBanner(banner = {}) {
+  const desktop =
+    banner.imagenDesktop ||
+    banner.desktop ||
+    banner.imagen ||
+    banner.url ||
+    '';
+
+  const mobile =
+    banner.imagenMobile ||
+    banner.mobile ||
+    banner.imagen ||
+    desktop ||
+    '';
+
+  return {
+    ...banner,
+    id: banner.id || `ban-${Date.now()}`,
+    titulo: banner.titulo || '',
+    subtitulo: banner.subtitulo || '',
+    boton: banner.boton || 'Ver Catálogo',
+    enlace: banner.enlace || '/catalogo',
+    imagen: desktop || mobile,
+    imagenDesktop: desktop,
+    imagenMobile: mobile,
+    estado: banner.estado || 'Inactivo',
+    orden: Number(banner.orden || 1),
+  };
+}
+
+function obtenerImagenMedia(item = {}) {
+  return item.imagen || item.url || item.src || item.archivo || '';
 }
 
 export function Dashboard() {
@@ -244,14 +288,19 @@ export function Pagos() {
 
 export function Banners() {
   const {
-  banners,
-  multimedia = [],
-  guardarBanner,
-  eliminarBanner,
-  activarBanner,
-} = useElan();
+    banners = [],
+    multimedia = [],
+    guardarBanner,
+    eliminarBanner,
+    activarBanner,
+  } = useElan();
 
-  const [lista, setLista] = useState(banners || []);
+  const bannersStorage = leerEstadoStorage().banners || [];
+  const baseBanners = banners.length ? banners : bannersStorage;
+
+  const [lista, setLista] = useState(
+    (baseBanners || []).map(normalizarBanner)
+  );
 
   const [form, setForm] = useState({
     id: '',
@@ -266,20 +315,36 @@ export function Banners() {
     orden: 1,
   });
 
-  const imagenesDesktop = multimedia.filter(
-    (m) =>
-      m.estado === 'Activo' &&
-      ['Banner Desktop', 'Banner', 'General'].includes(m.categoria)
-  );
+  useEffect(() => {
+    const fuente = banners.length ? banners : leerEstadoStorage().banners || [];
+    setLista((fuente || []).map(normalizarBanner));
+  }, [banners]);
 
-  const imagenesMobile = multimedia.filter(
-    (m) =>
+  const imagenesDesktop = multimedia.filter((m) => {
+    const categoria = m.categoria || '';
+    return (
       m.estado === 'Activo' &&
-      ['Banner Mobile', 'Banner', 'General'].includes(m.categoria)
-  );
+      ['Banner Desktop', 'Banner', 'General'].includes(categoria) &&
+      obtenerImagenMedia(m)
+    );
+  });
+
+  const imagenesMobile = multimedia.filter((m) => {
+    const categoria = m.categoria || '';
+    return (
+      m.estado === 'Activo' &&
+      ['Banner Mobile', 'Banner', 'General'].includes(categoria) &&
+      obtenerImagenMedia(m)
+    );
+  });
 
   function sincronizar(nuevaLista) {
-    setLista(nuevaLista);
+    const normalizada = nuevaLista
+      .map(normalizarBanner)
+      .sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0));
+
+    setLista(normalizada);
+    actualizarBannersStorage(normalizada);
   }
 
   function limpiar() {
@@ -303,52 +368,68 @@ export function Banners() {
       return;
     }
 
-    if (!form.imagenDesktop.trim() && !form.imagenMobile.trim() && !form.imagen.trim()) {
-      alert('Seleccioná una imagen desde Multimedia.');
+    if (
+      !form.imagenDesktop.trim() &&
+      !form.imagenMobile.trim() &&
+      !form.imagen.trim()
+    ) {
+      alert('Seleccioná imagen Desktop y Mobile desde Multimedia.');
       return;
     }
 
-    const bannerGuardado = {
+    const desktop = form.imagenDesktop || form.imagen || form.imagenMobile || '';
+    const mobile = form.imagenMobile || desktop;
+
+    const bannerGuardado = normalizarBanner({
       ...form,
+      id: form.id || `ban-${Date.now()}`,
       titulo: form.titulo.trim(),
       subtitulo: form.subtitulo.trim(),
       boton: form.boton.trim() || 'Ver Catálogo',
       enlace: form.enlace.trim() || '/catalogo',
-      imagenDesktop: form.imagenDesktop || form.imagen || '',
-      imagenMobile: form.imagenMobile || form.imagenDesktop || form.imagen || '',
-      imagen: form.imagenDesktop || form.imagenMobile || form.imagen || '',
+      imagen: desktop,
+      imagenDesktop: desktop,
+      imagenMobile: mobile,
       estado: form.estado || 'Activo',
-      orden: Number(form.orden || 1),
-    };
+      orden: Number(form.orden || lista.length + 1),
+    });
 
-    const nuevaLista = form.id
+    let nuevaLista = form.id
       ? lista.map((b) => (b.id === form.id ? bannerGuardado : b))
-      : [
-          ...lista,
-          {
-            ...bannerGuardado,
-            id: `ban-${Date.now()}`,
-          },
-        ];
+      : [...lista, bannerGuardado];
+
+    if (bannerGuardado.estado === 'Activo') {
+      nuevaLista = nuevaLista.map((b) => ({
+        ...b,
+        estado: b.id === bannerGuardado.id ? 'Activo' : 'Inactivo',
+      }));
+    }
 
     sincronizar(nuevaLista);
+
+    if (typeof guardarBanner === 'function') {
+      guardarBanner(bannerGuardado);
+    }
+
     limpiar();
 
-    alert('Banner guardado. Recargá el Home para verlo aplicado.');
+    alert('Banner guardado correctamente.');
   }
 
   function editar(banner) {
+    const b = normalizarBanner(banner);
+
     setForm({
-      id: banner.id || '',
-      titulo: banner.titulo || '',
-      subtitulo: banner.subtitulo || '',
-      boton: banner.boton || 'Ver Catálogo',
-      enlace: banner.enlace || '/catalogo',
-      imagen: banner.imagen || '',
-      imagenDesktop: banner.imagenDesktop || banner.imagen || '',
-      imagenMobile: banner.imagenMobile || banner.imagenDesktop || banner.imagen || '',
-      estado: banner.estado || 'Activo',
-      orden: Number(banner.orden || 1),
+      id: b.id,
+      titulo: b.titulo,
+      subtitulo: b.subtitulo,
+      boton: b.boton,
+      enlace: b.enlace,
+      imagen: b.imagen,
+      imagenDesktop: b.imagenDesktop,
+      imagenMobile: b.imagenMobile,
+      estado: b.estado,
+      orden: Number(b.orden || 1),
     });
   }
 
@@ -359,17 +440,25 @@ export function Banners() {
     }));
 
     sincronizar(nuevaLista);
-    alert('Banner activado. Recargá el Home para verlo.');
+
+    if (typeof activarBanner === 'function') {
+      activarBanner(id);
+    }
+
+    alert('Banner activado como único principal.');
   }
 
   function cambiarEstado(id) {
+    const banner = lista.find((b) => b.id === id);
+    if (!banner) return;
+
+    if (banner.estado !== 'Activo') {
+      activar(id);
+      return;
+    }
+
     const nuevaLista = lista.map((b) =>
-      b.id === id
-        ? {
-            ...b,
-            estado: b.estado === 'Activo' ? 'Inactivo' : 'Activo',
-          }
-        : b
+      b.id === id ? { ...b, estado: 'Inactivo' } : b
     );
 
     sincronizar(nuevaLista);
@@ -380,13 +469,18 @@ export function Banners() {
 
     const nuevaLista = lista.filter((b) => b.id !== id);
     sincronizar(nuevaLista);
+
+    if (typeof eliminarBanner === 'function') {
+      eliminarBanner(id);
+    }
   }
 
   const listaOrdenada = lista
     .slice()
     .sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0));
 
-  const previewImagen = form.imagenDesktop || form.imagenMobile || form.imagen;
+  const previewDesktop = form.imagenDesktop || form.imagen;
+  const previewMobile = form.imagenMobile || form.imagenDesktop || form.imagen;
 
   return (
     <main>
@@ -428,23 +522,23 @@ export function Banners() {
               setForm({
                 ...form,
                 imagenDesktop: e.target.value,
-                imagen: e.target.value || form.imagenMobile || form.imagen,
+                imagen: e.target.value || form.imagen,
               })
             }
           >
             <option value="">Seleccionar imagen desktop</option>
 
             {imagenesDesktop.map((m) => (
-              <option key={m.id} value={m.imagen}>
-                {m.nombre}
+              <option key={m.id} value={obtenerImagenMedia(m)}>
+                {m.nombre || m.titulo || m.id}
               </option>
             ))}
           </select>
 
           {imagenesDesktop.length === 0 && (
             <p>
-              No hay imágenes activas en Multimedia con categoría Banner Desktop,
-              Banner o General.
+              No hay imágenes activas en Multimedia con categoría Banner
+              Desktop, Banner o General.
             </p>
           )}
         </label>
@@ -458,15 +552,14 @@ export function Banners() {
               setForm({
                 ...form,
                 imagenMobile: e.target.value,
-                imagen: form.imagenDesktop || e.target.value || form.imagen,
               })
             }
           >
             <option value="">Seleccionar imagen mobile</option>
 
             {imagenesMobile.map((m) => (
-              <option key={m.id} value={m.imagen}>
-                {m.nombre}
+              <option key={m.id} value={obtenerImagenMedia(m)}>
+                {m.nombre || m.titulo || m.id}
               </option>
             ))}
           </select>
@@ -494,45 +587,37 @@ export function Banners() {
           onChange={(e) => setForm({ ...form, orden: e.target.value })}
         />
 
-        {previewImagen && (
-          <img
-            src={previewImagen}
-            alt="Vista previa banner"
-            style={{
-              width: '100%',
-              maxHeight: 260,
-              objectFit: 'cover',
-              borderRadius: 16,
-            }}
-          />
+        {previewDesktop && (
+          <>
+            <h3>Vista Desktop</h3>
+            <img
+              src={previewDesktop}
+              alt="Vista previa desktop"
+              style={{
+                width: '100%',
+                maxHeight: 280,
+                objectFit: 'cover',
+                borderRadius: 16,
+              }}
+            />
+          </>
         )}
 
-        {previewImagen && (
-          <section
-            style={{
-              minHeight: '260px',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              backgroundImage: `linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.35)),url(${previewImagen})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              padding: '40px',
-              color: '#fff',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-            }}
-          >
-            <span>ELANVISUAL</span>
-
-            <h2>{form.titulo || 'Título del banner'}</h2>
-
-            <p>{form.subtitulo || 'Subtítulo del banner'}</p>
-
-            <div>
-              <button type="button">{form.boton || 'Ver catálogo'}</button>
-            </div>
-          </section>
+        {previewMobile && (
+          <>
+            <h3>Vista Mobile</h3>
+            <img
+              src={previewMobile}
+              alt="Vista previa mobile"
+              style={{
+                width: '100%',
+                maxWidth: 390,
+                maxHeight: 520,
+                objectFit: 'cover',
+                borderRadius: 16,
+              }}
+            />
+          </>
         )}
 
         <button type="button" onClick={guardar}>

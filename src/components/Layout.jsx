@@ -1,10 +1,5 @@
 import { useState } from 'react';
-import {
-  Link,
-  NavLink,
-  Outlet,
-  useNavigate,
-} from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 import { useElan } from '../core/context/ElanContext.jsx';
 
@@ -27,8 +22,31 @@ export function PublicLayout() {
           onClick={() => setMenuAbierto((prev) => !prev)}
           aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
           aria-expanded={menuAbierto}
+          style={{
+            width: 58,
+            height: 58,
+            minWidth: 58,
+            minHeight: 58,
+            display: 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 18,
+            fontSize: 42,
+            lineHeight: 1,
+          }}
         >
-<span>{menuAbierto ? '✕' : '≡'}</span>        </button>
+          <span
+            aria-hidden="true"
+            style={{
+              display: 'block',
+              transform: menuAbierto ? 'translateY(-1px)' : 'translateY(-3px)',
+              lineHeight: 1,
+              fontWeight: 900,
+            }}
+          >
+            {menuAbierto ? '×' : '≡'}
+          </span>
+        </button>
 
         <nav className={menuAbierto ? 'open' : ''}>
           <NavLink to="/" onClick={cerrarMenu}>Inicio</NavLink>
