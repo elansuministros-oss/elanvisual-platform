@@ -63,6 +63,7 @@ const admin = [
   { label: 'Proveedores', to: '/admin/proveedores' },
   { label: 'Vendedores', to: '/admin/vendedores' },
   { label: 'Comisiones', to: '/admin/comisiones' },
+  { label: 'Multimedia', to: '/admin/multimedia' },
   { label: 'Banners', to: '/admin/banners' },
   { label: 'Showroom', to: '/admin/showroom' },
   { label: 'Usuarios', to: '/admin/usuarios' },

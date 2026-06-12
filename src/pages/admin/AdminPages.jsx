@@ -243,7 +243,7 @@ export function Pagos() {
 }
 
 export function Banners() {
-  const { banners } = useElan();
+  const { banners, multimedia = [] } = useElan();
 
   const [lista, setLista] = useState(banners || []);
 
@@ -257,6 +257,12 @@ export function Banners() {
     estado: 'Activo',
     orden: 1,
   });
+
+  const imagenesBanner = multimedia.filter(
+    (m) =>
+      m.estado === 'Activo' &&
+      (m.categoria === 'Banner' || m.categoria === 'General')
+  );
 
   function sincronizar(nuevaLista) {
     setLista(nuevaLista);
@@ -283,7 +289,7 @@ export function Banners() {
     }
 
     if (!form.imagen.trim()) {
-      alert('Pegá la URL de la imagen del banner.');
+      alert('Seleccioná una imagen desde Multimedia.');
       return;
     }
 
@@ -393,29 +399,33 @@ export function Banners() {
         />
 
         <label className="card">
-  <b>Imagen del banner</b>
+          <b>Imagen desde Multimedia</b>
 
-  <input
-    type="file"
-    accept="image/*"
-    onChange={(e) => {
-      const archivo = e.target.files?.[0];
+          <select
+            value={form.imagen}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                imagen: e.target.value,
+              })
+            }
+          >
+            <option value="">Seleccionar imagen</option>
 
-      if (!archivo) return;
+            {imagenesBanner.map((m) => (
+              <option key={m.id} value={m.imagen}>
+                {m.nombre}
+              </option>
+            ))}
+          </select>
 
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        setForm((prev) => ({
-          ...prev,
-          imagen: reader.result,
-        }));
-      };
-
-      reader.readAsDataURL(archivo);
-    }}
-  />
-</label>
+          {imagenesBanner.length === 0 && (
+            <p>
+              No hay imágenes activas en Multimedia con categoría Banner o
+              General.
+            </p>
+          )}
+        </label>
 
         <select
           value={form.estado}
@@ -445,35 +455,33 @@ export function Banners() {
           />
         )}
 
-{form.imagen && (
-  <section
-    style={{
-      minHeight: '260px',
-      borderRadius: '16px',
-      overflow: 'hidden',
-      backgroundImage: `linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.35)),url(${form.imagen})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      padding: '40px',
-      color: '#fff',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-    }}
-  >
-    <span>ELANVISUAL</span>
+        {form.imagen && (
+          <section
+            style={{
+              minHeight: '260px',
+              borderRadius: '16px',
+              overflow: 'hidden',
+              backgroundImage: `linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.35)),url(${form.imagen})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              padding: '40px',
+              color: '#fff',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}
+          >
+            <span>ELANVISUAL</span>
 
-    <h2>{form.titulo || 'Título del banner'}</h2>
+            <h2>{form.titulo || 'Título del banner'}</h2>
 
-    <p>{form.subtitulo || 'Subtítulo del banner'}</p>
+            <p>{form.subtitulo || 'Subtítulo del banner'}</p>
 
-    <div>
-      <button type="button">
-        {form.boton || 'Ver catálogo'}
-      </button>
-    </div>
-  </section>
-)}
+            <div>
+              <button type="button">{form.boton || 'Ver catálogo'}</button>
+            </div>
+          </section>
+        )}
 
         <button type="button" onClick={guardar}>
           Guardar banner

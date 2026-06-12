@@ -63,10 +63,14 @@ function hoyISO() {
 
 function unirUsuariosBase(usuarios = []) {
   const lista = Array.isArray(usuarios) ? usuarios : [];
-  const correos = new Set(lista.map((u) => String(u.correo || '').toLowerCase().trim()));
+  const correos = new Set(
+    lista.map((u) => String(u.correo || '').toLowerCase().trim())
+  );
+
   const faltantes = usuariosAccesoBase.filter(
     (u) => !correos.has(String(u.correo || '').toLowerCase().trim())
   );
+
   return [...lista, ...faltantes];
 }
 
@@ -106,6 +110,7 @@ const inicial = {
   producciones: [],
   comisiones: [],
   showroom: [],
+  multimedia: [],
   carrito: [],
   sesion: null,
 };
@@ -143,6 +148,10 @@ function load() {
 
     if (!Array.isArray(merged.producciones)) {
       merged.producciones = [];
+    }
+
+    if (!Array.isArray(merged.multimedia)) {
+      merged.multimedia = [];
     }
 
     return merged;
@@ -217,7 +226,9 @@ export function ElanProvider({ children }) {
       const existe = prev.clientes.some((x) => x.id === cliente.id);
       return {
         clientes: existe
-          ? prev.clientes.map((x) => (x.id === cliente.id ? { ...x, ...cliente, actualizado: hoyISO() } : x))
+          ? prev.clientes.map((x) =>
+              x.id === cliente.id ? { ...x, ...cliente, actualizado: hoyISO() } : x
+            )
           : [cliente, ...prev.clientes],
       };
     });
@@ -264,7 +275,9 @@ export function ElanProvider({ children }) {
       const existe = prev.usuarios.some((x) => x.id === usuario.id);
       return {
         usuarios: existe
-          ? prev.usuarios.map((x) => (x.id === usuario.id ? { ...x, ...usuario, actualizado: hoyISO() } : x))
+          ? prev.usuarios.map((x) =>
+              x.id === usuario.id ? { ...x, ...usuario, actualizado: hoyISO() } : x
+            )
           : [usuario, ...prev.usuarios],
       };
     });
@@ -360,6 +373,7 @@ export function ElanProvider({ children }) {
       movimientosInventario: [movimiento, ...prev.movimientosInventario],
       inventario: prev.inventario.map((item) => {
         if (item.id !== inventarioId && item.materialId !== movimiento.materialId) return item;
+
         const actual = Number(item.existencia || 0);
         const nuevaExistencia =
           tipo === 'Entrada'
@@ -367,6 +381,7 @@ export function ElanProvider({ children }) {
             : tipo === 'Ajuste'
               ? cantidad
               : Math.max(actual - cantidad, 0);
+
         return { ...item, existencia: nuevaExistencia, actualizado: hoyISO() };
       }),
     }));
@@ -384,6 +399,7 @@ export function ElanProvider({ children }) {
       cantidad: Number(cantidad || 1),
       fecha: hoyISO(),
     };
+
     patch((prev) => ({ carrito: [...prev.carrito, item] }));
     emitirEventoCRM('carrito_agregado', item);
     return item;
@@ -398,6 +414,7 @@ export function ElanProvider({ children }) {
       unidad: 'ELANVISUAL',
       ...data,
     };
+
     patch((prev) => ({ leads: [lead, ...prev.leads] }));
     emitirEventoCRM('lead_creado', lead);
     return lead;
@@ -405,6 +422,7 @@ export function ElanProvider({ children }) {
 
   const guardarCotizacion = (data = {}) => {
     const total = Number(data.total ?? data.totalVenta ?? 0);
+
     const cotizacion = {
       id: data.id || uid('COT'),
       codigo: data.codigo || `COT-${Date.now()}`,
@@ -427,7 +445,9 @@ export function ElanProvider({ children }) {
       const existe = prev.cotizaciones.some((x) => x.id === cotizacion.id);
       return {
         cotizaciones: existe
-          ? prev.cotizaciones.map((x) => (x.id === cotizacion.id ? { ...x, ...cotizacion, actualizado: hoyISO() } : x))
+          ? prev.cotizaciones.map((x) =>
+              x.id === cotizacion.id ? { ...x, ...cotizacion, actualizado: hoyISO() } : x
+            )
           : [cotizacion, ...prev.cotizaciones],
       };
     });
@@ -489,19 +509,28 @@ export function ElanProvider({ children }) {
 
   const confirmarPedido = (pedidoId, extras = {}) => {
     let confirmado = null;
+
     patch((prev) => ({
       pedidos: prev.pedidos.map((p) => {
         if (p.id !== pedidoId) return p;
-        confirmado = { ...p, estado: 'Confirmado', confirmado: true, confirmadoEn: hoyISO(), ...extras };
+        confirmado = {
+          ...p,
+          estado: 'Confirmado',
+          confirmado: true,
+          confirmadoEn: hoyISO(),
+          ...extras,
+        };
         return confirmado;
       }),
     }));
+
     if (confirmado) emitirEventoCRM('pedido_confirmado', confirmado);
     return confirmado;
   };
 
   const actualizarPedido = (id, cambios = {}) => {
     let actualizado = null;
+
     patch((prev) => ({
       pedidos: prev.pedidos.map((p) => {
         if (p.id !== id) return p;
@@ -509,6 +538,7 @@ export function ElanProvider({ children }) {
         return actualizado;
       }),
     }));
+
     if (actualizado) emitirEventoCRM('pedido_actualizado', actualizado);
     return actualizado;
   };
@@ -548,6 +578,7 @@ export function ElanProvider({ children }) {
 
   const actualizarOrden = (id, cambios = {}) => {
     let actualizada = null;
+
     patch((prev) => ({
       ordenes: prev.ordenes.map((o) => {
         if (o.id !== id) return o;
@@ -555,6 +586,7 @@ export function ElanProvider({ children }) {
         return actualizada;
       }),
     }));
+
     if (actualizada) emitirEventoCRM('orden_actualizada', actualizada);
     return actualizada;
   };
@@ -595,6 +627,7 @@ export function ElanProvider({ children }) {
 
   const actualizarProduccion = (id, cambios = {}) => {
     let actualizada = null;
+
     patch((prev) => ({
       producciones: prev.producciones.map((p) => {
         if (p.id !== id) return p;
@@ -602,6 +635,7 @@ export function ElanProvider({ children }) {
         return actualizada;
       }),
     }));
+
     if (actualizada) emitirEventoCRM('produccion_actualizada', actualizada);
     return actualizada;
   };
@@ -670,6 +704,7 @@ export function ElanProvider({ children }) {
 
   const guardarProducto = (data = {}) => {
     const item = { id: data.id || uid('PRODCT'), ...data };
+
     patch((prev) => {
       const existe = prev.productos.some((x) => x.id === item.id);
       return {
@@ -678,12 +713,14 @@ export function ElanProvider({ children }) {
           : [item, ...prev.productos],
       };
     });
+
     emitirEventoCRM('producto_guardado', item);
     return item;
   };
 
   const guardarCategoria = (data = {}) => {
     const item = { id: data.id || uid('CAT'), ...data };
+
     patch((prev) => {
       const existe = prev.categorias.some((x) => x.id === item.id);
       return {
@@ -692,11 +729,13 @@ export function ElanProvider({ children }) {
           : [item, ...prev.categorias],
       };
     });
+
     return item;
   };
 
   const guardarProveedor = (data = {}) => {
     const item = { id: data.id || uid('PROV'), ...data };
+
     patch((prev) => {
       const existe = prev.proveedores.some((x) => x.id === item.id);
       return {
@@ -705,6 +744,7 @@ export function ElanProvider({ children }) {
           : [item, ...prev.proveedores],
       };
     });
+
     return item;
   };
 
@@ -755,6 +795,7 @@ export function ElanProvider({ children }) {
 
   const guardarVendedor = (data = {}) => {
     const item = { id: data.id || uid('VEN'), ...data };
+
     patch((prev) => {
       const existe = prev.vendedores.some((x) => x.id === item.id);
       return {
@@ -763,11 +804,13 @@ export function ElanProvider({ children }) {
           : [item, ...prev.vendedores],
       };
     });
+
     return item;
   };
 
   const guardarBanco = (data = {}) => {
     const item = { id: data.id || uid('BANCO'), ...data };
+
     patch((prev) => {
       const existe = prev.bancos.some((x) => x.id === item.id);
       return {
@@ -776,7 +819,50 @@ export function ElanProvider({ children }) {
           : [item, ...prev.bancos],
       };
     });
+
     return item;
+  };
+
+  const agregarMultimedia = (data = {}) => {
+    const item = {
+      id: data.id || uid('MEDIA'),
+      nombre: data.nombre || '',
+      categoria: data.categoria || 'General',
+      imagen: data.imagen || '',
+      fecha: data.fecha || hoyISO(),
+      estado: data.estado || 'Activo',
+    };
+
+    patch((prev) => ({
+      multimedia: [item, ...(prev.multimedia || [])],
+    }));
+
+    emitirEventoCRM('multimedia_agregada', item);
+    return item;
+  };
+
+  const actualizarMultimedia = (id, cambios = {}) => {
+    let actualizado = null;
+
+    patch((prev) => ({
+      multimedia: (prev.multimedia || []).map((item) => {
+        if (item.id !== id) return item;
+        actualizado = { ...item, ...cambios, actualizado: hoyISO() };
+        return actualizado;
+      }),
+    }));
+
+    if (actualizado) emitirEventoCRM('multimedia_actualizada', actualizado);
+    return actualizado;
+  };
+
+  const eliminarMultimedia = (id) => {
+    patch((prev) => ({
+      multimedia: (prev.multimedia || []).filter((item) => item.id !== id),
+    }));
+
+    emitirEventoCRM('multimedia_eliminada', { id, unidad: 'ELANVISUAL' });
+    return true;
   };
 
   const value = useMemo(
@@ -813,6 +899,9 @@ export function ElanProvider({ children }) {
       guardarMaterial,
       guardarVendedor,
       guardarBanco,
+      agregarMultimedia,
+      actualizarMultimedia,
+      eliminarMultimedia,
     }),
     [state]
   );
@@ -822,9 +911,11 @@ export function ElanProvider({ children }) {
 
 export function useElan() {
   const ctx = useContext(Ctx);
+
   if (!ctx) {
     throw new Error('useElan debe usarse dentro de ElanProvider');
   }
+
   return ctx;
 }
 

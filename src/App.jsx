@@ -1,3 +1,5 @@
+import ShowroomCRM from './CRM/Showroom.jsx';
+import ProductosCRM from './CRM/Productos.jsx';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 import {
@@ -49,6 +51,7 @@ import MaterialesCRM from './CRM/Materiales.jsx';
 import SeguimientoCRM from './CRM/Seguimiento.jsx';
 import UsuariosPermisosCRM from './CRM/UsuariosPermisos.jsx';
 import ConsumoMaterialesCRM from './CRM/ConsumoMateriales.jsx';
+import MultimediaCRM from './CRM/Multimedia.jsx';
 
 import {
   VendorDashboard,
@@ -87,8 +90,7 @@ export default function App() {
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
 
-        <Route path="catalogo" element={<Productos />} />
-        <Route path="productos" element={<Productos />} />
+<Route path="catalogo" element={<ProductosCRM />} />  <Route path="productos" element={<ProductosCRM />} />
         <Route path="categorias" element={<Categorias />} />
 
         <Route path="materiales" element={<MaterialesCRM />} />
@@ -113,8 +115,9 @@ export default function App() {
         <Route path="proveedores" element={<Proveedores />} />
         <Route path="vendedores" element={<Vendedores />} />
 
+        <Route path="multimedia" element={<MultimediaCRM />} />
         <Route path="banners" element={<Banners />} />
-        <Route path="showroom" element={<SimpleAdmin titulo="Showroom" />} />
+<Route path="showroom" element={<ShowroomCRM />} />
         <Route path="usuarios" element={<UsuariosPermisosCRM />} />
         <Route path="configuracion" element={<Configuracion />} />
         <Route path="crm-central" element={<CRM />} />
