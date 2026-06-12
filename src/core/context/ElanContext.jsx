@@ -23,12 +23,51 @@ import { emitirEventoCRM } from '../bridge/CentralBridge.js';
 const Ctx = createContext(null);
 const key = 'elanvisual_state_v2';
 
+const usuariosAccesoBase = [
+  {
+    id: 'USR-ADMIN-ELANVISUAL',
+    nombre: 'Administrador ELANVISUAL',
+    correo: 'admin@elanvisual.com',
+    password: 'admin123',
+    rol: 'admin',
+    estado: 'Activo',
+    unidad: 'ELANVISUAL',
+  },
+  {
+    id: 'USR-VENDEDOR-ELANVISUAL',
+    nombre: 'Vendedor ELANVISUAL',
+    correo: 'vendedor@elanvisual.com',
+    password: 'vend123',
+    rol: 'vendedor',
+    estado: 'Activo',
+    unidad: 'ELANVISUAL',
+  },
+  {
+    id: 'USR-PRODUCCION-ELANVISUAL',
+    nombre: 'Producción ELANVISUAL',
+    correo: 'produccion@elanvisual.com',
+    password: 'prod123',
+    rol: 'produccion',
+    estado: 'Activo',
+    unidad: 'ELANVISUAL',
+  },
+];
+
 function uid(prefix = 'ID') {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 }
 
 function hoyISO() {
   return new Date().toISOString();
+}
+
+function unirUsuariosBase(usuarios = []) {
+  const lista = Array.isArray(usuarios) ? usuarios : [];
+  const correos = new Set(lista.map((u) => String(u.correo || '').toLowerCase().trim()));
+  const faltantes = usuariosAccesoBase.filter(
+    (u) => !correos.has(String(u.correo || '').toLowerCase().trim())
+  );
+  return [...lista, ...faltantes];
 }
 
 function inventarioDesdeMateriales(materiales = []) {
@@ -57,7 +96,7 @@ const inicial = {
   banners: bannersIniciales || [],
   bancos: bancosIniciales || [],
   estadosProduccion: estadosProduccion || [],
-  usuarios: usuariosIniciales || [],
+  usuarios: unirUsuariosBase(usuariosIniciales || []),
   clientes: [],
   leads: [],
   cotizaciones: [],
@@ -92,12 +131,18 @@ function load() {
     const parsed = JSON.parse(raw);
     const merged = { ...inicial, ...parsed };
 
+    merged.usuarios = unirUsuariosBase(merged.usuarios || []);
+
     if (!Array.isArray(merged.inventario) || merged.inventario.length === 0) {
       merged.inventario = inventarioDesdeMateriales(merged.materiales || []);
     }
 
     if (!Array.isArray(merged.movimientosInventario)) {
       merged.movimientosInventario = [];
+    }
+
+    if (!Array.isArray(merged.producciones)) {
+      merged.producciones = [];
     }
 
     return merged;
@@ -120,7 +165,35 @@ export function ElanProvider({ children }) {
     });
   };
 
-  const login = (usuario) => patch({ sesion: usuario });
+  const login = (correo, password) => {
+    const correoNormalizado = String(correo || '').toLowerCase().trim();
+    const passwordNormalizado = String(password || '').trim();
+    const usuariosDisponibles = unirUsuariosBase(state.usuarios || []);
+
+    const usuario = usuariosDisponibles.find(
+      (u) =>
+        String(u.correo || '').toLowerCase().trim() === correoNormalizado &&
+        String(u.password || '').trim() === passwordNormalizado &&
+        String(u.estado || 'Activo').toLowerCase().trim() !== 'inactivo'
+    );
+
+    if (!usuario) return null;
+
+    const usuarioSesion = {
+      ...usuario,
+      ultimoAcceso: hoyISO(),
+    };
+
+    patch((prev) => ({
+      usuarios: unirUsuariosBase(prev.usuarios || []).map((u) =>
+        u.id === usuarioSesion.id ? { ...u, ...usuarioSesion } : u
+      ),
+      sesion: usuarioSesion,
+    }));
+
+    return usuarioSesion;
+  };
+
   const logout = () => patch({ sesion: null });
 
   const guardarCliente = (data = {}) => {
@@ -155,7 +228,6 @@ export function ElanProvider({ children }) {
 
   const actualizarCliente = (id, cambios = {}) => {
     let actualizado = null;
-
     patch((prev) => ({
       clientes: prev.clientes.map((c) => {
         if (c.id !== id) return c;
@@ -163,16 +235,12 @@ export function ElanProvider({ children }) {
         return actualizado;
       }),
     }));
-
     if (actualizado) emitirEventoCRM('cliente_actualizado', actualizado);
     return actualizado;
   };
 
   const eliminarCliente = (id) => {
-    patch((prev) => ({
-      clientes: prev.clientes.filter((c) => c.id !== id),
-    }));
-
+    patch((prev) => ({ clientes: prev.clientes.filter((c) => c.id !== id) }));
     emitirEventoCRM('cliente_eliminado', { id, unidad: 'ELANVISUAL' });
     return true;
   };
@@ -207,7 +275,6 @@ export function ElanProvider({ children }) {
 
   const actualizarUsuario = (id, cambios = {}) => {
     let actualizado = null;
-
     patch((prev) => ({
       usuarios: prev.usuarios.map((u) => {
         if (u.id !== id) return u;
@@ -215,16 +282,12 @@ export function ElanProvider({ children }) {
         return actualizado;
       }),
     }));
-
     if (actualizado) emitirEventoCRM('usuario_actualizado', actualizado);
     return actualizado;
   };
 
   const eliminarUsuario = (id) => {
-    patch((prev) => ({
-      usuarios: prev.usuarios.filter((u) => u.id !== id),
-    }));
-
+    patch((prev) => ({ usuarios: prev.usuarios.filter((u) => u.id !== id) }));
     emitirEventoCRM('usuario_eliminado', { id, unidad: 'ELANVISUAL' });
     return true;
   };
@@ -259,7 +322,6 @@ export function ElanProvider({ children }) {
 
   const actualizarInventario = (id, cambios = {}) => {
     let actualizado = null;
-
     patch((prev) => ({
       inventario: prev.inventario.map((i) => {
         if (i.id !== id) return i;
@@ -267,7 +329,6 @@ export function ElanProvider({ children }) {
         return actualizado;
       }),
     }));
-
     if (actualizado) emitirEventoCRM('inventario_actualizado', actualizado);
     return actualizado;
   };
@@ -299,7 +360,6 @@ export function ElanProvider({ children }) {
       movimientosInventario: [movimiento, ...prev.movimientosInventario],
       inventario: prev.inventario.map((item) => {
         if (item.id !== inventarioId && item.materialId !== movimiento.materialId) return item;
-
         const actual = Number(item.existencia || 0);
         const nuevaExistencia =
           tipo === 'Entrada'
@@ -307,12 +367,7 @@ export function ElanProvider({ children }) {
             : tipo === 'Ajuste'
               ? cantidad
               : Math.max(actual - cantidad, 0);
-
-        return {
-          ...item,
-          existencia: nuevaExistencia,
-          actualizado: hoyISO(),
-        };
+        return { ...item, existencia: nuevaExistencia, actualizado: hoyISO() };
       }),
     }));
 
@@ -329,59 +384,50 @@ export function ElanProvider({ children }) {
       cantidad: Number(cantidad || 1),
       fecha: hoyISO(),
     };
-
-    patch((prev) => ({
-      carrito: [...prev.carrito, item],
-    }));
-
+    patch((prev) => ({ carrito: [...prev.carrito, item] }));
     emitirEventoCRM('carrito_agregado', item);
     return item;
   };
 
   const crearLead = (data = {}) => {
     const lead = {
-      id: uid('LEAD'),
-      fecha: hoyISO(),
+      id: data.id || uid('LEAD'),
+      fecha: data.fecha || hoyISO(),
       estado: data.estado || 'Nuevo',
       origen: data.origen || 'ELANVISUAL',
       unidad: 'ELANVISUAL',
       ...data,
     };
-
-    patch((prev) => ({
-      leads: [lead, ...prev.leads],
-    }));
-
+    patch((prev) => ({ leads: [lead, ...prev.leads] }));
     emitirEventoCRM('lead_creado', lead);
     return lead;
   };
 
   const guardarCotizacion = (data = {}) => {
+    const total = Number(data.total ?? data.totalVenta ?? 0);
     const cotizacion = {
       id: data.id || uid('COT'),
       codigo: data.codigo || `COT-${Date.now()}`,
       fecha: data.fecha || hoyISO(),
       estado: data.estado || 'Borrador',
       unidad: 'ELANVISUAL',
-      items: data.items || [],
-      subtotal: Number(data.subtotal || 0),
-      descuento: Number(data.descuento || 0),
-      iva: Number(data.iva || 0),
-      total: Number(data.total || 0),
       clienteId: data.clienteId || '',
       clienteNombre: data.clienteNombre || data.cliente || '',
-      vendedorId: data.vendedorId || '',
-      notas: data.notas || '',
+      vendedorId: data.vendedorId || state.sesion?.vendedorId || state.sesion?.id || '',
+      items: Array.isArray(data.items) ? data.items : [],
+      subtotal: Number(data.subtotal || total),
+      iva: Number(data.iva || 0),
+      total,
+      margen: Number(data.margen || 0),
+      observaciones: data.observaciones || data.observacion || '',
       ...data,
     };
 
     patch((prev) => {
-      const existe = prev.cotizaciones.some((c) => c.id === cotizacion.id);
+      const existe = prev.cotizaciones.some((x) => x.id === cotizacion.id);
       return {
         cotizaciones: existe
-          ? prev.cotizaciones.map((c) =>
-              c.id === cotizacion.id ? { ...c, ...cotizacion } : c
-            )
+          ? prev.cotizaciones.map((x) => (x.id === cotizacion.id ? { ...x, ...cotizacion, actualizado: hoyISO() } : x))
           : [cotizacion, ...prev.cotizaciones],
       };
     });
@@ -392,7 +438,6 @@ export function ElanProvider({ children }) {
 
   const actualizarCotizacion = (id, cambios = {}) => {
     let actualizada = null;
-
     patch((prev) => ({
       cotizaciones: prev.cotizaciones.map((c) => {
         if (c.id !== id) return c;
@@ -400,7 +445,6 @@ export function ElanProvider({ children }) {
         return actualizada;
       }),
     }));
-
     if (actualizada) emitirEventoCRM('cotizacion_actualizada', actualizada);
     return actualizada;
   };
@@ -409,14 +453,12 @@ export function ElanProvider({ children }) {
     const cotizacion = state.cotizaciones.find((c) => c.id === cotizacionId);
     if (!cotizacion) return null;
 
-    const total = Number(cotizacion.total || 0);
-    const anticipo = Number(extras.anticipo || 0);
-
     const pedido = {
       id: uid('PED'),
       codigo: `PED-${Date.now()}`,
       fecha: hoyISO(),
-      estado: 'Nuevo',
+      estado: 'Pedido creado',
+      estadoPago: 'Pendiente',
       unidad: 'ELANVISUAL',
       cotizacionId,
       clienteId: cotizacion.clienteId || '',
@@ -425,11 +467,10 @@ export function ElanProvider({ children }) {
       items: cotizacion.items || [],
       subtotal: Number(cotizacion.subtotal || 0),
       iva: Number(cotizacion.iva || 0),
-      total,
-      pagado: anticipo,
-      saldo: Math.max(total - anticipo, 0),
-      anticipo,
-      notas: extras.notas || cotizacion.notas || '',
+      total: Number(cotizacion.total || 0),
+      pagado: Number(extras.pagado || 0),
+      saldo: Math.max(Number(cotizacion.total || 0) - Number(extras.pagado || 0), 0),
+      notas: extras.notas || cotizacion.observaciones || '',
       ...extras,
     };
 
@@ -437,7 +478,7 @@ export function ElanProvider({ children }) {
       pedidos: [pedido, ...prev.pedidos],
       cotizaciones: prev.cotizaciones.map((c) =>
         c.id === cotizacionId
-          ? { ...c, estado: 'Convertida a pedido', pedidoId: pedido.id }
+          ? { ...c, estado: 'Aprobada', pedidoId: pedido.id, actualizado: hoyISO() }
           : c
       ),
     }));
@@ -446,32 +487,21 @@ export function ElanProvider({ children }) {
     return pedido;
   };
 
-  const confirmarPedido = (data = {}) => {
-    const pedido = {
-      id: data.id || uid('PED'),
-      codigo: data.codigo || `PED-${Date.now()}`,
-      fecha: hoyISO(),
-      estado: data.estado || 'Nuevo',
-      unidad: 'ELANVISUAL',
-      items: data.items || state.carrito || [],
-      total: Number(data.total || 0),
-      saldo: Number(data.saldo ?? data.total ?? 0),
-      pagado: Number(data.pagado || 0),
-      ...data,
-    };
-
+  const confirmarPedido = (pedidoId, extras = {}) => {
+    let confirmado = null;
     patch((prev) => ({
-      pedidos: [pedido, ...prev.pedidos],
-      carrito: [],
+      pedidos: prev.pedidos.map((p) => {
+        if (p.id !== pedidoId) return p;
+        confirmado = { ...p, estado: 'Confirmado', confirmado: true, confirmadoEn: hoyISO(), ...extras };
+        return confirmado;
+      }),
     }));
-
-    emitirEventoCRM('pedido_confirmado', pedido);
-    return pedido;
+    if (confirmado) emitirEventoCRM('pedido_confirmado', confirmado);
+    return confirmado;
   };
 
   const actualizarPedido = (id, cambios = {}) => {
     let actualizado = null;
-
     patch((prev) => ({
       pedidos: prev.pedidos.map((p) => {
         if (p.id !== id) return p;
@@ -479,7 +509,6 @@ export function ElanProvider({ children }) {
         return actualizado;
       }),
     }));
-
     if (actualizado) emitirEventoCRM('pedido_actualizado', actualizado);
     return actualizado;
   };
@@ -509,9 +538,7 @@ export function ElanProvider({ children }) {
     patch((prev) => ({
       ordenes: [orden, ...prev.ordenes],
       pedidos: prev.pedidos.map((p) =>
-        p.id === pedidoId
-          ? { ...p, estado: 'En orden de trabajo', ordenId: orden.id }
-          : p
+        p.id === pedidoId ? { ...p, estado: 'En orden de trabajo', ordenId: orden.id } : p
       ),
     }));
 
@@ -521,7 +548,6 @@ export function ElanProvider({ children }) {
 
   const actualizarOrden = (id, cambios = {}) => {
     let actualizada = null;
-
     patch((prev) => ({
       ordenes: prev.ordenes.map((o) => {
         if (o.id !== id) return o;
@@ -529,7 +555,6 @@ export function ElanProvider({ children }) {
         return actualizada;
       }),
     }));
-
     if (actualizada) emitirEventoCRM('orden_actualizada', actualizada);
     return actualizada;
   };
@@ -560,9 +585,7 @@ export function ElanProvider({ children }) {
     patch((prev) => ({
       producciones: [produccion, ...prev.producciones],
       ordenes: prev.ordenes.map((o) =>
-        o.id === ordenId
-          ? { ...o, estado: 'En producción', produccionId: produccion.id }
-          : o
+        o.id === ordenId ? { ...o, estado: 'En producción', produccionId: produccion.id } : o
       ),
     }));
 
@@ -572,7 +595,6 @@ export function ElanProvider({ children }) {
 
   const actualizarProduccion = (id, cambios = {}) => {
     let actualizada = null;
-
     patch((prev) => ({
       producciones: prev.producciones.map((p) => {
         if (p.id !== id) return p;
@@ -580,7 +602,6 @@ export function ElanProvider({ children }) {
         return actualizada;
       }),
     }));
-
     if (actualizada) emitirEventoCRM('produccion_actualizada', actualizada);
     return actualizada;
   };
@@ -603,16 +624,9 @@ export function ElanProvider({ children }) {
       pagos: [pago, ...prev.pagos],
       pedidos: prev.pedidos.map((p) => {
         if (p.id !== pago.pedidoId) return p;
-
         const pagado = Number(p.pagado || 0) + pago.monto;
         const saldo = Math.max(Number(p.total || 0) - pagado, 0);
-
-        return {
-          ...p,
-          pagado,
-          saldo,
-          estadoPago: saldo <= 0 ? 'Pagado' : 'Abono recibido',
-        };
+        return { ...p, pagado, saldo, estadoPago: saldo <= 0 ? 'Pagado' : 'Abono recibido' };
       }),
     }));
 
@@ -646,9 +660,7 @@ export function ElanProvider({ children }) {
     patch((prev) => ({
       comisiones: [comision, ...prev.comisiones],
       pedidos: prev.pedidos.map((p) =>
-        p.id === pedidoId
-          ? { ...p, comisionId: comision.id, comisionGenerada: true }
-          : p
+        p.id === pedidoId ? { ...p, comisionId: comision.id, comisionGenerada: true } : p
       ),
     }));
 
@@ -658,7 +670,6 @@ export function ElanProvider({ children }) {
 
   const guardarProducto = (data = {}) => {
     const item = { id: data.id || uid('PRODCT'), ...data };
-
     patch((prev) => {
       const existe = prev.productos.some((x) => x.id === item.id);
       return {
@@ -667,14 +678,12 @@ export function ElanProvider({ children }) {
           : [item, ...prev.productos],
       };
     });
-
     emitirEventoCRM('producto_guardado', item);
     return item;
   };
 
   const guardarCategoria = (data = {}) => {
     const item = { id: data.id || uid('CAT'), ...data };
-
     patch((prev) => {
       const existe = prev.categorias.some((x) => x.id === item.id);
       return {
@@ -683,13 +692,11 @@ export function ElanProvider({ children }) {
           : [item, ...prev.categorias],
       };
     });
-
     return item;
   };
 
   const guardarProveedor = (data = {}) => {
     const item = { id: data.id || uid('PROV'), ...data };
-
     patch((prev) => {
       const existe = prev.proveedores.some((x) => x.id === item.id);
       return {
@@ -698,7 +705,6 @@ export function ElanProvider({ children }) {
           : [item, ...prev.proveedores],
       };
     });
-
     return item;
   };
 
@@ -749,7 +755,6 @@ export function ElanProvider({ children }) {
 
   const guardarVendedor = (data = {}) => {
     const item = { id: data.id || uid('VEN'), ...data };
-
     patch((prev) => {
       const existe = prev.vendedores.some((x) => x.id === item.id);
       return {
@@ -758,13 +763,11 @@ export function ElanProvider({ children }) {
           : [item, ...prev.vendedores],
       };
     });
-
     return item;
   };
 
   const guardarBanco = (data = {}) => {
     const item = { id: data.id || uid('BANCO'), ...data };
-
     patch((prev) => {
       const existe = prev.bancos.some((x) => x.id === item.id);
       return {
@@ -773,49 +776,37 @@ export function ElanProvider({ children }) {
           : [item, ...prev.bancos],
       };
     });
-
     return item;
   };
 
   const value = useMemo(
     () => ({
       ...state,
-
       login,
       logout,
-
       guardarCliente,
       actualizarCliente,
       eliminarCliente,
-
       guardarUsuario,
       actualizarUsuario,
       eliminarUsuario,
-
       guardarInventario,
       actualizarInventario,
       registrarMovimientoInventario,
-
       agregarCarrito,
-
       crearLead,
-
       guardarCotizacion,
       actualizarCotizacion,
       crearPedidoDesdeCotizacion,
-
       confirmarPedido,
       actualizarPedido,
       crearOrdenDesdePedido,
-
       actualizarOrden,
       actualizarEstadoOT,
       crearProduccionDesdeOT,
-
       actualizarProduccion,
       validarPago,
       crearComisionDesdePedido,
-
       guardarProducto,
       guardarCategoria,
       guardarProveedor,
