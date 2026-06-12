@@ -34,10 +34,10 @@ export default function Home() {
       <section
         className="hero"
         style={{
-          backgroundImage: `linear-gradient(90deg,rgba(0,0,0,.76),rgba(0,0,0,.28)),url(${imagenBanner})`,
+          backgroundImage: `linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.42),rgba(0,0,0,.08)),url(${imagenBanner})`,
         }}
       >
-        <div>
+        <div className="hero-copy">
           <span>ELANVISUAL</span>
 
           <h1>{tituloBanner}</h1>
