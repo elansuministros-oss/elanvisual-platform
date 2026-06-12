@@ -1,12 +1,61 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useElan } from '../../core/context/ElanContext.jsx';
 
+const FALLBACK_BANNER =
+  'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1800&auto=format&fit=crop';
+
+function limpiarValor(valor) {
+  return typeof valor === 'string' ? valor.trim() : '';
+}
+
+function normalizarBanner(banner) {
+  if (!banner) return null;
+
+  const imagen = limpiarValor(banner.imagen);
+  const imagenDesktop = limpiarValor(banner.imagenDesktop) || imagen;
+  const imagenMobile =
+    limpiarValor(banner.imagenMobile) ||
+    imagenDesktop ||
+    imagen;
+
+  return {
+    ...banner,
+    imagen,
+    imagenDesktop,
+    imagenMobile,
+  };
+}
+
+function obtenerBannerActivo(banners = []) {
+  const lista = Array.isArray(banners)
+    ? banners.map(normalizarBanner).filter(Boolean)
+    : [];
+
+  const activos = lista.filter((x) => x.estado === 'Activo');
+
+  return (
+    activos.find((x) => x.imagenMobile && x.imagenDesktop) ||
+    activos.find((x) => x.imagenMobile) ||
+    activos[0] ||
+    lista.find((x) => x.imagenMobile && x.imagenDesktop) ||
+    lista.find((x) => x.imagenMobile) ||
+    lista[0] ||
+    null
+  );
+}
+
 export default function Home() {
   const { banners, categorias, productos } = useElan();
-  const [esMovil, setEsMovil] = useState(false);
+
+  const [esMovil, setEsMovil] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(max-width: 850px)').matches;
+  });
 
   useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
     const media = window.matchMedia('(max-width: 850px)');
 
     const actualizar = () => {
@@ -15,17 +64,16 @@ export default function Home() {
 
     actualizar();
 
-    media.addEventListener('change', actualizar);
+    if (media.addEventListener) {
+      media.addEventListener('change', actualizar);
+      return () => media.removeEventListener('change', actualizar);
+    }
 
-    return () => {
-      media.removeEventListener('change', actualizar);
-    };
+    media.addListener(actualizar);
+    return () => media.removeListener(actualizar);
   }, []);
 
-  const bannerActivo =
-    banners.find((x) => x.estado === 'Activo') ||
-    banners[0] ||
-    null;
+  const bannerActivo = useMemo(() => obtenerBannerActivo(banners), [banners]);
 
   const imagenBanner =
     (esMovil
@@ -33,8 +81,9 @@ export default function Home() {
         bannerActivo?.imagenDesktop ||
         bannerActivo?.imagen
       : bannerActivo?.imagenDesktop ||
-        bannerActivo?.imagen) ||
-    'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1800&auto=format&fit=crop';
+        bannerActivo?.imagen ||
+        bannerActivo?.imagenMobile) ||
+    FALLBACK_BANNER;
 
   const tituloBanner =
     bannerActivo?.titulo ||
@@ -57,7 +106,7 @@ export default function Home() {
       <section
         className="hero"
         style={{
-          backgroundImage: `linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.42),rgba(0,0,0,.08)),url(${imagenBanner})`,
+          backgroundImage: `linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.42),rgba(0,0,0,.08)),url("${imagenBanner}")`,
         }}
       >
         <div className="hero-copy">
