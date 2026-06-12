@@ -11,8 +11,55 @@ const categorias = [
   'General',
 ];
 
-const pesoMaximoMB = 1.2;
+const pesoMaximoMB = 6;
 const pesoMaximoBytes = pesoMaximoMB * 1024 * 1024;
+
+const anchoMaximo = 1800;
+const calidadWebp = 0.75;
+
+function formatoFecha() {
+  return new Date().toLocaleDateString('es-NI', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+}
+
+function comprimirImagen(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      img.onload = () => {
+        const escala = Math.min(1, anchoMaximo / img.width);
+        const ancho = Math.round(img.width * escala);
+        const alto = Math.round(img.height * escala);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = ancho;
+        canvas.height = alto;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, ancho, alto);
+
+        const dataUrl = canvas.toDataURL('image/webp', calidadWebp);
+
+        resolve({
+          dataUrl,
+          ancho,
+          alto,
+        });
+      };
+
+      img.onerror = () => reject(new Error('No se pudo procesar la imagen.'));
+      img.src = reader.result;
+    };
+
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo.'));
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function MultimediaCRM() {
   const {
@@ -31,15 +78,18 @@ export default function MultimediaCRM() {
 
   const [busqueda, setBusqueda] = useState('');
   const [error, setError] = useState('');
+  const [procesando, setProcesando] = useState(false);
+  const [detalleImagen, setDetalleImagen] = useState('');
 
   const cambiar = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const cargarImagen = (e) => {
+  const cargarImagen = async (e) => {
     const file = e.target.files?.[0];
     setError('');
+    setDetalleImagen('');
 
     if (!file) return;
 
@@ -49,21 +99,32 @@ export default function MultimediaCRM() {
     }
 
     if (file.size > pesoMaximoBytes) {
-      setError(`La imagen pesa demasiado. Máximo recomendado: ${pesoMaximoMB} MB.`);
+      setError(`La imagen pesa demasiado. Máximo permitido: ${pesoMaximoMB} MB.`);
       return;
     }
 
-    const reader = new FileReader();
+    try {
+      setProcesando(true);
 
-    reader.onload = () => {
+      const optimizada = await comprimirImagen(file);
+
       setForm((prev) => ({
         ...prev,
-        imagen: reader.result,
+        imagen: optimizada.dataUrl,
         nombre: prev.nombre || file.name.replace(/\.[^/.]+$/, ''),
       }));
-    };
 
-    reader.readAsDataURL(file);
+      const pesoOriginalKB = Math.round(file.size / 1024);
+      const pesoFinalKB = Math.round((optimizada.dataUrl.length * 0.75) / 1024);
+
+      setDetalleImagen(
+        `Optimizada a ${optimizada.ancho} × ${optimizada.alto}px · aprox. ${pesoFinalKB} KB · original ${pesoOriginalKB} KB`
+      );
+    } catch (err) {
+      setError(err.message || 'No se pudo cargar la imagen.');
+    } finally {
+      setProcesando(false);
+    }
   };
 
   const guardar = (e) => {
@@ -85,6 +146,7 @@ export default function MultimediaCRM() {
       categoria: form.categoria,
       imagen: form.imagen,
       estado: form.estado,
+      fecha: formatoFecha(),
     });
 
     setForm({
@@ -93,6 +155,8 @@ export default function MultimediaCRM() {
       imagen: '',
       estado: 'Activo',
     });
+
+    setDetalleImagen('');
   };
 
   const lista = useMemo(() => {
@@ -101,11 +165,7 @@ export default function MultimediaCRM() {
     return multimedia.filter((item) => {
       if (!q) return true;
 
-      return [
-        item.nombre,
-        item.categoria,
-        item.estado,
-      ]
+      return [item.nombre, item.categoria, item.estado]
         .join(' ')
         .toLowerCase()
         .includes(q);
@@ -159,6 +219,10 @@ export default function MultimediaCRM() {
           <input type="file" accept="image/*" onChange={cargarImagen} />
         </label>
 
+        {procesando && <p>Procesando imagen...</p>}
+
+        {detalleImagen && <p>{detalleImagen}</p>}
+
         {form.imagen && (
           <div className="media-preview">
             <img src={form.imagen} alt={form.nombre || 'Vista previa'} />
@@ -167,7 +231,9 @@ export default function MultimediaCRM() {
 
         {error && <p className="form-error">{error}</p>}
 
-        <button type="submit">Guardar imagen</button>
+        <button type="submit" disabled={procesando}>
+          Guardar imagen
+        </button>
       </form>
 
       <div className="section-head">
@@ -222,7 +288,8 @@ export default function MultimediaCRM() {
                     type="button"
                     onClick={() =>
                       actualizarMultimedia(item.id, {
-                        estado: item.estado === 'Activo' ? 'Inactivo' : 'Activo',
+                        estado:
+                          item.estado === 'Activo' ? 'Inactivo' : 'Activo',
                       })
                     }
                   >
