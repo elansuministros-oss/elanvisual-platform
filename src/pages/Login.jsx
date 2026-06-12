@@ -7,12 +7,16 @@ export default function Login() {
   const nav = useNavigate();
 
   const [f, setF] = useState({
-    correo: 'admin@elanvisual.com',
-    password: 'admin123',
+    correo: '',
+    password: '',
   });
 
-  function go() {
-    const u = login(f.correo, f.password);
+  const [verPassword, setVerPassword] = useState(false);
+
+  function go(e) {
+    e?.preventDefault();
+
+    const u = login(f.correo.trim(), f.password);
 
     if (!u) {
       alert('Credenciales incorrectas');
@@ -27,28 +31,40 @@ export default function Login() {
 
   return (
     <main className="login">
-      <section className="card form">
+      <form className="card form" onSubmit={go}>
         <h1>ELANVISUAL</h1>
-
-        <p>Admin: admin@elanvisual.com / admin123</p>
-        <p>Vendedor: vendedor@elanvisual.com / vend123</p>
-        <p>Producción: produccion@elanvisual.com / prod123</p>
+        <p>Acceso privado del sistema</p>
 
         <input
           placeholder="Correo"
+          type="email"
+          autoComplete="username"
           value={f.correo}
           onChange={(e) => setF({ ...f, correo: e.target.value })}
         />
 
-        <input
-          placeholder="Contraseña"
-          type="password"
-          value={f.password}
-          onChange={(e) => setF({ ...f, password: e.target.value })}
-        />
+        <div className="password-wrap">
+          <input
+            placeholder="Contraseña"
+            type={verPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+            value={f.password}
+            onChange={(e) => setF({ ...f, password: e.target.value })}
+          />
 
-        <button onClick={go}>Entrar</button>
-      </section>
+          <button
+            type="button"
+            className="password-eye"
+            onClick={() => setVerPassword(!verPassword)}
+            title={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            aria-label={verPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          >
+            {verPassword ? '🙈' : '👁️'}
+          </button>
+        </div>
+
+        <button type="submit">Entrar</button>
+      </form>
     </main>
   );
 }
