@@ -25,12 +25,12 @@ export function PublicLayout() {
 
         <button
           type="button"
-          className="menu-toggle"
+          className={`menu-toggle ${menuAbierto ? 'active' : ''}`}
           onClick={() => setMenuAbierto((prev) => !prev)}
-          aria-label="Abrir menú"
+          aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
           aria-expanded={menuAbierto}
         >
-          ☰
+          <span className="menu-toggle-icon">☰</span>
         </button>
 
         <nav className={menuAbierto ? 'open' : ''}>
