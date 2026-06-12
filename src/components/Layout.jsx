@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Link,
   NavLink,
@@ -9,26 +10,57 @@ import { useElan } from '../core/context/ElanContext.jsx';
 
 export function PublicLayout() {
   const { carrito } = useElan();
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
+  const cerrarMenu = () => {
+    setMenuAbierto(false);
+  };
 
   return (
     <>
       <header className="topbar public">
-        <Link className="brand" to="/">
+        <Link className="brand" to="/" onClick={cerrarMenu}>
           ✣ ELANVISUAL
         </Link>
 
-        <nav>
-          <NavLink to="/">Inicio</NavLink>
-          <NavLink to="/catalogo">Catálogo</NavLink>
-          <NavLink to="/showroom">Showroom</NavLink>
-          <NavLink to="/nosotros">Nosotros</NavLink>
-          <NavLink to="/contacto">Contacto</NavLink>
+        <button
+          type="button"
+          className="menu-toggle"
+          onClick={() => setMenuAbierto((prev) => !prev)}
+          aria-label="Abrir menú"
+          aria-expanded={menuAbierto}
+        >
+          ☰
+        </button>
 
-          <NavLink className="cart" to="/carrito">
+        <nav className={menuAbierto ? 'open' : ''}>
+          <NavLink to="/" onClick={cerrarMenu}>
+            Inicio
+          </NavLink>
+
+          <NavLink to="/catalogo" onClick={cerrarMenu}>
+            Catálogo
+          </NavLink>
+
+          <NavLink to="/showroom" onClick={cerrarMenu}>
+            Showroom
+          </NavLink>
+
+          <NavLink to="/nosotros" onClick={cerrarMenu}>
+            Nosotros
+          </NavLink>
+
+          <NavLink to="/contacto" onClick={cerrarMenu}>
+            Contacto
+          </NavLink>
+
+          <NavLink className="cart" to="/carrito" onClick={cerrarMenu}>
             🛒 {carrito.length}
           </NavLink>
 
-          <NavLink to="/login">Login</NavLink>
+          <NavLink to="/login" onClick={cerrarMenu}>
+            Login
+          </NavLink>
         </nav>
       </header>
 
