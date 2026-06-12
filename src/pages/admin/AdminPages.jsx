@@ -254,14 +254,22 @@ export function Banners() {
     boton: 'Ver Catálogo',
     enlace: '/catalogo',
     imagen: '',
+    imagenDesktop: '',
+    imagenMobile: '',
     estado: 'Activo',
     orden: 1,
   });
 
-  const imagenesBanner = multimedia.filter(
+  const imagenesDesktop = multimedia.filter(
     (m) =>
       m.estado === 'Activo' &&
-      (m.categoria === 'Banner' || m.categoria === 'General')
+      ['Banner Desktop', 'Banner', 'General'].includes(m.categoria)
+  );
+
+  const imagenesMobile = multimedia.filter(
+    (m) =>
+      m.estado === 'Activo' &&
+      ['Banner Mobile', 'Banner', 'General'].includes(m.categoria)
   );
 
   function sincronizar(nuevaLista) {
@@ -277,6 +285,8 @@ export function Banners() {
       boton: 'Ver Catálogo',
       enlace: '/catalogo',
       imagen: '',
+      imagenDesktop: '',
+      imagenMobile: '',
       estado: 'Activo',
       orden: lista.length + 1,
     });
@@ -288,7 +298,7 @@ export function Banners() {
       return;
     }
 
-    if (!form.imagen.trim()) {
+    if (!form.imagenDesktop.trim() && !form.imagenMobile.trim() && !form.imagen.trim()) {
       alert('Seleccioná una imagen desde Multimedia.');
       return;
     }
@@ -299,7 +309,9 @@ export function Banners() {
       subtitulo: form.subtitulo.trim(),
       boton: form.boton.trim() || 'Ver Catálogo',
       enlace: form.enlace.trim() || '/catalogo',
-      imagen: form.imagen.trim(),
+      imagenDesktop: form.imagenDesktop || form.imagen || '',
+      imagenMobile: form.imagenMobile || form.imagenDesktop || form.imagen || '',
+      imagen: form.imagenDesktop || form.imagenMobile || form.imagen || '',
       estado: form.estado || 'Activo',
       orden: Number(form.orden || 1),
     };
@@ -328,6 +340,8 @@ export function Banners() {
       boton: banner.boton || 'Ver Catálogo',
       enlace: banner.enlace || '/catalogo',
       imagen: banner.imagen || '',
+      imagenDesktop: banner.imagenDesktop || banner.imagen || '',
+      imagenMobile: banner.imagenMobile || banner.imagenDesktop || banner.imagen || '',
       estado: banner.estado || 'Activo',
       orden: Number(banner.orden || 1),
     });
@@ -367,6 +381,8 @@ export function Banners() {
     .slice()
     .sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0));
 
+  const previewImagen = form.imagenDesktop || form.imagenMobile || form.imagen;
+
   return (
     <main>
       <h1>Banners principales</h1>
@@ -399,30 +415,61 @@ export function Banners() {
         />
 
         <label className="card">
-          <b>Imagen desde Multimedia</b>
+          <b>Imagen Desktop</b>
 
           <select
-            value={form.imagen}
+            value={form.imagenDesktop}
             onChange={(e) =>
               setForm({
                 ...form,
-                imagen: e.target.value,
+                imagenDesktop: e.target.value,
+                imagen: e.target.value || form.imagenMobile || form.imagen,
               })
             }
           >
-            <option value="">Seleccionar imagen</option>
+            <option value="">Seleccionar imagen desktop</option>
 
-            {imagenesBanner.map((m) => (
+            {imagenesDesktop.map((m) => (
               <option key={m.id} value={m.imagen}>
                 {m.nombre}
               </option>
             ))}
           </select>
 
-          {imagenesBanner.length === 0 && (
+          {imagenesDesktop.length === 0 && (
             <p>
-              No hay imágenes activas en Multimedia con categoría Banner o
-              General.
+              No hay imágenes activas en Multimedia con categoría Banner Desktop,
+              Banner o General.
+            </p>
+          )}
+        </label>
+
+        <label className="card">
+          <b>Imagen Mobile</b>
+
+          <select
+            value={form.imagenMobile}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                imagenMobile: e.target.value,
+                imagen: form.imagenDesktop || e.target.value || form.imagen,
+              })
+            }
+          >
+            <option value="">Seleccionar imagen mobile</option>
+
+            {imagenesMobile.map((m) => (
+              <option key={m.id} value={m.imagen}>
+                {m.nombre}
+              </option>
+            ))}
+          </select>
+
+          {imagenesMobile.length === 0 && (
+            <p>
+              No hay imágenes activas en Multimedia con categoría Banner Mobile,
+              Banner o General.
             </p>
           )}
         </label>
@@ -442,9 +489,9 @@ export function Banners() {
           onChange={(e) => setForm({ ...form, orden: e.target.value })}
         />
 
-        {form.imagen && (
+        {previewImagen && (
           <img
-            src={form.imagen}
+            src={previewImagen}
             alt="Vista previa banner"
             style={{
               width: '100%',
@@ -455,13 +502,13 @@ export function Banners() {
           />
         )}
 
-        {form.imagen && (
+        {previewImagen && (
           <section
             style={{
               minHeight: '260px',
               borderRadius: '16px',
               overflow: 'hidden',
-              backgroundImage: `linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.35)),url(${form.imagen})`,
+              backgroundImage: `linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,.35)),url(${previewImagen})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               padding: '40px',

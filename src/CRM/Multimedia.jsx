@@ -3,6 +3,8 @@ import { useElan } from '../core/context/ElanContext.jsx';
 
 const categorias = [
   'Banner',
+  'Banner Desktop',
+  'Banner Mobile',
   'Producto',
   'Showroom',
   'Proyecto',
@@ -178,8 +180,8 @@ export default function MultimediaCRM() {
         <div>
           <h1>Multimedia Central</h1>
           <p>
-            Biblioteca central para banners, productos, showroom, proyectos,
-            logos y clientes.
+            Biblioteca central para banners desktop, banners mobile, productos,
+            showroom, proyectos, logos y clientes.
           </p>
         </div>
       </div>

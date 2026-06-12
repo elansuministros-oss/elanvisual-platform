@@ -1,8 +1,26 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useElan } from '../../core/context/ElanContext.jsx';
 
 export default function Home() {
   const { banners, categorias, productos } = useElan();
+  const [esMovil, setEsMovil] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 850px)');
+
+    const actualizar = () => {
+      setEsMovil(media.matches);
+    };
+
+    actualizar();
+
+    media.addEventListener('change', actualizar);
+
+    return () => {
+      media.removeEventListener('change', actualizar);
+    };
+  }, []);
 
   const bannerActivo =
     banners.find((x) => x.estado === 'Activo') ||
@@ -10,7 +28,12 @@ export default function Home() {
     null;
 
   const imagenBanner =
-    bannerActivo?.imagen ||
+    (esMovil
+      ? bannerActivo?.imagenMobile ||
+        bannerActivo?.imagenDesktop ||
+        bannerActivo?.imagen
+      : bannerActivo?.imagenDesktop ||
+        bannerActivo?.imagen) ||
     'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1800&auto=format&fit=crop';
 
   const tituloBanner =
