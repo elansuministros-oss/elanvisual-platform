@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useElan } from '../../core/context/ElanContext.jsx';
 
-const FALLBACK_BANNER =
-  'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1800&auto=format&fit=crop';
+const LOCAL_BANNER_DESKTOP = '/banners/banner-desktop.jpg';
+const LOCAL_BANNER_MOBILE = '/banners/banner-mobile.jpg';
 
 function limpiarValor(valor) {
   return typeof valor === 'string' ? valor.trim() : '';
@@ -17,35 +16,30 @@ function normalizarBanner(banner) {
     limpiarValor(banner.image) ||
     limpiarValor(banner.url);
 
-  const imagenDesktop =
-    limpiarValor(banner.imagenDesktop) ||
-    limpiarValor(banner.imagenEscritorio) ||
-    limpiarValor(banner.desktop) ||
-    limpiarValor(banner.bannerDesktop) ||
-    limpiarValor(banner.imageDesktop) ||
-    imagen;
-
-  const imagenMobile =
-    limpiarValor(banner.imagenMobile) ||
-    limpiarValor(banner.imagenMovil) ||
-    limpiarValor(banner.imagen_movil) ||
-    limpiarValor(banner.imagen_mobile) ||
-    limpiarValor(banner.mobile) ||
-    limpiarValor(banner.bannerMobile) ||
-    limpiarValor(banner.bannerMovil) ||
-    limpiarValor(banner.imageMobile) ||
-    limpiarValor(banner.image_mobile) ||
-    limpiarValor(banner.fotoMobile) ||
-    limpiarValor(banner.fotoMovil) ||
-    imagenDesktop ||
-    imagen ||
-    FALLBACK_BANNER;
-
   return {
     ...banner,
-    imagen: imagen || FALLBACK_BANNER,
-    imagenDesktop: imagenDesktop || imagen || FALLBACK_BANNER,
-    imagenMobile,
+    imagenDesktop:
+      limpiarValor(banner.imagenDesktop) ||
+      limpiarValor(banner.imagenEscritorio) ||
+      limpiarValor(banner.desktop) ||
+      limpiarValor(banner.bannerDesktop) ||
+      limpiarValor(banner.imageDesktop) ||
+      imagen ||
+      LOCAL_BANNER_DESKTOP,
+
+    imagenMobile:
+      limpiarValor(banner.imagenMobile) ||
+      limpiarValor(banner.imagenMovil) ||
+      limpiarValor(banner.imagen_movil) ||
+      limpiarValor(banner.imagen_mobile) ||
+      limpiarValor(banner.mobile) ||
+      limpiarValor(banner.bannerMobile) ||
+      limpiarValor(banner.bannerMovil) ||
+      limpiarValor(banner.imageMobile) ||
+      limpiarValor(banner.image_mobile) ||
+      limpiarValor(banner.fotoMobile) ||
+      limpiarValor(banner.fotoMovil) ||
+      LOCAL_BANNER_MOBILE,
   };
 }
 
@@ -54,7 +48,9 @@ function obtenerBannerActivo(banners = []) {
     ? banners.map(normalizarBanner).filter(Boolean)
     : [];
 
-  const activos = lista.filter((x) => x.estado === 'Activo' || x.activo === true);
+  const activos = lista.filter(
+    (x) => x.estado === 'Activo' || x.activo === true
+  );
 
   return activos[0] || lista[0] || null;
 }
@@ -62,45 +58,21 @@ function obtenerBannerActivo(banners = []) {
 export default function Home() {
   const { banners = [], categorias = [], productos = [] } = useElan();
 
-  const [ancho, setAncho] = useState(() => {
-    if (typeof window === 'undefined') return 1200;
-    return window.innerWidth;
-  });
+  const bannerActivo = obtenerBannerActivo(banners);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    const actualizar = () => setAncho(window.innerWidth);
-
-    actualizar();
-    window.addEventListener('resize', actualizar);
-    window.addEventListener('orientationchange', actualizar);
-
-    return () => {
-      window.removeEventListener('resize', actualizar);
-      window.removeEventListener('orientationchange', actualizar);
-    };
-  }, []);
-
-  const esMovil = ancho <= 850;
-
-  const bannerActivo = useMemo(() => obtenerBannerActivo(banners), [banners]);
-
-  const imagenBanner =
-    (esMovil
-      ? bannerActivo?.imagenMobile
-      : bannerActivo?.imagenDesktop) ||
-    bannerActivo?.imagen ||
-    FALLBACK_BANNER;
+  const desktopBanner = bannerActivo?.imagenDesktop || LOCAL_BANNER_DESKTOP;
+  const mobileBanner = bannerActivo?.imagenMobile || LOCAL_BANNER_MOBILE;
 
   return (
     <main>
-      <section
-        className="hero"
-        style={{
-          backgroundImage: `linear-gradient(90deg,rgba(0,0,0,.82),rgba(0,0,0,.42),rgba(0,0,0,.08)),url("${imagenBanner}")`,
-        }}
-      >
+      <section className="hero">
+        <picture className="hero-picture">
+          <source media="(max-width: 850px)" srcSet={mobileBanner} />
+          <img src={desktopBanner} alt="ELANVISUAL" />
+        </picture>
+
+        <div className="hero-overlay" />
+
         <div className="hero-copy">
           <span>ELANVISUAL</span>
 

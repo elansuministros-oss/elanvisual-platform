@@ -27,29 +27,8 @@ export function PublicLayout() {
           onClick={() => setMenuAbierto((prev) => !prev)}
           aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
           aria-expanded={menuAbierto}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 72,
-            height: 72,
-            minWidth: 72,
-            minHeight: 72,
-            padding: 0,
-            marginLeft: 'auto',
-            borderRadius: 20,
-            background: '#151f2f',
-            color: '#fff',
-            fontSize: 50,
-            lineHeight: 1,
-            fontWeight: 900,
-            border: 0,
-            zIndex: 99999,
-          }}
         >
-          <span style={{ lineHeight: 1, transform: 'translateY(-4px)' }}>
-            ☰
-          </span>
+          <span>{menuAbierto ? '×' : '☰'}</span>
         </button>
 
         <nav className={menuAbierto ? 'open' : ''}>
