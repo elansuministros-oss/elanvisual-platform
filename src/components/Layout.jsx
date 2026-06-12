@@ -12,9 +12,7 @@ export function PublicLayout() {
   const { carrito } = useElan();
   const [menuAbierto, setMenuAbierto] = useState(false);
 
-  const cerrarMenu = () => {
-    setMenuAbierto(false);
-  };
+  const cerrarMenu = () => setMenuAbierto(false);
 
   return (
     <>
@@ -29,8 +27,29 @@ export function PublicLayout() {
           onClick={() => setMenuAbierto((prev) => !prev)}
           aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
           aria-expanded={menuAbierto}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 72,
+            height: 72,
+            minWidth: 72,
+            minHeight: 72,
+            padding: 0,
+            marginLeft: 'auto',
+            borderRadius: 20,
+            background: '#151f2f',
+            color: '#fff',
+            fontSize: 50,
+            lineHeight: 1,
+            fontWeight: 900,
+            border: 0,
+            zIndex: 99999,
+          }}
         >
-          <span>☰</span>
+          <span style={{ lineHeight: 1, transform: 'translateY(-4px)' }}>
+            ☰
+          </span>
         </button>
 
         <nav className={menuAbierto ? 'open' : ''}>
@@ -94,9 +113,7 @@ export function AdminLayout() {
   return (
     <div className="admin-shell">
       <aside className="sidebar">
-        <Link className="brand adminbrand" to="/admin">
-          ✣ ELANVISUAL
-        </Link>
+        <Link className="brand adminbrand" to="/admin">✣ ELANVISUAL</Link>
 
         {admin.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.to === '/admin'}>
@@ -104,9 +121,7 @@ export function AdminLayout() {
           </NavLink>
         ))}
 
-        <button onClick={() => { logout(); nav('/'); }}>
-          Salir
-        </button>
+        <button onClick={() => { logout(); nav('/'); }}>Salir</button>
       </aside>
 
       <main className="admin-main">
@@ -135,9 +150,7 @@ export function VendorLayout() {
   return (
     <div className="admin-shell">
       <aside className="sidebar">
-        <Link className="brand adminbrand" to="/vendedor-panel">
-          VENTAS
-        </Link>
+        <Link className="brand adminbrand" to="/vendedor-panel">VENTAS</Link>
 
         {items.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.to === '/vendedor-panel'}>
@@ -145,9 +158,7 @@ export function VendorLayout() {
           </NavLink>
         ))}
 
-        <button onClick={() => { logout(); nav('/'); }}>
-          Salir
-        </button>
+        <button onClick={() => { logout(); nav('/'); }}>Salir</button>
       </aside>
 
       <main className="admin-main">
@@ -172,9 +183,7 @@ export function ProductionLayout() {
   return (
     <div className="admin-shell">
       <aside className="sidebar">
-        <Link className="brand adminbrand" to="/produccion">
-          PRODUCCIÓN
-        </Link>
+        <Link className="brand adminbrand" to="/produccion">PRODUCCIÓN</Link>
 
         {items.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.to === '/produccion'}>
@@ -182,9 +191,7 @@ export function ProductionLayout() {
           </NavLink>
         ))}
 
-        <button onClick={() => { logout(); nav('/'); }}>
-          Salir
-        </button>
+        <button onClick={() => { logout(); nav('/'); }}>Salir</button>
       </aside>
 
       <main className="admin-main">
