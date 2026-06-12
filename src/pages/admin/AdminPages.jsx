@@ -243,7 +243,13 @@ export function Pagos() {
 }
 
 export function Banners() {
-  const { banners, multimedia = [] } = useElan();
+  const {
+  banners,
+  multimedia = [],
+  guardarBanner,
+  eliminarBanner,
+  activarBanner,
+} = useElan();
 
   const [lista, setLista] = useState(banners || []);
 
@@ -274,7 +280,6 @@ export function Banners() {
 
   function sincronizar(nuevaLista) {
     setLista(nuevaLista);
-    actualizarBannersStorage(nuevaLista);
   }
 
   function limpiar() {
