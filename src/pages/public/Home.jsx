@@ -60,8 +60,8 @@ export default function Home() {
 
   const bannerActivo = obtenerBannerActivo(banners);
 
-  const desktopBanner = bannerActivo?.imagenDesktop || LOCAL_BANNER_DESKTOP;
-  const mobileBanner = bannerActivo?.imagenMobile || LOCAL_BANNER_MOBILE;
+const desktopBanner = LOCAL_BANNER_DESKTOP;
+const mobileBanner = LOCAL_BANNER_MOBILE;
 
   return (
     <main>
