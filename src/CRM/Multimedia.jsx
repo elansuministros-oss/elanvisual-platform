@@ -15,7 +15,6 @@ const categorias = [
 
 const pesoMaximoMB = 6;
 const pesoMaximoBytes = pesoMaximoMB * 1024 * 1024;
-
 const anchoMaximo = 1800;
 const calidadWebp = 0.75;
 
@@ -47,11 +46,7 @@ function comprimirImagen(file) {
 
         const dataUrl = canvas.toDataURL('image/webp', calidadWebp);
 
-        resolve({
-          dataUrl,
-          ancho,
-          alto,
-        });
+        resolve({ dataUrl, ancho, alto });
       };
 
       img.onerror = () => reject(new Error('No se pudo procesar la imagen.'));
@@ -107,7 +102,6 @@ export default function MultimediaCRM() {
 
     try {
       setProcesando(true);
-
       const optimizada = await comprimirImagen(file);
 
       setForm((prev) => ({
@@ -143,13 +137,32 @@ export default function MultimediaCRM() {
       return;
     }
 
-    agregarMultimedia({
+    multimedia.forEach((item) => {
+      if (item.categoria === form.categoria && item.estado === 'Activo') {
+        actualizarMultimedia(item.id, { estado: 'Inactivo' });
+      }
+    });
+
+    const nuevo = {
+      id: `media-${Date.now()}`,
       nombre: form.nombre.trim(),
       categoria: form.categoria,
       imagen: form.imagen,
+      url: form.imagen,
+      src: form.imagen,
       estado: form.estado,
       fecha: formatoFecha(),
-    });
+    };
+
+    if (form.categoria === 'Banner Mobile') {
+      nuevo.imagenMobile = form.imagen;
+    }
+
+    if (form.categoria === 'Banner' || form.categoria === 'Banner Desktop') {
+      nuevo.imagenDesktop = form.imagen;
+    }
+
+    agregarMultimedia(nuevo);
 
     setForm({
       nombre: '',
@@ -222,7 +235,6 @@ export default function MultimediaCRM() {
         </label>
 
         {procesando && <p>Procesando imagen...</p>}
-
         {detalleImagen && <p>{detalleImagen}</p>}
 
         {form.imagen && (
