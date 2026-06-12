@@ -1,140 +1,135 @@
 import { Link } from 'react-router-dom';
 import { useElan } from '../../core/context/ElanContext.jsx';
 
-const LOCAL_BANNER_DESKTOP = '/banners/banner-desktop.jpg';
-const LOCAL_BANNER_MOBILE = '/banners/banner-mobile.jpg';
+const FALLBACK_DESKTOP = '/banners/banner-desktop.jpg';
 
-function limpiarValor(valor) {
+function limpiar(valor) {
   return typeof valor === 'string' ? valor.trim() : '';
 }
 
-function obtenerImagen(item) {
-  if (!item) return '';
-
+function imagenDe(item) {
   return (
-    limpiarValor(item.imagen) ||
-    limpiarValor(item.imagenDesktop) ||
-    limpiarValor(item.imagenMobile) ||
-    limpiarValor(item.url) ||
-    limpiarValor(item.src) ||
-    limpiarValor(item.image) ||
-    limpiarValor(item.archivo) ||
-    limpiarValor(item.file) ||
+    limpiar(item?.imagenMobile) ||
+    limpiar(item?.imagenMovil) ||
+    limpiar(item?.imagen_mobile) ||
+    limpiar(item?.imagenDesktop) ||
+    limpiar(item?.imagenEscritorio) ||
+    limpiar(item?.imagen) ||
+    limpiar(item?.url) ||
+    limpiar(item?.src) ||
+    limpiar(item?.archivo) ||
+    limpiar(item?.image) ||
     ''
   );
 }
 
-function estaActivo(item) {
+function activo(item) {
   return item?.estado === 'Activo' || item?.activo === true || item?.active === true;
 }
 
-function porCategoria(lista, categoriaBuscada) {
-  if (!Array.isArray(lista)) return null;
+function leerEstadoLocal() {
+  try {
+    const keys = [
+      'elanvisual_state_v2',
+      'elanvisual_state',
+      'elan_state',
+    ];
 
-  const normalizada = categoriaBuscada.toLowerCase();
+    for (const key of keys) {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data && typeof data === 'object') return data;
+      }
+    }
+  } catch {
+    return {};
+  }
+
+  return {};
+}
+
+function unirListas(...listas) {
+  return listas.flatMap((lista) => (Array.isArray(lista) ? lista : []));
+}
+
+function buscarMultimediaPorCategoria(multimedia, categoria) {
+  const objetivo = categoria.toLowerCase();
 
   return (
-    lista.find(
-      (item) =>
-        estaActivo(item) &&
-        limpiarValor(item.categoria).toLowerCase() === normalizada
+    multimedia.find(
+      (item) => activo(item) && limpiar(item.categoria).toLowerCase() === objetivo
     ) ||
-    lista.find(
-      (item) =>
-        limpiarValor(item.categoria).toLowerCase() === normalizada
+    multimedia.find(
+      (item) => limpiar(item.categoria).toLowerCase() === objetivo
     ) ||
     null
   );
 }
 
-function normalizarBanner(banner, multimedia = []) {
-  const multimediaDesktop = porCategoria(multimedia, 'Banner');
-  const multimediaMobile = porCategoria(multimedia, 'Banner Mobile');
+function obtenerBanner({ banners, multimedia }) {
+  const bannerActivo =
+    (Array.isArray(banners) &&
+      (banners.find(activo) || banners[0])) ||
+    null;
 
-  const imagenBase = obtenerImagen(banner);
+  const mediaDesktop = buscarMultimediaPorCategoria(multimedia, 'Banner');
+  const mediaMobile = buscarMultimediaPorCategoria(multimedia, 'Banner Mobile');
 
-  const imagenDesktop =
-    limpiarValor(banner?.imagenDesktop) ||
-    limpiarValor(banner?.imagenEscritorio) ||
-    limpiarValor(banner?.desktop) ||
-    limpiarValor(banner?.bannerDesktop) ||
-    limpiarValor(banner?.imageDesktop) ||
-    obtenerImagen(multimediaDesktop) ||
-    imagenBase ||
-    LOCAL_BANNER_DESKTOP;
+  const desktop =
+    limpiar(bannerActivo?.imagenDesktop) ||
+    limpiar(bannerActivo?.imagenEscritorio) ||
+    limpiar(bannerActivo?.desktop) ||
+    limpiar(bannerActivo?.bannerDesktop) ||
+    imagenDe(mediaDesktop) ||
+    imagenDe(bannerActivo) ||
+    FALLBACK_DESKTOP;
 
-  const imagenMobile =
-    limpiarValor(banner?.imagenMobile) ||
-    limpiarValor(banner?.imagenMovil) ||
-    limpiarValor(banner?.imagen_movil) ||
-    limpiarValor(banner?.imagen_mobile) ||
-    limpiarValor(banner?.mobile) ||
-    limpiarValor(banner?.bannerMobile) ||
-    limpiarValor(banner?.bannerMovil) ||
-    limpiarValor(banner?.imageMobile) ||
-    obtenerImagen(multimediaMobile) ||
-    imagenDesktop ||
-    LOCAL_BANNER_MOBILE;
+  const mobile =
+    limpiar(bannerActivo?.imagenMobile) ||
+    limpiar(bannerActivo?.imagenMovil) ||
+    limpiar(bannerActivo?.imagen_mobile) ||
+    limpiar(bannerActivo?.mobile) ||
+    limpiar(bannerActivo?.bannerMobile) ||
+    imagenDe(mediaMobile) ||
+    desktop;
 
   return {
-    ...(banner || {}),
-    imagen: imagenBase || imagenDesktop,
-    imagenDesktop,
-    imagenMobile,
+    ...(bannerActivo || {}),
+    imagenDesktop: desktop,
+    imagenMobile: mobile,
   };
 }
 
-function obtenerBannerActivo(banners = [], multimedia = []) {
-  const lista = Array.isArray(banners)
-    ? banners.map((banner) => normalizarBanner(banner, multimedia))
-    : [];
-
-  const activos = lista.filter(estaActivo);
-
-  const ordenados = [...activos].sort((a, b) => {
-    const ordenA = Number(a.orden ?? 0);
-    const ordenB = Number(b.orden ?? 0);
-    return ordenA - ordenB;
-  });
-
-  return ordenados[0] || activos[0] || lista[0] || normalizarBanner(null, multimedia);
-}
-
 export default function Home() {
-  const {
-    banners = [],
-    multimedia = [],
-    media = [],
-    archivos = [],
-    categorias = [],
-    productos = [],
-  } = useElan();
+  const contexto = useElan();
+  const local = leerEstadoLocal();
 
-  const bibliotecaMultimedia = [
-    ...(Array.isArray(multimedia) ? multimedia : []),
-    ...(Array.isArray(media) ? media : []),
-    ...(Array.isArray(archivos) ? archivos : []),
-  ];
+  const categorias = contexto?.categorias || local?.categorias || [];
+  const productos = contexto?.productos || local?.productos || [];
 
-  const bannerActivo = obtenerBannerActivo(banners, bibliotecaMultimedia);
+  const banners = unirListas(
+    contexto?.banners,
+    local?.banners
+  );
 
-  const desktopBanner =
-    bannerActivo?.imagenDesktop ||
-    bannerActivo?.imagen ||
-    LOCAL_BANNER_DESKTOP;
+  const multimedia = unirListas(
+    contexto?.multimedia,
+    contexto?.media,
+    contexto?.archivos,
+    local?.multimedia,
+    local?.media,
+    local?.archivos
+  );
 
-  const mobileBanner =
-    bannerActivo?.imagenMobile ||
-    bannerActivo?.imagenDesktop ||
-    bannerActivo?.imagen ||
-    LOCAL_BANNER_MOBILE;
+  const bannerActivo = obtenerBanner({ banners, multimedia });
 
   return (
     <main>
       <section className="hero">
         <picture className="hero-picture">
-          <source media="(max-width: 850px)" srcSet={mobileBanner} />
-          <img src={desktopBanner} alt="ELANVISUAL" />
+          <source media="(max-width: 850px)" srcSet={bannerActivo.imagenMobile} />
+          <img src={bannerActivo.imagenDesktop} alt="ELANVISUAL" />
         </picture>
 
         <div className="hero-overlay" />
@@ -143,16 +138,16 @@ export default function Home() {
           <span>ELANVISUAL</span>
 
           <h1>
-            {bannerActivo?.titulo || 'Rotulación, impresión y proyectos visuales'}
+            {bannerActivo?.titulo || 'Soluciones visuales para marcas, espacios y negocios.'}
           </h1>
 
           <p>
             {bannerActivo?.subtitulo ||
-              'Fabricamos soluciones visuales reales para negocios, fachadas, interiores, vehículos y puntos de venta.'}
+              'Rotulación, impresión digital, fachadas, displays, acrílicos, PVC y proyectos especiales.'}
           </p>
 
           <Link className="primary" to={bannerActivo?.enlace || '/catalogo'}>
-            {bannerActivo?.boton || 'Ver catálogo'}
+            {bannerActivo?.boton || 'Ver Catálogo'}
           </Link>
         </div>
       </section>
