@@ -612,3 +612,32 @@ form button{
   max-width:520px !important;
   width:100% !important;
 }
+/* HAMBURGUESA XL */
+@media (max-width:1024px){
+
+  .topbar.public .elan-menu-mobile{
+    width:80px !important;
+    height:80px !important;
+    min-width:80px !important;
+    min-height:80px !important;
+    border-radius:20px !important;
+    background:#0f1b33 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    padding:0 !important;
+  }
+
+  .topbar.public .elan-menu-mobile span{
+    font-size:56px !important;
+    font-weight:900 !important;
+    line-height:1 !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:100% !important;
+    height:100% !important;
+    transform:translateY(-4px) !important;
+  }
+
+}

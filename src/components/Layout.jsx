@@ -28,8 +28,7 @@ export function PublicLayout() {
           aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
           aria-expanded={menuAbierto}
         >
-          <span>{menuAbierto ? '×' : '☰'}</span>
-        </button>
+<span>{menuAbierto ? '✕' : '≡'}</span>        </button>
 
         <nav className={menuAbierto ? 'open' : ''}>
           <NavLink to="/" onClick={cerrarMenu}>Inicio</NavLink>
