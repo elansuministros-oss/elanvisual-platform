@@ -109,39 +109,46 @@ export function AdminLayout() {
 }
 
 export function VendorLayout() {
+  const { logout } = useElan();
+  const nav = useNavigate();
+
   const items = [
-    'Dashboard',
-    'QR',
-    'Clientes',
-    'Leads',
-    'Cotizador Interno',
-    'Cotizaciones',
-    'Pedidos',
-    'Comisiones',
-    'Perfil',
+    { label: 'Dashboard', to: '/vendedor-panel' },
+    { label: 'QR', to: '/vendedor-panel/qr' },
+    { label: 'Clientes', to: '/vendedor-panel/clientes' },
+    { label: 'Leads', to: '/vendedor-panel/leads' },
+    { label: 'Cotizador Interno', to: '/vendedor-panel/cotizador-interno' },
+    { label: 'Cotizaciones', to: '/vendedor-panel/cotizaciones' },
+    { label: 'Pedidos', to: '/vendedor-panel/pedidos' },
+    { label: 'Comisiones', to: '/vendedor-panel/comisiones' },
+    { label: 'Perfil', to: '/vendedor-panel/perfil' },
   ];
 
   return (
     <div className="admin-shell">
       <aside className="sidebar">
-        <Link className="brand adminbrand" to="/vendedor">
-          VENDEDOR
+        <Link className="brand adminbrand" to="/vendedor-panel">
+          VENTAS
         </Link>
 
-        {items.map((i) => (
+        {items.map((item) => (
           <NavLink
-            key={i}
-            to={
-              i === 'Dashboard'
-                ? '/vendedor'
-                : '/vendedor/' +
-                  i.toLowerCase().replaceAll(' ', '-')
-            }
-            end={i === 'Dashboard'}
+            key={item.to}
+            to={item.to}
+            end={item.to === '/vendedor-panel'}
           >
-            {i}
+            {item.label}
           </NavLink>
         ))}
+
+        <button
+          onClick={() => {
+            logout();
+            nav('/');
+          }}
+        >
+          Salir
+        </button>
       </aside>
 
       <main className="admin-main">
@@ -152,6 +159,17 @@ export function VendorLayout() {
 }
 
 export function ProductionLayout() {
+  const { logout } = useElan();
+  const nav = useNavigate();
+
+  const items = [
+    { label: 'Dashboard', to: '/produccion' },
+    { label: 'Órdenes Trabajo', to: '/produccion/ordenes-trabajo' },
+    { label: 'Producción', to: '/produccion/procesos' },
+    { label: 'Consumo Materiales', to: '/produccion/consumo-materiales' },
+    { label: 'Entregas / Instalaciones', to: '/produccion/entregas' },
+  ];
+
   return (
     <div className="admin-shell">
       <aside className="sidebar">
@@ -159,29 +177,24 @@ export function ProductionLayout() {
           PRODUCCIÓN
         </Link>
 
-        <NavLink to="/produccion" end>
-          Dashboard
-        </NavLink>
+        {items.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === '/produccion'}
+          >
+            {item.label}
+          </NavLink>
+        ))}
 
-        <NavLink to="/produccion/ordenes">
-          Órdenes
-        </NavLink>
-
-        <NavLink to="/produccion/seguimiento">
-          Seguimiento
-        </NavLink>
-
-        <NavLink to="/produccion/inventario">
-          Inventario
-        </NavLink>
-
-        <NavLink to="/admin/consumo-materiales">
-          Consumo Materiales
-        </NavLink>
-
-        <NavLink to="/produccion/entregas">
-          Entregas
-        </NavLink>
+        <button
+          onClick={() => {
+            logout();
+            nav('/');
+          }}
+        >
+          Salir
+        </button>
       </aside>
 
       <main className="admin-main">

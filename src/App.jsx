@@ -124,28 +124,23 @@ export default function App() {
         <Route path="qr" element={<VendorQR />} />
         <Route path="clientes" element={<ClientesCRM />} />
         <Route path="leads" element={<VendorSimple titulo="Mis leads" />} />
-
         <Route path="cotizador-interno" element={<VendorCotizador />} />
         <Route path="cotizaciones" element={<VendorCotizaciones />} />
         <Route path="pedidos" element={<VendorPedidos />} />
         <Route path="comisiones" element={<VendorComisiones />} />
-
         <Route path="perfil" element={<VendorSimple titulo="Mi perfil" />} />
       </Route>
 
       <Route path="/vendedor" element={<Navigate to="/vendedor-panel" />} />
+      <Route path="/vendedor/*" element={<Navigate to="/vendedor-panel" />} />
 
       <Route path="/produccion" element={<ProductionLayout />}>
         <Route index element={<ProductionDashboard />} />
-
         <Route path="ordenes" element={<ProductionOrders />} />
         <Route path="ordenes-trabajo" element={<ProductionOrders />} />
-
         <Route path="seguimiento" element={<ProductionTracking />} />
         <Route path="procesos" element={<ProductionTracking />} />
-
         <Route path="consumo-materiales" element={<ConsumoMaterialesCRM />} />
-
         <Route
           path="entregas"
           element={<ProductionSimple titulo="Entregas e instalaciones" />}
