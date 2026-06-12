@@ -16,30 +16,35 @@ function normalizarBanner(banner) {
     limpiarValor(banner.image) ||
     limpiarValor(banner.url);
 
+  const imagenDesktop =
+    limpiarValor(banner.imagenDesktop) ||
+    limpiarValor(banner.imagenEscritorio) ||
+    limpiarValor(banner.desktop) ||
+    limpiarValor(banner.bannerDesktop) ||
+    limpiarValor(banner.imageDesktop) ||
+    imagen ||
+    LOCAL_BANNER_DESKTOP;
+
+  const imagenMobile =
+    limpiarValor(banner.imagenMobile) ||
+    limpiarValor(banner.imagenMovil) ||
+    limpiarValor(banner.imagen_movil) ||
+    limpiarValor(banner.imagen_mobile) ||
+    limpiarValor(banner.mobile) ||
+    limpiarValor(banner.bannerMobile) ||
+    limpiarValor(banner.bannerMovil) ||
+    limpiarValor(banner.imageMobile) ||
+    limpiarValor(banner.image_mobile) ||
+    limpiarValor(banner.fotoMobile) ||
+    limpiarValor(banner.fotoMovil) ||
+    imagenDesktop ||
+    LOCAL_BANNER_MOBILE;
+
   return {
     ...banner,
-    imagenDesktop:
-      limpiarValor(banner.imagenDesktop) ||
-      limpiarValor(banner.imagenEscritorio) ||
-      limpiarValor(banner.desktop) ||
-      limpiarValor(banner.bannerDesktop) ||
-      limpiarValor(banner.imageDesktop) ||
-      imagen ||
-      LOCAL_BANNER_DESKTOP,
-
-    imagenMobile:
-      limpiarValor(banner.imagenMobile) ||
-      limpiarValor(banner.imagenMovil) ||
-      limpiarValor(banner.imagen_movil) ||
-      limpiarValor(banner.imagen_mobile) ||
-      limpiarValor(banner.mobile) ||
-      limpiarValor(banner.bannerMobile) ||
-      limpiarValor(banner.bannerMovil) ||
-      limpiarValor(banner.imageMobile) ||
-      limpiarValor(banner.image_mobile) ||
-      limpiarValor(banner.fotoMobile) ||
-      limpiarValor(banner.fotoMovil) ||
-      LOCAL_BANNER_MOBILE,
+    imagen,
+    imagenDesktop,
+    imagenMobile,
   };
 }
 
@@ -49,10 +54,16 @@ function obtenerBannerActivo(banners = []) {
     : [];
 
   const activos = lista.filter(
-    (x) => x.estado === 'Activo' || x.activo === true
+    (banner) => banner.estado === 'Activo' || banner.activo === true
   );
 
-  return activos[0] || lista[0] || null;
+  const ordenados = [...activos].sort((a, b) => {
+    const ordenA = Number(a.orden ?? 0);
+    const ordenB = Number(b.orden ?? 0);
+    return ordenA - ordenB;
+  });
+
+  return ordenados[0] || activos[0] || lista[0] || null;
 }
 
 export default function Home() {
@@ -60,8 +71,16 @@ export default function Home() {
 
   const bannerActivo = obtenerBannerActivo(banners);
 
-const desktopBanner = LOCAL_BANNER_DESKTOP;
-const mobileBanner = LOCAL_BANNER_MOBILE;
+  const desktopBanner =
+    bannerActivo?.imagenDesktop ||
+    bannerActivo?.imagen ||
+    LOCAL_BANNER_DESKTOP;
+
+  const mobileBanner =
+    bannerActivo?.imagenMobile ||
+    bannerActivo?.imagenDesktop ||
+    bannerActivo?.imagen ||
+    LOCAL_BANNER_MOBILE;
 
   return (
     <main>
