@@ -34,33 +34,17 @@ export function PublicLayout() {
         </button>
 
         <nav className={menuAbierto ? 'open' : ''}>
-          <NavLink to="/" onClick={cerrarMenu}>
-            Inicio
-          </NavLink>
-
-          <NavLink to="/catalogo" onClick={cerrarMenu}>
-            Catálogo
-          </NavLink>
-
-          <NavLink to="/showroom" onClick={cerrarMenu}>
-            Showroom
-          </NavLink>
-
-          <NavLink to="/nosotros" onClick={cerrarMenu}>
-            Nosotros
-          </NavLink>
-
-          <NavLink to="/contacto" onClick={cerrarMenu}>
-            Contacto
-          </NavLink>
+          <NavLink to="/" onClick={cerrarMenu}>Inicio</NavLink>
+          <NavLink to="/catalogo" onClick={cerrarMenu}>Catálogo</NavLink>
+          <NavLink to="/showroom" onClick={cerrarMenu}>Showroom</NavLink>
+          <NavLink to="/nosotros" onClick={cerrarMenu}>Nosotros</NavLink>
+          <NavLink to="/contacto" onClick={cerrarMenu}>Contacto</NavLink>
 
           <NavLink className="cart" to="/carrito" onClick={cerrarMenu}>
             🛒 {carrito.length}
           </NavLink>
 
-          <NavLink to="/login" onClick={cerrarMenu}>
-            Login
-          </NavLink>
+          <NavLink to="/login" onClick={cerrarMenu}>Login</NavLink>
         </nav>
       </header>
 
@@ -115,21 +99,12 @@ export function AdminLayout() {
         </Link>
 
         {admin.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/admin'}
-          >
+          <NavLink key={item.to} to={item.to} end={item.to === '/admin'}>
             {item.label}
           </NavLink>
         ))}
 
-        <button
-          onClick={() => {
-            logout();
-            nav('/');
-          }}
-        >
+        <button onClick={() => { logout(); nav('/'); }}>
           Salir
         </button>
       </aside>
@@ -165,21 +140,12 @@ export function VendorLayout() {
         </Link>
 
         {items.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/vendedor-panel'}
-          >
+          <NavLink key={item.to} to={item.to} end={item.to === '/vendedor-panel'}>
             {item.label}
           </NavLink>
         ))}
 
-        <button
-          onClick={() => {
-            logout();
-            nav('/');
-          }}
-        >
+        <button onClick={() => { logout(); nav('/'); }}>
           Salir
         </button>
       </aside>
@@ -211,21 +177,12 @@ export function ProductionLayout() {
         </Link>
 
         {items.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/produccion'}
-          >
+          <NavLink key={item.to} to={item.to} end={item.to === '/produccion'}>
             {item.label}
           </NavLink>
         ))}
 
-        <button
-          onClick={() => {
-            logout();
-            nav('/');
-          }}
-        >
+        <button onClick={() => { logout(); nav('/'); }}>
           Salir
         </button>
       </aside>
