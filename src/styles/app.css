@@ -166,9 +166,9 @@ h1 {
 }
 
 .public-menu-button {
-  width: 100px;
-  height: 100px;
-  min-width: 100px;
+  width: 300px;
+  height: 300px;
+  min-width: 300px;
   display: grid;
   place-items: center;
   border: 0;
