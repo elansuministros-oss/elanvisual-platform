@@ -13,13 +13,13 @@ const configuracionInicial = {
   whatsapp: '+505 8522 8183',
   correo: 'elansuministros@gmail.com',
   instagram: '@elanvisual',
-  colorPrincipal: '#1E5AA8',
-  colorSecundario: '#058B8C',
+  colorPrincipal: '#111827',
+  colorSecundario: '#C9A227',
   textoHero: 'Rotulación profesional para negocios reales',
   descripcionHero:
     'Rótulos, letras 3D, acrílico, PVC, impresión UV, DTF UV, CNC, láser, fachadas y displays fabricables desde una solicitud móvil.',
   instruccionesPago:
-    'Después de transferir, responde este mensaje enviando el comprobante para confirmar tu pedido.',
+    'Después de transferir, responde este mensaje enviando el comprobante para confirmar tu solicitud.',
   anticipoPorcentaje: 60,
 };
 
@@ -29,7 +29,8 @@ const bannersIniciales = [
   {
     id: 'hero-principal-default',
     titulo: 'Rotulación profesional para negocios reales',
-    subtitulo: 'Letras 3D, fachadas, acrílico, PVC, impresión UV, DTF UV, CNC, láser y displays fabricables.',
+    subtitulo:
+      'Letras 3D, fachadas, acrílico, PVC, impresión UV, DTF UV, CNC, láser y displays fabricables.',
     ubicacion: 'hero-principal',
     link: 'catalogo',
     activo: true,
@@ -38,56 +39,33 @@ const bannersIniciales = [
     createdAt: 1,
     actualizadoEn: 1,
   },
-  {
-    id: 'slide-1',
-    titulo: 'Letras 3D y fachadas',
-    subtitulo: 'Soluciones para interiores, exteriores, recepción y puntos de venta.',
-    ubicacion: 'slider-home',
-    link: 'catalogo',
-    activo: false,
-    imagen: '/productos/letras-3d.jpg',
-    createdAt: 2,
-    actualizadoEn: 2,
-  },
-  {
-    id: 'slide-2',
-    titulo: 'Impresión UV y DTF UV',
-    subtitulo: 'Aplicaciones premium para marcas, empaques, señalética y artículos promocionales.',
-    ubicacion: 'slider-home',
-    link: 'catalogo',
-    activo: false,
-    imagen: '/productos/impresion-uv.jpg',
-    createdAt: 3,
-    actualizadoEn: 3,
-  },
-  {
-    id: 'slide-3',
-    titulo: 'CNC, láser y estructuras',
-    subtitulo: 'Fabricación técnica con materiales reales, medidas precisas y acabados profesionales.',
-    ubicacion: 'slider-home',
-    link: 'catalogo',
-    activo: false,
-    imagen: '/productos/cnc-laser.jpg',
-    createdAt: 4,
-    actualizadoEn: 4,
-  },
-  {
-    id: 'promo-1',
-    titulo: 'Solicitud destacada',
-    subtitulo: 'Envíanos medidas, fotos del sitio y material requerido para preparar una cotización técnica.',
-    ubicacion: 'home',
-    link: 'catalogo',
-    activo: false,
-    imagen: '',
-    createdAt: 5,
-    actualizadoEn: 5,
-  },
 ];
 
 const trabajosIniciales = [
-  { id: 'trabajo-1', titulo: 'Letras PVC para recepción', tipo: 'Foto', descripcion: 'Fabricación en PVC con acabado limpio para instalación interior.', imagen: '/productos/letras-pvc.jpg', activo: true },
-  { id: 'trabajo-2', titulo: 'Fachada comercial', tipo: 'Foto', descripcion: 'Rotulación exterior con estructura, frente visual y montaje técnico.', imagen: '/productos/fachada.jpg', activo: true },
-  { id: 'trabajo-3', titulo: 'Display y señalización', tipo: 'Foto', descripcion: 'Piezas fabricadas para punto de venta, orientación y presentación de marca.', imagen: '/productos/display.jpg', activo: true },
+  {
+    id: 'trabajo-1',
+    titulo: 'Letras PVC para recepción',
+    tipo: 'Foto',
+    descripcion: 'Fabricación en PVC con acabado limpio para instalación interior.',
+    imagen: '/productos/letras-pvc.jpg',
+    activo: true,
+  },
+  {
+    id: 'trabajo-2',
+    titulo: 'Fachada comercial',
+    tipo: 'Foto',
+    descripcion: 'Rotulación exterior con estructura, frente visual y montaje técnico.',
+    imagen: '/productos/fachada.jpg',
+    activo: true,
+  },
+  {
+    id: 'trabajo-3',
+    titulo: 'Display y señalización',
+    tipo: 'Foto',
+    descripcion: 'Piezas fabricadas para punto de venta, orientación y presentación de marca.',
+    imagen: '/productos/display.jpg',
+    activo: true,
+  },
 ];
 
 const clientesIniciales = [];
@@ -102,16 +80,33 @@ const usuariosIniciales = [
     activo: true,
   },
   {
+    id: 'ventas-1',
+    usuario: 'ventas',
+    email: 'ventas@visual.elankav.com',
+    password: 'VentasElan2026#Seguro',
+    rol: 'ventas',
+    activo: true,
+  },
+  {
     id: 'prod-1',
     usuario: 'produccion',
-    email: 'produccion@pet.elankav.com',
+    email: 'produccion@visual.elankav.com',
     password: 'ProdElan2026#Seguro',
     rol: 'produccion',
     activo: true,
   },
 ];
 
-export const estadosProduccion = ['pendiente', 'diseno', 'produccion', 'control_calidad', 'listo', 'entregado'];
+export const rolesSistema = ['admin', 'ventas', 'produccion'];
+
+export const estadosProduccion = [
+  'pendiente',
+  'diseno',
+  'produccion',
+  'control_calidad',
+  'listo',
+  'entregado',
+];
 
 export const etiquetasEstado = {
   pendiente: 'Pendiente',
@@ -130,7 +125,6 @@ export const etiquetasEstado = {
   entregado: 'Entregado',
   cancelado: 'Cancelado',
 };
-
 
 function esDataUrl(valor) {
   return String(valor || '').trim().startsWith('data:image/');
@@ -167,7 +161,6 @@ function normalizarBanners(lista, valorInicial = []) {
 function leerStorage(clave, valorInicial) {
   try {
     const guardado = localStorage.getItem(clave);
-
     if (!guardado) return valorInicial;
 
     const datos = JSON.parse(guardado);
@@ -186,12 +179,11 @@ function guardarStorage(clave, valor) {
   try {
     localStorage.setItem(clave, JSON.stringify(valor));
   } catch {
-    // sin acción
+    // Sin acción.
   }
 }
 
-
-const APP_STATE_TABLE = 'elanpet_app_state'; // Se mantiene por compatibilidad de Supabase durante la migración ELANVISUAL
+const APP_STATE_TABLE = 'elanpet_app_state'; // Se mantiene por compatibilidad de Supabase durante migración ELANVISUAL.
 const APP_STATE_ID = 'global';
 
 function construirEstadoCompartido({
@@ -256,31 +248,32 @@ function normalizarWhatsAppNicaragua(numero) {
   return limpio;
 }
 
-
 function whatsappValidoNicaragua(numero) {
   const limpio = normalizarWhatsAppNicaragua(numero);
   return limpio.startsWith('505') && limpio.length === 11;
 }
 
-function esCuentaReal(cuenta) {
-  const numero = String(cuenta?.numero || '').replace(/[^0-9]/g, '');
-  return cuenta?.activa !== false && cuenta?.visible !== false && numero.length >= 6 && !/^0+$/.test(numero);
-}
-
 function asegurarUsuariosBase(listaUsuarios = []) {
-  const base = usuariosIniciales;
-  const existeAcceso = (lista, usuarioBase) =>
-    lista.some(
+  const salida = [...listaUsuarios];
+
+  usuariosIniciales.forEach((usuarioBase) => {
+    const existe = salida.some(
       (u) =>
         normalizarUsuario(u.usuario) === normalizarUsuario(usuarioBase.usuario) ||
         normalizarUsuario(u.email) === normalizarUsuario(usuarioBase.email)
     );
 
-  const salida = [...listaUsuarios];
-  base.forEach((usuarioBase) => {
-    if (!existeAcceso(salida, usuarioBase)) salida.push(usuarioBase);
+    if (!existe) salida.push(usuarioBase);
   });
+
   return salida;
+}
+
+function normalizarRol(rol) {
+  const valor = String(rol || '').toLowerCase().trim();
+  if (valor === 'veterinaria') return 'ventas';
+  if (rolesSistema.includes(valor)) return valor;
+  return 'produccion';
 }
 
 function mapUsuarioFromDb(row) {
@@ -290,8 +283,8 @@ function mapUsuarioFromDb(row) {
     usuario: row.usuario || '',
     email: row.email || '',
     password: row.password || '',
-    rol: row.rol || 'produccion',
-    clienteId: row.cliente_id || row.veterinaria_id || '',
+    rol: normalizarRol(row.rol),
+    clienteId: row.cliente_id || row.vendedor_id || row.veterinaria_id || '',
     activo: row.activo !== false,
     debeCambiarPassword: row.debe_cambiar_password === true,
     creadoEn: row.created_at || '',
@@ -304,18 +297,16 @@ function mapUsuarioToDb(usuario) {
     usuario: normalizarUsuario(usuario.usuario),
     email: normalizarUsuario(usuario.email),
     password: String(usuario.password || '').trim(),
-    rol: usuario.rol || 'produccion',
+    rol: normalizarRol(usuario.rol),
     veterinaria_id: null,
     activo: usuario.activo !== false,
     debe_cambiar_password: usuario.debeCambiarPassword === true,
   };
 }
 
-
 function mapPedidoFromDb(row) {
   const resumen = row.resumen || {};
   const origenComercial = row.origen_comercial || row.origenComercial || null;
-  const veterinaria = null; // Compatibilidad de esquema anterior: ya no se usa como origen operativo.
   const cliente = row.cliente || {};
 
   return {
@@ -324,11 +315,14 @@ function mapPedidoFromDb(row) {
     codigoSeguimiento: row.codigo_seguimiento || row.codigoSeguimiento || '',
     cliente,
     origenComercial,
-    veterinaria,
+    vendedor: origenComercial,
+    veterinaria: null,
     items: Array.isArray(row.items) ? row.items : [],
     origenComercialId: row.origen_comercial_id || row.origenComercialId || '',
+    vendedorId: row.vendedor_id || row.origen_comercial_id || row.origenComercialId || '',
     veterinariaId: '',
     origenComercialCodigo: row.origen_comercial_codigo || row.origenComercialCodigo || '',
+    vendedorCodigo: row.vendedor_codigo || row.origen_comercial_codigo || row.origenComercialCodigo || '',
     veterinariaCodigo: '',
     resumen: {
       subtotal: Number(resumen.subtotal || 0),
@@ -384,6 +378,7 @@ function mapPedidoToDb(pedido) {
 
 function unirPedidos(locales = [], remotos = []) {
   const mapa = new Map();
+
   [...locales, ...remotos].forEach((pedido) => {
     const clave = pedido.id || pedido.numero || pedido.codigoSeguimiento;
     if (!clave) return;
@@ -396,22 +391,38 @@ function unirPedidos(locales = [], remotos = []) {
 }
 
 function esUuid(valor) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(valor || ''));
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    String(valor || '')
+  );
 }
 
 export function AppProvider({ children }) {
-  const [configuracion, setConfiguracion] = useState(() => leerStorage('elanvisual_configuracion', configuracionInicial));
-  const [cuentasBancarias, setCuentasBancarias] = useState(() => leerStorage('elanvisual_cuentas_bancarias', cuentasIniciales));
+  const [configuracion, setConfiguracion] = useState(() =>
+    leerStorage('elanvisual_configuracion', configuracionInicial)
+  );
+  const [cuentasBancarias, setCuentasBancarias] = useState(() =>
+    leerStorage('elanvisual_cuentas_bancarias', cuentasIniciales)
+  );
   const [banners, setBanners] = useState(() => leerStorage('elanvisual_banners', bannersIniciales));
-  const [trabajos, setTrabajos] = useState(() => leerStorage('elanvisual_trabajos', trabajosIniciales));
-  const [productos, setProductos] = useState(() => leerStorage('elanvisual_productos', productosIniciales));
+  const [trabajos, setTrabajos] = useState(() =>
+    leerStorage('elanvisual_trabajos', trabajosIniciales)
+  );
+  const [productos, setProductos] = useState(() =>
+    leerStorage('elanvisual_productos', productosIniciales)
+  );
   const [imagenes, setImagenes] = useState(() => leerStorage('elanvisual_imagenes', []));
-  const [clientes, setClientes] = useState(() => leerStorage('elanvisual_clientes', clientesIniciales));
-  const [clienteActual, setClienteActual] = useState(() => leerStorage('elanvisual_cliente_actual', null));
+  const [clientes, setClientes] = useState(() =>
+    leerStorage('elanvisual_clientes', clientesIniciales)
+  );
+  const [clienteActual, setClienteActual] = useState(() =>
+    leerStorage('elanvisual_cliente_actual', null)
+  );
   const [carrito, setCarrito] = useState([]);
   const [pedidos, setPedidos] = useState(() => leerStorage('elanvisual_pedidos', []));
   const [usuario, setUsuario] = useState(() => leerStorage('elanvisual_usuario_actual', null));
-  const [usuarios, setUsuarios] = useState(() => asegurarUsuariosBase(leerStorage('elanvisual_usuarios', usuariosIniciales)));
+  const [usuarios, setUsuarios] = useState(() =>
+    asegurarUsuariosBase(leerStorage('elanvisual_usuarios', usuariosIniciales))
+  );
   const [supabaseListo, setSupabaseListo] = useState(false);
   const [estadoCompartidoCargado, setEstadoCompartidoCargado] = useState(false);
 
@@ -461,33 +472,21 @@ export function AppProvider({ children }) {
           setConfiguracion({
             ...configuracionInicial,
             ...(remoto.configuracion || {}),
+            nombreSitio: 'ELANVISUAL',
+            logoTexto: 'ELANVISUAL',
           });
 
           setCuentasBancarias(
-            Array.isArray(remoto.cuentasBancarias)
-              ? remoto.cuentasBancarias
-              : cuentasIniciales
+            Array.isArray(remoto.cuentasBancarias) ? remoto.cuentasBancarias : cuentasIniciales
           );
 
           setBanners(normalizarBanners(remoto.banners, bannersIniciales));
 
-          setTrabajos(
-            Array.isArray(remoto.trabajos)
-              ? remoto.trabajos
-              : trabajosIniciales
-          );
+          setTrabajos(Array.isArray(remoto.trabajos) ? remoto.trabajos : trabajosIniciales);
 
-          setProductos(
-            Array.isArray(remoto.productos)
-              ? remoto.productos
-              : productosIniciales
-          );
+          setProductos(Array.isArray(remoto.productos) ? remoto.productos : productosIniciales);
 
-          setImagenes(
-            Array.isArray(remoto.imagenes)
-              ? remoto.imagenes
-              : []
-          );
+          setImagenes(Array.isArray(remoto.imagenes) ? remoto.imagenes : []);
         } else {
           const estadoInicialCompartido = construirEstadoCompartido({
             configuracion,
@@ -498,16 +497,14 @@ export function AppProvider({ children }) {
             imagenes,
           });
 
-          await supabase
-            .from(APP_STATE_TABLE)
-            .upsert(
-              {
-                id: APP_STATE_ID,
-                data: estadoInicialCompartido,
-                updated_at: new Date().toISOString(),
-              },
-              { onConflict: 'id' }
-            );
+          await supabase.from(APP_STATE_TABLE).upsert(
+            {
+              id: APP_STATE_ID,
+              data: estadoInicialCompartido,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'id' }
+          );
         }
 
         if (activo) setEstadoCompartidoCargado(true);
@@ -538,16 +535,14 @@ export function AppProvider({ children }) {
       });
 
       try {
-        const { error } = await supabase
-          .from(APP_STATE_TABLE)
-          .upsert(
-            {
-              id: APP_STATE_ID,
-              data: estadoCompartido,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'id' }
-          );
+        const { error } = await supabase.from(APP_STATE_TABLE).upsert(
+          {
+            id: APP_STATE_ID,
+            data: estadoCompartido,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' }
+        );
 
         if (error) throw error;
       } catch (error) {
@@ -576,7 +571,6 @@ export function AppProvider({ children }) {
       }
 
       try {
-
         const { data: usersData, error: usersError } = await supabase
           .from('usuarios')
           .select('*')
@@ -584,7 +578,7 @@ export function AppProvider({ children }) {
 
         if (usersError) throw usersError;
 
-        let users = asegurarUsuariosBase((usersData || []).map(mapUsuarioFromDb));
+        const users = asegurarUsuariosBase((usersData || []).map(mapUsuarioFromDb));
 
         const { data: pedidosData, error: pedidosError } = await supabase
           .from('pedidos')
@@ -600,10 +594,11 @@ export function AppProvider({ children }) {
         setUsuarios(users);
         setPedidos((prev) => unirPedidos(prev, pedidosRemotos));
 
-
         const usuarioActual = leerStorage('elanvisual_usuario_actual', null);
         if (usuarioActual?.id) {
-          const usuarioSincronizado = users.find((u) => u.id === usuarioActual.id || u.usuario === usuarioActual.usuario);
+          const usuarioSincronizado = users.find(
+            (u) => u.id === usuarioActual.id || u.usuario === usuarioActual.usuario
+          );
           if (usuarioSincronizado) {
             setUsuario(usuarioSincronizado);
           }
@@ -629,7 +624,12 @@ export function AppProvider({ children }) {
       ...configuracion,
       ...datos,
       nombreSitio: datos?.nombreSitio || configuracion?.nombreSitio || 'ELANVISUAL',
-      logoTexto: datos?.logoTexto || datos?.nombreSitio || configuracion?.logoTexto || configuracion?.nombreSitio || 'ELANVISUAL',
+      logoTexto:
+        datos?.logoTexto ||
+        datos?.nombreSitio ||
+        configuracion?.logoTexto ||
+        configuracion?.nombreSitio ||
+        'ELANVISUAL',
       anticipoPorcentaje: Number(datos?.anticipoPorcentaje ?? configuracion?.anticipoPorcentaje ?? 60),
     };
 
@@ -643,7 +643,7 @@ export function AppProvider({ children }) {
 
   const crearCliente = (datos) => {
     const slug = crearSlug(datos.nombre || datos.empresa || datos.codigo);
-    const codigo = datos.codigo || `CLI${String(clientes.length + 1).padStart(3, '0')}`;
+    const codigo = datos.codigo || `VEN${String(clientes.length + 1).padStart(3, '0')}`;
 
     const nuevo = {
       id: datos.id || `cliente-${Date.now()}`,
@@ -656,7 +656,7 @@ export function AppProvider({ children }) {
       email: datos.email || datos.correo || '',
       direccion: datos.direccion || '',
       responsable: datos.responsable || '',
-      origen: datos.origen || 'directo',
+      origen: datos.origen || 'vendedor',
       activo: datos.activo !== false,
       createdAt: datos.createdAt || new Date().toISOString(),
     };
@@ -668,8 +668,12 @@ export function AppProvider({ children }) {
   const actualizarCliente = (datosCliente) => {
     const slug = datosCliente.slug || crearSlug(datosCliente.nombre || datosCliente.empresa || datosCliente.codigo);
     const actualizado = { ...datosCliente, slug };
+
     setClientes((prev) => prev.map((c) => (c.id === actualizado.id ? { ...c, ...actualizado } : c)));
-    if (clienteActual?.id === actualizado.id) setClienteActual((prev) => ({ ...prev, ...actualizado }));
+
+    if (clienteActual?.id === actualizado.id) {
+      setClienteActual((prev) => ({ ...prev, ...actualizado }));
+    }
   };
 
   const eliminarCliente = (id) => {
@@ -678,7 +682,15 @@ export function AppProvider({ children }) {
     if (clienteActual?.id === id) setClienteActual(null);
   };
 
-  // Alias temporales para no romper pantallas heredadas durante la migración.
+  const vendedores = clientes;
+  const setVendedores = setClientes;
+  const vendedor = clienteActual;
+  const setVendedor = setClienteActual;
+  const crearVendedor = crearCliente;
+  const actualizarVendedor = actualizarCliente;
+  const eliminarVendedor = eliminarCliente;
+
+  // Alias heredados para no romper pantallas todavía no migradas.
   const veterinarias = clientes;
   const setVeterinarias = setClientes;
   const veterinaria = clienteActual;
@@ -690,11 +702,15 @@ export function AppProvider({ children }) {
   const agregar = (p) =>
     setCarrito((prev) => {
       const ex = prev.find((i) => i.id === p.id);
-      return ex ? prev.map((i) => (i.id === p.id ? { ...i, cantidad: i.cantidad + 1 } : i)) : [...prev, { ...p, cantidad: 1 }];
+      return ex
+        ? prev.map((i) => (i.id === p.id ? { ...i, cantidad: i.cantidad + 1 } : i))
+        : [...prev, { ...p, cantidad: 1 }];
     });
 
   const cambiarCantidad = (id, cantidad) =>
-    setCarrito((prev) => prev.map((i) => (i.id === id ? { ...i, cantidad: Math.max(1, Number(cantidad) || 1) } : i)));
+    setCarrito((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, cantidad: Math.max(1, Number(cantidad) || 1) } : i))
+    );
 
   const quitar = (id) => setCarrito((prev) => prev.filter((i) => i.id !== id));
   const limpiar = () => setCarrito([]);
@@ -711,9 +727,10 @@ export function AppProvider({ children }) {
       telefono: normalizarWhatsAppNicaragua(cliente?.telefono || cliente?.whatsapp),
     };
 
-    const numero = `PED-${String(Date.now()).slice(-6)}`;
+    const numero = `SOL-${String(Date.now()).slice(-6)}`;
     const anticipoPorcentaje = Number(configuracion.anticipoPorcentaje || 60);
-    const montoSolicitado = pagoTipo === 'total' ? resumen.total : resumen.total * (anticipoPorcentaje / 100);
+    const montoSolicitado =
+      pagoTipo === 'total' ? resumen.total : resumen.total * (anticipoPorcentaje / 100);
     const origenComercial = clienteActual ? { ...clienteActual } : null;
 
     const pedido = {
@@ -722,11 +739,14 @@ export function AppProvider({ children }) {
       codigoSeguimiento: '',
       cliente: clienteNormalizado,
       origenComercial,
+      vendedor: origenComercial,
       veterinaria: null,
       items: carrito,
       origenComercialId: origenComercial?.id || '',
+      vendedorId: origenComercial?.id || '',
       veterinariaId: '',
       origenComercialCodigo: origenComercial?.codigo || '',
+      vendedorCodigo: origenComercial?.codigo || '',
       veterinariaCodigo: '',
       resumen: {
         ...resumen,
@@ -751,7 +771,13 @@ export function AppProvider({ children }) {
         estadoProduccion: 'pendiente',
         evidencias: { inicial: '', proceso: '', terminado: '', entrega: '' },
       },
-      historial: [{ estado: 'pendiente_pago', fecha: new Date().toISOString(), nota: 'Solicitud creada desde app ELANVISUAL.' }],
+      historial: [
+        {
+          estado: 'pendiente_pago',
+          fecha: new Date().toISOString(),
+          nota: 'Solicitud creada desde app ELANVISUAL.',
+        },
+      ],
       createdAt: new Date().toISOString(),
       fechaEstimada: '',
     };
@@ -766,8 +792,10 @@ export function AppProvider({ children }) {
         .single()
         .then(({ data, error }) => {
           if (error) {
-            console.error('Error guardando pedido en Supabase:', error);
-            window.alert('El pedido fue creado y el WhatsApp salió, pero no se pudo guardar en Supabase. Revisá la tabla pedidos.');
+            console.error('Error guardando solicitud en Supabase:', error);
+            window.alert(
+              'La solicitud fue creada y el WhatsApp salió, pero no se pudo guardar en Supabase. Revisá la tabla pedidos.'
+            );
             return;
           }
 
@@ -791,17 +819,46 @@ export function AppProvider({ children }) {
         .eq('id', pedidoActualizado.id)
         .then(({ error }) => {
           if (error) {
-            console.error('Error actualizando pedido en Supabase:', error);
-            window.alert('No se pudo actualizar el pedido en Supabase.');
+            console.error('Error actualizando solicitud en Supabase:', error);
+            window.alert('No se pudo actualizar la solicitud en Supabase.');
           }
         });
     }
   };
 
+  const crearOrdenTrabajoBase = (pedido) => ({
+    codigoOT:
+      pedido?.ordenTrabajo?.codigoOT ||
+      `OT-${String(pedido?.id || Date.now()).replace(/[^0-9]/g, '').slice(-6) || Date.now()}`,
+    pedido: pedido?.codigoSeguimiento || pedido?.numero || '',
+    cliente: pedido?.cliente?.nombre || '',
+    origenComercial:
+      pedido?.origenComercial?.nombre ||
+      pedido?.origenComercial?.empresa ||
+      pedido?.vendedor?.nombre ||
+      pedido?.vendedor?.empresa ||
+      '',
+    producto: (pedido?.items || []).map((i) => i.nombre).join(', '),
+    cantidad: (pedido?.items || []).reduce((a, i) => a + Number(i.cantidad || 0), 0),
+    responsable: pedido?.ordenTrabajo?.responsable || '',
+    observaciones: pedido?.ordenTrabajo?.observaciones || '',
+    fecha: pedido?.ordenTrabajo?.fecha || new Date().toISOString(),
+    estadoProduccion: pedido?.estadoProduccion || 'pendiente',
+    evidencias: {
+      inicial: '',
+      proceso: '',
+      terminado: '',
+      entrega: '',
+      ...(pedido?.ordenTrabajo?.evidencias || {}),
+    },
+  });
+
   const confirmarAnticipo = (pedido, pagoTipoConfirmado = pedido.pagoTipo || 'anticipo') => {
     const esTotal = pagoTipoConfirmado === 'total';
     const codigo = pedido.codigoSeguimiento || generarCodigoSeguimiento();
-    const anticipoRecibido = esTotal ? pedido.resumen.total : pedido.anticipoRequerido || pedido.resumen.total * 0.6;
+    const anticipoRecibido = esTotal
+      ? pedido.resumen.total
+      : pedido.anticipoRequerido || pedido.resumen.total * 0.6;
     const saldoPendiente = Math.max(0, pedido.resumen.total - anticipoRecibido);
 
     actualizarPedido({
@@ -815,25 +872,23 @@ export function AppProvider({ children }) {
       pagoEstado: esTotal ? 'pago_total_confirmado' : 'anticipo_confirmado',
       seguimientoEstado: 'produccion',
       comisionEstado: 'pendiente_entrega',
-      ordenTrabajo: crearOrdenTrabajoBase({ ...pedido, codigoSeguimiento: codigo, estadoProduccion: 'produccion' }),
-      historial: [...(pedido.historial || []), { estado: esTotal ? 'pago_total_confirmado' : 'anticipo_confirmado', fecha: new Date().toISOString(), nota: 'Pago validado por administración.' }],
+      ordenTrabajo: crearOrdenTrabajoBase({
+        ...pedido,
+        codigoSeguimiento: codigo,
+        estadoProduccion: 'produccion',
+      }),
+      historial: [
+        ...(pedido.historial || []),
+        {
+          estado: esTotal ? 'pago_total_confirmado' : 'anticipo_confirmado',
+          fecha: new Date().toISOString(),
+          nota: 'Pago validado por administración.',
+        },
+      ],
     });
+
     return codigo;
   };
-
-  const crearOrdenTrabajoBase = (pedido) => ({
-    codigoOT: pedido?.ordenTrabajo?.codigoOT || `OT-${String(pedido?.id || Date.now()).replace(/[^0-9]/g, '').slice(-6) || Date.now()}`,
-    pedido: pedido?.codigoSeguimiento || pedido?.numero || '',
-    cliente: pedido?.cliente?.nombre || '',
-    origenComercial: pedido?.origenComercial?.nombre || pedido?.origenComercial?.empresa || '',
-    producto: (pedido?.items || []).map((i) => i.nombre).join(', '),
-    cantidad: (pedido?.items || []).reduce((a, i) => a + Number(i.cantidad || 0), 0),
-    responsable: pedido?.ordenTrabajo?.responsable || '',
-    observaciones: pedido?.ordenTrabajo?.observaciones || '',
-    fecha: pedido?.ordenTrabajo?.fecha || new Date().toISOString(),
-    estadoProduccion: pedido?.estadoProduccion || 'pendiente',
-    evidencias: { inicial: '', proceso: '', terminado: '', entrega: '', ...(pedido?.ordenTrabajo?.evidencias || {}) },
-  });
 
   const cambiarEstadoProduccion = (pedido, estadoProduccion) => {
     const entregado = estadoProduccion === 'entregado';
@@ -850,7 +905,14 @@ export function AppProvider({ children }) {
       seguimientoEstado: estadoProduccion,
       ordenTrabajo,
       comisionEstado: entregado ? 'pendiente' : pedido.comisionEstado,
-      historial: [...(pedido.historial || []), { estado: estadoProduccion, fecha: new Date().toISOString(), nota: etiquetasEstado[estadoProduccion] || estadoProduccion }],
+      historial: [
+        ...(pedido.historial || []),
+        {
+          estado: estadoProduccion,
+          fecha: new Date().toISOString(),
+          nota: etiquetasEstado[estadoProduccion] || estadoProduccion,
+        },
+      ],
     });
   };
 
@@ -886,26 +948,38 @@ export function AppProvider({ children }) {
   const buscarPedidoSeguimiento = ({ codigo, whatsapp }) => {
     const c = String(codigo || '').trim().toUpperCase();
     const w = String(whatsapp || '').replace(/[^0-9]/g, '');
+
     return pedidos.find(
-      (p) => String(p.codigoSeguimiento || '').toUpperCase() === c && String(p.cliente?.whatsapp || '').replace(/[^0-9]/g, '').endsWith(w.slice(-8))
+      (p) =>
+        String(p.codigoSeguimiento || '').toUpperCase() === c &&
+        String(p.cliente?.whatsapp || '').replace(/[^0-9]/g, '').endsWith(w.slice(-8))
     );
   };
 
   const login = ({ email, password }) => {
-
     const acceso = normalizarUsuario(email);
     const clave = String(password || '').trim();
 
     const usuarioEncontrado = usuarios.find((u) => {
       const usuarioNormalizado = normalizarUsuario(u.usuario);
       const emailNormalizado = normalizarUsuario(u.email);
-      return u.activo !== false && (usuarioNormalizado === acceso || emailNormalizado === acceso) && String(u.password || '').trim() === clave;
+
+      return (
+        u.activo !== false &&
+        (usuarioNormalizado === acceso || emailNormalizado === acceso) &&
+        String(u.password || '').trim() === clave
+      );
     });
 
     if (!usuarioEncontrado) return { ok: false };
 
     setUsuario(usuarioEncontrado);
-    return { ok: true, rol: usuarioEncontrado.rol, usuario: usuarioEncontrado, supabaseListo };
+    return {
+      ok: true,
+      rol: usuarioEncontrado.rol,
+      usuario: usuarioEncontrado,
+      supabaseListo,
+    };
   };
 
   const logout = () => {
@@ -932,7 +1006,7 @@ export function AppProvider({ children }) {
       usuario: usuarioLimpio,
       email: emailLimpio,
       password: String(datos.password || 'Temporal2026#').trim(),
-      rol: datos.rol || 'produccion',
+      rol: normalizarRol(datos.rol || 'produccion'),
       clienteId: datos.clienteId || '',
       activo: datos.activo !== false,
       debeCambiarPassword: datos.debeCambiarPassword === true,
@@ -969,6 +1043,7 @@ export function AppProvider({ children }) {
     setUsuarios((prev) =>
       prev.map((u) => {
         if (u.id !== usuarioActualizado.id) return u;
+
         actualizadoFinal = {
           ...u,
           ...usuarioActualizado,
@@ -977,9 +1052,11 @@ export function AppProvider({ children }) {
           password: Object.prototype.hasOwnProperty.call(usuarioActualizado, 'password')
             ? String(usuarioActualizado.password || '').trim()
             : u.password,
+          rol: normalizarRol(usuarioActualizado.rol || u.rol),
           clienteId: usuarioActualizado.clienteId || u.clienteId || '',
           activo: usuarioActualizado.activo !== false,
         };
+
         return actualizadoFinal;
       })
     );
@@ -1011,7 +1088,9 @@ export function AppProvider({ children }) {
     setUsuarios((prev) => {
       const usuarioEliminar = prev.find((u) => u.id === id);
       const adminsActivos = prev.filter((u) => u.rol === 'admin' && u.activo !== false);
+
       if (usuarioEliminar?.rol === 'admin' && adminsActivos.length <= 1) return prev;
+
       return prev.filter((u) => u.id !== id);
     });
 
@@ -1031,7 +1110,8 @@ export function AppProvider({ children }) {
     }
   };
 
-  const actualizarProducto = (producto) => setProductos((prev) => prev.map((p) => (p.id === producto.id ? { ...p, ...producto } : p)));
+  const actualizarProducto = (producto) =>
+    setProductos((prev) => prev.map((p) => (p.id === producto.id ? { ...p, ...producto } : p)));
 
   const crearProducto = (producto) => {
     const id = producto.id || crearSlug(producto.nombre);
@@ -1054,9 +1134,7 @@ export function AppProvider({ children }) {
         return [
           nuevoBanner,
           ...bannersPrevios.map((b) =>
-            b.ubicacion === 'hero-principal'
-              ? { ...b, activo: false }
-              : b
+            b.ubicacion === 'hero-principal' ? { ...b, activo: false } : b
           ),
         ];
       }
@@ -1091,14 +1169,26 @@ export function AppProvider({ children }) {
         return b;
       });
     });
+
   const eliminarBanner = (id) => setBanners((prev) => prev.filter((b) => b.id !== id));
 
-  const crearTrabajo = (trabajo) => setTrabajos((prev) => [{ ...trabajo, id: `trabajo-${Date.now()}`, activo: true }, ...prev]);
-  const actualizarTrabajo = (trabajo) => setTrabajos((prev) => prev.map((t) => (t.id === trabajo.id ? { ...t, ...trabajo } : t)));
+  const crearTrabajo = (trabajo) =>
+    setTrabajos((prev) => [{ ...trabajo, id: `trabajo-${Date.now()}`, activo: true }, ...prev]);
 
-  const crearCuentaBancaria = (cuenta) => setCuentasBancarias((prev) => [{ ...cuenta, id: `cta-${Date.now()}`, activa: true, visible: true }, ...prev]);
-  const actualizarCuentaBancaria = (cuenta) => setCuentasBancarias((prev) => prev.map((c) => (c.id === cuenta.id ? { ...c, ...cuenta } : c)));
-  const eliminarCuentaBancaria = (id) => setCuentasBancarias((prev) => prev.filter((c) => c.id !== id));
+  const actualizarTrabajo = (trabajo) =>
+    setTrabajos((prev) => prev.map((t) => (t.id === trabajo.id ? { ...t, ...trabajo } : t)));
+
+  const crearCuentaBancaria = (cuenta) =>
+    setCuentasBancarias((prev) => [
+      { ...cuenta, id: `cta-${Date.now()}`, activa: true, visible: true },
+      ...prev,
+    ]);
+
+  const actualizarCuentaBancaria = (cuenta) =>
+    setCuentasBancarias((prev) => prev.map((c) => (c.id === cuenta.id ? { ...c, ...cuenta } : c)));
+
+  const eliminarCuentaBancaria = (id) =>
+    setCuentasBancarias((prev) => prev.filter((c) => c.id !== id));
 
   return (
     <AppContext.Provider
@@ -1106,24 +1196,30 @@ export function AppProvider({ children }) {
         configuracion,
         setConfiguracion,
         actualizarConfiguracion,
+
         cuentasBancarias,
         crearCuentaBancaria,
         actualizarCuentaBancaria,
         eliminarCuentaBancaria,
+
         banners,
         crearBanner,
         actualizarBanner,
         eliminarBanner,
+
         trabajos,
         crearTrabajo,
         actualizarTrabajo,
+
         productos,
         setProductos,
         actualizarProducto,
         crearProducto,
+
         imagenes,
         crearImagen,
         eliminarImagen,
+
         clientes,
         setClientes,
         crearCliente,
@@ -1131,6 +1227,15 @@ export function AppProvider({ children }) {
         eliminarCliente,
         clienteActual,
         setClienteActual,
+
+        vendedores,
+        setVendedores,
+        crearVendedor,
+        actualizarVendedor,
+        eliminarVendedor,
+        vendedor,
+        setVendedor,
+
         veterinarias,
         setVeterinarias,
         crearVeterinaria,
@@ -1138,12 +1243,14 @@ export function AppProvider({ children }) {
         eliminarVeterinaria,
         veterinaria,
         setVeterinaria,
+
         carrito,
         agregar,
         cambiarCantidad,
         quitar,
         limpiar,
         resumen,
+
         pedidos,
         crearPedidoTransferencia,
         actualizarPedido,
@@ -1152,13 +1259,17 @@ export function AppProvider({ children }) {
         actualizarOrdenTrabajo,
         guardarEvidenciaProduccion,
         buscarPedidoSeguimiento,
+
         usuario,
         login,
         logout,
+
         usuarios,
         crearUsuario,
         actualizarUsuario,
         eliminarUsuario,
+
+        rolesSistema,
         supabaseListo,
       }}
     >
@@ -1168,5 +1279,3 @@ export function AppProvider({ children }) {
 }
 
 export const useApp = () => useContext(AppContext);
-
-
