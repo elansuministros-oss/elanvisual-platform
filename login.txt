@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { LockKeyhole, ShieldCheck, Building2 } from 'lucide-react';
+import { LockKeyhole, ShieldCheck } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 function destinoPorRol(rol) {
   if (rol === 'admin') return 'admin';
   if (rol === 'produccion') return 'produccion';
-  return 'crm';
+  return 'vet';
 }
 
 export default function Login({ setPage, destino }) {
   const { login } = useApp();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mostrarPassword, setMostrarPassword] = useState(false);
@@ -22,18 +21,19 @@ export default function Login({ setPage, destino }) {
     const res = login({ email, password });
 
     if (!res.ok) {
-      setError('Usuario o contraseña incorrectos.');
-      return;
+      return setError('Usuario o contraseÃ±a incorrectos.');
     }
 
     if (destino === 'admin' && res.rol !== 'admin') {
-      setError('Este usuario no tiene permisos de administrador.');
-      return;
+      return setError('Este usuario no tiene permiso de administrador.');
+    }
+
+    if (destino === 'vet' && res.rol !== 'veterinaria') {
+      return setError('Este usuario no tiene permiso de veterinaria.');
     }
 
     if (destino === 'produccion' && !['admin', 'produccion'].includes(res.rol)) {
-      setError('Este usuario no tiene permisos de producción.');
-      return;
+      return setError('Este usuario no tiene permiso de producciÃ³n.');
     }
 
     setError('');
@@ -44,34 +44,29 @@ export default function Login({ setPage, destino }) {
     <main className="login-page">
       <section className="login-card">
         <span className="badge">
-          <ShieldCheck size={15} />
-          Acceso Operativo
+          <ShieldCheck size={15} /> Acceso privado
         </span>
 
-        <h1>Portal ELANVISUAL</h1>
-
-        <p>
-          Acceso para administración, CRM, producción y operaciones internas de ELANVISUAL.
-        </p>
+        <h1>Portal ELANPET</h1>
+        <p>Este acceso es solo para administrador ELAN, producciÃ³n y veterinarias afiliadas.</p>
 
         <form onSubmit={entrar}>
           <label>Usuario o correo</label>
-
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Correo o usuario autorizado"
+            placeholder="admin, produccion, vetdemo o correo"
             autoComplete="username"
           />
 
-          <label>Contraseña</label>
+          <label>ContraseÃ±a</label>
 
           <div className="password-field">
             <input
               type={mostrarPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Contraseña"
+              placeholder="ContraseÃ±a"
               autoComplete="current-password"
             />
 
@@ -79,6 +74,8 @@ export default function Login({ setPage, destino }) {
               type="button"
               className="password-toggle"
               onClick={() => setMostrarPassword((prev) => !prev)}
+              aria-label={mostrarPassword ? 'Ocultar contraseÃ±a' : 'Mostrar contraseÃ±a'}
+              title={mostrarPassword ? 'Ocultar contraseÃ±a' : 'Mostrar contraseÃ±a'}
             >
               {mostrarPassword ? 'OCULTAR' : 'VER'}
             </button>
@@ -87,16 +84,11 @@ export default function Login({ setPage, destino }) {
           {error && <small className="error-text">{error}</small>}
 
           <button type="submit">
-            <LockKeyhole size={18} />
-            Entrar
+            <LockKeyhole size={18} /> Entrar
           </button>
         </form>
-
-        <div className="login-footnote">
-          <Building2 size={20} />
-          <p>ELANVISUAL · CRM · Producción · Seguimiento</p>
-        </div>
       </section>
     </main>
   );
 }
+
