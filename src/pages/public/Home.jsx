@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { useElan } from '../../core/context/ElanContext.jsx';
 
+import bannerDesktopDefault from '../../assets/banners/banner-desktop.webp';
+import bannerMobileDefault from '../../assets/banners/banner-mobile.webp';
+
 const HOME_DEFAULT = {
   titulo: 'Rotulación profesional para negocios reales',
   subtitulo: 'Diseño, fabricación e instalación con criterio técnico.',
@@ -25,6 +28,30 @@ const HOME_DEFAULT = {
   stat3Texto: 'Sistema operativo',
 };
 
+function tomarImagenBanner(banner, tipo) {
+  if (!banner) return '';
+
+  if (tipo === 'mobile') {
+    return (
+      banner.imagenMobile ||
+      banner.mobile ||
+      banner.urlMobile ||
+      banner.imagen ||
+      banner.url ||
+      ''
+    );
+  }
+
+  return (
+    banner.imagenDesktop ||
+    banner.desktop ||
+    banner.urlDesktop ||
+    banner.imagen ||
+    banner.url ||
+    ''
+  );
+}
+
 export default function Home() {
   const { state } = useElan();
 
@@ -34,9 +61,9 @@ export default function Home() {
   };
 
   const banners = useMemo(() => {
-    return Array.isArray(state.banners)
-? state.banners.filter((item) => item.activo !== false)
-    : [];
+    const listaBanners = Array.isArray(state.banners) ? state.banners : [];
+
+    return listaBanners.filter((item) => item && item.activo !== false);
   }, [state.banners]);
 
   const [index, setIndex] = useState(0);
@@ -58,8 +85,18 @@ export default function Home() {
   }, [banners.length, index]);
 
   const banner = banners.length ? banners[index] : null;
-  const imagenDesktop = banner?.imagenDesktop || '';
-  const imagenMobile = banner?.imagenMobile || imagenDesktop;
+
+  const imagenDesktopAdministrada = tomarImagenBanner(banner, 'desktop');
+  const imagenMobileAdministrada = tomarImagenBanner(banner, 'mobile');
+
+  const imagenDesktop = imagenDesktopAdministrada || bannerDesktopDefault;
+  const imagenMobile =
+    imagenMobileAdministrada ||
+    imagenDesktopAdministrada ||
+    bannerMobileDefault;
+
+  const tituloHero = banner?.titulo || home.titulo;
+  const subtituloHero = banner?.subtitulo || home.subtitulo;
 
   const servicios = [
     { titulo: home.servicio1Titulo, texto: home.servicio1Texto },
@@ -76,27 +113,24 @@ export default function Home() {
   return (
     <main className="public-home">
       <section className="home-hero">
-        {banner && (imagenDesktop || imagenMobile) ? (
-          <picture className="hero-picture hero-slide" key={banner.id || index}>
-            <source media="(max-width: 767px)" srcSet={imagenMobile} />
-            <img
-              src={imagenDesktop || imagenMobile}
-              alt={banner.titulo || home.titulo}
-              className="hero-image"
-            />
-          </picture>
-        ) : (
-          <div className="hero-fallback" />
-        )}
+        <picture className="hero-picture hero-slide" key={banner?.id || index || 'default'}>
+          <source media="(max-width: 767px)" srcSet={imagenMobile} />
+          <img
+            src={imagenDesktop}
+            alt={tituloHero}
+            className="hero-image"
+            loading="eager"
+          />
+        </picture>
 
         <div className="hero-overlay" />
 
         <div className="home-hero-content">
           <p className="eyebrow">ELANVISUAL</p>
 
-          <h1>{banner?.titulo || home.titulo}</h1>
+          <h1>{tituloHero}</h1>
 
-          <p>{banner?.subtitulo || home.subtitulo}</p>
+          <p>{subtituloHero}</p>
 
           <div className="hero-actions">
             <Link to={home.botonPrincipalUrl || '/catalogo'}>

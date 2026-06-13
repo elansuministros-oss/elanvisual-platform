@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
 const adminLinks = [
@@ -32,6 +32,14 @@ export default function AdminLayout() {
 
   const closeDrawer = () => setOpen(false);
 
+  useEffect(() => {
+    document.body.classList.toggle('menu-open', open);
+
+    return () => {
+      document.body.classList.remove('menu-open');
+    };
+  }, [open]);
+
   return (
     <div className="admin-app">
       <header className="admin-topbar">
@@ -46,12 +54,15 @@ export default function AdminLayout() {
           onClick={() => setOpen(true)}
           aria-label="Abrir menú administrador"
         >
-          ☰
+          <span />
+          <span />
+          <span />
         </button>
       </header>
 
       {open && (
         <button
+          type="button"
           className="admin-drawer-backdrop"
           onClick={closeDrawer}
           aria-label="Cerrar menú"
@@ -77,9 +88,16 @@ export default function AdminLayout() {
         <Outlet />
       </main>
 
-      <nav className="admin-bottom-nav" aria-label="Navegación rápida administrador">
+      <nav
+        className="admin-bottom-nav"
+        aria-label="Navegación rápida administrador"
+      >
         {bottomLinks.map((item) => (
-          <NavLink key={item.to} to={item.to} end={item.to === '/'}>
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === '/'}
+          >
             <span>{item.icon}</span>
             {item.label}
           </NavLink>

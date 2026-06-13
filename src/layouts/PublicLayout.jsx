@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 
 const publicLinks = [
@@ -15,6 +15,14 @@ export default function PublicLayout() {
 
   const closeMenu = () => setOpen(false);
 
+  useEffect(() => {
+    document.body.classList.toggle('menu-open', open);
+
+    return () => {
+      document.body.classList.remove('menu-open');
+    };
+  }, [open]);
+
   return (
     <div className="public-app">
       <header className="public-header">
@@ -24,7 +32,7 @@ export default function PublicLayout() {
             <span className="brand-sub">Rotulación & Producción</span>
           </NavLink>
 
-          <nav className="public-nav">
+          <nav className="public-nav" aria-label="Navegación pública">
             {publicLinks.map((item) => (
               <NavLink key={item.to} to={item.to} end={item.to === '/'}>
                 {item.label}
@@ -40,30 +48,47 @@ export default function PublicLayout() {
             type="button"
             className="public-menu-button"
             onClick={() => setOpen((value) => !value)}
-            aria-label="Abrir menú"
+            aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
+            aria-expanded={open}
           >
-            {open ? '×' : '☰'}
+            <span />
+            <span />
+            <span />
           </button>
         </div>
       </header>
 
       {open && (
-        <nav className="public-mobile-menu">
-          {publicLinks.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              onClick={closeMenu}
-            >
-              {item.label}
-            </NavLink>
-          ))}
+        <div className="public-mobile-layer">
+          <button
+            type="button"
+            className="public-mobile-backdrop"
+            aria-label="Cerrar menú"
+            onClick={closeMenu}
+          />
 
-          <NavLink to="/login" onClick={closeMenu} className="mobile-login-link">
-            Acceso / Admin
-          </NavLink>
-        </nav>
+          <nav className="public-mobile-menu" aria-label="Menú móvil">
+            <div className="mobile-menu-head">
+              <strong>Menú</strong>
+              <span>ELANVISUAL</span>
+            </div>
+
+            {publicLinks.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                onClick={closeMenu}
+              >
+                {item.label}
+              </NavLink>
+            ))}
+
+            <NavLink to="/login" onClick={closeMenu} className="mobile-login-link">
+              Acceso / Admin
+            </NavLink>
+          </nav>
+        </div>
       )}
 
       <main className="public-main">
