@@ -2740,3 +2740,22 @@ select:focus {
   color: #D4AF37 !important;
 }
 
+
+/* FASE 7.0.2 ELIMINAR REMANENTES TURQUESA */
+
+.product-tag,
+.product-category,
+.product-card small,
+.product-card span:first-child,
+.catalog-category,
+.service-category {
+  color: #8A6A16 !important;
+}
+
+.product-card h3,
+.product-card h4,
+.product-card strong,
+.catalog-card h3 {
+  color: #0B1220 !important;
+}
+
