@@ -12,22 +12,6 @@ function activo(item) {
   return item?.estado === 'Activo' || item?.activo === true || item?.active === true;
 }
 
-function imagenDe(item) {
-  return (
-    limpiar(item?.imagenMobile) ||
-    limpiar(item?.imagenMovil) ||
-    limpiar(item?.imagen_mobile) ||
-    limpiar(item?.imagenDesktop) ||
-    limpiar(item?.imagenEscritorio) ||
-    limpiar(item?.imagen) ||
-    limpiar(item?.url) ||
-    limpiar(item?.src) ||
-    limpiar(item?.archivo) ||
-    limpiar(item?.image) ||
-    ''
-  );
-}
-
 function leerEstadoLocal() {
   try {
     const keys = ['elanvisual_state_v2', 'elanvisual_state', 'elan_state'];
@@ -41,6 +25,7 @@ function leerEstadoLocal() {
   } catch {
     return {};
   }
+
   return {};
 }
 
@@ -48,13 +33,48 @@ function unirListas(...listas) {
   return listas.flatMap((lista) => (Array.isArray(lista) ? lista : []));
 }
 
-function buscarMultimediaPorCategoria(multimedia, categoria) {
-  const objetivo = categoria.toLowerCase();
+function imagenDesktopDe(item = {}) {
+  return (
+    limpiar(item.imagenDesktop) ||
+    limpiar(item.imagenEscritorio) ||
+    limpiar(item.desktop) ||
+    limpiar(item.imagen) ||
+    limpiar(item.url) ||
+    limpiar(item.src) ||
+    limpiar(item.archivo) ||
+    limpiar(item.image) ||
+    ''
+  );
+}
+
+function imagenMobileDe(item = {}) {
+  return (
+    limpiar(item.imagenMobile) ||
+    limpiar(item.imagenMovil) ||
+    limpiar(item.imagen_mobile) ||
+    limpiar(item.mobile) ||
+    limpiar(item.imagen) ||
+    limpiar(item.url) ||
+    limpiar(item.src) ||
+    limpiar(item.archivo) ||
+    limpiar(item.image) ||
+    ''
+  );
+}
+
+function categoriaDe(item = {}) {
+  return limpiar(item.categoria).toLowerCase();
+}
+
+function buscarMultimediaPorCategorias(multimedia, categoriasPermitidas) {
+  const objetivos = categoriasPermitidas.map((cat) => cat.toLowerCase());
   const lista = Array.isArray(multimedia) ? [...multimedia].reverse() : [];
 
   return (
-    lista.find((item) => activo(item) && limpiar(item.categoria).toLowerCase() === objetivo) ||
-    lista.find((item) => limpiar(item.categoria).toLowerCase() === objetivo) ||
+    lista.find(
+      (item) => activo(item) && objetivos.includes(categoriaDe(item))
+    ) ||
+    lista.find((item) => objetivos.includes(categoriaDe(item))) ||
     null
   );
 }
@@ -63,25 +83,38 @@ function obtenerBanner({ banners, multimedia }) {
   const listaBanners = Array.isArray(banners) ? [...banners].reverse() : [];
   const bannerActivo = listaBanners.find(activo) || listaBanners[0] || null;
 
-  const mediaDesktop = buscarMultimediaPorCategoria(multimedia, 'Banner');
-  const mediaMobile = buscarMultimediaPorCategoria(multimedia, 'Banner Mobile');
+  const mediaDesktop = buscarMultimediaPorCategorias(multimedia, [
+    'Banner Desktop',
+    'Banner',
+  ]);
+
+  const mediaMobile = buscarMultimediaPorCategorias(multimedia, [
+    'Banner Mobile',
+  ]);
 
   const desktop =
-    imagenDe(mediaDesktop) ||
-    imagenDe(bannerActivo) ||
+    imagenDesktopDe(mediaDesktop) ||
+    imagenDesktopDe(bannerActivo) ||
     FALLBACK_DESKTOP;
 
   const mobile =
-    imagenDe(mediaMobile) ||
-    limpiar(bannerActivo?.imagenMobile) ||
-    limpiar(bannerActivo?.imagenMovil) ||
-    FALLBACK_MOBILE ||
-    desktop;
+    imagenMobileDe(mediaMobile) ||
+    imagenMobileDe(bannerActivo) ||
+    desktop ||
+    FALLBACK_MOBILE;
 
   return {
     ...(bannerActivo || {}),
     imagenDesktop: desktop,
     imagenMobile: mobile,
+    titulo:
+      limpiar(bannerActivo?.titulo) ||
+      'Soluciones visuales para marcas, espacios y negocios.',
+    subtitulo:
+      limpiar(bannerActivo?.subtitulo) ||
+      'Rotulación, impresión digital, fachadas, displays, acrílicos, PVC y proyectos especiales.',
+    boton: limpiar(bannerActivo?.boton) || 'Ver Catálogo',
+    enlace: limpiar(bannerActivo?.enlace) || '/catalogo',
   };
 }
 
@@ -310,17 +343,12 @@ export default function Home() {
         <div className="hero-copy elan-home-copy">
           <span>ELANVISUAL</span>
 
-          <h1>
-            {bannerActivo?.titulo || 'Soluciones visuales para marcas, espacios y negocios.'}
-          </h1>
+          <h1>{bannerActivo.titulo}</h1>
 
-          <p>
-            {bannerActivo?.subtitulo ||
-              'Rotulación, impresión digital, fachadas, displays, acrílicos, PVC y proyectos especiales.'}
-          </p>
+          <p>{bannerActivo.subtitulo}</p>
 
-          <Link className="primary" to={bannerActivo?.enlace || '/catalogo'}>
-            {bannerActivo?.boton || 'Ver Catálogo'}
+          <Link className="primary" to={bannerActivo.enlace}>
+            {bannerActivo.boton}
           </Link>
         </div>
       </section>
