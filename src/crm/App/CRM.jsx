@@ -24,8 +24,7 @@ import CuentasPorCobrar from '../CuentasPorCobrar';
 import FlujoCaja from '../FlujoCaja';
 import SeguimientoCRM from '../SeguimientoCRM';
 import Vendedores from '../Vendedores';
-import VeterinariasCRM from '../VeterinariasCRM';
-import Afiliados from '../Afiliados';
+import AliadosComerciales from '../AliadosComerciales';
 import ReportesCRM from '../ReportesCRM';
 import FiscalCRM from '../FiscalCRM';
 import CentroUtilidades from '../CentroUtilidades';
@@ -54,82 +53,80 @@ export default function CRM() {
       {
         grupo: 'General',
         items: [
-          { id: 'dashboard', label: 'Dashboard', icono: '📊', componente: <DashboardCRM /> },
-          { id: 'dashboard-gerencial', label: 'Dashboard Gerencial', icono: '🧭', componente: <DashboardGerencial /> },
-          { id: 'notificaciones', label: 'Notificaciones', icono: '🔔', componente: <NotificacionesCRM /> },
-          { id: 'centro-whatsapp', label: 'Centro WhatsApp', icono: '💬', componente: <CentroWhatsApp /> },
+          { id: 'dashboard', label: 'Dashboard', icono: '??', componente: <DashboardCRM /> },
+          { id: 'dashboard-gerencial', label: 'Dashboard Gerencial', icono: '??', componente: <DashboardGerencial /> },
+          { id: 'notificaciones', label: 'Notificaciones', icono: '??', componente: <NotificacionesCRM /> },
+          { id: 'centro-whatsapp', label: 'Centro WhatsApp', icono: '??', componente: <CentroWhatsApp /> },
         ],
       },
       {
         grupo: 'CRM',
         items: [
-          { id: 'empresas', label: 'Empresas', icono: '🏢', componente: <Empresas /> },
-          { id: 'contactos', label: 'Contactos', icono: '👤', componente: <Contactos /> },
-          { id: 'clientes', label: 'Clientes', icono: '🤝', componente: <Clientes /> },
-          { id: 'proveedores', label: 'Proveedores', icono: '🚚', componente: <Proveedores /> },
-          { id: 'compras', label: 'Compras', icono: '🧾', componente: <Compras /> },
-          { id: 'seguimiento', label: 'Seguimiento', icono: '📌', componente: <SeguimientoCRM /> },
-          { id: 'crm-comercial', label: 'CRM Comercial', icono: '🎯', componente: <CRMComercialAvanzado /> },
+          { id: 'empresas', label: 'Empresas', icono: '??', componente: <Empresas /> },
+          { id: 'contactos', label: 'Contactos', icono: '??', componente: <Contactos /> },
+          { id: 'clientes', label: 'Clientes', icono: '??', componente: <Clientes /> },
+          { id: 'proveedores', label: 'Proveedores', icono: '??', componente: <Proveedores /> },
+          { id: 'compras', label: 'Compras', icono: '??', componente: <Compras /> },
+          { id: 'seguimiento', label: 'Seguimiento', icono: '??', componente: <SeguimientoCRM /> },
+          { id: 'crm-comercial', label: 'CRM Comercial', icono: '??', componente: <CRMComercialAvanzado /> },
         ],
       },
       {
         grupo: 'Ventas',
         items: [
-          { id: 'vendedores', label: 'Vendedores', icono: '🧑‍💼', componente: <Vendedores /> },
-          { id: 'cotizaciones', label: 'Cotizaciones', icono: '📄', componente: <Cotizaciones /> },
-          { id: 'pedidos', label: 'Pedidos', icono: '🛒', componente: <Pedidos /> },
+          { id: 'vendedores', label: 'Vendedores', icono: '?????', componente: <Vendedores /> },
+          { id: 'aliados-comerciales', label: 'Aliados Comerciales', icono: '??', componente: <AliadosComerciales /> },
+          { id: 'cotizaciones', label: 'Cotizaciones', icono: '??', componente: <Cotizaciones /> },
+          { id: 'pedidos', label: 'Pedidos', icono: '??', componente: <Pedidos /> },
         ],
       },
       {
-        grupo: 'Operación',
+        grupo: 'Operaci�n',
         items: [
-          { id: 'ordenes', label: 'Órdenes Trabajo', icono: '🔧', componente: <OrdenesTrabajo /> },
-          { id: 'produccion', label: 'Producción', icono: '🏭', componente: <Produccion /> },
-          { id: 'inventario', label: 'Inventario', icono: '📦', componente: <Inventario /> },
-          { id: 'materiales', label: 'Materiales', icono: '🧱', componente: <Materiales /> },
+          { id: 'ordenes', label: '�rdenes Trabajo', icono: '??', componente: <OrdenesTrabajo /> },
+          { id: 'produccion', label: 'Producci�n', icono: '??', componente: <Produccion /> },
+          { id: 'inventario', label: 'Inventario', icono: '??', componente: <Inventario /> },
+          { id: 'materiales', label: 'Materiales', icono: '??', componente: <Materiales /> },
+          { id: 'portal-produccion', label: 'Portal Producci�n', icono: '???', componente: <PortalProduccionCRM /> },
         ],
       },
       {
         grupo: 'Finanzas',
         items: [
-          { id: 'cobros', label: 'Cobros', icono: '💰', componente: <Cobros /> },
-          { id: 'cuentas-cobrar', label: 'Cuentas por Cobrar', icono: '📈', componente: <CuentasPorCobrar /> },
-          { id: 'cuentas-pagar', label: 'Cuentas por Pagar', icono: '📉', componente: <CuentasPorPagar /> },
-          { id: 'flujo-caja', label: 'Flujo de Caja', icono: '🏦', componente: <FlujoCaja /> },
-          { id: 'centro-utilidades', label: 'Centro Utilidades', icono: '📊', componente: <CentroUtilidades /> },
-          { id: 'estado-financiero', label: 'Estado Financiero', icono: '📘', componente: <EstadoFinanciero /> },
-          { id: 'comisiones', label: 'Comisiones', icono: '💵', componente: <Comisiones /> },
-          { id: 'reportes', label: 'Reportes', icono: '📈', componente: <ReportesCRM /> },
-          { id: 'fiscal', label: 'Fiscal', icono: '🧮', componente: <FiscalCRM /> },
-          { id: 'metas-kpis', label: 'Metas y KPIs', icono: '🏁', componente: <MetasKPIs /> },
+          { id: 'cobros', label: 'Cobros', icono: '??', componente: <Cobros /> },
+          { id: 'cuentas-cobrar', label: 'Cuentas por Cobrar', icono: '??', componente: <CuentasPorCobrar /> },
+          { id: 'cuentas-pagar', label: 'Cuentas por Pagar', icono: '??', componente: <CuentasPorPagar /> },
+          { id: 'flujo-caja', label: 'Flujo de Caja', icono: '??', componente: <FlujoCaja /> },
+          { id: 'centro-utilidades', label: 'Centro Utilidades', icono: '??', componente: <CentroUtilidades /> },
+          { id: 'estado-financiero', label: 'Estado Financiero', icono: '??', componente: <EstadoFinanciero /> },
+          { id: 'comisiones', label: 'Comisiones', icono: '??', componente: <Comisiones /> },
+          { id: 'reportes', label: 'Reportes', icono: '??', componente: <ReportesCRM /> },
+          { id: 'fiscal', label: 'Fiscal', icono: '??', componente: <FiscalCRM /> },
+          { id: 'metas-kpis', label: 'Metas y KPIs', icono: '??', componente: <MetasKPIs /> },
         ],
       },
       {
-        grupo: 'Unidades',
+        grupo: 'Portales',
         items: [
-          { id: 'veterinarias', label: 'Veterinarias', icono: '🐾', componente: <VeterinariasCRM /> },
-          { id: 'afiliados', label: 'Afiliados', icono: '🔗', componente: <Afiliados /> },
-          { id: 'portal-cliente', label: 'Portal Cliente', icono: '👥', componente: <PortalClienteCRM /> },
-          { id: 'portal-produccion', label: 'Portal Producción', icono: '🏗️', componente: <PortalProduccionCRM /> },
-        ],
-      },
-
-      {
-        grupo: 'Tecnología',
-        items: [
-          { id: 'app-movil', label: 'App Móvil', icono: '📱', componente: <AppMovilCRM /> },
-          { id: 'elan-ai', label: 'ELAN AI', icono: '🤖', componente: <ElanAI /> },
-          { id: 'exportador-crm-central', label: 'Exportador CRM Central', icono: '📤', componente: <ExportadorCRMCentral /> },
+          { id: 'portal-cliente', label: 'Portal Cliente', icono: '??', componente: <PortalClienteCRM /> },
+          { id: 'app-movil', label: 'App M�vil', icono: '??', componente: <AppMovilCRM /> },
         ],
       },
       {
-        grupo: 'Administración',
+        grupo: 'Tecnolog�a',
         items: [
-          { id: 'usuarios-permisos', label: 'Usuarios y Permisos', icono: '🔐', componente: <UsuariosPermisos /> },
-          { id: 'auditoria', label: 'Auditoría', icono: '🧾', componente: <AuditoriaCRM /> },
-          { id: 'automatizaciones', label: 'Automatizaciones', icono: '⚙️', componente: <AutomatizacionesCRM /> },
-          { id: 'calendario', label: 'Calendario', icono: '📅', componente: <CalendarioCorporativo /> },
-          { id: 'documentos', label: 'Documentos', icono: '🗂️', componente: <DocumentosCorporativos /> },
+          { id: 'elan-ai', label: 'ELAN AI', icono: '??', componente: <ElanAI /> },
+          { id: 'exportador-crm-central', label: 'Exportador CRM Central', icono: '??', componente: <ExportadorCRMCentral /> },
+        ],
+      },
+      {
+        grupo: 'Administraci�n',
+        items: [
+          { id: 'usuarios-permisos', label: 'Usuarios y Permisos', icono: '??', componente: <UsuariosPermisos /> },
+          { id: 'auditoria', label: 'Auditor�a', icono: '??', componente: <AuditoriaCRM /> },
+          { id: 'automatizaciones', label: 'Automatizaciones', icono: '??', componente: <AutomatizacionesCRM /> },
+          { id: 'calendario', label: 'Calendario', icono: '??', componente: <CalendarioCorporativo /> },
+          { id: 'documentos', label: 'Documentos', icono: '???', componente: <DocumentosCorporativos /> },
         ],
       },
     ],
@@ -365,7 +362,7 @@ export default function CRM() {
       <aside className={`crm-sidebar ${menuAbierto ? 'open' : ''}`}>
         <div className="crm-brand">
           <h1>CRM CENTRAL ELANKAV</h1>
-          <p>ERP operativo para ELANKAV GROUP</p>
+          <p>ERP operativo para ELANKAV</p>
           <p>Usuario: {usuarioActivoCRM?.nombre || 'Administrador General'}</p>
         </div>
 
@@ -395,7 +392,7 @@ export default function CRM() {
             className="crm-mobile-button"
             onClick={() => setMenuAbierto(true)}
           >
-            ☰ Menú
+            ? Men�
           </button>
 
           <div className="crm-topbar-title">
