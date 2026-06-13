@@ -1,0 +1,481 @@
+import React, { useMemo, useState } from 'react';
+import { useCore } from '../core/context/CoreContext';
+
+export default function VeterinariasCRM() {
+  const {
+    veterinarias,
+    crearVeterinaria,
+    actualizarVeterinaria,
+    eliminarVeterinaria,
+  } = useCore();
+
+  const [formulario, setFormulario] = useState({
+    nombre: '',
+    responsable: '',
+    telefono: '',
+    correo: '',
+    direccion: '',
+    codigoAfiliado: '',
+    pedidos: '',
+    totalVendido: '',
+    comisionPorcentaje: 10,
+    estado: 'Activa',
+    nota: '',
+  });
+
+  const [busqueda, setBusqueda] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('Todas');
+  const [editandoId, setEditandoId] = useState(null);
+
+  const formatoCordobas = (valor) => {
+    return new Intl.NumberFormat('es-NI', {
+      style: 'currency',
+      currency: 'NIO',
+      minimumFractionDigits: 2,
+    }).format(Number(valor || 0));
+  };
+
+  const generarCodigoAfiliado = (nombre) => {
+    if (!nombre.trim()) return '';
+
+    const base = nombre
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 8);
+
+    return `ELANPET-${base || Date.now()}`;
+  };
+
+  const veterinariasFiltradas = useMemo(() => {
+    return veterinarias.filter((veterinaria) => {
+      const texto = `${veterinaria.nombre} ${veterinaria.responsable} ${veterinaria.telefono} ${veterinaria.correo} ${veterinaria.direccion} ${veterinaria.codigoAfiliado} ${veterinaria.estado} ${veterinaria.nota}`.toLowerCase();
+
+      const coincideBusqueda = texto.includes(busqueda.toLowerCase());
+      const coincideEstado =
+        filtroEstado === 'Todas' || veterinaria.estado === filtroEstado;
+
+      return coincideBusqueda && coincideEstado;
+    });
+  }, [veterinarias, busqueda, filtroEstado]);
+
+  const resumen = useMemo(() => {
+    const totalPedidos = veterinarias.reduce(
+      (total, veterinaria) => total + Number(veterinaria.pedidos || 0),
+      0
+    );
+
+    const totalVendido = veterinarias.reduce(
+      (total, veterinaria) => total + Number(veterinaria.totalVendido || 0),
+      0
+    );
+
+    const totalComisiones = veterinarias.reduce((total, veterinaria) => {
+      const ventas = Number(veterinaria.totalVendido || 0);
+      const porcentaje = Number(veterinaria.comisionPorcentaje || 0);
+      return total + (ventas * porcentaje) / 100;
+    }, 0);
+
+    return {
+      totalVeterinarias: veterinarias.length,
+      activas: veterinarias.filter((v) => v.estado === 'Activa').length,
+      totalPedidos,
+      totalVendido,
+      totalComisiones,
+    };
+  }, [veterinarias]);
+
+  const limpiarFormulario = () => {
+    setFormulario({
+      nombre: '',
+      responsable: '',
+      telefono: '',
+      correo: '',
+      direccion: '',
+      codigoAfiliado: '',
+      pedidos: '',
+      totalVendido: '',
+      comisionPorcentaje: 10,
+      estado: 'Activa',
+      nota: '',
+    });
+
+    setEditandoId(null);
+  };
+
+  const guardarVeterinaria = (e) => {
+    e.preventDefault();
+
+    if (!formulario.nombre.trim()) {
+      alert('Debés ingresar el nombre de la veterinaria.');
+      return;
+    }
+
+    const codigoFinal =
+      formulario.codigoAfiliado.trim() ||
+      generarCodigoAfiliado(formulario.nombre);
+
+    const datosVeterinaria = {
+      ...formulario,
+      codigoAfiliado: codigoFinal,
+      pedidos: Number(formulario.pedidos || 0),
+      totalVendido: Number(formulario.totalVendido || 0),
+      comisionPorcentaje: Number(formulario.comisionPorcentaje || 0),
+    };
+
+    if (editandoId) {
+      actualizarVeterinaria(editandoId, datosVeterinaria);
+    } else {
+      crearVeterinaria(datosVeterinaria);
+    }
+
+    limpiarFormulario();
+  };
+
+  const editarVeterinaria = (veterinaria) => {
+    setFormulario({
+      nombre: veterinaria.nombre || '',
+      responsable: veterinaria.responsable || '',
+      telefono: veterinaria.telefono || '',
+      correo: veterinaria.correo || '',
+      direccion: veterinaria.direccion || '',
+      codigoAfiliado: veterinaria.codigoAfiliado || '',
+      pedidos: veterinaria.pedidos || '',
+      totalVendido: veterinaria.totalVendido || '',
+      comisionPorcentaje: veterinaria.comisionPorcentaje || 10,
+      estado: veterinaria.estado || 'Activa',
+      nota: veterinaria.nota || '',
+    });
+
+    setEditandoId(veterinaria.id);
+  };
+
+  const confirmarEliminarVeterinaria = (id) => {
+    const confirmar = window.confirm(
+      '¿Seguro que querés eliminar esta veterinaria afiliada?'
+    );
+
+    if (!confirmar) return;
+
+    eliminarVeterinaria(id);
+
+    if (editandoId === id) {
+      limpiarFormulario();
+    }
+  };
+
+  return (
+    <div className="crm-page">
+      <div className="crm-page-header">
+        <div>
+          <h2>Veterinarias CRM</h2>
+          <p>
+            Administración de veterinarias afiliadas, pedidos generados desde
+            ELANPET, ventas y comisiones.
+          </p>
+        </div>
+      </div>
+
+      <div className="crm-stats">
+        <div className="crm-stat-card">
+          <span>Veterinarias</span>
+          <strong>{resumen.totalVeterinarias}</strong>
+        </div>
+
+        <div className="crm-stat-card">
+          <span>Activas</span>
+          <strong>{resumen.activas}</strong>
+        </div>
+
+        <div className="crm-stat-card">
+          <span>Pedidos</span>
+          <strong>{resumen.totalPedidos}</strong>
+        </div>
+
+        <div className="crm-stat-card">
+          <span>Comisiones</span>
+          <strong>{formatoCordobas(resumen.totalComisiones)}</strong>
+        </div>
+      </div>
+
+      <div className="crm-grid">
+        <form className="crm-card" onSubmit={guardarVeterinaria}>
+          <h3>
+            {editandoId ? 'Editar veterinaria' : 'Nueva veterinaria afiliada'}
+          </h3>
+
+          <label>
+            Nombre de veterinaria
+            <input
+              type="text"
+              value={formulario.nombre}
+              onChange={(e) =>
+                setFormulario({
+                  ...formulario,
+                  nombre: e.target.value,
+                  codigoAfiliado:
+                    formulario.codigoAfiliado ||
+                    generarCodigoAfiliado(e.target.value),
+                })
+              }
+              placeholder="Ej: Veterinaria San José"
+            />
+          </label>
+
+          <label>
+            Responsable
+            <input
+              type="text"
+              value={formulario.responsable}
+              onChange={(e) =>
+                setFormulario({ ...formulario, responsable: e.target.value })
+              }
+              placeholder="Ej: María Pérez"
+            />
+          </label>
+
+          <label>
+            Teléfono / WhatsApp
+            <input
+              type="text"
+              value={formulario.telefono}
+              onChange={(e) =>
+                setFormulario({ ...formulario, telefono: e.target.value })
+              }
+              placeholder="Ej: +505 8888 8888"
+            />
+          </label>
+
+          <label>
+            Correo
+            <input
+              type="email"
+              value={formulario.correo}
+              onChange={(e) =>
+                setFormulario({ ...formulario, correo: e.target.value })
+              }
+              placeholder="Ej: veterinaria@correo.com"
+            />
+          </label>
+
+          <label>
+            Dirección
+            <input
+              type="text"
+              value={formulario.direccion}
+              onChange={(e) =>
+                setFormulario({ ...formulario, direccion: e.target.value })
+              }
+              placeholder="Ej: Managua, Nicaragua"
+            />
+          </label>
+
+          <label>
+            Código afiliado ELANPET
+            <input
+              type="text"
+              value={formulario.codigoAfiliado}
+              onChange={(e) =>
+                setFormulario({
+                  ...formulario,
+                  codigoAfiliado: e.target.value.toUpperCase(),
+                })
+              }
+              placeholder="Ej: ELANPET-SJ01"
+            />
+          </label>
+
+          <label>
+            Pedidos generados
+            <input
+              type="number"
+              min="0"
+              value={formulario.pedidos}
+              onChange={(e) =>
+                setFormulario({ ...formulario, pedidos: e.target.value })
+              }
+              placeholder="Ej: 12"
+            />
+          </label>
+
+          <label>
+            Total vendido
+            <input
+              type="number"
+              min="0"
+              value={formulario.totalVendido}
+              onChange={(e) =>
+                setFormulario({
+                  ...formulario,
+                  totalVendido: e.target.value,
+                })
+              }
+              placeholder="Ej: 18000"
+            />
+          </label>
+
+          <label>
+            Comisión %
+            <input
+              type="number"
+              min="0"
+              max="100"
+              value={formulario.comisionPorcentaje}
+              onChange={(e) =>
+                setFormulario({
+                  ...formulario,
+                  comisionPorcentaje: e.target.value,
+                })
+              }
+              placeholder="Ej: 10"
+            />
+          </label>
+
+          <label>
+            Estado
+            <select
+              value={formulario.estado}
+              onChange={(e) =>
+                setFormulario({ ...formulario, estado: e.target.value })
+              }
+            >
+              <option>Activa</option>
+              <option>Inactiva</option>
+              <option>Suspendida</option>
+              <option>Prospecto</option>
+            </select>
+          </label>
+
+          <label>
+            Nota
+            <textarea
+              value={formulario.nota}
+              onChange={(e) =>
+                setFormulario({ ...formulario, nota: e.target.value })
+              }
+              placeholder="Notas de alianza, condiciones, ubicación o acuerdos..."
+              rows="4"
+            />
+          </label>
+
+          <div className="crm-actions">
+            <button type="submit">
+              {editandoId ? 'Guardar cambios' : 'Agregar veterinaria'}
+            </button>
+
+            {editandoId && (
+              <button type="button" onClick={limpiarFormulario}>
+                Cancelar edición
+              </button>
+            )}
+          </div>
+        </form>
+
+        <div className="crm-card">
+          <div className="crm-toolbar">
+            <input
+              type="text"
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              placeholder="Buscar veterinaria, responsable, código o nota..."
+            />
+
+            <select
+              value={filtroEstado}
+              onChange={(e) => setFiltroEstado(e.target.value)}
+            >
+              <option>Todas</option>
+              <option>Activa</option>
+              <option>Inactiva</option>
+              <option>Suspendida</option>
+              <option>Prospecto</option>
+            </select>
+          </div>
+
+          <div className="crm-table-wrapper">
+            <table className="crm-table">
+              <thead>
+                <tr>
+                  <th>Veterinaria</th>
+                  <th>Responsable</th>
+                  <th>WhatsApp</th>
+                  <th>Código</th>
+                  <th>Pedidos</th>
+                  <th>Total vendido</th>
+                  <th>Comisión %</th>
+                  <th>Comisión</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {veterinariasFiltradas.length > 0 ? (
+                  veterinariasFiltradas.map((veterinaria) => {
+                    const comision =
+                      (Number(veterinaria.totalVendido || 0) *
+                        Number(veterinaria.comisionPorcentaje || 0)) /
+                      100;
+
+                    return (
+                      <tr key={veterinaria.id}>
+                        <td>
+                          <strong>{veterinaria.nombre}</strong>
+                          <br />
+                          <small>
+                            {veterinaria.direccion || 'Sin dirección'}
+                          </small>
+                        </td>
+
+                        <td>{veterinaria.responsable || 'Sin responsable'}</td>
+                        <td>{veterinaria.telefono || 'Sin teléfono'}</td>
+                        <td>{veterinaria.codigoAfiliado || 'Sin código'}</td>
+                        <td>{veterinaria.pedidos || 0}</td>
+                        <td>{formatoCordobas(veterinaria.totalVendido)}</td>
+                        <td>{veterinaria.comisionPorcentaje || 0}%</td>
+                        <td>{formatoCordobas(comision)}</td>
+                        <td>{veterinaria.estado}</td>
+
+                        <td>
+                          <div className="crm-row-actions">
+                            <button
+                              type="button"
+                              onClick={() => editarVeterinaria(veterinaria)}
+                            >
+                              Editar
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                confirmarEliminarVeterinaria(veterinaria.id)
+                              }
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="10">
+                      No hay veterinarias registradas con estos filtros.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="crm-note">
+            <strong>Relación con ELANPET:</strong> cada veterinaria puede usar
+            un código afiliado o QR propio para generar pedidos y calcular
+            comisión automáticamente.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

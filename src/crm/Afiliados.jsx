@@ -1,0 +1,351 @@
+import React, { useMemo, useState } from 'react';
+
+export default function Afiliados() {
+  const [afiliados, setAfiliados] = useState([
+    {
+      id: 1,
+      nombre: 'Afiliado Demo',
+      telefono: '+505 8888 8888',
+      correo: 'afiliado@elankav.com',
+      codigo: 'AF-0001',
+      referidos: 5,
+      ventas: 15000,
+      comisionPorcentaje: 10,
+      estado: 'Activo',
+      nota: 'Afiliado de prueba.',
+    },
+  ]);
+
+  const [formulario, setFormulario] = useState({
+    nombre: '',
+    telefono: '',
+    correo: '',
+    codigo: '',
+    referidos: '',
+    ventas: '',
+    comisionPorcentaje: 10,
+    estado: 'Activo',
+    nota: '',
+  });
+
+  const [busqueda, setBusqueda] = useState('');
+  const [editandoId, setEditandoId] = useState(null);
+
+  const formatoCordobas = (valor) => {
+    return new Intl.NumberFormat('es-NI', {
+      style: 'currency',
+      currency: 'NIO',
+    }).format(Number(valor || 0));
+  };
+
+  const afiliadosFiltrados = useMemo(() => {
+    return afiliados.filter((afiliado) =>
+      `${afiliado.nombre} ${afiliado.telefono} ${afiliado.correo} ${afiliado.codigo}`
+        .toLowerCase()
+        .includes(busqueda.toLowerCase())
+    );
+  }, [afiliados, busqueda]);
+
+  const guardarAfiliado = (e) => {
+    e.preventDefault();
+
+    if (!formulario.nombre.trim()) {
+      alert('Ingrese el nombre del afiliado');
+      return;
+    }
+
+    const datos = {
+      ...formulario,
+      referidos: Number(formulario.referidos || 0),
+      ventas: Number(formulario.ventas || 0),
+      comisionPorcentaje: Number(formulario.comisionPorcentaje || 0),
+    };
+
+    if (editandoId) {
+      setAfiliados((prev) =>
+        prev.map((item) =>
+          item.id === editandoId ? { ...datos, id: editandoId } : item
+        )
+      );
+    } else {
+      setAfiliados((prev) => [
+        {
+          ...datos,
+          id: Date.now(),
+        },
+        ...prev,
+      ]);
+    }
+
+    limpiarFormulario();
+  };
+
+  const editarAfiliado = (afiliado) => {
+    setFormulario({ ...afiliado });
+    setEditandoId(afiliado.id);
+  };
+
+  const eliminarAfiliado = (id) => {
+    if (!window.confirm('¿Eliminar afiliado?')) return;
+
+    setAfiliados((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const limpiarFormulario = () => {
+    setFormulario({
+      nombre: '',
+      telefono: '',
+      correo: '',
+      codigo: '',
+      referidos: '',
+      ventas: '',
+      comisionPorcentaje: 10,
+      estado: 'Activo',
+      nota: '',
+    });
+
+    setEditandoId(null);
+  };
+
+  const resumen = useMemo(() => {
+    const ventas = afiliados.reduce(
+      (total, item) => total + Number(item.ventas || 0),
+      0
+    );
+
+    const comisiones = afiliados.reduce((total, item) => {
+      return (
+        total +
+        (Number(item.ventas || 0) *
+          Number(item.comisionPorcentaje || 0)) /
+          100
+      );
+    }, 0);
+
+    return {
+      afiliados: afiliados.length,
+      ventas,
+      comisiones,
+    };
+  }, [afiliados]);
+
+  return (
+    <div className="crm-page">
+      <div className="crm-page-header">
+        <h2>Afiliados</h2>
+        <p>
+          Administración de afiliados, referidos y comisiones del CRM Central.
+        </p>
+      </div>
+
+      <div className="crm-stats">
+        <div className="crm-stat-card">
+          <span>Afiliados</span>
+          <strong>{resumen.afiliados}</strong>
+        </div>
+
+        <div className="crm-stat-card">
+          <span>Ventas</span>
+          <strong>{formatoCordobas(resumen.ventas)}</strong>
+        </div>
+
+        <div className="crm-stat-card">
+          <span>Comisiones</span>
+          <strong>{formatoCordobas(resumen.comisiones)}</strong>
+        </div>
+      </div>
+
+      <div className="crm-grid">
+        <form className="crm-card" onSubmit={guardarAfiliado}>
+          <h3>
+            {editandoId ? 'Editar afiliado' : 'Nuevo afiliado'}
+          </h3>
+
+          <input
+            type="text"
+            placeholder="Nombre"
+            value={formulario.nombre}
+            onChange={(e) =>
+              setFormulario({
+                ...formulario,
+                nombre: e.target.value,
+              })
+            }
+          />
+
+          <input
+            type="text"
+            placeholder="WhatsApp"
+            value={formulario.telefono}
+            onChange={(e) =>
+              setFormulario({
+                ...formulario,
+                telefono: e.target.value,
+              })
+            }
+          />
+
+          <input
+            type="email"
+            placeholder="Correo"
+            value={formulario.correo}
+            onChange={(e) =>
+              setFormulario({
+                ...formulario,
+                correo: e.target.value,
+              })
+            }
+          />
+
+          <input
+            type="text"
+            placeholder="Código afiliado"
+            value={formulario.codigo}
+            onChange={(e) =>
+              setFormulario({
+                ...formulario,
+                codigo: e.target.value,
+              })
+            }
+          />
+
+          <input
+            type="number"
+            placeholder="Referidos"
+            value={formulario.referidos}
+            onChange={(e) =>
+              setFormulario({
+                ...formulario,
+                referidos: e.target.value,
+              })
+            }
+          />
+
+          <input
+            type="number"
+            placeholder="Ventas"
+            value={formulario.ventas}
+            onChange={(e) =>
+              setFormulario({
+                ...formulario,
+                ventas: e.target.value,
+              })
+            }
+          />
+
+          <input
+            type="number"
+            placeholder="Comisión %"
+            value={formulario.comisionPorcentaje}
+            onChange={(e) =>
+              setFormulario({
+                ...formulario,
+                comisionPorcentaje: e.target.value,
+              })
+            }
+          />
+
+          <select
+            value={formulario.estado}
+            onChange={(e) =>
+              setFormulario({
+                ...formulario,
+                estado: e.target.value,
+              })
+            }
+          >
+            <option>Activo</option>
+            <option>Inactivo</option>
+            <option>Suspendido</option>
+          </select>
+
+          <textarea
+            placeholder="Notas"
+            value={formulario.nota}
+            onChange={(e) =>
+              setFormulario({
+                ...formulario,
+                nota: e.target.value,
+              })
+            }
+          />
+
+          <div className="crm-actions">
+            <button type="submit">
+              {editandoId ? 'Guardar' : 'Agregar'}
+            </button>
+
+            {editandoId && (
+              <button
+                type="button"
+                onClick={limpiarFormulario}
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
+        </form>
+
+        <div className="crm-card">
+          <input
+            type="text"
+            placeholder="Buscar afiliado..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+
+          <div className="crm-table-wrapper">
+            <table className="crm-table">
+              <thead>
+                <tr>
+                  <th>Afiliado</th>
+                  <th>Código</th>
+                  <th>Referidos</th>
+                  <th>Ventas</th>
+                  <th>Comisión</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {afiliadosFiltrados.map((afiliado) => {
+                  const comision =
+                    (Number(afiliado.ventas || 0) *
+                      Number(afiliado.comisionPorcentaje || 0)) /
+                    100;
+
+                  return (
+                    <tr key={afiliado.id}>
+                      <td>{afiliado.nombre}</td>
+                      <td>{afiliado.codigo}</td>
+                      <td>{afiliado.referidos}</td>
+                      <td>{formatoCordobas(afiliado.ventas)}</td>
+                      <td>{formatoCordobas(comision)}</td>
+                      <td>{afiliado.estado}</td>
+                      <td>
+                        <button
+                          onClick={() => editarAfiliado(afiliado)}
+                        >
+                          Editar
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            eliminarAfiliado(afiliado.id)
+                          }
+                        >
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
