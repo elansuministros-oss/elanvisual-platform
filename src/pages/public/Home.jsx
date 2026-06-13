@@ -25,29 +25,6 @@ const HOME_DEFAULT = {
   stat3Texto: 'Sistema operativo',
 };
 
-function resolverImagenDesktop(banner) {
-  return (
-    banner?.imagenDesktop ||
-    banner?.imagenPc ||
-    banner?.imagenPC ||
-    banner?.imagen ||
-    banner?.url ||
-    banner?.src ||
-    ''
-  );
-}
-
-function resolverImagenMobile(banner) {
-  return (
-    banner?.imagenMobile ||
-    banner?.imagenMovil ||
-    banner?.imagenMobil ||
-    banner?.mobile ||
-    banner?.urlMobile ||
-    resolverImagenDesktop(banner)
-  );
-}
-
 export default function Home() {
   const { state } = useElan();
 
@@ -80,10 +57,9 @@ export default function Home() {
     }
   }, [banners.length, index]);
 
-  const banner = banners.length > 0 ? banners[index % banners.length] : null;
-
-  const imagenDesktop = resolverImagenDesktop(banner);
-  const imagenMobile = resolverImagenMobile(banner);
+  const banner = banners.length ? banners[index] : null;
+  const imagenDesktop = banner?.imagenDesktop || '';
+  const imagenMobile = banner?.imagenMobile || imagenDesktop;
 
   const servicios = [
     { titulo: home.servicio1Titulo, texto: home.servicio1Texto },
@@ -101,25 +77,19 @@ export default function Home() {
     <main className="public-home">
       <section className="home-hero">
         {banner && (imagenDesktop || imagenMobile) ? (
-          <>
-            <picture className="hero-picture hero-slide" key={banner.id || index}>
-              <source media="(max-width: 760px)" srcSet={imagenMobile} />
-
-              <img
-                src={imagenDesktop || imagenMobile}
-                alt={banner.titulo || 'ELANVISUAL'}
-                className="hero-image"
-              />
-            </picture>
-
-            <div className="hero-overlay" />
-          </>
+          <picture className="hero-picture hero-slide" key={banner.id || index}>
+            <source media="(max-width: 767px)" srcSet={imagenMobile} />
+            <img
+              src={imagenDesktop || imagenMobile}
+              alt={banner.titulo || home.titulo}
+              className="hero-image"
+            />
+          </picture>
         ) : (
-          <>
-            <div className="hero-fallback" />
-            <div className="hero-overlay" />
-          </>
+          <div className="hero-fallback" />
         )}
+
+        <div className="hero-overlay" />
 
         <div className="home-hero-content">
           <p className="eyebrow">ELANVISUAL</p>
