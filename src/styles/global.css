@@ -2759,3 +2759,40 @@ select:focus {
   color: #0B1220 !important;
 }
 
+
+/* FASE 7.0.3 LIMPIEZA TURQUESA HOME HERO */
+
+.elanpet-launch-copy h1,
+.elanpet-launch-copy h1 *,
+.elanpet-hero-line,
+.elanpet-benefits svg,
+.elanpet-benefits b,
+.elanpet-benefits small,
+.elanpet-category-section h2,
+.elanpet-category-section h2 *,
+.elanpet-section-title h2,
+.elanpet-section-title h2 *,
+.elanpet-section-title span {
+  color: #0B1220 !important;
+  border-color: #D4AF37 !important;
+}
+
+.elanpet-launch-copy h1 strong,
+.elanpet-category-section strong,
+.elanpet-section-title strong {
+  color: #8A6A16 !important;
+  border-bottom-color: #D4AF37 !important;
+}
+
+.elanpet-benefits div,
+.elanpet-category-card,
+.elanpet-category-card * {
+  border-color: #E5E7EB !important;
+}
+
+.elanpet-benefits svg,
+.elanpet-category-card i,
+.elanpet-category-card svg {
+  color: #D4AF37 !important;
+}
+
