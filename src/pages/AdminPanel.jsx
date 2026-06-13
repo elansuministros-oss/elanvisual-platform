@@ -5,7 +5,6 @@ import {
   Factory,
   FileText,
   ImagePlus,
-  Settings,
   ShieldCheck,
   PlusCircle,
   Save,
@@ -55,11 +54,8 @@ export default function AdminPanel() {
     crearImagen,
     eliminarImagen,
     crearProducto,
-    actualizarProducto,
     crearTrabajo,
-    actualizarTrabajo,
     crearBanner,
-    actualizarBanner,
     eliminarBanner,
   } = useApp();
 
@@ -76,39 +72,64 @@ export default function AdminPanel() {
     { label: 'Usuarios', value: usuarios.filter((u) => u.activo !== false).length },
   ];
 
-  const usarImagen = (img) => {
-    if (tab === 'servicios') setServicio((prev) => ({ ...prev, imagen: img.src }));
-    if (tab === 'portafolio') setTrabajo((prev) => ({ ...prev, imagen: img.src }));
-    if (tab === 'banners') setBanner((prev) => ({ ...prev, imagen: img.src, imagenRuta: img.src }));
-  };
+  const SelectorImagen = ({ valor, onPick }) => (
+    <div className="image-picker">
+      <h4>Seleccionar imagen desde Multimedia</h4>
+
+      {imagenes.length === 0 ? (
+        <p className="note">
+          Todavía no hay imágenes cargadas. Subí imágenes desde la pestaña Multimedia.
+        </p>
+      ) : (
+        <div className="image-picker-grid">
+          {imagenes.map((img) => (
+            <button
+              key={img.id}
+              type="button"
+              className={`image-picker-card ${valor === img.src ? 'active' : ''}`}
+              onClick={() => onPick(img.src)}
+            >
+              <img src={img.src} alt={img.nombre} />
+              <span>{img.nombre}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   const guardarServicio = () => {
     if (!servicio.nombre.trim()) return alert('Escribí el nombre del servicio.');
+
     crearProducto({
       ...servicio,
-      id: servicio.id || undefined,
       precio: Number(servicio.precio || 0),
       activo: servicio.activo !== false,
     });
+
     setServicio(nuevoServicioBase);
   };
 
   const guardarTrabajo = () => {
     if (!trabajo.titulo.trim()) return alert('Escribí el título del trabajo.');
+
     crearTrabajo({
       ...trabajo,
       activo: trabajo.activo !== false,
     });
+
     setTrabajo(nuevoTrabajoBase);
   };
 
   const guardarBanner = () => {
     if (!banner.titulo.trim()) return alert('Escribí el título del banner.');
+
     crearBanner({
       ...banner,
       imagenRuta: banner.imagenRuta || banner.imagen,
       activo: banner.activo !== false,
     });
+
     setBanner(nuevoBannerBase);
   };
 
@@ -125,11 +146,11 @@ export default function AdminPanel() {
       </div>
 
       <nav className="admin-tabs">
-        <button className={tab === 'dashboard' ? 'active' : ''} onClick={() => setTab('dashboard')}>Resumen</button>
-        <button className={tab === 'servicios' ? 'active' : ''} onClick={() => setTab('servicios')}>Servicios</button>
-        <button className={tab === 'portafolio' ? 'active' : ''} onClick={() => setTab('portafolio')}>Portafolio</button>
-        <button className={tab === 'banners' ? 'active' : ''} onClick={() => setTab('banners')}>Banners</button>
-        <button className={tab === 'multimedia' ? 'active' : ''} onClick={() => setTab('multimedia')}>Multimedia</button>
+        <button type="button" className={tab === 'dashboard' ? 'active' : ''} onClick={() => setTab('dashboard')}>Resumen</button>
+        <button type="button" className={tab === 'servicios' ? 'active' : ''} onClick={() => setTab('servicios')}>Servicios</button>
+        <button type="button" className={tab === 'portafolio' ? 'active' : ''} onClick={() => setTab('portafolio')}>Portafolio</button>
+        <button type="button" className={tab === 'banners' ? 'active' : ''} onClick={() => setTab('banners')}>Banners</button>
+        <button type="button" className={tab === 'multimedia' ? 'active' : ''} onClick={() => setTab('multimedia')}>Multimedia</button>
       </nav>
 
       {tab === 'dashboard' && (
@@ -194,6 +215,8 @@ export default function AdminPanel() {
             <textarea className="span-2" placeholder="Descripción técnica" value={servicio.descripcion} onChange={(e) => setServicio({ ...servicio, descripcion: e.target.value })} />
           </div>
 
+          <SelectorImagen valor={servicio.imagen} onPick={(src) => setServicio({ ...servicio, imagen: src })} />
+
           <button type="button" onClick={guardarServicio}><PlusCircle size={18} /> Crear servicio</button>
 
           <div className="admin-list">
@@ -218,6 +241,8 @@ export default function AdminPanel() {
             <input className="span-2" placeholder="URL o imagen seleccionada" value={trabajo.imagen} onChange={(e) => setTrabajo({ ...trabajo, imagen: e.target.value })} />
             <textarea className="span-2" placeholder="Descripción del trabajo" value={trabajo.descripcion} onChange={(e) => setTrabajo({ ...trabajo, descripcion: e.target.value })} />
           </div>
+
+          <SelectorImagen valor={trabajo.imagen} onPick={(src) => setTrabajo({ ...trabajo, imagen: src })} />
 
           <button type="button" onClick={guardarTrabajo}><PlusCircle size={18} /> Crear trabajo</button>
 
@@ -249,6 +274,8 @@ export default function AdminPanel() {
             <input className="span-2" placeholder="URL o imagen seleccionada" value={banner.imagen} onChange={(e) => setBanner({ ...banner, imagen: e.target.value, imagenRuta: e.target.value })} />
           </div>
 
+          <SelectorImagen valor={banner.imagen} onPick={(src) => setBanner({ ...banner, imagen: src, imagenRuta: src })} />
+
           <button type="button" onClick={guardarBanner}><Save size={18} /> Crear banner</button>
 
           <div className="admin-list">
@@ -268,7 +295,6 @@ export default function AdminPanel() {
           imagenes={imagenes}
           onAdd={crearImagen}
           onRemove={eliminarImagen}
-          onSelect={usarImagen}
         />
       )}
     </main>

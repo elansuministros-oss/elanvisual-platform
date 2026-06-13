@@ -2796,3 +2796,55 @@ select:focus {
   color: #D4AF37 !important;
 }
 
+
+/* FASE 7.4.1 SELECTOR VISUAL DE IMAGENES */
+
+.image-picker {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #E5E7EB;
+  border-radius: 18px;
+  background: #F8FAFC;
+}
+
+.image-picker h4 {
+  margin: 0 0 12px;
+  color: #0B1220;
+}
+
+.image-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
+}
+
+.image-picker-card {
+  border: 2px solid transparent;
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.image-picker-card.active {
+  border-color: #D4AF37;
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.18);
+}
+
+.image-picker-card img {
+  width: 100%;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+
+.image-picker-card span {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #0B1220;
+}
+
