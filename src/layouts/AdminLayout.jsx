@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 
 const adminLinks = [
+  { to: '/', label: 'Inicio público', icon: '←' },
   { to: '/admin/dashboard', label: 'Dashboard', icon: '⌂' },
   { to: '/admin/productos', label: 'Productos', icon: '▣' },
   { to: '/admin/multimedia', label: 'Media', icon: '◉' },
@@ -18,7 +19,13 @@ const adminLinks = [
   { to: '/admin/configuracion', label: 'Configuración', icon: '☰' },
 ];
 
-const bottomLinks = adminLinks.slice(0, 5);
+const bottomLinks = [
+  { to: '/', label: 'Inicio', icon: '←' },
+  { to: '/admin/dashboard', label: 'Panel', icon: '⌂' },
+  { to: '/admin/productos', label: 'Productos', icon: '▣' },
+  { to: '/admin/multimedia', label: 'Media', icon: '◉' },
+  { to: '/admin/pedidos', label: 'Pedidos', icon: '✓' },
+];
 
 export default function AdminLayout() {
   const [open, setOpen] = useState(false);
@@ -43,12 +50,23 @@ export default function AdminLayout() {
         </button>
       </header>
 
-      {open && <button className="admin-drawer-backdrop" onClick={closeDrawer} aria-label="Cerrar menú" />}
+      {open && (
+        <button
+          className="admin-drawer-backdrop"
+          onClick={closeDrawer}
+          aria-label="Cerrar menú"
+        />
+      )}
 
       <aside className={`admin-drawer ${open ? 'is-open' : ''}`}>
         <nav className="admin-drawer-nav">
           {adminLinks.map((item) => (
-            <NavLink key={item.to} to={item.to} onClick={closeDrawer}>
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              onClick={closeDrawer}
+            >
               {item.icon} {item.label}
             </NavLink>
           ))}
@@ -61,7 +79,7 @@ export default function AdminLayout() {
 
       <nav className="admin-bottom-nav" aria-label="Navegación rápida administrador">
         {bottomLinks.map((item) => (
-          <NavLink key={item.to} to={item.to}>
+          <NavLink key={item.to} to={item.to} end={item.to === '/'}>
             <span>{item.icon}</span>
             {item.label}
           </NavLink>

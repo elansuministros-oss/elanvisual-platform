@@ -4,7 +4,7 @@
 
 .home-hero {
   position: relative;
-  min-height: calc(100dvh - var(--header-public));
+  min-height: 72vh;
   display: grid;
   align-items: end;
   overflow: hidden;
@@ -261,5 +261,36 @@
 
   .cart-item img {
     aspect-ratio: 1 / 1;
+  }
+}
+/* UX-01 HOME MOBILE */
+
+@media (max-width: 759px) {
+
+  .home-hero {
+    min-height: 68vh;
+  }
+
+  .home-hero-content {
+    padding: 18px 16px 24px;
+  }
+
+  .home-hero-content h1 {
+    margin-bottom: 10px;
+    font-size: clamp(1.8rem, 8vw, 2.8rem);
+    line-height: 1;
+  }
+
+  .home-hero-content p {
+    font-size: 0.95rem;
+  }
+
+  .hero-actions {
+    margin-top: 16px;
+    gap: 8px;
+  }
+
+  .hero-actions a {
+    min-height: 48px;
   }
 }
