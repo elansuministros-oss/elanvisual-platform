@@ -1,0 +1,25 @@
+export const ROUTES = {
+  HOME: '/',
+  CATALOGO: '/catalogo',
+  SHOWROOM: '/showroom',
+  CONTACTO: '/contacto',
+  NOSOTROS: '/nosotros',
+  CARRITO: '/carrito',
+
+  ADMIN: '/admin',
+
+  DASHBOARD: '/admin/dashboard',
+  PRODUCTOS: '/admin/productos',
+  CATEGORIAS: '/admin/categorias',
+  MULTIMEDIA: '/admin/multimedia',
+  BANNERS: '/admin/banners',
+  CLIENTES: '/admin/clientes',
+  INVENTARIO: '/admin/inventario',
+  MATERIALES: '/admin/materiales',
+  COTIZACIONES: '/admin/cotizaciones',
+  PEDIDOS: '/admin/pedidos',
+  ORDENES: '/admin/ordenes',
+  PRODUCCION: '/admin/produccion',
+  PAGOS: '/admin/pagos',
+  CONFIGURACION: '/admin/configuracion',
+};

@@ -1,389 +1,191 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
 import { useElan } from '../../core/context/ElanContext.jsx';
 
-const FALLBACK_DESKTOP = '/banners/banner-desktop.jpg';
-const FALLBACK_MOBILE = '/banners/banner-mobile.jpg';
-
-function limpiar(valor) {
-  return typeof valor === 'string' ? valor.trim() : '';
-}
-
-function activo(item) {
-  return item?.estado === 'Activo' || item?.activo === true || item?.active === true;
-}
-
-function leerEstadoLocal() {
-  try {
-    const keys = ['elanvisual_state_v2', 'elanvisual_state', 'elan_state'];
-    for (const key of keys) {
-      const raw = localStorage.getItem(key);
-      if (raw) {
-        const data = JSON.parse(raw);
-        if (data && typeof data === 'object') return data;
-      }
-    }
-  } catch {
-    return {};
-  }
-
-  return {};
-}
-
-function unirListas(...listas) {
-  return listas.flatMap((lista) => (Array.isArray(lista) ? lista : []));
-}
-
-function imagenDesktopDe(item = {}) {
-  return (
-    limpiar(item.imagenDesktop) ||
-    limpiar(item.imagenEscritorio) ||
-    limpiar(item.desktop) ||
-    limpiar(item.imagen) ||
-    limpiar(item.url) ||
-    limpiar(item.src) ||
-    limpiar(item.archivo) ||
-    limpiar(item.image) ||
-    ''
-  );
-}
-
-function imagenMobileDe(item = {}) {
-  return (
-    limpiar(item.imagenMobile) ||
-    limpiar(item.imagenMovil) ||
-    limpiar(item.imagen_mobile) ||
-    limpiar(item.mobile) ||
-    limpiar(item.imagen) ||
-    limpiar(item.url) ||
-    limpiar(item.src) ||
-    limpiar(item.archivo) ||
-    limpiar(item.image) ||
-    ''
-  );
-}
-
-function categoriaDe(item = {}) {
-  return limpiar(item.categoria).toLowerCase();
-}
-
-function buscarMultimediaPorCategorias(multimedia, categoriasPermitidas) {
-  const objetivos = categoriasPermitidas.map((cat) => cat.toLowerCase());
-  const lista = Array.isArray(multimedia) ? [...multimedia].reverse() : [];
-
-  return (
-    lista.find(
-      (item) => activo(item) && objetivos.includes(categoriaDe(item))
-    ) ||
-    lista.find((item) => objetivos.includes(categoriaDe(item))) ||
-    null
-  );
-}
-
-function obtenerBanner({ banners, multimedia }) {
-  const listaBanners = Array.isArray(banners) ? [...banners].reverse() : [];
-  const bannerActivo = listaBanners.find(activo) || listaBanners[0] || null;
-
-  const mediaDesktop = buscarMultimediaPorCategorias(multimedia, [
-    'Banner Desktop',
-    'Banner',
-  ]);
-
-  const mediaMobile = buscarMultimediaPorCategorias(multimedia, [
-    'Banner Mobile',
-  ]);
-
-  const desktop =
-    imagenDesktopDe(mediaDesktop) ||
-    imagenDesktopDe(bannerActivo) ||
-    FALLBACK_DESKTOP;
-
-  const mobile =
-    imagenMobileDe(mediaMobile) ||
-    imagenMobileDe(bannerActivo) ||
-    desktop ||
-    FALLBACK_MOBILE;
-
-  return {
-    ...(bannerActivo || {}),
-    imagenDesktop: desktop,
-    imagenMobile: mobile,
-    titulo:
-      limpiar(bannerActivo?.titulo) ||
-      'Soluciones visuales para marcas, espacios y negocios.',
-    subtitulo:
-      limpiar(bannerActivo?.subtitulo) ||
-      'Rotulación, impresión digital, fachadas, displays, acrílicos, PVC y proyectos especiales.',
-    boton: limpiar(bannerActivo?.boton) || 'Ver Catálogo',
-    enlace: limpiar(bannerActivo?.enlace) || '/catalogo',
-  };
-}
+const HOME_DEFAULT = {
+  titulo: 'Rotulación profesional para negocios reales',
+  subtitulo: 'Diseño, fabricación e instalación con criterio técnico.',
+  textoInstitucional:
+    'Fabricamos soluciones visuales funcionales para negocios que necesitan presencia, claridad y ejecución real.',
+  botonPrincipalTexto: 'Ver catálogo',
+  botonPrincipalUrl: '/catalogo',
+  botonSecundarioTexto: 'Solicitar cotización',
+  botonSecundarioUrl: '/contacto',
+  servicio1Titulo: 'Rotulación comercial',
+  servicio1Texto: 'Fachadas, letras 3D, cajillos, PVC, acrílico y estructuras.',
+  servicio2Titulo: 'Catálogo visual',
+  servicio2Texto: 'Productos organizados con imágenes, categorías y vista ampliada.',
+  servicio3Titulo: 'Showroom',
+  servicio3Texto: 'Galería pública de trabajos, acabados e instalaciones.',
+  stat1Valor: '100%',
+  stat1Texto: 'Fabricación real',
+  stat2Valor: '1:1',
+  stat2Texto: 'Escala técnica',
+  stat3Valor: 'V2',
+  stat3Texto: 'Sistema operativo',
+};
 
 export default function Home() {
-  const contexto = useElan();
-  const local = leerEstadoLocal();
+  const { state } = useElan();
 
-  const categorias = contexto?.categorias || local?.categorias || [];
-  const productos = contexto?.productos || local?.productos || [];
+  const home = {
+    ...HOME_DEFAULT,
+    ...(state.configuracion?.home || {}),
+  };
 
-  const banners = unirListas(local?.banners, contexto?.banners);
+  const banners = useMemo(() => {
+    return Array.isArray(state.banners)
+      ? state.banners.filter((item) => item.activo)
+      : [];
+  }, [state.banners]);
 
-  const multimedia = unirListas(
-    local?.multimedia,
-    local?.media,
-    local?.archivos,
-    contexto?.multimedia,
-    contexto?.media,
-    contexto?.archivos
-  );
+  const [index, setIndex] = useState(0);
 
-  const bannerActivo = obtenerBanner({ banners, multimedia });
+  useEffect(() => {
+    if (banners.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % banners.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [banners]);
+
+  const banner =
+    banners.length > 0
+      ? banners[index % banners.length]
+      : null;
+
+  const servicios = [
+    {
+      titulo: home.servicio1Titulo,
+      texto: home.servicio1Texto,
+    },
+    {
+      titulo: home.servicio2Titulo,
+      texto: home.servicio2Texto,
+    },
+    {
+      titulo: home.servicio3Titulo,
+      texto: home.servicio3Texto,
+    },
+  ];
+
+  const stats = [
+    {
+      valor: home.stat1Valor,
+      texto: home.stat1Texto,
+    },
+    {
+      valor: home.stat2Valor,
+      texto: home.stat2Texto,
+    },
+    {
+      valor: home.stat3Valor,
+      texto: home.stat3Texto,
+    },
+  ];
 
   return (
-    <main>
-      <style>
-        {`
-          .elan-home-hero {
-            position: relative !important;
-            min-height: 760px !important;
-            overflow: hidden !important;
-          }
+    <main className="public-home">
+      <section className="home-hero">
+        {banner ? (
+          <>
+            <picture
+              className="hero-picture hero-slide"
+              key={banner.id}
+            >
+              <source
+                media="(max-width:760px)"
+                srcSet={
+                  banner.imagenMobile ||
+                  banner.imagenDesktop
+                }
+              />
 
-          .elan-home-picture {
-            position: absolute !important;
-            inset: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            z-index: 0 !important;
-          }
+              <img
+                src={
+                  banner.imagenDesktop ||
+                  banner.imagenMobile
+                }
+                alt={banner.titulo || 'ELANVISUAL'}
+                className="hero-image"
+              />
+            </picture>
 
-          .elan-home-picture img {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-            display: block !important;
-          }
+            <div className="hero-overlay" />
+          </>
+        ) : (
+          <>
+            <div className="hero-fallback" />
+            <div className="hero-overlay" />
+          </>
+        )}
 
-          .elan-home-overlay {
-            position: absolute !important;
-            inset: 0 !important;
-            background: linear-gradient(
-              90deg,
-              rgba(0,0,0,.78),
-              rgba(0,0,0,.52),
-              rgba(0,0,0,.25)
-            ) !important;
-            z-index: 1 !important;
-          }
+        <div className="home-hero-content">
+          <p className="eyebrow">ELANVISUAL</p>
 
-          .elan-home-copy {
-            position: absolute !important;
-            z-index: 5 !important;
-            left: 7vw !important;
-            bottom: 100px !important;
-            width: min(760px, 86vw) !important;
-            color: #fff !important;
-          }
+          <h1>
+            {banner?.titulo || home.titulo}
+          </h1>
 
-          .elan-home-copy span {
-            display: block !important;
-            color: #d8a84f !important;
-            font-size: 18px !important;
-            font-weight: 950 !important;
-            letter-spacing: .22em !important;
-            margin-bottom: 18px !important;
-          }
+          <p>
+            {banner?.subtitulo || home.subtitulo}
+          </p>
 
-          .elan-home-copy h1 {
-            color: #fff !important;
-            font-size: clamp(54px, 7vw, 92px) !important;
-            line-height: .95 !important;
-            font-weight: 950 !important;
-            margin: 0 0 26px !important;
-          }
+          <div className="hero-actions">
+            <Link to={home.botonPrincipalUrl || '/catalogo'}>
+              {home.botonPrincipalTexto || 'Ver catálogo'}
+            </Link>
 
-          .elan-home-copy p {
-            color: #fff !important;
-            font-size: clamp(24px, 2.7vw, 34px) !important;
-            line-height: 1.18 !important;
-            font-weight: 650 !important;
-            margin: 0 0 34px !important;
-          }
+            <Link to={home.botonSecundarioUrl || '/contacto'}>
+              {home.botonSecundarioTexto || 'Solicitar cotización'}
+            </Link>
+          </div>
 
-          .elan-home-copy .primary {
-            font-size: 26px !important;
-            padding: 22px 34px !important;
-            border-radius: 18px !important;
-            font-weight: 950 !important;
-          }
-
-          @media (max-width: 850px) {
-            .elan-home-hero {
-              min-height: 900px !important;
-            }
-
-            .elan-home-overlay {
-              background: linear-gradient(
-                180deg,
-                rgba(0,0,0,.38),
-                rgba(0,0,0,.72),
-                rgba(0,0,0,.90)
-              ) !important;
-            }
-
-            .elan-home-copy {
-              left: 28px !important;
-              right: 28px !important;
-              top: 165px !important;
-              bottom: auto !important;
-              width: auto !important;
-            }
-
-            .elan-home-copy span {
-              font-size: 26px !important;
-              margin-bottom: 22px !important;
-            }
-
-            .elan-home-copy h1 {
-              font-size: 76px !important;
-              line-height: .92 !important;
-              margin-bottom: 30px !important;
-            }
-
-            .elan-home-copy p {
-              font-size: 34px !important;
-              line-height: 1.18 !important;
-              margin-bottom: 36px !important;
-            }
-
-            .elan-home-copy .primary {
-              width: 100% !important;
-              display: flex !important;
-              justify-content: center !important;
-              font-size: 34px !important;
-              padding: 30px 34px !important;
-              border-radius: 24px !important;
-            }
-
-            .container {
-              padding: 48px 26px !important;
-            }
-
-            .container h2 {
-              font-size: 42px !important;
-              line-height: 1.05 !important;
-              margin: 0 0 30px !important;
-            }
-
-            .grid.cats,
-            .grid.products {
-              display: grid !important;
-              grid-template-columns: 1fr !important;
-              gap: 24px !important;
-            }
-
-            .grid.cats .card {
-              min-height: 190px !important;
-              padding: 34px 30px !important;
-              border-radius: 26px !important;
-            }
-
-            .grid.cats .card h3 {
-              font-size: 34px !important;
-              line-height: 1.1 !important;
-              margin-bottom: 18px !important;
-            }
-
-            .grid.cats .card p {
-              font-size: 26px !important;
-              line-height: 1.25 !important;
-            }
-
-            .grid.products .product {
-              padding: 28px !important;
-              border-radius: 26px !important;
-            }
-
-            .grid.products .product img {
-              width: 100% !important;
-              min-height: 360px !important;
-              object-fit: cover !important;
-              border-radius: 22px !important;
-            }
-
-            .grid.products .product h3 {
-              font-size: 34px !important;
-              line-height: 1.1 !important;
-              margin-top: 22px !important;
-            }
-
-            .grid.products .product p {
-              font-size: 26px !important;
-              line-height: 1.2 !important;
-            }
-
-            .trust {
-              font-size: 30px !important;
-              line-height: 1.22 !important;
-              padding: 34px 30px !important;
-              border-radius: 26px !important;
-              margin-top: 36px !important;
-            }
-          }
-        `}
-      </style>
-
-      <section className="hero elan-home-hero">
-        <picture className="hero-picture elan-home-picture">
-          <source media="(max-width: 850px)" srcSet={bannerActivo.imagenMobile} />
-          <img src={bannerActivo.imagenDesktop} alt="ELANVISUAL" />
-        </picture>
-
-        <div className="hero-overlay elan-home-overlay" />
-
-        <div className="hero-copy elan-home-copy">
-          <span>ELANVISUAL</span>
-
-          <h1>{bannerActivo.titulo}</h1>
-
-          <p>{bannerActivo.subtitulo}</p>
-
-          <Link className="primary" to={bannerActivo.enlace}>
-            {bannerActivo.boton}
-          </Link>
+          {banners.length > 1 && (
+            <div className="hero-dots">
+              {banners.map((item, i) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={
+                    i === index
+                      ? 'hero-dot active'
+                      : 'hero-dot'
+                  }
+                  onClick={() => setIndex(i)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      <section className="container">
-        <h2>Categorías principales</h2>
-
-        <div className="grid cats">
-          {categorias.slice(0, 6).map((c) => (
-            <Link
-              className="card"
-              to={`/catalogo/${encodeURIComponent(c.nombre)}`}
-              key={c.id}
-            >
-              <h3>{c.nombre}</h3>
-              <p>{c.subcategorias?.slice(0, 4).join(' · ')}</p>
-            </Link>
-          ))}
+      <section className="home-section">
+        <div className="home-section-inner">
+          <p className="eyebrow">Sistema visual</p>
+          <h2>{home.titulo}</h2>
+          <p>{home.textoInstitucional}</p>
         </div>
+      </section>
 
-        <h2>Trabajos y productos destacados</h2>
+      <section className="home-services">
+        {servicios.map((servicio) => (
+          <article key={servicio.titulo}>
+            <h3>{servicio.titulo}</h3>
+            <p>{servicio.texto}</p>
+          </article>
+        ))}
+      </section>
 
-        <div className="grid products">
-          {productos.slice(0, 6).map((p) => (
-            <article className="product" key={p.id}>
-              <img src={p.imagen} alt={p.nombre} />
-              <h3>{p.nombre}</h3>
-              <p>{p.categoria}</p>
-            </article>
-          ))}
-        </div>
-
-        <div className="trust">
-          Producción real, materiales verificables, cotización clara y seguimiento por Orden de Trabajo.
-        </div>
+      <section className="home-stats">
+        {stats.map((stat) => (
+          <article key={stat.texto}>
+            <strong>{stat.valor}</strong>
+            <span>{stat.texto}</span>
+          </article>
+        ))}
       </section>
     </main>
   );
