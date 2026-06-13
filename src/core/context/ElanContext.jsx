@@ -1006,13 +1006,29 @@ export function ElanProvider({ children }) {
   };
 
   const agregarMultimedia = (data = {}) => {
+    const imagenPrincipal =
+      data.imagen ||
+      data.imagenDesktop ||
+      data.imagenMobile ||
+      data.url ||
+      data.src ||
+      data.archivo ||
+      data.image ||
+      '';
+
     const item = {
+      ...data,
       id: data.id || uid('MEDIA'),
       nombre: data.nombre || '',
       categoria: data.categoria || 'General',
-      imagen: data.imagen || '',
+      imagen: imagenPrincipal,
+      imagenDesktop: data.imagenDesktop || data.imagenEscritorio || imagenPrincipal,
+      imagenMobile: data.imagenMobile || data.imagenMovil || data.imagen_mobile || imagenPrincipal,
+      url: data.url || imagenPrincipal,
+      src: data.src || imagenPrincipal,
       fecha: data.fecha || hoyISO(),
       estado: data.estado || 'Activo',
+      unidad: data.unidad || 'ELANVISUAL',
     };
 
     patch((prev) => ({
