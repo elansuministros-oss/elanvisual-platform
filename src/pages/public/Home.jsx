@@ -67,7 +67,6 @@ function unirListas(...listas) {
 
 function buscarMultimediaPorCategoria(multimedia, categoria) {
   const objetivo = categoria.toLowerCase();
-
   const lista = Array.isArray(multimedia) ? [...multimedia].reverse() : [];
 
   return (
@@ -117,10 +116,7 @@ export default function Home() {
   const categorias = contexto?.categorias || local?.categorias || [];
   const productos = contexto?.productos || local?.productos || [];
 
-  const banners = unirListas(
-    local?.banners,
-    contexto?.banners
-  );
+  const banners = unirListas(local?.banners, contexto?.banners);
 
   const multimedia = unirListas(
     local?.multimedia,
@@ -135,6 +131,60 @@ export default function Home() {
 
   return (
     <main>
+      <style>
+        {`
+          @media (max-width: 850px) {
+            .hero {
+              min-height: 78vh !important;
+              display: flex !important;
+              align-items: flex-start !important;
+              justify-content: center !important;
+            }
+
+            .hero-copy {
+              top: 92px !important;
+              bottom: auto !important;
+              left: 18px !important;
+              right: 18px !important;
+              max-width: none !important;
+              transform: none !important;
+              padding-top: 0 !important;
+              position: absolute !important;
+              z-index: 5 !important;
+            }
+
+            .hero-copy span {
+              font-size: 22px !important;
+              font-weight: 900 !important;
+              letter-spacing: 0.14em !important;
+            }
+
+            .hero-copy h1 {
+              font-size: 44px !important;
+              line-height: 1.02 !important;
+              font-weight: 950 !important;
+              margin: 12px 0 16px !important;
+              max-width: 100% !important;
+            }
+
+            .hero-copy p {
+              font-size: 23px !important;
+              line-height: 1.25 !important;
+              font-weight: 650 !important;
+              max-width: 100% !important;
+              margin-bottom: 22px !important;
+            }
+
+            .hero-copy .primary {
+              font-size: 22px !important;
+              padding: 18px 26px !important;
+              border-radius: 16px !important;
+              font-weight: 900 !important;
+            }
+          }
+        `}
+      </style>
+
       <section className="hero">
         <picture className="hero-picture" key={`${bannerActivo.imagenDesktop}-${bannerActivo.imagenMobile}`}>
           <source media="(max-width: 850px)" srcSet={bannerActivo.imagenMobile} />
