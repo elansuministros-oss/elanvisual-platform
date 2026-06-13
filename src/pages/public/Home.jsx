@@ -35,8 +35,8 @@ export default function Home() {
 
   const banners = useMemo(() => {
     return Array.isArray(state.banners)
-      ? state.banners.filter((item) => item.activo)
-      : [];
+? state.banners.filter((item) => item.activo !== false)
+    : [];
   }, [state.banners]);
 
   const [index, setIndex] = useState(0);
