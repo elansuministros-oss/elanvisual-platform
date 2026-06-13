@@ -1,3 +1,4 @@
+import Login from './pages/Login.jsx';
 import Pedidos from './pages/admin/Pedidos.jsx';
 import Categorias from './pages/admin/Categorias.jsx';
 
@@ -61,7 +62,7 @@ export default function App() {
         <Route path="configuracion" element={<Configuracion />} />
       </Route>
 
-      <Route path="/login" element={<Placeholder title="Acceso" area="Sistema" />} />
+<Route path="/login" element={<Login />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
