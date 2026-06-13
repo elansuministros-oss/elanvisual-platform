@@ -2,18 +2,22 @@ import { Link } from 'react-router-dom';
 import { useElan } from '../../core/context/ElanContext.jsx';
 
 const FALLBACK_DESKTOP = '/banners/banner-desktop.jpg';
+const FALLBACK_MOBILE = '/banners/banner-mobile.jpg';
 
 function limpiar(valor) {
   return typeof valor === 'string' ? valor.trim() : '';
 }
 
-function imagenDe(item) {
+function activo(item) {
+  return item?.estado === 'Activo' || item?.activo === true || item?.active === true;
+}
+
+function imagenDesktopDe(item) {
   return (
-    limpiar(item?.imagenMobile) ||
-    limpiar(item?.imagenMovil) ||
-    limpiar(item?.imagen_mobile) ||
     limpiar(item?.imagenDesktop) ||
     limpiar(item?.imagenEscritorio) ||
+    limpiar(item?.desktop) ||
+    limpiar(item?.bannerDesktop) ||
     limpiar(item?.imagen) ||
     limpiar(item?.url) ||
     limpiar(item?.src) ||
@@ -23,17 +27,25 @@ function imagenDe(item) {
   );
 }
 
-function activo(item) {
-  return item?.estado === 'Activo' || item?.activo === true || item?.active === true;
+function imagenMobileDe(item) {
+  return (
+    limpiar(item?.imagenMobile) ||
+    limpiar(item?.imagenMovil) ||
+    limpiar(item?.imagen_mobile) ||
+    limpiar(item?.mobile) ||
+    limpiar(item?.bannerMobile) ||
+    limpiar(item?.imagen) ||
+    limpiar(item?.url) ||
+    limpiar(item?.src) ||
+    limpiar(item?.archivo) ||
+    limpiar(item?.image) ||
+    ''
+  );
 }
 
 function leerEstadoLocal() {
   try {
-    const keys = [
-      'elanvisual_state_v2',
-      'elanvisual_state',
-      'elan_state',
-    ];
+    const keys = ['elanvisual_state_v2', 'elanvisual_state', 'elan_state'];
 
     for (const key of keys) {
       const raw = localStorage.getItem(key);
@@ -56,11 +68,13 @@ function unirListas(...listas) {
 function buscarMultimediaPorCategoria(multimedia, categoria) {
   const objetivo = categoria.toLowerCase();
 
+  const lista = Array.isArray(multimedia) ? [...multimedia].reverse() : [];
+
   return (
-    multimedia.find(
+    lista.find(
       (item) => activo(item) && limpiar(item.categoria).toLowerCase() === objetivo
     ) ||
-    multimedia.find(
+    lista.find(
       (item) => limpiar(item.categoria).toLowerCase() === objetivo
     ) ||
     null
@@ -68,30 +82,25 @@ function buscarMultimediaPorCategoria(multimedia, categoria) {
 }
 
 function obtenerBanner({ banners, multimedia }) {
+  const listaBanners = Array.isArray(banners) ? [...banners].reverse() : [];
+
   const bannerActivo =
-    (Array.isArray(banners) &&
-      (banners.find(activo) || banners[0])) ||
+    listaBanners.find(activo) ||
+    listaBanners[0] ||
     null;
 
   const mediaDesktop = buscarMultimediaPorCategoria(multimedia, 'Banner');
   const mediaMobile = buscarMultimediaPorCategoria(multimedia, 'Banner Mobile');
 
   const desktop =
-    limpiar(bannerActivo?.imagenDesktop) ||
-    limpiar(bannerActivo?.imagenEscritorio) ||
-    limpiar(bannerActivo?.desktop) ||
-    limpiar(bannerActivo?.bannerDesktop) ||
-    imagenDe(mediaDesktop) ||
-    imagenDe(bannerActivo) ||
+    imagenDesktopDe(bannerActivo) ||
+    imagenDesktopDe(mediaDesktop) ||
     FALLBACK_DESKTOP;
 
   const mobile =
-    limpiar(bannerActivo?.imagenMobile) ||
-    limpiar(bannerActivo?.imagenMovil) ||
-    limpiar(bannerActivo?.imagen_mobile) ||
-    limpiar(bannerActivo?.mobile) ||
-    limpiar(bannerActivo?.bannerMobile) ||
-    imagenDe(mediaMobile) ||
+    imagenMobileDe(bannerActivo) ||
+    imagenMobileDe(mediaMobile) ||
+    FALLBACK_MOBILE ||
     desktop;
 
   return {
@@ -109,17 +118,17 @@ export default function Home() {
   const productos = contexto?.productos || local?.productos || [];
 
   const banners = unirListas(
-    contexto?.banners,
-    local?.banners
+    local?.banners,
+    contexto?.banners
   );
 
   const multimedia = unirListas(
-    contexto?.multimedia,
-    contexto?.media,
-    contexto?.archivos,
     local?.multimedia,
     local?.media,
-    local?.archivos
+    local?.archivos,
+    contexto?.multimedia,
+    contexto?.media,
+    contexto?.archivos
   );
 
   const bannerActivo = obtenerBanner({ banners, multimedia });
@@ -127,7 +136,7 @@ export default function Home() {
   return (
     <main>
       <section className="hero">
-        <picture className="hero-picture">
+        <picture className="hero-picture" key={`${bannerActivo.imagenDesktop}-${bannerActivo.imagenMobile}`}>
           <source media="(max-width: 850px)" srcSet={bannerActivo.imagenMobile} />
           <img src={bannerActivo.imagenDesktop} alt="ELANVISUAL" />
         </picture>
