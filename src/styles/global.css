@@ -2608,3 +2608,135 @@ select:focus {
   }
 }
 
+
+/* ==================================================
+   FASE 7.0.1 — AJUSTE COLOR ELANVISUAL PREMIUM
+   Elimina look ELANPET turquesa/mascota
+================================================== */
+
+:root {
+  --azul: #0B1220;
+  --azul-oscuro: #020617;
+  --verde: #D4AF37;
+  --teal: #C59B2D;
+  --naranja: #F59E0B;
+  --amarillo: #D4AF37;
+  --fondo: #F7F8FA;
+  --texto: #0B1220;
+  --muted: #64748B;
+  --borde: #E5E7EB;
+  --blanco: #FFFFFF;
+}
+
+body {
+  background: linear-gradient(180deg, #FAFAFA 0%, #EEF1F5 100%) !important;
+  color: #0B1220 !important;
+}
+
+.desktop-header,
+.mobile-header {
+  background: #0B1220 !important;
+  color: #FFFFFF !important;
+}
+
+.brand-mark {
+  background: linear-gradient(135deg, #D4AF37, #8A6A16) !important;
+  color: #0B1220 !important;
+}
+
+.desktop-nav button,
+.mobile-nav button {
+  color: #E5E7EB !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+.desktop-nav .nav-active,
+.mobile-nav .nav-active,
+.desktop-nav button:hover,
+.mobile-nav button:hover {
+  background: #D4AF37 !important;
+  color: #0B1220 !important;
+  border-color: #D4AF37 !important;
+}
+
+.mobile-menu-btn,
+.mobile-cart {
+  background: #D4AF37 !important;
+  color: #0B1220 !important;
+}
+
+.badge,
+.elanpet-pill {
+  background: rgba(212, 175, 55, 0.14) !important;
+  color: #7A5B00 !important;
+  border: 1px solid rgba(212, 175, 55, 0.32) !important;
+}
+
+.elanpet-section-title span,
+.section-title span,
+.catalog-hero .badge {
+  color: #8A6A16 !important;
+}
+
+.elanpet-section-title h2 strong,
+.section-title h2 strong {
+  color: #8A6A16 !important;
+  border-bottom: 4px solid #D4AF37 !important;
+}
+
+.elanpet-category-card i,
+.category-card i {
+  background: #0B1220 !important;
+  color: #D4AF37 !important;
+}
+
+button,
+.elanpet-primary-btn,
+.elanpet-whatsapp-btn,
+.send-full,
+.product-footer button {
+  background: linear-gradient(135deg, #0B1220, #1E293B) !important;
+  color: #FFFFFF !important;
+  border: 0 !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22) !important;
+}
+
+button:hover,
+.elanpet-primary-btn:hover,
+.elanpet-whatsapp-btn:hover,
+.send-full:hover,
+.product-footer button:hover {
+  filter: brightness(1.08) !important;
+}
+
+.product-tag,
+.product-zoom-badge,
+.price {
+  background: #D4AF37 !important;
+  color: #0B1220 !important;
+}
+
+.chips button.active,
+.option.active {
+  background: rgba(212, 175, 55, 0.14) !important;
+  border-color: #D4AF37 !important;
+  color: #0B1220 !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #D4AF37 !important;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.16) !important;
+}
+
+.cart-summary-mini {
+  background: linear-gradient(135deg, #0B1220, #1E293B) !important;
+  color: #FFFFFF !important;
+}
+
+.cart-summary-mini strong {
+  color: #D4AF37 !important;
+}
+
