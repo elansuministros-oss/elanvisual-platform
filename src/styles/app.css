@@ -381,3 +381,37 @@ h1 {
     padding: 24px;
   }
 }
+/* UX-02 Navegación pública */
+
+.public-login-link {
+  color: #fff !important;
+  background: var(--color-brand) !important;
+}
+
+.mobile-login-link {
+  color: #fff !important;
+  background: var(--color-brand) !important;
+}
+
+@media (max-width: 859px) {
+  .public-nav {
+    display: none !important;
+  }
+
+  .public-menu-button {
+    display: grid !important;
+    place-items: center;
+  }
+
+  .public-header-inner {
+    gap: 12px;
+  }
+
+  .brand-main {
+    font-size: 0.92rem;
+  }
+
+  .brand-sub {
+    font-size: 0.62rem;
+  }
+}

@@ -30,6 +30,10 @@ export default function PublicLayout() {
                 {item.label}
               </NavLink>
             ))}
+
+            <NavLink to="/login" className="public-login-link">
+              Acceso
+            </NavLink>
           </nav>
 
           <button
@@ -38,7 +42,7 @@ export default function PublicLayout() {
             onClick={() => setOpen((value) => !value)}
             aria-label="Abrir menú"
           >
-            ☰
+            {open ? '×' : '☰'}
           </button>
         </div>
       </header>
@@ -46,10 +50,19 @@ export default function PublicLayout() {
       {open && (
         <nav className="public-mobile-menu">
           {publicLinks.map((item) => (
-            <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={closeMenu}>
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              onClick={closeMenu}
+            >
               {item.label}
             </NavLink>
           ))}
+
+          <NavLink to="/login" onClick={closeMenu} className="mobile-login-link">
+            Acceso / Admin
+          </NavLink>
         </nav>
       )}
 
