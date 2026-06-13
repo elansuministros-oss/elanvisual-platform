@@ -17,69 +17,51 @@ export function PublicLayout() {
             display: none !important;
           }
 
-          .elan-public-header nav a {
-            font-size: inherit !important;
-            padding: inherit !important;
-            font-weight: inherit !important;
-            line-height: inherit !important;
-          }
-
-          @media (max-width: 850px) {
+          @media (max-width: 1100px) {
             .elan-public-header {
-              min-height: 130px !important;
-              padding: 18px 14px !important;
+              min-height: 120px !important;
+              padding: 18px 16px !important;
               display: flex !important;
               align-items: center !important;
               justify-content: space-between !important;
             }
 
             .elan-public-header .brand {
-              font-size: 18px !important;
-              letter-spacing: .08em !important;
-              max-width: 52% !important;
-              white-space: nowrap !important;
+              font-size: 22px !important;
+              font-weight: 900 !important;
+              letter-spacing: .06em !important;
             }
 
             .elan-public-header .elan-menu-mobile {
-              width: 96px !important;
-              height: 96px !important;
-              min-width: 96px !important;
-              min-height: 96px !important;
-              max-width: 96px !important;
-              max-height: 96px !important;
+              width: 92px !important;
+              height: 92px !important;
+              min-width: 92px !important;
+              min-height: 92px !important;
               display: inline-flex !important;
               align-items: center !important;
               justify-content: center !important;
-              padding: 0 !important;
               border-radius: 22px !important;
               border: 2px solid rgba(216,168,79,.85) !important;
               background: #101826 !important;
-              color: #d8a84f !important;
-              font-size: 68px !important;
-              line-height: 1 !important;
+              color: #ffffff !important;
+              font-size: 62px !important;
               font-weight: 950 !important;
-              cursor: pointer !important;
-              flex-shrink: 0 !important;
+              line-height: 1 !important;
+              padding: 0 !important;
               z-index: 9999 !important;
-            }
-
-            .elan-public-header .elan-menu-mobile span {
-              display: block !important;
-              transform: translateY(-4px) !important;
             }
 
             .elan-public-header nav {
               position: absolute !important;
-              top: 130px !important;
+              top: 120px !important;
               left: 0 !important;
               right: 0 !important;
               z-index: 9998 !important;
               display: none !important;
               flex-direction: column !important;
-              gap: 0 !important;
+              gap: 14px !important;
               padding: 18px !important;
-              background: rgba(16,24,38,.98) !important;
-              border-top: 1px solid rgba(216,168,79,.35) !important;
+              background: rgba(12,14,20,.98) !important;
             }
 
             .elan-public-header nav.open {
@@ -87,18 +69,22 @@ export function PublicLayout() {
             }
 
             .elan-public-header nav a {
-              display: block !important;
+              display: flex !important;
+              align-items: center !important;
               width: 100% !important;
-              font-size: 32px !important;
-              line-height: 1.15 !important;
-              font-weight: 850 !important;
-              padding: 22px 18px !important;
+              min-height: 86px !important;
+              padding: 22px 28px !important;
+              border-radius: 18px !important;
+              background: rgba(255,255,255,.08) !important;
               color: #ffffff !important;
-              border-bottom: 1px solid rgba(255,255,255,.08) !important;
+              font-size: 46px !important;
+              line-height: 1.05 !important;
+              font-weight: 900 !important;
+              text-decoration: none !important;
             }
 
             .elan-public-header nav a.cart {
-              font-size: 34px !important;
+              font-size: 46px !important;
               color: #d8a84f !important;
             }
           }
@@ -126,11 +112,7 @@ export function PublicLayout() {
           <NavLink to="/showroom" onClick={cerrarMenu}>Showroom</NavLink>
           <NavLink to="/nosotros" onClick={cerrarMenu}>Nosotros</NavLink>
           <NavLink to="/contacto" onClick={cerrarMenu}>Contacto</NavLink>
-
-          <NavLink className="cart" to="/carrito" onClick={cerrarMenu}>
-            🛒 {carrito.length}
-          </NavLink>
-
+          <NavLink className="cart" to="/carrito" onClick={cerrarMenu}>🛒 {carrito.length}</NavLink>
           <NavLink to="/login" onClick={cerrarMenu}>Login</NavLink>
         </nav>
       </header>
@@ -182,19 +164,14 @@ export function AdminLayout() {
     <div className="admin-shell">
       <aside className="sidebar">
         <Link className="brand adminbrand" to="/admin">✣ ELANVISUAL</Link>
-
         {admin.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.to === '/admin'}>
             {item.label}
           </NavLink>
         ))}
-
         <button onClick={() => { logout(); nav('/'); }}>Salir</button>
       </aside>
-
-      <main className="admin-main">
-        <Outlet />
-      </main>
+      <main className="admin-main"><Outlet /></main>
     </div>
   );
 }
@@ -219,19 +196,14 @@ export function VendorLayout() {
     <div className="admin-shell">
       <aside className="sidebar">
         <Link className="brand adminbrand" to="/vendedor-panel">VENTAS</Link>
-
         {items.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.to === '/vendedor-panel'}>
             {item.label}
           </NavLink>
         ))}
-
         <button onClick={() => { logout(); nav('/'); }}>Salir</button>
       </aside>
-
-      <main className="admin-main">
-        <Outlet />
-      </main>
+      <main className="admin-main"><Outlet /></main>
     </div>
   );
 }
@@ -252,19 +224,14 @@ export function ProductionLayout() {
     <div className="admin-shell">
       <aside className="sidebar">
         <Link className="brand adminbrand" to="/produccion">PRODUCCIÓN</Link>
-
         {items.map((item) => (
           <NavLink key={item.to} to={item.to} end={item.to === '/produccion'}>
             {item.label}
           </NavLink>
         ))}
-
         <button onClick={() => { logout(); nav('/'); }}>Salir</button>
       </aside>
-
-      <main className="admin-main">
-        <Outlet />
-      </main>
+      <main className="admin-main"><Outlet /></main>
     </div>
   );
 }
