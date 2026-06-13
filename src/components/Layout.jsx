@@ -9,6 +9,13 @@ export function PublicLayout() {
 
   const cerrarMenu = () => setMenuAbierto(false);
 
+  const estiloLinkMenu = {
+    fontSize: '32px',
+    padding: '22px 28px',
+    fontWeight: '800',
+    lineHeight: '1.2',
+  };
+
   return (
     <>
       <header className="topbar public elan-public-header">
@@ -23,21 +30,21 @@ export function PublicLayout() {
           aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
           aria-expanded={menuAbierto}
           style={{
-            width: '64px',
-            height: '64px',
-            minWidth: '64px',
-            minHeight: '64px',
-            maxWidth: '64px',
-            maxHeight: '64px',
+            width: '180px',
+            height: '180px',
+            minWidth: '180px',
+            minHeight: '180px',
+            maxWidth: '180px',
+            maxHeight: '180px',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
             padding: '0',
-            borderRadius: '18px',
-            border: '1px solid rgba(216, 168, 79, 0.55)',
+            borderRadius: '30px',
+            border: '3px solid rgba(216,168,79,.8)',
             background: '#101826',
             color: '#d8a84f',
-            fontSize: '42px',
+            fontSize: '120px',
             lineHeight: '1',
             fontWeight: '900',
             cursor: 'pointer',
@@ -49,7 +56,7 @@ export function PublicLayout() {
             aria-hidden="true"
             style={{
               display: 'block',
-              transform: menuAbierto ? 'translateY(-2px)' : 'translateY(-3px)',
+              transform: menuAbierto ? 'translateY(-8px)' : 'translateY(-10px)',
             }}
           >
             {menuAbierto ? '×' : '☰'}
@@ -57,17 +64,17 @@ export function PublicLayout() {
         </button>
 
         <nav className={menuAbierto ? 'open' : ''}>
-          <NavLink to="/" onClick={cerrarMenu}>Inicio</NavLink>
-          <NavLink to="/catalogo" onClick={cerrarMenu}>Catálogo</NavLink>
-          <NavLink to="/showroom" onClick={cerrarMenu}>Showroom</NavLink>
-          <NavLink to="/nosotros" onClick={cerrarMenu}>Nosotros</NavLink>
-          <NavLink to="/contacto" onClick={cerrarMenu}>Contacto</NavLink>
+          <NavLink to="/" onClick={cerrarMenu} style={estiloLinkMenu}>Inicio</NavLink>
+          <NavLink to="/catalogo" onClick={cerrarMenu} style={estiloLinkMenu}>Catálogo</NavLink>
+          <NavLink to="/showroom" onClick={cerrarMenu} style={estiloLinkMenu}>Showroom</NavLink>
+          <NavLink to="/nosotros" onClick={cerrarMenu} style={estiloLinkMenu}>Nosotros</NavLink>
+          <NavLink to="/contacto" onClick={cerrarMenu} style={estiloLinkMenu}>Contacto</NavLink>
 
-          <NavLink className="cart" to="/carrito" onClick={cerrarMenu}>
+          <NavLink className="cart" to="/carrito" onClick={cerrarMenu} style={estiloLinkMenu}>
             🛒 {carrito.length}
           </NavLink>
 
-          <NavLink to="/login" onClick={cerrarMenu}>Login</NavLink>
+          <NavLink to="/login" onClick={cerrarMenu} style={estiloLinkMenu}>Login</NavLink>
         </nav>
       </header>
 
