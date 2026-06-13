@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useElan } from '../core/context/ElanContext.jsx';
 
+const STORAGE_KEY = 'elanvisual_state_v2';
+
 const formInicial = {
   id: '',
   titulo: '',
@@ -18,6 +20,7 @@ export default function ShowroomCRM() {
   const [lista, setLista] = useState(showroom || []);
   const [form, setForm] = useState(formInicial);
   const [busqueda, setBusqueda] = useState('');
+  const [visor, setVisor] = useState(null);
 
   const imagenesShowroom = multimedia.filter(
     (m) =>
@@ -31,10 +34,10 @@ export default function ShowroomCRM() {
   };
 
   const guardarStorage = (nuevaLista) => {
-    const actual = JSON.parse(localStorage.getItem('elanvisual_state_v2') || '{}');
+    const actual = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
 
     localStorage.setItem(
-      'elanvisual_state_v2',
+      STORAGE_KEY,
       JSON.stringify({
         ...actual,
         showroom: nuevaLista,
@@ -44,9 +47,7 @@ export default function ShowroomCRM() {
     setLista(nuevaLista);
   };
 
-  const limpiar = () => {
-    setForm(formInicial);
-  };
+  const limpiar = () => setForm(formInicial);
 
   const guardar = (e) => {
     e.preventDefault();
@@ -83,6 +84,8 @@ export default function ShowroomCRM() {
       imagen: item.imagen || '',
       estado: item.estado || 'Activo',
     });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const eliminar = (id) => {
@@ -110,32 +113,309 @@ export default function ShowroomCRM() {
   }, [lista, busqueda]);
 
   return (
-    <div>
+    <div className="showroom-crm-page">
+      <style>
+        {`
+          .showroom-crm-page {
+            display: grid;
+            gap: 18px;
+          }
+
+          .showroom-crm-page h2 {
+            margin: 0;
+            font-size: 34px;
+            line-height: 1.1;
+          }
+
+          .showroom-crm-intro {
+            margin: 0;
+            color: #667085;
+            font-weight: 700;
+          }
+
+          .showroom-form,
+          .showroom-list-card {
+            border: 1px solid rgba(15, 23, 42, .12);
+            border-radius: 22px;
+            padding: 18px;
+            background: #ffffff;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, .08);
+          }
+
+          .showroom-form h3 {
+            margin: 0 0 16px;
+            font-size: 24px;
+          }
+
+          .showroom-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+          }
+
+          .showroom-grid label {
+            display: grid;
+            gap: 8px;
+            font-weight: 900;
+            color: #172033;
+          }
+
+          .showroom-grid input,
+          .showroom-grid select,
+          .showroom-grid textarea,
+          .showroom-search {
+            width: 100%;
+            min-height: 50px;
+            border-radius: 14px;
+            border: 1px solid rgba(15, 23, 42, .18);
+            padding: 12px 14px;
+            font-size: 16px;
+            background: #fff;
+          }
+
+          .showroom-grid textarea {
+            min-height: 110px;
+            resize: vertical;
+          }
+
+          .showroom-preview {
+            margin-top: 14px;
+          }
+
+          .showroom-preview img {
+            width: 260px;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 16px;
+            border: 1px solid rgba(15, 23, 42, .14);
+            cursor: zoom-in;
+          }
+
+          .showroom-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+          }
+
+          .showroom-actions button,
+          .showroom-item-actions button {
+            min-height: 52px;
+            border-radius: 14px;
+            padding: 12px 18px;
+            font-size: 16px;
+            font-weight: 900;
+            cursor: pointer;
+          }
+
+          .showroom-list {
+            display: grid;
+            gap: 14px;
+          }
+
+          .showroom-item {
+            border: 1px solid rgba(15, 23, 42, .12);
+            border-radius: 20px;
+            padding: 14px;
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 16px;
+            background: #ffffff;
+          }
+
+          .showroom-item-img {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 16px;
+            cursor: zoom-in;
+          }
+
+          .showroom-item h3 {
+            margin: 0 0 8px;
+            font-size: 22px;
+          }
+
+          .showroom-meta,
+          .showroom-desc {
+            margin: 0 0 8px;
+            color: #475467;
+            font-weight: 700;
+            line-height: 1.35;
+          }
+
+          .showroom-status {
+            display: inline-flex;
+            width: fit-content;
+            border-radius: 999px;
+            padding: 7px 12px;
+            background: rgba(216, 168, 79, .16);
+            color: #172033;
+            font-size: 14px;
+            font-weight: 900;
+            margin-bottom: 10px;
+          }
+
+          .showroom-item-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+          }
+
+          .showroom-viewer {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(9, 12, 18, .92);
+            display: grid;
+            place-items: center;
+            padding: 18px;
+          }
+
+          .showroom-viewer-box {
+            width: min(1100px, 100%);
+            display: grid;
+            gap: 14px;
+          }
+
+          .showroom-viewer img {
+            width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 18px;
+            background: #111827;
+          }
+
+          .showroom-viewer button {
+            justify-self: end;
+            min-height: 54px;
+            border-radius: 16px;
+            padding: 12px 20px;
+            font-size: 18px;
+            font-weight: 900;
+          }
+
+          @media (max-width: 760px) {
+            .showroom-crm-page h2 {
+              font-size: 34px;
+            }
+
+            .showroom-crm-intro {
+              font-size: 19px;
+              line-height: 1.35;
+            }
+
+            .showroom-form,
+            .showroom-list-card {
+              padding: 18px;
+              border-radius: 24px;
+            }
+
+            .showroom-form h3 {
+              font-size: 28px;
+            }
+
+            .showroom-grid {
+              grid-template-columns: 1fr;
+              gap: 16px;
+            }
+
+            .showroom-grid label {
+              font-size: 20px;
+            }
+
+            .showroom-grid input,
+            .showroom-grid select,
+            .showroom-grid textarea,
+            .showroom-search {
+              min-height: 62px;
+              font-size: 20px;
+              border-radius: 18px;
+            }
+
+            .showroom-grid textarea {
+              min-height: 150px;
+            }
+
+            .showroom-preview img {
+              width: 100%;
+              height: 240px;
+            }
+
+            .showroom-actions {
+              flex-direction: column;
+            }
+
+            .showroom-actions button,
+            .showroom-item-actions button {
+              width: 100%;
+              min-height: 64px;
+              font-size: 21px;
+              border-radius: 18px;
+            }
+
+            .showroom-list {
+              gap: 18px;
+            }
+
+            .showroom-item {
+              grid-template-columns: 1fr;
+              padding: 16px;
+              border-radius: 24px;
+            }
+
+            .showroom-item-img {
+              height: 260px;
+              border-radius: 20px;
+            }
+
+            .showroom-item h3 {
+              font-size: 27px;
+              line-height: 1.15;
+            }
+
+            .showroom-meta,
+            .showroom-desc {
+              font-size: 20px;
+            }
+
+            .showroom-status {
+              font-size: 17px;
+              padding: 9px 14px;
+            }
+
+            .showroom-item-actions {
+              flex-direction: column;
+            }
+
+            .showroom-viewer {
+              padding: 10px;
+            }
+
+            .showroom-viewer img {
+              max-height: 74vh;
+              border-radius: 14px;
+            }
+
+            .showroom-viewer button {
+              width: 100%;
+              min-height: 64px;
+              font-size: 22px;
+            }
+          }
+        `}
+      </style>
+
       <h2>Showroom</h2>
 
-      <p>
+      <p className="showroom-crm-intro">
         Galería administrativa de trabajos realizados, conectada a Multimedia
         Central.
       </p>
 
-      <form
-        onSubmit={guardar}
-        style={{
-          border: '1px solid #ddd',
-          borderRadius: 10,
-          padding: 14,
-          marginBottom: 18,
-        }}
-      >
+      <form className="showroom-form" onSubmit={guardar}>
         <h3>{form.id ? 'Editar trabajo' : 'Nuevo trabajo'}</h3>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-            gap: 10,
-          }}
-        >
+        <div className="showroom-grid">
           <label>
             Título
             <input
@@ -143,7 +423,6 @@ export default function ShowroomCRM() {
               value={form.titulo}
               onChange={cambiar}
               placeholder="Ej: Fachada COMEX Altamira"
-              style={{ width: '100%' }}
             />
           </label>
 
@@ -154,7 +433,6 @@ export default function ShowroomCRM() {
               value={form.categoria}
               onChange={cambiar}
               placeholder="Ej: Fachada, monolito, letras 3D"
-              style={{ width: '100%' }}
             />
           </label>
 
@@ -165,7 +443,6 @@ export default function ShowroomCRM() {
               value={form.cliente}
               onChange={cambiar}
               placeholder="Ej: COMEX"
-              style={{ width: '100%' }}
             />
           </label>
 
@@ -176,23 +453,20 @@ export default function ShowroomCRM() {
               value={form.ubicacion}
               onChange={cambiar}
               placeholder="Ej: Managua, Nicaragua"
-              style={{ width: '100%' }}
             />
           </label>
 
           <label>
             Imagen desde Multimedia
-            <select
-              name="imagen"
-              value={form.imagen}
-              onChange={cambiar}
-              style={{ width: '100%' }}
-            >
+            <select name="imagen" value={form.imagen} onChange={cambiar}>
               <option value="">Sin imagen</option>
 
               {imagenesShowroom.map((img) => (
-                <option key={img.id} value={img.imagen}>
-                  {img.nombre}
+                <option
+                  key={img.id}
+                  value={img.imagen || img.url || img.src || ''}
+                >
+                  {img.nombre || img.titulo || img.id}
                 </option>
               ))}
             </select>
@@ -200,12 +474,7 @@ export default function ShowroomCRM() {
 
           <label>
             Estado
-            <select
-              name="estado"
-              value={form.estado}
-              onChange={cambiar}
-              style={{ width: '100%' }}
-            >
+            <select name="estado" value={form.estado} onChange={cambiar}>
               <option value="Activo">Activo</option>
               <option value="Inactivo">Inactivo</option>
             </select>
@@ -218,28 +487,26 @@ export default function ShowroomCRM() {
               value={form.descripcion}
               onChange={cambiar}
               placeholder="Descripción técnica o comercial del trabajo"
-              style={{ width: '100%', minHeight: 90 }}
             />
           </label>
         </div>
 
         {form.imagen && (
-          <div style={{ marginTop: 12 }}>
+          <div className="showroom-preview">
             <img
               src={form.imagen}
               alt={form.titulo || 'Showroom'}
-              style={{
-                width: 220,
-                height: 140,
-                objectFit: 'cover',
-                borderRadius: 10,
-                border: '1px solid #ddd',
-              }}
+              onClick={() =>
+                setVisor({
+                  imagen: form.imagen,
+                  titulo: form.titulo || 'Showroom',
+                })
+              }
             />
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+        <div className="showroom-actions">
           <button type="submit">
             {form.id ? 'Guardar cambios' : 'Crear trabajo'}
           </button>
@@ -253,66 +520,78 @@ export default function ShowroomCRM() {
       </form>
 
       <input
+        className="showroom-search"
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
         placeholder="Buscar trabajo, cliente, ubicación o estado..."
-        style={{ width: '100%', marginBottom: 12 }}
       />
 
-      {filtrados.length === 0 ? (
-        <p>No hay trabajos registrados.</p>
-      ) : (
-        <div style={{ display: 'grid', gap: 10 }}>
-          {filtrados.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                border: '1px solid #ddd',
-                padding: 12,
-                borderRadius: 8,
-                display: 'grid',
-                gridTemplateColumns: item.imagen ? '140px 1fr' : '1fr',
-                gap: 12,
-              }}
-            >
-              {item.imagen && (
-                <img
-                  src={item.imagen}
-                  alt={item.titulo}
-                  style={{
-                    width: 140,
-                    height: 95,
-                    objectFit: 'cover',
-                    borderRadius: 8,
-                  }}
-                />
-              )}
+      <section className="showroom-list-card">
+        {filtrados.length === 0 ? (
+          <p>No hay trabajos registrados.</p>
+        ) : (
+          <div className="showroom-list">
+            {filtrados.map((item) => (
+              <article className="showroom-item" key={item.id}>
+                {item.imagen && (
+                  <img
+                    className="showroom-item-img"
+                    src={item.imagen}
+                    alt={item.titulo}
+                    onClick={() =>
+                      setVisor({
+                        imagen: item.imagen,
+                        titulo: item.titulo || 'Showroom',
+                      })
+                    }
+                  />
+                )}
 
-              <div>
-                <strong>{item.titulo}</strong>
+                <div>
+                  <h3>{item.titulo}</h3>
 
-                <p>
-                  {item.categoria || 'Sin categoría'} ·{' '}
-                  {item.cliente || 'Sin cliente'} ·{' '}
-                  {item.ubicacion || 'Sin ubicación'}
-                </p>
+                  <p className="showroom-meta">
+                    {item.categoria || 'Sin categoría'} ·{' '}
+                    {item.cliente || 'Sin cliente'} ·{' '}
+                    {item.ubicacion || 'Sin ubicación'}
+                  </p>
 
-                <small>Estado: {item.estado || 'Activo'}</small>
+                  <span className="showroom-status">
+                    Estado: {item.estado || 'Activo'}
+                  </span>
 
-                {item.descripcion && <p>{item.descripcion}</p>}
+                  {item.descripcion && (
+                    <p className="showroom-desc">{item.descripcion}</p>
+                  )}
 
-                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                  <button type="button" onClick={() => editar(item)}>
-                    Editar
-                  </button>
+                  <div className="showroom-item-actions">
+                    <button type="button" onClick={() => editar(item)}>
+                      Editar
+                    </button>
 
-                  <button type="button" onClick={() => eliminar(item.id)}>
-                    Eliminar
-                  </button>
+                    <button type="button" onClick={() => eliminar(item.id)}>
+                      Eliminar
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {visor && (
+        <div className="showroom-viewer" onClick={() => setVisor(null)}>
+          <div
+            className="showroom-viewer-box"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button type="button" onClick={() => setVisor(null)}>
+              Cerrar imagen
+            </button>
+
+            <img src={visor.imagen} alt={visor.titulo} />
+          </div>
         </div>
       )}
     </div>
