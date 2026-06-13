@@ -6,18 +6,18 @@ import { supabase } from '../lib/supabase';
 const AppContext = createContext(null);
 
 const configuracionInicial = {
-  nombreSitio: 'ELANPET',
-  slogan: 'Muebles funcionales para mascotas felices',
-  logoTexto: 'ELANPET',
+  nombreSitio: 'ELANVISUAL',
+  slogan: 'Rotulación, impresión y fabricación visual profesional',
+  logoTexto: 'ELANVISUAL',
   logo: '',
   whatsapp: '+505 8522 8183',
   correo: 'elansuministros@gmail.com',
-  instagram: '@elanpet',
+  instagram: '@elanvisual',
   colorPrincipal: '#1E5AA8',
   colorSecundario: '#058B8C',
-  textoHero: 'Tu mascota merece más',
+  textoHero: 'Rotulación profesional para negocios reales',
   descripcionHero:
-    'Muebles funcionales, resistentes y fabricados para el bienestar de perros y gatos. Compra fácil desde tu celular.',
+    'Rótulos, letras 3D, acrílico, PVC, impresión UV, DTF UV, CNC, láser, fachadas y displays fabricables desde una solicitud móvil.',
   instruccionesPago:
     'Después de transferir, responde este mensaje enviando el comprobante para confirmar tu pedido.',
   anticipoPorcentaje: 60,
@@ -28,53 +28,53 @@ const cuentasIniciales = [];
 const bannersIniciales = [
   {
     id: 'hero-principal-default',
-    titulo: 'Tu mascota merece más',
-    subtitulo: 'Muebles funcionales, resistentes y fabricados para el bienestar de perros y gatos.',
+    titulo: 'Rotulación profesional para negocios reales',
+    subtitulo: 'Letras 3D, fachadas, acrílico, PVC, impresión UV, DTF UV, CNC, láser y displays fabricables.',
     ubicacion: 'hero-principal',
     link: 'catalogo',
     activo: true,
-    imagen: '/productos/portada2-01.png',
-    imagenRuta: '/productos/portada2-01.png',
+    imagen: '/productos/portada-visual.png',
+    imagenRuta: '/productos/portada-visual.png',
     createdAt: 1,
     actualizadoEn: 1,
   },
   {
     id: 'slide-1',
-    titulo: 'Muebles funcionales para mascotas felices',
-    subtitulo: 'Casas, camas, comederos y torres fabricadas para durar.',
+    titulo: 'Letras 3D y fachadas',
+    subtitulo: 'Soluciones para interiores, exteriores, recepción y puntos de venta.',
     ubicacion: 'slider-home',
     link: 'catalogo',
     activo: false,
-    imagen: '/productos/producto-04.jpg',
+    imagen: '/productos/letras-3d.jpg',
     createdAt: 2,
     actualizadoEn: 2,
   },
   {
     id: 'slide-2',
-    titulo: 'Compra desde tu veterinaria de confianza',
-    subtitulo: 'Cada QR registra el origen del pedido y mantiene todo organizado.',
+    titulo: 'Impresión UV y DTF UV',
+    subtitulo: 'Aplicaciones premium para marcas, empaques, señalética y artículos promocionales.',
     ubicacion: 'slider-home',
     link: 'catalogo',
     activo: false,
-    imagen: '/productos/producto-05.jpg',
+    imagen: '/productos/impresion-uv.jpg',
     createdAt: 3,
     actualizadoEn: 3,
   },
   {
     id: 'slide-3',
-    titulo: 'Productos destacados para perros y gatos',
-    subtitulo: 'Diseños pensados para comodidad, orden y bienestar diario.',
+    titulo: 'CNC, láser y estructuras',
+    subtitulo: 'Fabricación técnica con materiales reales, medidas precisas y acabados profesionales.',
     ubicacion: 'slider-home',
     link: 'catalogo',
     activo: false,
-    imagen: '/productos/producto-10.jpg',
+    imagen: '/productos/cnc-laser.jpg',
     createdAt: 4,
     actualizadoEn: 4,
   },
   {
     id: 'promo-1',
-    titulo: 'Promoción destacada',
-    subtitulo: 'Descuentos automáticos por cantidad en productos seleccionados.',
+    titulo: 'Solicitud destacada',
+    subtitulo: 'Envíanos medidas, fotos del sitio y material requerido para preparar una cotización técnica.',
     ubicacion: 'home',
     link: 'catalogo',
     activo: false,
@@ -85,12 +85,12 @@ const bannersIniciales = [
 ];
 
 const trabajosIniciales = [
-  { id: 'trabajo-1', titulo: 'Casa premium con terraza', tipo: 'Foto', descripcion: 'Producto entregado con acabado resistente y diseño funcional.', imagen: '/productos/producto-04.jpg', activo: true },
-  { id: 'trabajo-2', titulo: 'Comedero elevado doble', tipo: 'Foto', descripcion: 'Comedero funcional con doble plato y acabado limpio.', imagen: '/productos/producto-05.jpg', activo: true },
-  { id: 'trabajo-3', titulo: 'Torre para gatos', tipo: 'Foto', descripcion: 'Mueble vertical para descanso, juego y rascado.', imagen: '/productos/producto-10.jpg', activo: true },
+  { id: 'trabajo-1', titulo: 'Letras PVC para recepción', tipo: 'Foto', descripcion: 'Fabricación en PVC con acabado limpio para instalación interior.', imagen: '/productos/letras-pvc.jpg', activo: true },
+  { id: 'trabajo-2', titulo: 'Fachada comercial', tipo: 'Foto', descripcion: 'Rotulación exterior con estructura, frente visual y montaje técnico.', imagen: '/productos/fachada.jpg', activo: true },
+  { id: 'trabajo-3', titulo: 'Display y señalización', tipo: 'Foto', descripcion: 'Piezas fabricadas para punto de venta, orientación y presentación de marca.', imagen: '/productos/display.jpg', activo: true },
 ];
 
-const veterinariasIniciales = [];
+const clientesIniciales = [];
 
 const usuariosIniciales = [
   {
@@ -172,7 +172,7 @@ function leerStorage(clave, valorInicial) {
 
     const datos = JSON.parse(guardado);
 
-    if (clave === 'elanpet_banners') {
+    if (clave === 'elanvisual_banners') {
       return normalizarBanners(datos, valorInicial);
     }
 
@@ -191,7 +191,7 @@ function guardarStorage(clave, valor) {
 }
 
 
-const APP_STATE_TABLE = 'elanpet_app_state';
+const APP_STATE_TABLE = 'elanpet_app_state'; // Se mantiene por compatibilidad de Supabase durante la migración ELANVISUAL
 const APP_STATE_ID = 'global';
 
 function construirEstadoCompartido({
@@ -232,7 +232,7 @@ function estadoCompartidoTieneDatos(data) {
 function generarCodigoSeguimiento() {
   const year = new Date().getFullYear();
   const correlativo = String(Date.now()).slice(-6);
-  return `EP-${year}-${correlativo}`;
+  return `EV-${year}-${correlativo}`;
 }
 
 function crearSlug(texto) {
@@ -283,52 +283,6 @@ function asegurarUsuariosBase(listaUsuarios = []) {
   return salida;
 }
 
-function mapVeterinariaFromDb(row) {
-  return {
-    id: row.id,
-    codigo: row.codigo || '',
-    nombre: row.nombre || '',
-    slug: row.slug || crearSlug(row.nombre || row.codigo || row.id),
-    telefono: row.telefono || row.whatsapp || '',
-    whatsapp: row.whatsapp || row.telefono || '',
-    email: row.email || row.correo || '',
-    direccion: row.direccion || '',
-    responsable: row.responsable || '',
-    logo: row.logo || '',
-    comisionPorcentaje: Number(row.comision_porcentaje ?? 10),
-    linkAfiliado: row.link_afiliado || `/v/${row.codigo || row.slug || crearSlug(row.nombre || row.id)}`,
-    activa: row.activa !== false,
-    escaneos: Number(row.escaneos || 0),
-    pedidos: Number(row.pedidos || 0),
-    ventas: Number(row.ventas || 0),
-    comision: Number(row.comision || 0),
-    createdAt: row.created_at || '',
-  };
-}
-
-function mapVeterinariaToDb(vet) {
-  const slug = vet.slug || crearSlug(vet.nombre);
-  return {
-    codigo: vet.codigo || '',
-    nombre: vet.nombre || '',
-    slug,
-    telefono: vet.telefono || vet.whatsapp || '',
-    whatsapp: vet.whatsapp || vet.telefono || '',
-    correo: vet.email || vet.correo || '',
-    email: vet.email || vet.correo || '',
-    direccion: vet.direccion || '',
-    responsable: vet.responsable || '',
-    logo: vet.logo || '',
-    comision_porcentaje: Number(vet.comisionPorcentaje ?? vet.comision_porcentaje ?? 10),
-    link_afiliado: vet.linkAfiliado || `/v/${vet.codigo || slug}`,
-    activa: vet.activa !== false,
-    escaneos: Number(vet.escaneos || 0),
-    pedidos: Number(vet.pedidos || 0),
-    ventas: Number(vet.ventas || 0),
-    comision: Number(vet.comision || 0),
-  };
-}
-
 function mapUsuarioFromDb(row) {
   return {
     id: row.id,
@@ -336,8 +290,8 @@ function mapUsuarioFromDb(row) {
     usuario: row.usuario || '',
     email: row.email || '',
     password: row.password || '',
-    rol: row.rol || 'veterinaria',
-    veterinariaId: row.veterinaria_id || '',
+    rol: row.rol || 'produccion',
+    clienteId: row.cliente_id || row.veterinaria_id || '',
     activo: row.activo !== false,
     debeCambiarPassword: row.debe_cambiar_password === true,
     creadoEn: row.created_at || '',
@@ -350,8 +304,8 @@ function mapUsuarioToDb(usuario) {
     usuario: normalizarUsuario(usuario.usuario),
     email: normalizarUsuario(usuario.email),
     password: String(usuario.password || '').trim(),
-    rol: usuario.rol || 'veterinaria',
-    veterinaria_id: (usuario.rol || 'veterinaria') === 'veterinaria' ? usuario.veterinariaId || null : null,
+    rol: usuario.rol || 'produccion',
+    veterinaria_id: null,
     activo: usuario.activo !== false,
     debe_cambiar_password: usuario.debeCambiarPassword === true,
   };
@@ -360,7 +314,8 @@ function mapUsuarioToDb(usuario) {
 
 function mapPedidoFromDb(row) {
   const resumen = row.resumen || {};
-  const veterinaria = row.veterinaria || null;
+  const origenComercial = row.origen_comercial || row.origenComercial || null;
+  const veterinaria = null; // Compatibilidad de esquema anterior: ya no se usa como origen operativo.
   const cliente = row.cliente || {};
 
   return {
@@ -368,10 +323,13 @@ function mapPedidoFromDb(row) {
     numero: row.numero || '',
     codigoSeguimiento: row.codigo_seguimiento || row.codigoSeguimiento || '',
     cliente,
+    origenComercial,
     veterinaria,
     items: Array.isArray(row.items) ? row.items : [],
-    veterinariaId: row.veterinaria_id || row.veterinariaId || veterinaria?.id || '',
-    veterinariaCodigo: row.veterinaria_codigo || row.veterinariaCodigo || veterinaria?.codigo || '',
+    origenComercialId: row.origen_comercial_id || row.origenComercialId || '',
+    veterinariaId: '',
+    origenComercialCodigo: row.origen_comercial_codigo || row.origenComercialCodigo || '',
+    veterinariaCodigo: '',
     resumen: {
       subtotal: Number(resumen.subtotal || 0),
       descuentoPorcentaje: Number(resumen.descuentoPorcentaje || resumen.descuento_porcentaje || 0),
@@ -402,10 +360,10 @@ function mapPedidoToDb(pedido) {
     numero: pedido.numero || '',
     codigo_seguimiento: pedido.codigoSeguimiento || '',
     cliente: pedido.cliente || {},
-    veterinaria: pedido.veterinaria || null,
+    veterinaria: null,
     items: pedido.items || [],
-    veterinaria_id: esUuid(pedido.veterinariaId) ? pedido.veterinariaId : null,
-    veterinaria_codigo: pedido.veterinariaCodigo || pedido.veterinaria?.codigo || '',
+    veterinaria_id: null,
+    veterinaria_codigo: '',
     resumen: pedido.resumen || {},
     pago_tipo: pedido.pagoTipo || 'anticipo',
     anticipo_porcentaje: Number(pedido.anticipoPorcentaje || 60),
@@ -442,40 +400,40 @@ function esUuid(valor) {
 }
 
 export function AppProvider({ children }) {
-  const [configuracion, setConfiguracion] = useState(() => leerStorage('elanpet_configuracion', configuracionInicial));
-  const [cuentasBancarias, setCuentasBancarias] = useState(() => leerStorage('elanpet_cuentas_bancarias', cuentasIniciales));
-  const [banners, setBanners] = useState(() => leerStorage('elanpet_banners', bannersIniciales));
-  const [trabajos, setTrabajos] = useState(() => leerStorage('elanpet_trabajos', trabajosIniciales));
-  const [productos, setProductos] = useState(() => leerStorage('elanpet_productos', productosIniciales));
-  const [imagenes, setImagenes] = useState(() => leerStorage('elanpet_imagenes', []));
-  const [veterinarias, setVeterinarias] = useState(() => leerStorage('elanpet_veterinarias', veterinariasIniciales));
-  const [veterinaria, setVeterinaria] = useState(() => leerStorage('elanpet_veterinaria_actual', null));
+  const [configuracion, setConfiguracion] = useState(() => leerStorage('elanvisual_configuracion', configuracionInicial));
+  const [cuentasBancarias, setCuentasBancarias] = useState(() => leerStorage('elanvisual_cuentas_bancarias', cuentasIniciales));
+  const [banners, setBanners] = useState(() => leerStorage('elanvisual_banners', bannersIniciales));
+  const [trabajos, setTrabajos] = useState(() => leerStorage('elanvisual_trabajos', trabajosIniciales));
+  const [productos, setProductos] = useState(() => leerStorage('elanvisual_productos', productosIniciales));
+  const [imagenes, setImagenes] = useState(() => leerStorage('elanvisual_imagenes', []));
+  const [clientes, setClientes] = useState(() => leerStorage('elanvisual_clientes', clientesIniciales));
+  const [clienteActual, setClienteActual] = useState(() => leerStorage('elanvisual_cliente_actual', null));
   const [carrito, setCarrito] = useState([]);
-  const [pedidos, setPedidos] = useState(() => leerStorage('elanpet_pedidos', []));
-  const [usuario, setUsuario] = useState(() => leerStorage('elanpet_usuario_actual', null));
-  const [usuarios, setUsuarios] = useState(() => asegurarUsuariosBase(leerStorage('elanpet_usuarios', usuariosIniciales)));
+  const [pedidos, setPedidos] = useState(() => leerStorage('elanvisual_pedidos', []));
+  const [usuario, setUsuario] = useState(() => leerStorage('elanvisual_usuario_actual', null));
+  const [usuarios, setUsuarios] = useState(() => asegurarUsuariosBase(leerStorage('elanvisual_usuarios', usuariosIniciales)));
   const [supabaseListo, setSupabaseListo] = useState(false);
   const [estadoCompartidoCargado, setEstadoCompartidoCargado] = useState(false);
 
-  useEffect(() => guardarStorage('elanpet_configuracion', configuracion), [configuracion]);
-  useEffect(() => guardarStorage('elanpet_cuentas_bancarias', cuentasBancarias), [cuentasBancarias]);
-  useEffect(() => guardarStorage('elanpet_banners', banners), [banners]);
-  useEffect(() => guardarStorage('elanpet_trabajos', trabajos), [trabajos]);
-  useEffect(() => guardarStorage('elanpet_productos', productos), [productos]);
-  useEffect(() => guardarStorage('elanpet_imagenes', imagenes), [imagenes]);
-  useEffect(() => guardarStorage('elanpet_veterinarias', veterinarias), [veterinarias]);
-  useEffect(() => guardarStorage('elanpet_pedidos', pedidos), [pedidos]);
-  useEffect(() => guardarStorage('elanpet_usuarios', usuarios), [usuarios]);
+  useEffect(() => guardarStorage('elanvisual_configuracion', configuracion), [configuracion]);
+  useEffect(() => guardarStorage('elanvisual_cuentas_bancarias', cuentasBancarias), [cuentasBancarias]);
+  useEffect(() => guardarStorage('elanvisual_banners', banners), [banners]);
+  useEffect(() => guardarStorage('elanvisual_trabajos', trabajos), [trabajos]);
+  useEffect(() => guardarStorage('elanvisual_productos', productos), [productos]);
+  useEffect(() => guardarStorage('elanvisual_imagenes', imagenes), [imagenes]);
+  useEffect(() => guardarStorage('elanvisual_clientes', clientes), [clientes]);
+  useEffect(() => guardarStorage('elanvisual_pedidos', pedidos), [pedidos]);
+  useEffect(() => guardarStorage('elanvisual_usuarios', usuarios), [usuarios]);
 
   useEffect(() => {
-    if (usuario) guardarStorage('elanpet_usuario_actual', usuario);
-    else localStorage.removeItem('elanpet_usuario_actual');
+    if (usuario) guardarStorage('elanvisual_usuario_actual', usuario);
+    else localStorage.removeItem('elanvisual_usuario_actual');
   }, [usuario]);
 
   useEffect(() => {
-    if (veterinaria) guardarStorage('elanpet_veterinaria_actual', veterinaria);
-    else localStorage.removeItem('elanpet_veterinaria_actual');
-  }, [veterinaria]);
+    if (clienteActual) guardarStorage('elanvisual_cliente_actual', clienteActual);
+    else localStorage.removeItem('elanvisual_cliente_actual');
+  }, [clienteActual]);
 
   useEffect(() => {
     let activo = true;
@@ -554,7 +512,7 @@ export function AppProvider({ children }) {
 
         if (activo) setEstadoCompartidoCargado(true);
       } catch (error) {
-        console.error('Error cargando estado compartido ELANPET:', error);
+        console.error('Error cargando estado compartido ELANVISUAL:', error);
         if (activo) setEstadoCompartidoCargado(true);
       }
     };
@@ -593,7 +551,7 @@ export function AppProvider({ children }) {
 
         if (error) throw error;
       } catch (error) {
-        console.error('Error guardando estado compartido ELANPET:', error);
+        console.error('Error guardando estado compartido ELANVISUAL:', error);
       }
     }, 500);
 
@@ -618,14 +576,6 @@ export function AppProvider({ children }) {
       }
 
       try {
-        const { data: vetsData, error: vetsError } = await supabase
-          .from('veterinarias')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (vetsError) throw vetsError;
-
-        let vets = (vetsData || []).map(mapVeterinariaFromDb);
 
         const { data: usersData, error: usersError } = await supabase
           .from('usuarios')
@@ -647,27 +597,15 @@ export function AppProvider({ children }) {
 
         if (!activo) return;
 
-        setVeterinarias(vets);
         setUsuarios(users);
         setPedidos((prev) => unirPedidos(prev, pedidosRemotos));
 
-        const veterinariaActual = leerStorage('elanpet_veterinaria_actual', null);
-        if (veterinariaActual?.id) {
-          const veterinariaSincronizada = vets.find((v) => v.id === veterinariaActual.id || v.codigo === veterinariaActual.codigo);
-          setVeterinaria(veterinariaSincronizada || null);
-        } else if (vets.length === 0) {
-          setVeterinaria(null);
-        }
 
-        const usuarioActual = leerStorage('elanpet_usuario_actual', null);
+        const usuarioActual = leerStorage('elanvisual_usuario_actual', null);
         if (usuarioActual?.id) {
           const usuarioSincronizado = users.find((u) => u.id === usuarioActual.id || u.usuario === usuarioActual.usuario);
           if (usuarioSincronizado) {
             setUsuario(usuarioSincronizado);
-            if (usuarioSincronizado.rol === 'veterinaria') {
-              const vetAsignada = vets.find((v) => v.id === usuarioSincronizado.veterinariaId);
-              if (vetAsignada) setVeterinaria(vetAsignada);
-            }
           }
         }
 
@@ -690,106 +628,64 @@ export function AppProvider({ children }) {
       ...configuracionInicial,
       ...configuracion,
       ...datos,
-      nombreSitio: datos?.nombreSitio || configuracion?.nombreSitio || 'ELANPET',
-      logoTexto: datos?.logoTexto || datos?.nombreSitio || configuracion?.logoTexto || configuracion?.nombreSitio || 'ELANPET',
+      nombreSitio: datos?.nombreSitio || configuracion?.nombreSitio || 'ELANVISUAL',
+      logoTexto: datos?.logoTexto || datos?.nombreSitio || configuracion?.logoTexto || configuracion?.nombreSitio || 'ELANVISUAL',
       anticipoPorcentaje: Number(datos?.anticipoPorcentaje ?? configuracion?.anticipoPorcentaje ?? 60),
     };
 
     setConfiguracion(nuevaConfiguracion);
-    guardarStorage('elanpet_configuracion', nuevaConfiguracion);
+    guardarStorage('elanvisual_configuracion', nuevaConfiguracion);
     return { ok: true, configuracion: nuevaConfiguracion };
   };
 
   const crearImagen = (imagen) => setImagenes((prev) => [imagen, ...prev]);
   const eliminarImagen = (id) => setImagenes((prev) => prev.filter((img) => img.id !== id));
 
-  const crearVeterinaria = (datos) => {
-    const slug = crearSlug(datos.nombre);
-    const codigo = datos.codigo || `VET${String(veterinarias.length + 1).padStart(3, '0')}`;
-    const tempId = `vet-temp-${Date.now()}`;
+  const crearCliente = (datos) => {
+    const slug = crearSlug(datos.nombre || datos.empresa || datos.codigo);
+    const codigo = datos.codigo || `CLI${String(clientes.length + 1).padStart(3, '0')}`;
 
-    const nueva = {
-      id: tempId,
+    const nuevo = {
+      id: datos.id || `cliente-${Date.now()}`,
       codigo,
-      nombre: datos.nombre,
+      nombre: datos.nombre || datos.empresa || '',
+      empresa: datos.empresa || datos.nombre || '',
       slug,
       telefono: datos.telefono || datos.whatsapp || '',
       whatsapp: datos.whatsapp || datos.telefono || '',
       email: datos.email || datos.correo || '',
       direccion: datos.direccion || '',
       responsable: datos.responsable || '',
-      logo: datos.logo || '',
-      comisionPorcentaje: Number(datos.comisionPorcentaje || 10),
-      linkAfiliado: `/v/${codigo}`,
-      activa: datos.activa !== false,
-      escaneos: 0,
-      pedidos: 0,
-      ventas: 0,
-      comision: 0,
+      origen: datos.origen || 'directo',
+      activo: datos.activo !== false,
+      createdAt: datos.createdAt || new Date().toISOString(),
     };
 
-    setVeterinarias((prev) => [nueva, ...prev]);
-
-    if (supabase) {
-      supabase
-        .from('veterinarias')
-        .insert(mapVeterinariaToDb(nueva))
-        .select('*')
-        .single()
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('Error creando veterinaria en Supabase:', error);
-            setVeterinarias((prev) => prev.filter((v) => v.id !== tempId));
-            window.alert('No se pudo guardar la veterinaria en Supabase. Revisá si el código ya existe.');
-            return;
-          }
-
-          const creada = mapVeterinariaFromDb(data);
-          setVeterinarias((prev) => prev.map((v) => (v.id === tempId ? creada : v)));
-        });
-    }
-
-    return nueva;
+    setClientes((prev) => [nuevo, ...prev]);
+    return nuevo;
   };
 
-  const actualizarVeterinaria = (datosVeterinaria) => {
-    const slug = datosVeterinaria.slug || crearSlug(datosVeterinaria.nombre);
-    const actualizada = { ...datosVeterinaria, slug, linkAfiliado: `/v/${datosVeterinaria.codigo || slug}` };
-
-    setVeterinarias((prev) => prev.map((v) => (v.id === actualizada.id ? { ...v, ...actualizada } : v)));
-    if (veterinaria?.id === actualizada.id) setVeterinaria((prev) => ({ ...prev, ...actualizada }));
-
-    if (supabase && esUuid(actualizada.id)) {
-      supabase
-        .from('veterinarias')
-        .update(mapVeterinariaToDb(actualizada))
-        .eq('id', actualizada.id)
-        .then(({ error }) => {
-          if (error) {
-            console.error('Error actualizando veterinaria en Supabase:', error);
-            window.alert('No se pudo actualizar la veterinaria en Supabase.');
-          }
-        });
-    }
+  const actualizarCliente = (datosCliente) => {
+    const slug = datosCliente.slug || crearSlug(datosCliente.nombre || datosCliente.empresa || datosCliente.codigo);
+    const actualizado = { ...datosCliente, slug };
+    setClientes((prev) => prev.map((c) => (c.id === actualizado.id ? { ...c, ...actualizado } : c)));
+    if (clienteActual?.id === actualizado.id) setClienteActual((prev) => ({ ...prev, ...actualizado }));
   };
 
-  const eliminarVeterinaria = (id) => {
-    setVeterinarias((prev) => prev.filter((v) => v.id !== id));
-    setUsuarios((prev) => prev.map((u) => (u.veterinariaId === id ? { ...u, veterinariaId: '', activo: false } : u)));
-
-    if (supabase && esUuid(id)) {
-      supabase
-        .from('veterinarias')
-        .delete()
-        .eq('id', id)
-        .then(({ error }) => {
-          if (error) {
-            console.error('Error eliminando veterinaria en Supabase:', error);
-            window.alert('No se pudo eliminar la veterinaria en Supabase.');
-          }
-        });
-    }
+  const eliminarCliente = (id) => {
+    setClientes((prev) => prev.filter((c) => c.id !== id));
+    setUsuarios((prev) => prev.map((u) => (u.clienteId === id ? { ...u, clienteId: '', activo: false } : u)));
+    if (clienteActual?.id === id) setClienteActual(null);
   };
+
+  // Alias temporales para no romper pantallas heredadas durante la migración.
+  const veterinarias = clientes;
+  const setVeterinarias = setClientes;
+  const veterinaria = clienteActual;
+  const setVeterinaria = setClienteActual;
+  const crearVeterinaria = crearCliente;
+  const actualizarVeterinaria = actualizarCliente;
+  const eliminarVeterinaria = eliminarCliente;
 
   const agregar = (p) =>
     setCarrito((prev) => {
@@ -818,20 +714,23 @@ export function AppProvider({ children }) {
     const numero = `PED-${String(Date.now()).slice(-6)}`;
     const anticipoPorcentaje = Number(configuracion.anticipoPorcentaje || 60);
     const montoSolicitado = pagoTipo === 'total' ? resumen.total : resumen.total * (anticipoPorcentaje / 100);
-    const veterinariaActual = veterinaria ? { ...veterinaria, linkAfiliado: `/v/${veterinaria.codigo || veterinaria.slug}` } : null;
+    const origenComercial = clienteActual ? { ...clienteActual } : null;
 
     const pedido = {
       id: `pedido-${Date.now()}`,
       numero,
       codigoSeguimiento: '',
       cliente: clienteNormalizado,
-      veterinaria: veterinariaActual,
+      origenComercial,
+      veterinaria: null,
       items: carrito,
-      veterinariaId: veterinariaActual?.id || '',
-      veterinariaCodigo: veterinariaActual?.codigo || '',
+      origenComercialId: origenComercial?.id || '',
+      veterinariaId: '',
+      origenComercialCodigo: origenComercial?.codigo || '',
+      veterinariaCodigo: '',
       resumen: {
         ...resumen,
-        comision: veterinariaActual ? (Number(resumen.total || 0) * Number(veterinariaActual.comisionPorcentaje || 10)) / 100 : 0,
+        comision: 0,
       },
       pagoTipo,
       anticipoPorcentaje,
@@ -852,7 +751,7 @@ export function AppProvider({ children }) {
         estadoProduccion: 'pendiente',
         evidencias: { inicial: '', proceso: '', terminado: '', entrega: '' },
       },
-      historial: [{ estado: 'pendiente_pago', fecha: new Date().toISOString(), nota: 'Pedido creado desde carrito.' }],
+      historial: [{ estado: 'pendiente_pago', fecha: new Date().toISOString(), nota: 'Solicitud creada desde app ELANVISUAL.' }],
       createdAt: new Date().toISOString(),
       fechaEstimada: '',
     };
@@ -926,7 +825,7 @@ export function AppProvider({ children }) {
     codigoOT: pedido?.ordenTrabajo?.codigoOT || `OT-${String(pedido?.id || Date.now()).replace(/[^0-9]/g, '').slice(-6) || Date.now()}`,
     pedido: pedido?.codigoSeguimiento || pedido?.numero || '',
     cliente: pedido?.cliente?.nombre || '',
-    veterinaria: pedido?.veterinaria?.nombre || '',
+    origenComercial: pedido?.origenComercial?.nombre || pedido?.origenComercial?.empresa || '',
     producto: (pedido?.items || []).map((i) => i.nombre).join(', '),
     cantidad: (pedido?.items || []).reduce((a, i) => a + Number(i.cantidad || 0), 0),
     responsable: pedido?.ordenTrabajo?.responsable || '',
@@ -1005,19 +904,13 @@ export function AppProvider({ children }) {
 
     if (!usuarioEncontrado) return { ok: false };
 
-    if (usuarioEncontrado.rol === 'veterinaria') {
-      const vetAsignada = veterinarias.find((v) => v.id === usuarioEncontrado.veterinariaId);
-      if (!vetAsignada || vetAsignada.activa === false) return { ok: false };
-      setVeterinaria(vetAsignada);
-    }
-
     setUsuario(usuarioEncontrado);
     return { ok: true, rol: usuarioEncontrado.rol, usuario: usuarioEncontrado, supabaseListo };
   };
 
   const logout = () => {
     setUsuario(null);
-    localStorage.removeItem('elanpet_usuario_actual');
+    localStorage.removeItem('elanvisual_usuario_actual');
   };
 
   const crearUsuario = (datos) => {
@@ -1027,8 +920,7 @@ export function AppProvider({ children }) {
     const existe = usuarios.some((u) => {
       const mismoUsuario = usuarioLimpio && normalizarUsuario(u.usuario) === usuarioLimpio;
       const mismoEmail = emailLimpio && normalizarUsuario(u.email) === emailLimpio;
-      const mismaVeterinaria = datos.rol === 'veterinaria' && datos.veterinariaId && u.veterinariaId === datos.veterinariaId && u.activo !== false;
-      return mismoUsuario || mismoEmail || mismaVeterinaria;
+      return mismoUsuario || mismoEmail;
     });
 
     if (existe) return { ok: false, error: 'usuario_duplicado' };
@@ -1040,8 +932,8 @@ export function AppProvider({ children }) {
       usuario: usuarioLimpio,
       email: emailLimpio,
       password: String(datos.password || 'Temporal2026#').trim(),
-      rol: datos.rol || 'veterinaria',
-      veterinariaId: datos.rol === 'veterinaria' ? datos.veterinariaId || '' : '',
+      rol: datos.rol || 'produccion',
+      clienteId: datos.clienteId || '',
       activo: datos.activo !== false,
       debeCambiarPassword: datos.debeCambiarPassword === true,
       creadoEn: new Date().toISOString(),
@@ -1085,7 +977,7 @@ export function AppProvider({ children }) {
           password: Object.prototype.hasOwnProperty.call(usuarioActualizado, 'password')
             ? String(usuarioActualizado.password || '').trim()
             : u.password,
-          veterinariaId: (usuarioActualizado.rol || u.rol) === 'veterinaria' ? usuarioActualizado.veterinariaId || '' : '',
+          clienteId: usuarioActualizado.clienteId || u.clienteId || '',
           activo: usuarioActualizado.activo !== false,
         };
         return actualizadoFinal;
@@ -1232,6 +1124,13 @@ export function AppProvider({ children }) {
         imagenes,
         crearImagen,
         eliminarImagen,
+        clientes,
+        setClientes,
+        crearCliente,
+        actualizarCliente,
+        eliminarCliente,
+        clienteActual,
+        setClienteActual,
         veterinarias,
         setVeterinarias,
         crearVeterinaria,
@@ -1269,4 +1168,5 @@ export function AppProvider({ children }) {
 }
 
 export const useApp = () => useContext(AppContext);
+
 
