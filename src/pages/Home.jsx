@@ -1,175 +1,166 @@
 import React from 'react';
-import { ArrowRight, BadgeCheck, HeartHandshake, PackageCheck, Truck } from 'lucide-react';
-import { categoriasHome } from '../data/productos';
+import {
+  ArrowRight,
+  BadgeCheck,
+  Building2,
+  Layers3,
+  Lightbulb,
+  Ruler,
+  ShieldCheck,
+  Sparkles,
+  Wrench,
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
+const serviciosClave = [
+  'Rotulación',
+  'Impresión UV',
+  'DTF UV',
+  'PVC',
+  'Acrílico',
+  'CNC',
+  'Láser',
+  'Fachadas',
+  'Displays',
+  'Letras 3D',
+  'Estructuras',
+  'Señalización',
+];
+
+const bloques = [
+  {
+    icono: <Ruler size={30} />,
+    titulo: 'Medidas reales',
+    texto: 'Diseños pensados para fabricar, instalar y mantener escala real.',
+  },
+  {
+    icono: <Layers3 size={30} />,
+    titulo: 'Materiales de taller',
+    texto: 'PVC, acrílico, vinil, lona, estructura metálica, CNC y láser.',
+  },
+  {
+    icono: <Lightbulb size={30} />,
+    titulo: 'Iluminación funcional',
+    texto: 'Luz frontal, halo, rebote o cajas luminosas según el uso real.',
+  },
+  {
+    icono: <Wrench size={30} />,
+    titulo: 'Producción instalada',
+    texto: 'Cotización, fabricación, instalación y seguimiento desde CRM.',
+  },
+];
+
 export default function Home({ setPage }) {
-  const { banners } = useApp();
-
-  const normalizar = (valor = '') =>
-    String(valor)
-      .trim()
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
-
-  const prioridadUbicacion = (banner) => {
-    const ubicacion = normalizar(banner?.ubicacion);
-
-    if (
-      ubicacion === 'hero-principal' ||
-      ubicacion === 'banner principal de portada' ||
-      ubicacion === 'principal' ||
-      ubicacion === 'portada'
-    ) {
-      return 1;
-    }
-
-    if (ubicacion === 'slider-home' || ubicacion === 'slider principal') {
-      return 2;
-    }
-
-    if (ubicacion === 'home' || ubicacion === 'inicio') {
-      return 3;
-    }
-
-    return 99;
-  };
-
-  const obtenerFecha = (banner) => {
-    const valor = banner?.actualizadoEn || banner?.createdAt || banner?.fecha || banner?.id || '';
-    const numero = Number(String(valor).replace(/\D/g, ''));
-    return Number.isFinite(numero) ? numero : 0;
-  };
+  const { banners, configuracion } = useApp();
 
   const bannersActivos = Array.isArray(banners)
-    ? banners
-        .filter((banner) => banner?.activo)
-        .sort((a, b) => {
-          const prioridadA = prioridadUbicacion(a);
-          const prioridadB = prioridadUbicacion(b);
-
-          if (prioridadA !== prioridadB) return prioridadA - prioridadB;
-
-          return obtenerFecha(b) - obtenerFecha(a);
-        })
+    ? banners.filter((banner) => banner?.activo)
     : [];
 
-  const heroBanner = bannersActivos[0] || {};
+  const heroBanner =
+    bannersActivos.find((banner) => banner.ubicacion === 'hero-principal') ||
+    bannersActivos.find((banner) => banner.ubicacion === 'home') ||
+    {};
 
-  const heroTitulo = heroBanner.titulo || 'Tu mascota merece más';
+  const heroTitulo =
+    heroBanner.titulo ||
+    configuracion?.textoHero ||
+    'Rotulación, impresión y fabricación visual para negocios reales';
 
   const heroDescripcion =
     heroBanner.descripcion ||
     heroBanner.subtitulo ||
-    'Muebles funcionales, resistentes y fabricados para el bienestar de perros y gatos.';
+    configuracion?.descripcionHero ||
+    'Diseñamos, cotizamos, fabricamos e instalamos soluciones visuales con materiales reales, medidas exactas y flujo operativo conectado al CRM.';
 
-  const heroImagen = heroBanner.imagen || '/productos/producto-04.jpg';
+  const heroImagen =
+    heroBanner.imagen ||
+    heroBanner.imagenRuta ||
+    '/productos/portada2-01.png';
 
   return (
     <main className="home-page home-launch-page">
       <section className="elanpet-launch-hero">
         <div className="elanpet-launch-copy">
-          <span className="elanpet-pill">🐾 TODO PARA TU MASCOTA</span>
+          <span className="elanpet-pill">
+            <Building2 size={18} /> ELANVISUAL APP MODE
+          </span>
 
-          <h1>
-            {heroTitulo.toLowerCase().includes('merece') ? (
-              <>
-                Tu mascota
-                <br />
-                merece <span>más</span>
-              </>
-            ) : (
-              heroTitulo
-            )}
-          </h1>
+          <h1>{heroTitulo}</h1>
 
           <p>{heroDescripcion}</p>
 
-          <strong className="elanpet-hero-line">Compra fácil desde tu celular.</strong>
+          <strong className="elanpet-hero-line">
+            Cotización, producción e instalación desde una sola operación.
+          </strong>
 
           <div className="elanpet-benefits">
-            <div>
-              <BadgeCheck size={32} />
-              <b>
-                Productos
-                <br />
-                de calidad
-              </b>
-            </div>
-
-            <div>
-              <PackageCheck size={32} />
-              <b>
-                Fabricados
-                <br />
-                con amor
-              </b>
-            </div>
-
-            <div>
-              <HeartHandshake size={32} />
-              <b>
-                Diseñados para
-                <br />
-                su bienestar
-              </b>
-            </div>
-
-            <div>
-              <Truck size={34} />
-              <b>
-                Entrega rápida
-                <br />
-                y segura
-              </b>
-            </div>
+            {bloques.map((item) => (
+              <div key={item.titulo}>
+                {item.icono}
+                <b>{item.titulo}</b>
+                <small>{item.texto}</small>
+              </div>
+            ))}
           </div>
 
           <div className="elanpet-hero-actions">
-            <button onClick={() => setPage('catalogo')} className="elanpet-primary-btn">
-              <span>🛍️</span>
-              Ver catálogo
+            <button
+              type="button"
+              onClick={() => setPage('catalogo')}
+              className="elanpet-primary-btn"
+            >
+              <Sparkles size={20} />
+              Ver servicios
             </button>
 
-            <button onClick={() => setPage('contacto')} className="elanpet-whatsapp-btn">
-              <span>☘</span>
-              Pedir por WhatsApp
+            <button
+              type="button"
+              onClick={() => setPage('contacto')}
+              className="elanpet-whatsapp-btn"
+            >
+              <BadgeCheck size={20} />
+              Solicitar cotización
             </button>
           </div>
         </div>
 
         <div className="elanpet-launch-media">
-          <img src={heroImagen} alt={heroBanner.titulo || 'ELANPET productos para perros y gatos'} />
+          <img src={heroImagen} alt="ELANVISUAL rotulación e impresión" />
         </div>
       </section>
 
       <section className="elanpet-category-section">
         <div className="elanpet-section-title">
-          <span>CATÁLOGO</span>
+          <span>SERVICIOS FABRICABLES</span>
           <h2>
-            Productos <strong>principales</strong>
+            Soluciones visuales <strong>listas para cotizar</strong>
           </h2>
         </div>
 
         <div className="elanpet-category-grid">
-          {categoriasHome.map((cat) => (
+          {serviciosClave.map((servicio) => (
             <button
-              key={cat.nombre}
+              key={servicio}
+              type="button"
               className="elanpet-category-card"
               onClick={() => setPage('catalogo')}
             >
-              {cat.imagen ? (
-                <img src={cat.imagen} alt={cat.nombre} className="elanpet-category-image" />
-              ) : null}
-
-              <b>{cat.nombre}</b>
+              <b>{servicio}</b>
               <i>
                 <ArrowRight size={20} />
               </i>
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="panel">
+        <h2>Flujo operativo ELANVISUAL</h2>
+        <p className="note">
+          Cliente → Cotización → Pedido → Orden de Trabajo → Producción →
+          Instalación → Entrega → Cobro → Comisión.
+        </p>
       </section>
     </main>
   );
