@@ -9,15 +9,102 @@ export function PublicLayout() {
 
   const cerrarMenu = () => setMenuAbierto(false);
 
-  const estiloLinkMenu = {
-    fontSize: '32px',
-    padding: '22px 28px',
-    fontWeight: '800',
-    lineHeight: '1.2',
-  };
-
   return (
     <>
+      <style>
+        {`
+          .elan-public-header .elan-menu-mobile {
+            display: none !important;
+          }
+
+          .elan-public-header nav a {
+            font-size: inherit !important;
+            padding: inherit !important;
+            font-weight: inherit !important;
+            line-height: inherit !important;
+          }
+
+          @media (max-width: 850px) {
+            .elan-public-header {
+              min-height: 130px !important;
+              padding: 18px 14px !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: space-between !important;
+            }
+
+            .elan-public-header .brand {
+              font-size: 18px !important;
+              letter-spacing: .08em !important;
+              max-width: 52% !important;
+              white-space: nowrap !important;
+            }
+
+            .elan-public-header .elan-menu-mobile {
+              width: 96px !important;
+              height: 96px !important;
+              min-width: 96px !important;
+              min-height: 96px !important;
+              max-width: 96px !important;
+              max-height: 96px !important;
+              display: inline-flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              padding: 0 !important;
+              border-radius: 22px !important;
+              border: 2px solid rgba(216,168,79,.85) !important;
+              background: #101826 !important;
+              color: #d8a84f !important;
+              font-size: 68px !important;
+              line-height: 1 !important;
+              font-weight: 950 !important;
+              cursor: pointer !important;
+              flex-shrink: 0 !important;
+              z-index: 9999 !important;
+            }
+
+            .elan-public-header .elan-menu-mobile span {
+              display: block !important;
+              transform: translateY(-4px) !important;
+            }
+
+            .elan-public-header nav {
+              position: absolute !important;
+              top: 130px !important;
+              left: 0 !important;
+              right: 0 !important;
+              z-index: 9998 !important;
+              display: none !important;
+              flex-direction: column !important;
+              gap: 0 !important;
+              padding: 18px !important;
+              background: rgba(16,24,38,.98) !important;
+              border-top: 1px solid rgba(216,168,79,.35) !important;
+            }
+
+            .elan-public-header nav.open {
+              display: flex !important;
+            }
+
+            .elan-public-header nav a {
+              display: block !important;
+              width: 100% !important;
+              font-size: 32px !important;
+              line-height: 1.15 !important;
+              font-weight: 850 !important;
+              padding: 22px 18px !important;
+              color: #ffffff !important;
+              border-bottom: 1px solid rgba(255,255,255,.08) !important;
+            }
+
+            .elan-public-header nav a.cart {
+              font-size: 34px !important;
+              color: #d8a84f !important;
+            }
+          }
+        `}
+      </style>
+
       <header className="topbar public elan-public-header">
         <Link className="brand" to="/" onClick={cerrarMenu}>
           ✣ ELANVISUAL
@@ -29,52 +116,22 @@ export function PublicLayout() {
           onClick={() => setMenuAbierto((prev) => !prev)}
           aria-label={menuAbierto ? 'Cerrar menú' : 'Abrir menú'}
           aria-expanded={menuAbierto}
-          style={{
-            width: '180px',
-            height: '180px',
-            minWidth: '180px',
-            minHeight: '180px',
-            maxWidth: '180px',
-            maxHeight: '180px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0',
-            borderRadius: '30px',
-            border: '3px solid rgba(216,168,79,.8)',
-            background: '#101826',
-            color: '#d8a84f',
-            fontSize: '120px',
-            lineHeight: '1',
-            fontWeight: '900',
-            cursor: 'pointer',
-            flexShrink: 0,
-            zIndex: 9999,
-          }}
         >
-          <span
-            aria-hidden="true"
-            style={{
-              display: 'block',
-              transform: menuAbierto ? 'translateY(-8px)' : 'translateY(-10px)',
-            }}
-          >
-            {menuAbierto ? '×' : '☰'}
-          </span>
+          <span aria-hidden="true">{menuAbierto ? '×' : '☰'}</span>
         </button>
 
         <nav className={menuAbierto ? 'open' : ''}>
-          <NavLink to="/" onClick={cerrarMenu} style={estiloLinkMenu}>Inicio</NavLink>
-          <NavLink to="/catalogo" onClick={cerrarMenu} style={estiloLinkMenu}>Catálogo</NavLink>
-          <NavLink to="/showroom" onClick={cerrarMenu} style={estiloLinkMenu}>Showroom</NavLink>
-          <NavLink to="/nosotros" onClick={cerrarMenu} style={estiloLinkMenu}>Nosotros</NavLink>
-          <NavLink to="/contacto" onClick={cerrarMenu} style={estiloLinkMenu}>Contacto</NavLink>
+          <NavLink to="/" onClick={cerrarMenu}>Inicio</NavLink>
+          <NavLink to="/catalogo" onClick={cerrarMenu}>Catálogo</NavLink>
+          <NavLink to="/showroom" onClick={cerrarMenu}>Showroom</NavLink>
+          <NavLink to="/nosotros" onClick={cerrarMenu}>Nosotros</NavLink>
+          <NavLink to="/contacto" onClick={cerrarMenu}>Contacto</NavLink>
 
-          <NavLink className="cart" to="/carrito" onClick={cerrarMenu} style={estiloLinkMenu}>
+          <NavLink className="cart" to="/carrito" onClick={cerrarMenu}>
             🛒 {carrito.length}
           </NavLink>
 
-          <NavLink to="/login" onClick={cerrarMenu} style={estiloLinkMenu}>Login</NavLink>
+          <NavLink to="/login" onClick={cerrarMenu}>Login</NavLink>
         </nav>
       </header>
 
