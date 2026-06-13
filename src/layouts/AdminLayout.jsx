@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 
 const adminLinks = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: '⌂' },

@@ -14,6 +14,41 @@ const TIPOS = [
   { value: 'general', label: 'General' },
 ];
 
+function comprimirImagen(file, maxWidth = 1400, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onerror = () => reject(new Error('No se pudo leer la imagen.'));
+
+    reader.onload = () => {
+      const img = new Image();
+
+      img.onerror = () => reject(new Error('No se pudo procesar la imagen.'));
+
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width);
+        const width = Math.round(img.width * scale);
+        const height = Math.round(img.height * scale);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+        resolve(dataUrl);
+      };
+
+      img.src = String(reader.result || '');
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function Multimedia() {
   const { state, addItem, removeItem } = useElan();
 
@@ -26,6 +61,7 @@ export default function Multimedia() {
   const [preview, setPreview] = useState('');
   const [viewer, setViewer] = useState(null);
   const [filtro, setFiltro] = useState('todos');
+  const [procesando, setProcesando] = useState(false);
 
   const multimedia = Array.isArray(state.multimedia) ? state.multimedia : [];
 
@@ -42,19 +78,20 @@ export default function Multimedia() {
     }
   };
 
-  const cargarDesdePC = (event) => {
+  const cargarDesdePC = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
       alert('Seleccioná únicamente archivos de imagen.');
+      event.target.value = '';
       return;
     }
 
-    const reader = new FileReader();
+    try {
+      setProcesando(true);
 
-    reader.onload = () => {
-      const result = String(reader.result || '');
+      const result = await comprimirImagen(file);
 
       setForm((prev) => ({
         ...prev,
@@ -63,10 +100,12 @@ export default function Multimedia() {
       }));
 
       setPreview(result);
-    };
-
-    reader.readAsDataURL(file);
-    event.target.value = '';
+    } catch (error) {
+      alert(error.message || 'No se pudo cargar la imagen.');
+    } finally {
+      setProcesando(false);
+      event.target.value = '';
+    }
   };
 
   const guardar = () => {
@@ -77,16 +116,22 @@ export default function Multimedia() {
       return;
     }
 
-    addItem('multimedia', {
-      id: uid('media'),
-      titulo: form.titulo.trim() || 'Imagen sin título',
-      url,
-      tipo: form.tipo,
-      creado: new Date().toISOString(),
-    });
+    try {
+      addItem('multimedia', {
+        id: uid('media'),
+        titulo: form.titulo.trim() || 'Imagen sin título',
+        url,
+        tipo: form.tipo,
+        creado: new Date().toISOString(),
+      });
 
-    setForm({ titulo: '', url: '', tipo: 'banner' });
-    setPreview('');
+      setForm({ titulo: '', url: '', tipo: 'banner' });
+      setPreview('');
+    } catch {
+      alert(
+        'No se pudo guardar. La memoria del navegador está llena. Eliminá imágenes pesadas o usá imágenes más pequeñas.'
+      );
+    }
   };
 
   const limpiar = () => {
@@ -115,7 +160,12 @@ export default function Multimedia() {
 
           <label className="app-field">
             <span>Subir imagen desde PC</span>
-            <input type="file" accept="image/*" onChange={cargarDesdePC} />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={cargarDesdePC}
+              disabled={procesando}
+            />
           </label>
 
           <AppInput
@@ -139,17 +189,26 @@ export default function Multimedia() {
             </select>
           </label>
 
+          {procesando ? (
+            <div className="empty-state">
+              Procesando imagen para guardarla más liviana...
+            </div>
+          ) : null}
+
           {preview ? (
             <div className="media-preview">
               <button type="button" onClick={() => setViewer(preview)}>
                 <img src={preview} alt="Vista previa" />
               </button>
-              <span>Vista previa</span>
+              <span>Vista previa comprimida</span>
             </div>
           ) : null}
 
           <div className="form-actions">
-            <AppButton onClick={guardar}>Guardar imagen</AppButton>
+            <AppButton onClick={guardar} disabled={procesando}>
+              Guardar imagen
+            </AppButton>
+
             <AppButton variant="secondary" onClick={limpiar}>
               Limpiar
             </AppButton>
