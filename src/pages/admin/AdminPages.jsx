@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useElan } from '../../core/context/ElanContext.jsx';
 import CrudTable from '../../components/CrudTable.jsx';
 import {
@@ -12,10 +13,8 @@ import MaterialesCRM from '../../CRM/Materiales.jsx';
 import SeguimientoCRM from '../../CRM/Seguimiento.jsx';
 import UsuariosPermisosCRM from '../../CRM/UsuariosPermisos.jsx';
 import ConsumoMaterialesCRM from '../../CRM/ConsumoMateriales.jsx';
-
 import ListaCostosCRM from '../../CRM/ListaCostos.jsx';
 import FormulasCostoCRM from '../../CRM/FormulasCosto.jsx';
-
 import CotizacionesCRM from '../../CRM/Cotizaciones.jsx';
 import PedidosCRM from '../../CRM/Pedidos.jsx';
 import OrdenesTrabajoCRM from '../../CRM/OrdenesTrabajo.jsx';
@@ -23,57 +22,6 @@ import ProduccionCRM from '../../CRM/Produccion.jsx';
 import ComisionesCRM from '../../CRM/Comisiones.jsx';
 
 const STORAGE_KEY = 'elanvisual_state_v2';
-
-const formStyles = {
-  grid: {
-    display: 'grid',
-    gap: '18px',
-  },
-  field: {
-    display: 'grid',
-    gap: '8px',
-  },
-  label: {
-    fontWeight: 700,
-    fontSize: '14px',
-    color: '#172033',
-  },
-  row: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '18px',
-  },
-  actions: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '12px',
-    marginTop: '6px',
-  },
-  bannerItem: {
-    display: 'grid',
-    gridTemplateColumns: '1fr auto',
-    gap: '14px',
-    alignItems: 'center',
-    padding: '16px',
-    border: '1px solid #e6e9ef',
-    borderRadius: '16px',
-    marginBottom: '14px',
-    background: '#fff',
-  },
-  bannerMeta: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '10px',
-    marginTop: '6px',
-    fontSize: '13px',
-    color: '#667085',
-  },
-  bannerActions: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '10px',
-  },
-};
 
 function leerEstadoStorage() {
   try {
@@ -97,12 +45,17 @@ function actualizarBannersStorage(nuevosBanners) {
   window.dispatchEvent(new Event('elanvisual:banners-updated'));
 }
 
+function obtenerImagenMedia(item = {}) {
+  return item.imagen || item.imagenMobile || item.imagenDesktop || item.url || item.src || item.archivo || '';
+}
+
 function normalizarBanner(banner = {}) {
   const desktop =
     banner.imagenDesktop ||
     banner.desktop ||
     banner.imagen ||
     banner.url ||
+    banner.src ||
     '';
 
   const mobile =
@@ -127,10 +80,6 @@ function normalizarBanner(banner = {}) {
   };
 }
 
-function obtenerImagenMedia(item = {}) {
-  return item.imagen || item.url || item.src || item.archivo || '';
-}
-
 export function Dashboard() {
   const s = useElan();
 
@@ -138,68 +87,219 @@ export function Dashboard() {
     (item) => Number(item.existencia || 0) <= Number(item.stockMinimo || 0)
   ).length;
 
-  return (
-    <main>
-      <h1>Dashboard ELANVISUAL</h1>
+  const kpis = [
+    ['📦', 'Productos', s.productos?.length || 0, '/admin/productos'],
+    ['👥', 'Clientes', s.clientes?.length || 0, '/admin/clientes'],
+    ['🧾', 'Cotizaciones', s.cotizaciones?.length || 0, '/admin/cotizaciones'],
+    ['🛒', 'Pedidos', s.pedidos?.length || 0, '/admin/pedidos'],
+    ['🏭', 'Producción', s.producciones?.length || 0, '/admin/produccion'],
+    ['📦', 'Inventario', s.inventario?.length || 0, '/admin/inventario'],
+    ['⚠️', 'Materiales críticos', materialesCriticos, '/admin/inventario'],
+    ['💳', 'Pagos pendientes', (s.pagos || []).filter((p) => p.estado === 'Pendiente').length, '/admin/pagos'],
+  ];
 
-      <div className="kpis">
-        {[
-          ['Productos', s.productos.length],
-          ['Clientes', s.clientes?.length || 0],
-          ['Leads', s.leads.length],
-          ['Cotizaciones', s.cotizaciones.length],
-          ['Pedidos', s.pedidos.length],
-          ['OT', s.ordenes.length],
-          ['Producción', s.producciones?.length || 0],
-          ['Inventario', s.inventario?.length || 0],
-          ['Materiales críticos', materialesCriticos],
-          ['Comisiones', s.comisiones.length],
-          [
-            'Pagos pendientes',
-            s.pagos.filter((p) => p.estado === 'Pendiente').length,
-          ],
-        ].map((x) => (
-          <div className="kpi" key={x[0]}>
-            <b>{x[1]}</b>
-            <span>{x[0]}</span>
-          </div>
+  const accesos = [
+    ['📦', 'Productos', '/admin/productos'],
+    ['👥', 'Clientes', '/admin/clientes'],
+    ['🧾', 'Cotizaciones', '/admin/cotizaciones'],
+    ['🛒', 'Pedidos', '/admin/pedidos'],
+    ['🏭', 'Producción', '/admin/produccion'],
+    ['🖼️', 'Multimedia', '/admin/multimedia'],
+  ];
+
+  return (
+    <main className="mobile-dashboard">
+      <style>{`
+        .mobile-dashboard {
+          display: grid;
+          gap: 22px;
+        }
+
+        .dash-hero {
+          padding: 22px;
+          border-radius: 28px;
+          background: linear-gradient(145deg, #101826, #1f2d44);
+          color: #fff;
+          box-shadow: 0 16px 36px rgba(0,0,0,.25);
+        }
+
+        .dash-hero h1 {
+          margin: 0 0 8px;
+          font-size: 34px;
+          line-height: 1.05;
+        }
+
+        .dash-hero p {
+          margin: 0;
+          color: #cbd5e1;
+          font-size: 19px;
+          font-weight: 700;
+        }
+
+        .dash-kpis {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 16px;
+        }
+
+        .dash-kpi {
+          min-height: 132px;
+          padding: 18px;
+          border-radius: 24px;
+          background: #ffffff;
+          color: #172033;
+          text-decoration: none;
+          display: grid;
+          align-content: center;
+          gap: 8px;
+          box-shadow: 0 10px 26px rgba(15,23,42,.10);
+          border: 1px solid rgba(15,23,42,.08);
+        }
+
+        .dash-kpi-icon {
+          font-size: 30px;
+        }
+
+        .dash-kpi b {
+          font-size: 34px;
+          line-height: 1;
+        }
+
+        .dash-kpi span {
+          font-size: 16px;
+          font-weight: 900;
+          color: #475467;
+        }
+
+        .dash-section {
+          padding: 20px;
+          border-radius: 28px;
+          background: #ffffff;
+          box-shadow: 0 10px 26px rgba(15,23,42,.10);
+          border: 1px solid rgba(15,23,42,.08);
+        }
+
+        .dash-section h2 {
+          margin: 0 0 16px;
+          font-size: 26px;
+        }
+
+        .dash-shortcuts {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 14px;
+        }
+
+        .dash-shortcut {
+          min-height: 120px;
+          padding: 16px;
+          border-radius: 22px;
+          background: #101826;
+          color: #ffffff;
+          text-decoration: none;
+          display: grid;
+          place-items: center;
+          text-align: center;
+          gap: 8px;
+          font-size: 18px;
+          font-weight: 900;
+        }
+
+        .dash-shortcut strong {
+          font-size: 34px;
+        }
+
+        @media (max-width: 760px) {
+          .mobile-dashboard {
+            gap: 18px;
+          }
+
+          .dash-hero {
+            padding: 22px;
+            border-radius: 26px;
+          }
+
+          .dash-hero h1 {
+            font-size: 32px !important;
+          }
+
+          .dash-hero p {
+            font-size: 19px;
+          }
+
+          .dash-kpis {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+          }
+
+          .dash-kpi {
+            min-height: 132px;
+            border-radius: 22px;
+          }
+
+          .dash-kpi b {
+            font-size: 36px;
+          }
+
+          .dash-kpi span {
+            font-size: 17px;
+          }
+
+          .dash-shortcuts {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .dash-shortcut {
+            min-height: 118px;
+            font-size: 18px;
+          }
+        }
+      `}</style>
+
+      <section className="dash-hero">
+        <h1>¡Buenos días! 👋</h1>
+        <p>Resumen general de ELANVISUAL para trabajo operativo en campo.</p>
+      </section>
+
+      <section className="dash-kpis">
+        {kpis.map(([icono, label, valor, link]) => (
+          <Link className="dash-kpi" to={link} key={label}>
+            <div className="dash-kpi-icon">{icono}</div>
+            <b>{valor}</b>
+            <span>{label}</span>
+          </Link>
         ))}
-      </div>
+      </section>
+
+      <section className="dash-section">
+        <h2>Accesos rápidos</h2>
+        <div className="dash-shortcuts">
+          {accesos.map(([icono, label, link]) => (
+            <Link className="dash-shortcut" to={link} key={label}>
+              <strong>{icono}</strong>
+              {label}
+            </Link>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }
 
-export function Clientes() {
-  return <ClientesCRM />;
-}
-
-export function Inventario() {
-  return <InventarioCRM />;
-}
-
-export function Materiales() {
-  return <MaterialesCRM />;
-}
-
-export function SeguimientoAdmin() {
-  return <SeguimientoCRM />;
-}
-
-export function UsuariosPermisos() {
-  return <UsuariosPermisosCRM />;
-}
-
-export function ConsumoMateriales() {
-  return <ConsumoMaterialesCRM />;
-}
-
-export function ListaCostos() {
-  return <ListaCostosCRM />;
-}
-
-export function FormulasCosto() {
-  return <FormulasCostoCRM />;
-}
+export function Clientes() { return <ClientesCRM />; }
+export function Inventario() { return <InventarioCRM />; }
+export function Materiales() { return <MaterialesCRM />; }
+export function SeguimientoAdmin() { return <SeguimientoCRM />; }
+export function UsuariosPermisos() { return <UsuariosPermisosCRM />; }
+export function ConsumoMateriales() { return <ConsumoMaterialesCRM />; }
+export function ListaCostos() { return <ListaCostosCRM />; }
+export function FormulasCosto() { return <FormulasCostoCRM />; }
+export function Cotizaciones() { return <CotizacionesCRM />; }
+export function Pedidos() { return <PedidosCRM />; }
+export function Ordenes() { return <OrdenesTrabajoCRM />; }
+export function OrdenesTrabajo() { return <OrdenesTrabajoCRM />; }
+export function Produccion() { return <ProduccionCRM />; }
+export function Comisiones() { return <ComisionesCRM />; }
 
 export function Productos() {
   const { productos } = useElan();
@@ -287,30 +387,6 @@ export function Leads() {
   );
 }
 
-export function Cotizaciones() {
-  return <CotizacionesCRM />;
-}
-
-export function Pedidos() {
-  return <PedidosCRM />;
-}
-
-export function Ordenes() {
-  return <OrdenesTrabajoCRM />;
-}
-
-export function OrdenesTrabajo() {
-  return <OrdenesTrabajoCRM />;
-}
-
-export function Produccion() {
-  return <ProduccionCRM />;
-}
-
-export function Comisiones() {
-  return <ComisionesCRM />;
-}
-
 export function Pagos() {
   const { pagos, validarPago } = useElan();
 
@@ -349,9 +425,7 @@ export function Banners() {
   const bannersStorage = leerEstadoStorage().banners || [];
   const baseBanners = banners.length ? banners : bannersStorage;
 
-  const [lista, setLista] = useState(
-    (baseBanners || []).map(normalizarBanner)
-  );
+  const [lista, setLista] = useState((baseBanners || []).map(normalizarBanner));
 
   const [form, setForm] = useState({
     id: '',
@@ -371,23 +445,31 @@ export function Banners() {
     setLista((fuente || []).map(normalizarBanner));
   }, [banners]);
 
-  const imagenesDesktop = multimedia.filter((m) => {
-    const categoria = m.categoria || '';
-    return (
-      m.estado === 'Activo' &&
-      ['Banner Desktop', 'Banner', 'General'].includes(categoria) &&
-      obtenerImagenMedia(m)
-    );
-  });
+  const imagenesDesktop = useMemo(
+    () =>
+      multimedia.filter((m) => {
+        const categoria = m.categoria || '';
+        return (
+          m.estado === 'Activo' &&
+          ['Banner Desktop', 'Banner', 'General'].includes(categoria) &&
+          obtenerImagenMedia(m)
+        );
+      }),
+    [multimedia]
+  );
 
-  const imagenesMobile = multimedia.filter((m) => {
-    const categoria = m.categoria || '';
-    return (
-      m.estado === 'Activo' &&
-      ['Banner Mobile', 'Banner', 'General'].includes(categoria) &&
-      obtenerImagenMedia(m)
-    );
-  });
+  const imagenesMobile = useMemo(
+    () =>
+      multimedia.filter((m) => {
+        const categoria = m.categoria || '';
+        return (
+          m.estado === 'Activo' &&
+          ['Banner Mobile', 'Banner', 'General'].includes(categoria) &&
+          obtenerImagenMedia(m)
+        );
+      }),
+    [multimedia]
+  );
 
   function sincronizar(nuevaLista) {
     const normalizada = nuevaLista
@@ -419,11 +501,7 @@ export function Banners() {
       return;
     }
 
-    if (
-      !form.imagenDesktop.trim() &&
-      !form.imagenMobile.trim() &&
-      !form.imagen.trim()
-    ) {
+    if (!form.imagenDesktop && !form.imagenMobile && !form.imagen) {
       alert('Seleccioná imagen Desktop y Mobile desde Multimedia.');
       return;
     }
@@ -463,13 +541,11 @@ export function Banners() {
     }
 
     limpiar();
-
     alert('Banner guardado correctamente.');
   }
 
   function editar(banner) {
     const b = normalizarBanner(banner);
-
     setForm({
       id: b.id,
       titulo: b.titulo,
@@ -495,24 +571,6 @@ export function Banners() {
     if (typeof activarBanner === 'function') {
       activarBanner(id);
     }
-
-    alert('Banner activado como único principal.');
-  }
-
-  function cambiarEstado(id) {
-    const banner = lista.find((b) => b.id === id);
-    if (!banner) return;
-
-    if (banner.estado !== 'Activo') {
-      activar(id);
-      return;
-    }
-
-    const nuevaLista = lista.map((b) =>
-      b.id === id ? { ...b, estado: 'Inactivo' } : b
-    );
-
-    sincronizar(nuevaLista);
   }
 
   function eliminar(id) {
@@ -534,14 +592,103 @@ export function Banners() {
   const previewMobile = form.imagenMobile || form.imagenDesktop || form.imagen;
 
   return (
-    <main>
+    <main className="banner-admin">
+      <style>{`
+        .banner-admin {
+          display: grid;
+          gap: 20px;
+        }
+
+        .banner-form {
+          display: grid;
+          gap: 16px;
+        }
+
+        .banner-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+
+        .banner-field {
+          display: grid;
+          gap: 8px;
+        }
+
+        .banner-field label {
+          font-weight: 900;
+        }
+
+        .banner-actions {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .banner-preview {
+          display: grid;
+          gap: 10px;
+        }
+
+        .banner-preview img {
+          width: 100%;
+          border-radius: 18px;
+          border: 1px solid #e6e9ef;
+          object-fit: cover;
+        }
+
+        .banner-preview-mobile img {
+          max-width: 390px;
+          max-height: 520px;
+        }
+
+        .banner-item {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 14px;
+          padding: 16px;
+          border-radius: 18px;
+          border: 1px solid #e6e9ef;
+          background: #fff;
+          margin-bottom: 14px;
+        }
+
+        .banner-item-actions {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        @media (max-width: 760px) {
+          .banner-grid,
+          .banner-item {
+            grid-template-columns: 1fr;
+          }
+
+          .banner-actions,
+          .banner-item-actions {
+            flex-direction: column;
+          }
+
+          .banner-actions button,
+          .banner-item-actions button {
+            width: 100%;
+          }
+
+          .banner-preview-mobile img {
+            max-width: 100%;
+            max-height: none;
+          }
+        }
+      `}</style>
+
       <h1>Banners principales</h1>
 
-      <section className="card form" style={formStyles.grid}>
+      <section className="card banner-form">
         <h2>{form.id ? 'Editar banner' : 'Nuevo banner'}</h2>
 
-        <div style={formStyles.field}>
-          <label style={formStyles.label}>Título principal</label>
+        <div className="banner-field">
+          <label>Título principal</label>
           <input
             placeholder="Ej: Todo para la imagen de tu negocio"
             value={form.titulo}
@@ -549,8 +696,8 @@ export function Banners() {
           />
         </div>
 
-        <div style={formStyles.field}>
-          <label style={formStyles.label}>Subtítulo</label>
+        <div className="banner-field">
+          <label>Subtítulo</label>
           <input
             placeholder="Ej: Rotulación, impresión digital y soluciones visuales"
             value={form.subtitulo}
@@ -558,29 +705,27 @@ export function Banners() {
           />
         </div>
 
-        <div style={formStyles.row}>
-          <div style={formStyles.field}>
-            <label style={formStyles.label}>Texto del botón</label>
+        <div className="banner-grid">
+          <div className="banner-field">
+            <label>Texto del botón</label>
             <input
-              placeholder="Ej: Ver Catálogo"
               value={form.boton}
               onChange={(e) => setForm({ ...form, boton: e.target.value })}
             />
           </div>
 
-          <div style={formStyles.field}>
-            <label style={formStyles.label}>Enlace del botón</label>
+          <div className="banner-field">
+            <label>Enlace</label>
             <input
-              placeholder="Ej: /catalogo"
               value={form.enlace}
               onChange={(e) => setForm({ ...form, enlace: e.target.value })}
             />
           </div>
         </div>
 
-        <div style={formStyles.row}>
-          <div style={formStyles.field}>
-            <label style={formStyles.label}>Imagen Desktop</label>
+        <div className="banner-grid">
+          <div className="banner-field">
+            <label>Imagen Desktop</label>
             <select
               value={form.imagenDesktop}
               onChange={(e) =>
@@ -592,24 +737,16 @@ export function Banners() {
               }
             >
               <option value="">Seleccionar imagen desktop</option>
-
               {imagenesDesktop.map((m) => (
                 <option key={m.id} value={obtenerImagenMedia(m)}>
                   {m.nombre || m.titulo || m.id}
                 </option>
               ))}
             </select>
-
-            {imagenesDesktop.length === 0 && (
-              <p>
-                No hay imágenes activas en Multimedia con categoría Banner
-                Desktop, Banner o General.
-              </p>
-            )}
           </div>
 
-          <div style={formStyles.field}>
-            <label style={formStyles.label}>Imagen Mobile</label>
+          <div className="banner-field">
+            <label>Imagen Mobile</label>
             <select
               value={form.imagenMobile}
               onChange={(e) =>
@@ -620,26 +757,18 @@ export function Banners() {
               }
             >
               <option value="">Seleccionar imagen mobile</option>
-
               {imagenesMobile.map((m) => (
                 <option key={m.id} value={obtenerImagenMedia(m)}>
                   {m.nombre || m.titulo || m.id}
                 </option>
               ))}
             </select>
-
-            {imagenesMobile.length === 0 && (
-              <p>
-                No hay imágenes activas en Multimedia con categoría Banner
-                Mobile, Banner o General.
-              </p>
-            )}
           </div>
         </div>
 
-        <div style={formStyles.row}>
-          <div style={formStyles.field}>
-            <label style={formStyles.label}>Estado</label>
+        <div className="banner-grid">
+          <div className="banner-field">
+            <label>Estado</label>
             <select
               value={form.estado}
               onChange={(e) => setForm({ ...form, estado: e.target.value })}
@@ -649,11 +778,10 @@ export function Banners() {
             </select>
           </div>
 
-          <div style={formStyles.field}>
-            <label style={formStyles.label}>Orden</label>
+          <div className="banner-field">
+            <label>Orden</label>
             <input
               type="number"
-              placeholder="Orden"
               value={form.orden}
               onChange={(e) => setForm({ ...form, orden: e.target.value })}
             />
@@ -661,48 +789,22 @@ export function Banners() {
         </div>
 
         {previewDesktop && (
-          <div style={formStyles.field}>
-            <label style={formStyles.label}>Vista Desktop</label>
-            <img
-              src={previewDesktop}
-              alt="Vista previa desktop"
-              style={{
-                width: '100%',
-                maxHeight: 280,
-                objectFit: 'cover',
-                borderRadius: 16,
-                border: '1px solid #e6e9ef',
-              }}
-            />
+          <div className="banner-preview">
+            <label>Vista Desktop</label>
+            <img src={previewDesktop} alt="Vista previa desktop" />
           </div>
         )}
 
         {previewMobile && (
-          <div style={formStyles.field}>
-            <label style={formStyles.label}>Vista Mobile</label>
-            <img
-              src={previewMobile}
-              alt="Vista previa mobile"
-              style={{
-                width: '100%',
-                maxWidth: 390,
-                maxHeight: 520,
-                objectFit: 'cover',
-                borderRadius: 16,
-                border: '1px solid #e6e9ef',
-              }}
-            />
+          <div className="banner-preview banner-preview-mobile">
+            <label>Vista Mobile</label>
+            <img src={previewMobile} alt="Vista previa mobile" />
           </div>
         )}
 
-        <div style={formStyles.actions}>
-          <button type="button" onClick={guardar}>
-            Guardar banner
-          </button>
-
-          <button type="button" onClick={limpiar}>
-            Limpiar
-          </button>
+        <div className="banner-actions">
+          <button type="button" onClick={guardar}>Guardar banner</button>
+          <button type="button" onClick={limpiar}>Limpiar</button>
         </div>
       </section>
 
@@ -713,35 +815,17 @@ export function Banners() {
           <p>No hay banners registrados.</p>
         ) : (
           listaOrdenada.map((b) => (
-            <div style={formStyles.bannerItem} key={b.id}>
+            <div className="banner-item" key={b.id}>
               <div>
                 <b>{b.titulo}</b>
-
                 {b.subtitulo && <p>{b.subtitulo}</p>}
-
-                <div style={formStyles.bannerMeta}>
-                  <span>Estado: {b.estado}</span>
-                  <span>Orden: {b.orden || 1}</span>
-                  <span>Botón: {b.boton}</span>
-                </div>
+                <p>Estado: {b.estado} · Orden: {b.orden || 1}</p>
               </div>
 
-              <div style={formStyles.bannerActions}>
-                <button type="button" onClick={() => editar(b)}>
-                  Editar
-                </button>
-
-                <button type="button" onClick={() => activar(b.id)}>
-                  Activar único
-                </button>
-
-                <button type="button" onClick={() => cambiarEstado(b.id)}>
-                  {b.estado === 'Activo' ? 'Desactivar' : 'Activar'}
-                </button>
-
-                <button type="button" onClick={() => eliminar(b.id)}>
-                  Eliminar
-                </button>
+              <div className="banner-item-actions">
+                <button type="button" onClick={() => editar(b)}>Editar</button>
+                <button type="button" onClick={() => activar(b.id)}>Activar único</button>
+                <button type="button" onClick={() => eliminar(b.id)}>Eliminar</button>
               </div>
             </div>
           ))

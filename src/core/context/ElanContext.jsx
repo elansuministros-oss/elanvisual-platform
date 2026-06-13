@@ -240,6 +240,92 @@ function inventarioDesdeMateriales(materiales = []) {
   }));
 }
 
+
+function obtenerImagenPrincipalMedia(data = {}) {
+  return (
+    data.imagen ||
+    data.imagenDesktop ||
+    data.imagenMobile ||
+    data.url ||
+    data.src ||
+    data.archivo ||
+    data.image ||
+    data.imagenEscritorio ||
+    data.imagenMovil ||
+    data.imagen_mobile ||
+    ''
+  );
+}
+
+function normalizarMultimediaItem(data = {}) {
+  const imagenPrincipal = obtenerImagenPrincipalMedia(data);
+
+  const desktop =
+    data.imagenDesktop ||
+    data.imagenEscritorio ||
+    data.desktop ||
+    imagenPrincipal ||
+    '';
+
+  const mobile =
+    data.imagenMobile ||
+    data.imagenMovil ||
+    data.imagen_mobile ||
+    data.mobile ||
+    imagenPrincipal ||
+    desktop ||
+    '';
+
+  return {
+    ...data,
+    id: data.id || uid('MEDIA'),
+    nombre: data.nombre || data.titulo || '',
+    categoria: data.categoria || 'General',
+    imagen: imagenPrincipal || desktop || mobile,
+    imagenDesktop: desktop || imagenPrincipal || mobile,
+    imagenMobile: mobile || imagenPrincipal || desktop,
+    url: data.url || imagenPrincipal || desktop || mobile,
+    src: data.src || imagenPrincipal || desktop || mobile,
+    archivo: data.archivo || imagenPrincipal || desktop || mobile,
+    fecha: data.fecha || hoyISO(),
+    estado: data.estado || 'Activo',
+    unidad: data.unidad || 'ELANVISUAL',
+  };
+}
+
+function normalizarBannerContext(data = {}) {
+  const desktop =
+    data.imagenDesktop ||
+    data.desktop ||
+    data.imagen ||
+    data.url ||
+    data.src ||
+    '';
+
+  const mobile =
+    data.imagenMobile ||
+    data.mobile ||
+    data.imagen ||
+    desktop ||
+    '';
+
+  return {
+    ...data,
+    id: data.id || uid('BANNER'),
+    titulo: data.titulo || '',
+    subtitulo: data.subtitulo || '',
+    boton: data.boton || 'Ver Catálogo',
+    enlace: data.enlace || '/catalogo',
+    imagen: desktop || mobile,
+    imagenDesktop: desktop || mobile,
+    imagenMobile: mobile || desktop,
+    estado: data.estado || 'Activo',
+    orden: Number(data.orden || 1),
+    fecha: data.fecha || hoyISO(),
+    unidad: data.unidad || 'ELANVISUAL',
+  };
+}
+
 const inicial = {
   categorias: categoriasIniciales || [],
   productos: productosIniciales || [],
@@ -1006,30 +1092,7 @@ export function ElanProvider({ children }) {
   };
 
   const agregarMultimedia = (data = {}) => {
-    const imagenPrincipal =
-      data.imagen ||
-      data.imagenDesktop ||
-      data.imagenMobile ||
-      data.url ||
-      data.src ||
-      data.archivo ||
-      data.image ||
-      '';
-
-    const item = {
-      ...data,
-      id: data.id || uid('MEDIA'),
-      nombre: data.nombre || '',
-      categoria: data.categoria || 'General',
-      imagen: imagenPrincipal,
-      imagenDesktop: data.imagenDesktop || data.imagenEscritorio || imagenPrincipal,
-      imagenMobile: data.imagenMobile || data.imagenMovil || data.imagen_mobile || imagenPrincipal,
-      url: data.url || imagenPrincipal,
-      src: data.src || imagenPrincipal,
-      fecha: data.fecha || hoyISO(),
-      estado: data.estado || 'Activo',
-      unidad: data.unidad || 'ELANVISUAL',
-    };
+    const item = normalizarMultimediaItem(data);
 
     patch((prev) => ({
       multimedia: [item, ...(prev.multimedia || [])],
@@ -1046,7 +1109,14 @@ export function ElanProvider({ children }) {
     patch((prev) => ({
       multimedia: (prev.multimedia || []).map((item) => {
         if (item.id !== id) return item;
-        actualizado = { ...item, ...cambios, actualizado: hoyISO() };
+
+        actualizado = normalizarMultimediaItem({
+          ...item,
+          ...cambios,
+          id,
+          actualizado: hoyISO(),
+        });
+
         return actualizado;
       }),
     }));
@@ -1055,6 +1125,7 @@ export function ElanProvider({ children }) {
       guardarRegistroSupabase('multimedia', actualizado);
       emitirEventoCRM('multimedia_actualizada', actualizado);
     }
+
     return actualizado;
   };
 
@@ -1065,6 +1136,82 @@ export function ElanProvider({ children }) {
 
     eliminarRegistroSupabase('multimedia', id);
     emitirEventoCRM('multimedia_eliminada', { id, unidad: 'ELANVISUAL' });
+    return true;
+  };
+
+
+  const guardarBanner = (data = {}) => {
+    const item = normalizarBannerContext(data);
+
+    patch((prev) => {
+      const listaActual = Array.isArray(prev.banners) ? prev.banners : [];
+      const existe = listaActual.some((x) => x.id === item.id);
+
+      let nuevaLista = existe
+        ? listaActual.map((x) => (x.id === item.id ? item : x))
+        : [item, ...listaActual];
+
+      if (item.estado === 'Activo') {
+        nuevaLista = nuevaLista.map((banner) => ({
+          ...normalizarBannerContext(banner),
+          estado: banner.id === item.id ? 'Activo' : 'Inactivo',
+        }));
+      }
+
+      return {
+        banners: nuevaLista
+          .map(normalizarBannerContext)
+          .sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0)),
+      };
+    });
+
+    guardarRegistroSupabase('banners', item);
+    emitirEventoCRM('banner_guardado', item);
+
+    window.dispatchEvent(new Event('elanvisual:banners-updated'));
+
+    return item;
+  };
+
+  const activarBanner = (id) => {
+    let activo = null;
+
+    patch((prev) => {
+      const nuevaLista = (prev.banners || []).map((banner) => {
+        const normalizado = normalizarBannerContext(banner);
+        const actualizado = {
+          ...normalizado,
+          estado: normalizado.id === id ? 'Activo' : 'Inactivo',
+        };
+
+        if (actualizado.id === id) activo = actualizado;
+
+        return actualizado;
+      });
+
+      return { banners: nuevaLista };
+    });
+
+    if (activo) {
+      guardarRegistroSupabase('banners', activo);
+      emitirEventoCRM('banner_activado', activo);
+    }
+
+    window.dispatchEvent(new Event('elanvisual:banners-updated'));
+
+    return activo;
+  };
+
+  const eliminarBanner = (id) => {
+    patch((prev) => ({
+      banners: (prev.banners || []).filter((banner) => banner.id !== id),
+    }));
+
+    eliminarRegistroSupabase('banners', id);
+    emitirEventoCRM('banner_eliminado', { id, unidad: 'ELANVISUAL' });
+
+    window.dispatchEvent(new Event('elanvisual:banners-updated'));
+
     return true;
   };
 
@@ -1104,6 +1251,9 @@ export function ElanProvider({ children }) {
       guardarMaterial,
       guardarVendedor,
       guardarBanco,
+      guardarBanner,
+      activarBanner,
+      eliminarBanner,
       agregarMultimedia,
       actualizarMultimedia,
       eliminarMultimedia,
