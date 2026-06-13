@@ -29,7 +29,7 @@ export default function PublicLayout() {
         <div className="public-header-inner">
           <NavLink to="/" className="brand-mark" onClick={closeMenu}>
             <span className="brand-main">ELANVISUAL</span>
-            <span className="brand-sub">Rotulación & Producción</span>
+            <span className="brand-sub">App visual</span>
           </NavLink>
 
           <nav className="public-nav" aria-label="Navegación pública">
@@ -46,7 +46,7 @@ export default function PublicLayout() {
 
           <button
             type="button"
-            className="public-menu-button"
+            className={open ? 'public-menu-button is-open' : 'public-menu-button'}
             onClick={() => setOpen((value) => !value)}
             aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
             aria-expanded={open}
@@ -59,7 +59,7 @@ export default function PublicLayout() {
       </header>
 
       {open && (
-        <div className="public-mobile-layer">
+        <section className="public-mobile-layer">
           <button
             type="button"
             className="public-mobile-backdrop"
@@ -88,7 +88,7 @@ export default function PublicLayout() {
               Acceso / Admin
             </NavLink>
           </nav>
-        </div>
+        </section>
       )}
 
       <main className="public-main">
