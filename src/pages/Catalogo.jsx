@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Maximize2, Ruler, Search, SlidersHorizontal, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { formatoC$ } from '../lib/calculos';
 
 export default function Catalogo() {
-  const { productos, resumen, banners, agregar } = useApp();
+  const { productos, banners } = useApp();
   const bannerCatalogo = banners.find((b) => b.ubicacion === 'catalogo' && b.activo);
+
   const cats = ['Todos', ...new Set(productos.map((p) => p.categoria))];
   const [cat, setCat] = useState('Todos');
   const [busqueda, setBusqueda] = useState('');
@@ -16,7 +16,7 @@ export default function Catalogo() {
       const coincideCategoria = cat === 'Todos' || p.categoria === cat;
       const texto = `${p.nombre} ${p.descripcion} ${p.medidas} ${p.categoria}`.toLowerCase();
       const coincideBusqueda = texto.includes(busqueda.toLowerCase());
-      return coincideCategoria && coincideBusqueda;
+      return coincideCategoria && coincideBusqueda && p.activo !== false;
     });
   }, [productos, cat, busqueda]);
 
@@ -47,15 +47,19 @@ export default function Catalogo() {
     <main className="catalog-page">
       <section className="catalog-hero">
         <div>
-          <span className="badge">ELAN PET · Catálogo V1</span>
-          <h1>Catálogo de muebles para mascotas</h1>
-          <p>Casas, camas, comederos, escaleras, organizadores y torres para gatos.</p>
+          <span className="badge">ELANVISUAL · Servicios Fabricables</span>
+          <h1>Servicios de rotulación, impresión y fabricación visual</h1>
+          <p>
+            Seleccioná el servicio que necesitás cotizar. Cada opción representa
+            una solución producible en taller con materiales reales, medidas
+            verificables e instalación planificada.
+          </p>
         </div>
 
         <aside className="cart-summary-mini">
-          <b>Carrito actual</b>
-          <span>{resumen.cantidad} producto(s)</span>
-          <strong>{formatoC$(resumen.total)}</strong>
+          <b>Flujo operativo</b>
+          <span>Cotización → OT → Producción</span>
+          <strong>A cotizar</strong>
         </aside>
       </section>
 
@@ -63,7 +67,7 @@ export default function Catalogo() {
         <div className="search-box">
           <Search size={18} />
           <input
-            placeholder="Buscar producto, medida o categoría..."
+            placeholder="Buscar servicio, material, medida o categoría..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
@@ -76,7 +80,12 @@ export default function Catalogo() {
 
       <div className="chips">
         {cats.map((c) => (
-          <button key={c} className={cat === c ? 'active' : ''} onClick={() => setCat(c)}>
+          <button
+            key={c}
+            type="button"
+            className={cat === c ? 'active' : ''}
+            onClick={() => setCat(c)}
+          >
             {c}
           </button>
         ))}
@@ -117,13 +126,20 @@ export default function Catalogo() {
 
               <div className="measure">
                 <Ruler size={16} />
-                {p.medidas}
+                {p.medidas || 'Según levantamiento técnico'}
               </div>
 
               <div className="product-footer">
-                <strong className="price">{formatoC$(p.precio)}</strong>
-                <button type="button" onClick={() => agregar(p)}>
-                  Agregar
+                <strong className="price">A cotizar</strong>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.location.href = `https://wa.me/?text=${encodeURIComponent(
+                      `Hola, quiero cotizar este servicio de ELANVISUAL: ${p.nombre}`
+                    )}`;
+                  }}
+                >
+                  Solicitar servicio
                 </button>
               </div>
             </div>
@@ -133,22 +149,37 @@ export default function Catalogo() {
 
       {lista.length === 0 ? (
         <section className="panel empty-catalog">
-          <h2>No se encontraron productos</h2>
-          <p className="note">Probá con otra categoría o cambiá el texto de búsqueda.</p>
+          <h2>No se encontraron servicios</h2>
+          <p className="note">
+            Probá con otra categoría o cambiá el texto de búsqueda.
+          </p>
         </section>
       ) : null}
 
       {imagenAmpliada ? (
-        <section className="image-lightbox" onMouseDown={cerrarImagen} role="dialog" aria-modal="true">
-          <button type="button" className="image-lightbox-close" onClick={cerrarImagen} aria-label="Cerrar imagen ampliada">
+        <section
+          className="image-lightbox"
+          onMouseDown={cerrarImagen}
+          role="dialog"
+          aria-modal="true"
+        >
+          <button
+            type="button"
+            className="image-lightbox-close"
+            onClick={cerrarImagen}
+            aria-label="Cerrar imagen ampliada"
+          >
             <X size={28} />
           </button>
 
-          <div className="image-lightbox-content" onMouseDown={(event) => event.stopPropagation()}>
+          <div
+            className="image-lightbox-content"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
             <img src={imagenAmpliada.imagen} alt={imagenAmpliada.nombre} />
             <div className="image-lightbox-caption">
               <b>{imagenAmpliada.nombre}</b>
-              <span>{imagenAmpliada.medidas}</span>
+              <span>{imagenAmpliada.medidas || 'Servicio fabricable ELANVISUAL'}</span>
             </div>
           </div>
         </section>
