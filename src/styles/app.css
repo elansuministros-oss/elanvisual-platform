@@ -166,16 +166,16 @@ h1 {
 }
 
 .public-menu-button {
-  width: 58px;
-  height: 58px;
-  min-width: 58px;
+  width: 100px;
+  height: 100px;
+  min-width: 100px;
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 18px;
+  border-radius: 22px;
   color: #fff;
   background: var(--color-brand);
-  font-size: 2rem;
+  font-size: 2.8rem;
   font-weight: 950;
   line-height: 1;
   box-shadow: var(--shadow-card);
