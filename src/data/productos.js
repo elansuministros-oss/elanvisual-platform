@@ -1,3 +1,17 @@
+const imgServicio = (titulo, subtitulo = 'ELANVISUAL') =>
+  `data:image/svg+xml;utf8,${encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+  <rect width="1080" height="1080" fill="#0B1220"/>
+  <rect x="58" y="58" width="964" height="964" rx="64" fill="#111827" stroke="#D4AF37" stroke-width="8"/>
+  <circle cx="860" cy="180" r="92" fill="#D4AF37" opacity="0.95"/>
+  <text x="90" y="150" fill="#D4AF37" font-family="Arial" font-size="42" font-weight="900">ELANVISUAL</text>
+  <text x="90" y="505" fill="#FFFFFF" font-family="Arial" font-size="86" font-weight="900">${titulo}</text>
+  <text x="90" y="585" fill="#CBD5E1" font-family="Arial" font-size="34" font-weight="700">${subtitulo}</text>
+  <rect x="90" y="760" width="420" height="76" rx="24" fill="#D4AF37"/>
+  <text x="130" y="810" fill="#0B1220" font-family="Arial" font-size="32" font-weight="900">A COTIZAR</text>
+</svg>
+`)}`;
+
 export const productosIniciales = [
   {
     id: 'letras-pvc',
@@ -5,9 +19,8 @@ export const productosIniciales = [
     categoria: 'Letras y logos',
     medidas: 'PVC 6 mm / 10 mm / 15 mm · según diseño',
     precio: 0,
-    imagen: '/productos/producto-01.jpg',
-    descripcion:
-      'Letras y logotipos en PVC cortado CNC, ideales para interiores, recepciones, oficinas y fondos corporativos.',
+    imagen: imgServicio('Letras PVC', 'PVC cortado CNC'),
+    descripcion: 'Letras y logotipos en PVC para interiores, recepciones, oficinas y fondos corporativos.',
     etiqueta: 'Interior',
   },
   {
@@ -16,9 +29,8 @@ export const productosIniciales = [
     categoria: 'Letras y logos',
     medidas: 'Acrílico 3 mm / 5 mm · instalación con separadores',
     precio: 0,
-    imagen: '/productos/producto-02.jpg',
-    descripcion:
-      'Letras en acrílico transparente, lechoso, color sólido o espejo, con acabado limpio para marcas premium.',
+    imagen: imgServicio('Letras Acrílicas', 'Acrílico premium'),
+    descripcion: 'Letras en acrílico transparente, lechoso, color sólido o espejo para marcas premium.',
     etiqueta: 'Premium',
   },
   {
@@ -27,9 +39,8 @@ export const productosIniciales = [
     categoria: 'Letras y logos',
     medidas: 'Profundidad 4–8 cm · luz frontal o sin iluminación',
     precio: 0,
-    imagen: '/productos/producto-03.jpg',
-    descripcion:
-      'Letras tipo cajuela fabricadas para fachadas, interiores comerciales y marcas que necesitan presencia visual.',
+    imagen: imgServicio('Letras 3D', 'Cajuela fabricada'),
+    descripcion: 'Letras tipo cajuela para fachadas, interiores comerciales y marcas de alto impacto.',
     etiqueta: 'Alto impacto',
   },
   {
@@ -38,9 +49,8 @@ export const productosIniciales = [
     categoria: 'Rotulación exterior',
     medidas: 'Según levantamiento técnico en sitio',
     precio: 0,
-    imagen: '/productos/producto-04.jpg',
-    descripcion:
-      'Diseño, fabricación e instalación de fachadas con ACM, PVC, acrílico, vinil, estructura metálica e iluminación.',
+    imagen: imgServicio('Fachadas', 'Rotulación exterior'),
+    descripcion: 'Diseño, fabricación e instalación de fachadas con ACM, PVC, acrílico, vinil, estructura metálica e iluminación.',
     etiqueta: 'Exterior',
   },
   {
@@ -49,9 +59,8 @@ export const productosIniciales = [
     categoria: 'Rotulación exterior',
     medidas: '60 × 60 cm / 80 × 80 cm / personalizado',
     precio: 0,
-    imagen: '/productos/producto-05.jpg',
-    descripcion:
-      'Rótulos doble cara con brazo metálico para alta visibilidad peatonal y vehicular en comercios.',
+    imagen: imgServicio('Jalavistas', 'Doble cara'),
+    descripcion: 'Rótulos doble cara con brazo metálico para visibilidad peatonal y vehicular.',
     etiqueta: 'Doble cara',
   },
   {
@@ -60,21 +69,9 @@ export const productosIniciales = [
     categoria: 'Rotulación exterior',
     medidas: '50–100 cm diámetro · circular o personalizado',
     precio: 0,
-    imagen: '/productos/producto-06.jpg',
-    descripcion:
-      'Botones luminosos con acrílico, vinil, PVC, estructura interna e iluminación LED según aplicación.',
+    imagen: imgServicio('Botones LED', 'Iluminación'),
+    descripcion: 'Botones luminosos con acrílico, vinil, PVC, estructura interna e iluminación LED.',
     etiqueta: 'LED',
-  },
-  {
-    id: 'displays-promocionales',
-    nombre: 'Displays Promocionales',
-    categoria: 'Displays y exhibidores',
-    medidas: 'PVC, acrílico o estructura metálica · según producto',
-    precio: 0,
-    imagen: '/productos/producto-07.jpg',
-    descripcion:
-      'Displays para exhibición, activaciones, puntos de venta, productos, mostradores y campañas comerciales.',
-    etiqueta: 'Punto de venta',
   },
   {
     id: 'vinil-rotulacion',
@@ -82,9 +79,8 @@ export const productosIniciales = [
     categoria: 'Impresión y vinil',
     medidas: 'Por m² · corte, impresión o instalación',
     precio: 0,
-    imagen: '/productos/producto-08.jpg',
-    descripcion:
-      'Vinil adhesivo impreso, recortado, microperforado, decorativo o corporativo para vidrios, paredes y vehículos.',
+    imagen: imgServicio('Vinil', 'Impresión y corte'),
+    descripcion: 'Vinil impreso, recortado, microperforado, decorativo o corporativo para vidrios, paredes y vehículos.',
     etiqueta: 'Por m²',
   },
   {
@@ -93,9 +89,8 @@ export const productosIniciales = [
     categoria: 'Impresión y vinil',
     medidas: 'Sobre PVC, acrílico, madera, metal o materiales planos',
     precio: 0,
-    imagen: '/productos/producto-09.jpg',
-    descripcion:
-      'Impresión directa UV para piezas rígidas, señalización, displays, placas, regalos corporativos y acabados especiales.',
+    imagen: imgServicio('Impresión UV', 'Alta definición'),
+    descripcion: 'Impresión directa UV para piezas rígidas, señalización, displays, placas y acabados especiales.',
     etiqueta: 'Alta definición',
   },
   {
@@ -104,9 +99,8 @@ export const productosIniciales = [
     categoria: 'Impresión y vinil',
     medidas: 'Stickers transferibles · por diseño o pliego',
     precio: 0,
-    imagen: '/productos/producto-10.jpg',
-    descripcion:
-      'DTF UV para logos, empaques, botellas, acrílicos, productos promocionales y superficies rígidas.',
+    imagen: imgServicio('DTF UV', 'Transfer premium'),
+    descripcion: 'DTF UV para logos, empaques, botellas, acrílicos, promocionales y superficies rígidas.',
     etiqueta: 'Transfer',
   },
   {
@@ -115,9 +109,8 @@ export const productosIniciales = [
     categoria: 'CNC y láser',
     medidas: 'Lámina 122 × 244 cm · piezas según plano',
     precio: 0,
-    imagen: '/productos/producto-01.jpg',
-    descripcion:
-      'Corte CNC para PVC, acrílico, MDF, letras, bases, piezas seriadas, plantillas y producción por lote.',
+    imagen: imgServicio('Corte CNC', 'Producción'),
+    descripcion: 'Corte CNC para PVC, acrílico, MDF, letras, bases, piezas seriadas y producción por lote.',
     etiqueta: 'Producción',
   },
   {
@@ -126,9 +119,8 @@ export const productosIniciales = [
     categoria: 'CNC y láser',
     medidas: 'Acrílico, MDF, cuero, cartón y piezas especiales',
     precio: 0,
-    imagen: '/productos/producto-02.jpg',
-    descripcion:
-      'Corte y grabado láser para piezas finas, acrílicos, señalética, prototipos, detalles decorativos y productos personalizados.',
+    imagen: imgServicio('Corte Láser', 'Precisión'),
+    descripcion: 'Corte y grabado láser para acrílicos, señalética, prototipos y productos personalizados.',
     etiqueta: 'Precisión',
   },
   {
@@ -137,55 +129,19 @@ export const productosIniciales = [
     categoria: 'Estructuras',
     medidas: 'Tubo, angular, lámina y soportes según carga',
     precio: 0,
-    imagen: '/productos/producto-03.jpg',
-    descripcion:
-      'Estructuras para rótulos, fachadas, soportes, marcos, bases, tótems, eventos y montaje exterior.',
+    imagen: imgServicio('Estructuras', 'Instalación'),
+    descripcion: 'Estructuras para rótulos, fachadas, soportes, marcos, bases, tótems y montaje exterior.',
     etiqueta: 'Instalación',
-  },
-  {
-    id: 'senalizacion',
-    nombre: 'Señalización',
-    categoria: 'Señalización',
-    medidas: 'Interior / exterior · PVC, acrílico, vinil o metal',
-    precio: 0,
-    imagen: '/productos/producto-04.jpg',
-    descripcion:
-      'Señalización institucional, comercial, direccional, normativa, informativa y de seguridad.',
-    etiqueta: 'Corporativo',
   },
 ];
 
 export const categoriasHome = [
-  {
-    nombre: 'Letras y logos',
-    categoria: 'Letras y logos',
-    imagen: '/productos/producto-01.jpg',
-  },
-  {
-    nombre: 'Rotulación exterior',
-    categoria: 'Rotulación exterior',
-    imagen: '/productos/producto-04.jpg',
-  },
-  {
-    nombre: 'Impresión UV',
-    categoria: 'Impresión y vinil',
-    imagen: '/productos/producto-09.jpg',
-  },
-  {
-    nombre: 'DTF UV',
-    categoria: 'Impresión y vinil',
-    imagen: '/productos/producto-10.jpg',
-  },
-  {
-    nombre: 'CNC y láser',
-    categoria: 'CNC y láser',
-    imagen: '/productos/producto-02.jpg',
-  },
-  {
-    nombre: 'Estructuras',
-    categoria: 'Estructuras',
-    imagen: '/productos/producto-03.jpg',
-  },
+  { nombre: 'Letras y logos', categoria: 'Letras y logos', imagen: imgServicio('Letras', 'PVC / Acrílico / 3D') },
+  { nombre: 'Rotulación exterior', categoria: 'Rotulación exterior', imagen: imgServicio('Rotulación', 'Exterior') },
+  { nombre: 'Impresión UV', categoria: 'Impresión y vinil', imagen: imgServicio('UV', 'Alta definición') },
+  { nombre: 'DTF UV', categoria: 'Impresión y vinil', imagen: imgServicio('DTF UV', 'Transfer') },
+  { nombre: 'CNC y láser', categoria: 'CNC y láser', imagen: imgServicio('CNC', 'Corte técnico') },
+  { nombre: 'Estructuras', categoria: 'Estructuras', imagen: imgServicio('Metal', 'Soportes') },
 ];
 
 export const veterinariaDemo = null;
