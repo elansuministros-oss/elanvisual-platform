@@ -29,10 +29,19 @@ export default function App() {
     if (pathInicial.startsWith('/materiales')) return 'materiales';
     if (pathInicial.startsWith('/cotizador')) return 'cotizador';
     if (pathInicial.startsWith('/pedidos')) return 'pedidos';
-    if (pathInicial.startsWith('/catalogo')) return 'catalogo';
+    if (pathInicial.startsWith('/servicios')) return 'servicios';
+    if (pathInicial.startsWith('/tienda')) return 'tienda';
+    if (pathInicial.startsWith('/catalogo')) return 'servicios';
     if (pathInicial.startsWith('/trabajos')) return 'trabajos';
+    if (pathInicial.startsWith('/portafolio')) return 'trabajos';
+    if (pathInicial.startsWith('/carrito')) return 'carrito';
     if (pathInicial.startsWith('/contacto')) return 'contacto';
-    if (pathInicial.startsWith('/erp')) return 'home';
+    if (pathInicial.startsWith('/dashboard')) return 'dashboard';
+    if (pathInicial.startsWith('/ventas')) return 'ventas';
+    if (pathInicial.startsWith('/inventario')) return 'inventario';
+    if (pathInicial.startsWith('/finanzas')) return 'finanzas';
+    if (pathInicial.startsWith('/reportes')) return 'reportes';
+    if (pathInicial.startsWith('/erp')) return 'dashboard';
     return 'home';
   })();
 
@@ -40,89 +49,102 @@ export default function App() {
   const { usuario, configuracion } = useApp();
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--azul', configuracion.colorPrincipal || '#1E5AA8');
-    document.documentElement.style.setProperty('--teal', configuracion.colorSecundario || '#058B8C');
+    document.documentElement.style.setProperty(
+      '--azul',
+      configuracion.colorPrincipal || '#111827'
+    );
+    document.documentElement.style.setProperty(
+      '--teal',
+      configuracion.colorSecundario || '#C9A227'
+    );
   }, [configuracion]);
 
   const ir = (destino) => {
     const rutas = {
       home: '/',
-      catalogo: '/catalogo',
-      trabajos: '/trabajos',
+      servicios: '/servicios',
+      tienda: '/tienda',
+      catalogo: '/servicios',
+      trabajos: '/portafolio',
       carrito: '/carrito',
       contacto: '/contacto',
-      crm: '/crm',
       seguimiento: '/seguimiento',
       login: '/login',
+      dashboard: '/dashboard',
+      crm: '/crm',
       admin: '/admin',
       produccion: '/produccion',
       materiales: '/materiales',
       cotizador: '/cotizador',
       pedidos: '/pedidos',
-      ventas: '/',
-      inventario: '/',
-      finanzas: '/',
-      reportes: '/',
+      ventas: '/ventas',
+      inventario: '/inventario',
+      finanzas: '/finanzas',
+      reportes: '/reportes',
     };
 
     setPage(destino);
     window.history.pushState({}, '', rutas[destino] || '/');
   };
 
+  const rol = usuario?.rol;
+
+  const accesoAdmin = rol === 'admin';
+  const accesoVentas = rol === 'admin' || rol === 'ventas';
+  const accesoProduccion = rol === 'admin' || rol === 'produccion';
+  const accesoPedidos = rol === 'admin' || rol === 'ventas' || rol === 'produccion';
+  const accesoERP = rol === 'admin';
+
   return (
     <>
       <Header page={page} setPage={ir} />
 
       {page === 'home' && <Home setPage={ir} />}
+      {page === 'servicios' && <Catalogo />}
+      {page === 'tienda' && <Catalogo />}
       {page === 'catalogo' && <Catalogo />}
       {page === 'trabajos' && <Trabajos />}
       {page === 'carrito' && <Carrito />}
       {page === 'contacto' && <Contacto />}
-      {page === 'crm' && <CRM />}
       {page === 'seguimiento' && <Seguimiento />}
       {page === 'login' && <Login setPage={ir} />}
 
-      {page === 'ventas' && <DashboardERP setPage={ir} />}
-      {page === 'inventario' && <DashboardERP setPage={ir} />}
-      {page === 'finanzas' && <DashboardERP setPage={ir} />}
-      {page === 'reportes' && <DashboardERP setPage={ir} />}
+      {page === 'dashboard' &&
+        (accesoERP ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
+
+      {page === 'crm' &&
+        (accesoVentas ? <CRM /> : <Login setPage={ir} destino="crm" />)}
+
+      {page === 'ventas' &&
+        (accesoVentas ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="crm" />)}
+
+      {page === 'inventario' &&
+        (accesoAdmin ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
+
+      {page === 'finanzas' &&
+        (accesoAdmin ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
+
+      {page === 'reportes' &&
+        (accesoAdmin ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'produccion' &&
-        (usuario?.rol === 'admin' || usuario?.rol === 'produccion' ? (
+        (accesoProduccion ? (
           <ProduccionPanel />
         ) : (
           <Login setPage={ir} destino="produccion" />
         ))}
 
       {page === 'admin' &&
-        (usuario?.rol === 'admin' ? (
-          <AdminPanel />
-        ) : (
-          <Login setPage={ir} destino="admin" />
-        ))}
+        (accesoAdmin ? <AdminPanel /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'materiales' &&
-        (usuario?.rol === 'admin' ? (
-          <MaterialesCostos />
-        ) : (
-          <Login setPage={ir} destino="materiales" />
-        ))}
+        (accesoAdmin ? <MaterialesCostos /> : <Login setPage={ir} destino="materiales" />)}
 
       {page === 'cotizador' &&
-        (usuario?.rol === 'admin' || usuario?.rol === 'ventas' ? (
-          <CotizadorVisual />
-        ) : (
-          <Login setPage={ir} destino="cotizador" />
-        ))}
+        (accesoVentas ? <CotizadorVisual /> : <Login setPage={ir} destino="cotizador" />)}
 
       {page === 'pedidos' &&
-        (usuario?.rol === 'admin' ||
-        usuario?.rol === 'ventas' ||
-        usuario?.rol === 'produccion' ? (
-          <PedidosProduccion />
-        ) : (
-          <Login setPage={ir} destino="pedidos" />
-        ))}
+        (accesoPedidos ? <PedidosProduccion /> : <Login setPage={ir} destino="pedidos" />)}
     </>
   );
 }

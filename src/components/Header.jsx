@@ -4,15 +4,21 @@ import {
   Menu,
   X,
   Home,
+  BriefcaseBusiness,
+  Image,
+  ShoppingCart,
+  ClipboardList,
+  Phone,
+  LogIn,
+  LogOut,
   Users,
-  HandCoins,
   Factory,
   PackageSearch,
   WalletCards,
   BarChart3,
   Settings,
-  LogIn,
-  LogOut,
+  Calculator,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -30,27 +36,59 @@ export default function Header({ page, setPage }) {
     go('home');
   };
 
-  const links = [
-    ['home', 'Dashboard', <Home size={24} />],
-    ['crm', 'CRM', <Users size={24} />],
-    ['ventas', 'Ventas', <HandCoins size={24} />],
-    ['produccion', 'Producción', <Factory size={24} />],
-    ['inventario', 'Inventario', <PackageSearch size={24} />],
-    ['finanzas', 'Finanzas', <WalletCards size={24} />],
-    ['reportes', 'Reportes', <BarChart3 size={24} />],
-    ['admin', 'Admin', <Settings size={24} />],
+  const brandName = configuracion.logoTexto || configuracion.nombreSitio || 'ELANVISUAL';
+  const rol = usuario?.rol;
+
+  const publicLinks = [
+    ['home', 'Inicio', <Home size={24} />],
+    ['servicios', 'Servicios', <BriefcaseBusiness size={24} />],
+    ['tienda', 'Tienda', <PackageSearch size={24} />],
+    ['trabajos', 'Portafolio', <Image size={24} />],
+    ['carrito', 'Carrito', <ShoppingCart size={24} />],
+    ['seguimiento', 'Seguimiento', <ClipboardList size={24} />],
+    ['contacto', 'Contacto', <Phone size={24} />],
   ];
 
-  const brandName = configuracion.logoTexto || configuracion.nombreSitio || 'ELANVISUAL';
+  const adminLinks = [
+    ['dashboard', 'Dashboard', <LayoutDashboard size={24} />],
+    ['crm', 'CRM', <Users size={24} />],
+    ['cotizador', 'Cotizador', <Calculator size={24} />],
+    ['pedidos', 'Pedidos', <ClipboardList size={24} />],
+    ['produccion', 'Producción', <Factory size={24} />],
+    ['materiales', 'Inventario', <PackageSearch size={24} />],
+    ['finanzas', 'Finanzas', <WalletCards size={24} />],
+    ['reportes', 'Reportes', <BarChart3 size={24} />],
+    ['admin', 'Administración', <Settings size={24} />],
+  ];
+
+  const ventasLinks = [
+    ['crm', 'CRM', <Users size={24} />],
+    ['cotizador', 'Cotizador', <Calculator size={24} />],
+    ['pedidos', 'Pedidos', <ClipboardList size={24} />],
+    ['seguimiento', 'Seguimiento', <ClipboardList size={24} />],
+  ];
+
+  const produccionLinks = [
+    ['pedidos', 'Pedidos / OT', <ClipboardList size={24} />],
+    ['produccion', 'Producción', <Factory size={24} />],
+  ];
+
+  const links = !usuario
+    ? publicLinks
+    : rol === 'admin'
+      ? adminLinks
+      : rol === 'produccion'
+        ? produccionLinks
+        : ventasLinks;
 
   return (
     <>
       <header className="desktop-header app-desktop-header">
-        <div className="brand" onClick={() => go('home')}>
+        <div className="brand" onClick={() => go(usuario ? 'dashboard' : 'home')}>
           <span className="brand-mark">
             <Building2 size={22} />
           </span>
-          <strong>{brandName}</strong>
+          <strong>{usuario ? `${brandName} ERP` : brandName}</strong>
         </div>
 
         <nav className="desktop-nav app-desktop-nav">
@@ -71,7 +109,7 @@ export default function Header({ page, setPage }) {
             </button>
           ) : (
             <button type="button" onClick={() => go('login')}>
-              Portal
+              Acceso Interno
             </button>
           )}
         </nav>
@@ -79,11 +117,11 @@ export default function Header({ page, setPage }) {
 
       <header className="mobile-header app-mobile-header">
         <div className="mobile-bar app-mobile-bar">
-          <div className="brand" onClick={() => go('home')}>
+          <div className="brand" onClick={() => go(usuario ? 'dashboard' : 'home')}>
             <span className="brand-mark">
               <Building2 size={24} />
             </span>
-            <strong>{brandName}</strong>
+            <strong>{usuario ? `${brandName} ERP` : brandName}</strong>
           </div>
 
           <button
@@ -119,7 +157,7 @@ export default function Header({ page, setPage }) {
               ) : (
                 <button type="button" onClick={() => go('login')}>
                   <LogIn size={24} />
-                  <span>Portal</span>
+                  <span>Acceso Interno</span>
                 </button>
               )}
             </nav>
