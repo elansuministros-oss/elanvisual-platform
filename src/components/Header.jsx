@@ -4,14 +4,15 @@ import {
   Menu,
   X,
   Home,
-  BriefcaseBusiness,
-  Image,
-  ClipboardList,
-  Phone,
-  LayoutDashboard,
+  Users,
+  HandCoins,
   Factory,
-  Calculator,
-  PackageCheck,
+  PackageSearch,
+  WalletCards,
+  BarChart3,
+  Settings,
+  LogIn,
+  LogOut,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -29,43 +30,18 @@ export default function Header({ page, setPage }) {
     go('home');
   };
 
-  const publicLinks = [
-    ['home', 'Inicio', <Home size={22} />],
-    ['catalogo', 'Servicios', <BriefcaseBusiness size={22} />],
-    ['trabajos', 'Portafolio', <Image size={22} />],
-    ['seguimiento', 'Seguimiento', <ClipboardList size={22} />],
-    ['contacto', 'Contacto', <Phone size={22} />],
+  const links = [
+    ['home', 'Dashboard', <Home size={24} />],
+    ['crm', 'CRM', <Users size={24} />],
+    ['ventas', 'Ventas', <HandCoins size={24} />],
+    ['produccion', 'Producción', <Factory size={24} />],
+    ['inventario', 'Inventario', <PackageSearch size={24} />],
+    ['finanzas', 'Finanzas', <WalletCards size={24} />],
+    ['reportes', 'Reportes', <BarChart3 size={24} />],
+    ['admin', 'Admin', <Settings size={24} />],
   ];
 
-  const internalLinks = [
-    ...(usuario?.rol === 'admin'
-      ? [
-          ['crm', 'CRM', <LayoutDashboard size={22} />],
-          ['materiales', 'Materiales', <Calculator size={22} />],
-        ]
-      : []),
-
-    ...(usuario?.rol === 'admin' || usuario?.rol === 'ventas'
-      ? [['cotizador', 'Cotizador', <Calculator size={22} />]]
-      : []),
-
-    ...(usuario?.rol === 'admin' ||
-    usuario?.rol === 'ventas' ||
-    usuario?.rol === 'produccion'
-      ? [['pedidos', 'Pedidos / OT', <PackageCheck size={22} />]]
-      : []),
-
-    ...(usuario?.rol === 'admin' || usuario?.rol === 'produccion'
-      ? [['produccion', 'Producción', <Factory size={22} />]]
-      : []),
-  ];
-
-  const links = usuario ? internalLinks : publicLinks;
-
-  const brandName =
-    configuracion.logoTexto ||
-    configuracion.nombreSitio ||
-    'ELANVISUAL';
+  const brandName = configuracion.logoTexto || configuracion.nombreSitio || 'ELANVISUAL';
 
   return (
     <>
@@ -105,7 +81,7 @@ export default function Header({ page, setPage }) {
         <div className="mobile-bar app-mobile-bar">
           <div className="brand" onClick={() => go('home')}>
             <span className="brand-mark">
-              <Building2 size={22} />
+              <Building2 size={24} />
             </span>
             <strong>{brandName}</strong>
           </div>
@@ -116,7 +92,7 @@ export default function Header({ page, setPage }) {
             onClick={() => setOpen(!open)}
             aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
           >
-            {open ? <X size={38} /> : <Menu size={38} />}
+            {open ? <X size={42} /> : <Menu size={42} />}
           </button>
         </div>
 
@@ -137,12 +113,12 @@ export default function Header({ page, setPage }) {
 
               {usuario ? (
                 <button type="button" onClick={salir}>
-                  <X size={22} />
+                  <LogOut size={24} />
                   <span>Salir</span>
                 </button>
               ) : (
                 <button type="button" onClick={() => go('login')}>
-                  <LayoutDashboard size={22} />
+                  <LogIn size={24} />
                   <span>Portal</span>
                 </button>
               )}

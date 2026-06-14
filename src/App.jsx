@@ -1,5 +1,5 @@
-﻿import CRM from './crm/App/CRM.jsx';
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
+import CRM from './crm/App/CRM.jsx';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Catalogo from './pages/Catalogo';
@@ -13,6 +13,7 @@ import Seguimiento from './pages/Seguimiento';
 import MaterialesCostos from './pages/MaterialesCostos';
 import CotizadorVisual from './pages/CotizadorVisual';
 import PedidosProduccion from './pages/PedidosProduccion';
+import DashboardERP from './pages/DashboardERP';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -28,6 +29,10 @@ export default function App() {
     if (pathInicial.startsWith('/materiales')) return 'materiales';
     if (pathInicial.startsWith('/cotizador')) return 'cotizador';
     if (pathInicial.startsWith('/pedidos')) return 'pedidos';
+    if (pathInicial.startsWith('/catalogo')) return 'catalogo';
+    if (pathInicial.startsWith('/trabajos')) return 'trabajos';
+    if (pathInicial.startsWith('/contacto')) return 'contacto';
+    if (pathInicial.startsWith('/erp')) return 'home';
     return 'home';
   })();
 
@@ -40,17 +45,28 @@ export default function App() {
   }, [configuracion]);
 
   const ir = (destino) => {
-    setPage(destino);
+    const rutas = {
+      home: '/',
+      catalogo: '/catalogo',
+      trabajos: '/trabajos',
+      carrito: '/carrito',
+      contacto: '/contacto',
+      crm: '/crm',
+      seguimiento: '/seguimiento',
+      login: '/login',
+      admin: '/admin',
+      produccion: '/produccion',
+      materiales: '/materiales',
+      cotizador: '/cotizador',
+      pedidos: '/pedidos',
+      ventas: '/',
+      inventario: '/',
+      finanzas: '/',
+      reportes: '/',
+    };
 
-    if (destino === 'home') window.history.pushState({}, '', '/');
-    if (destino === 'crm') window.history.pushState({}, '', '/crm');
-    if (destino === 'seguimiento') window.history.pushState({}, '', '/seguimiento');
-    if (destino === 'login') window.history.pushState({}, '', '/login');
-    if (destino === 'admin') window.history.pushState({}, '', '/admin');
-    if (destino === 'produccion') window.history.pushState({}, '', '/produccion');
-    if (destino === 'materiales') window.history.pushState({}, '', '/materiales');
-    if (destino === 'cotizador') window.history.pushState({}, '', '/cotizador');
-    if (destino === 'pedidos') window.history.pushState({}, '', '/pedidos');
+    setPage(destino);
+    window.history.pushState({}, '', rutas[destino] || '/');
   };
 
   return (
@@ -65,6 +81,11 @@ export default function App() {
       {page === 'crm' && <CRM />}
       {page === 'seguimiento' && <Seguimiento />}
       {page === 'login' && <Login setPage={ir} />}
+
+      {page === 'ventas' && <DashboardERP setPage={ir} />}
+      {page === 'inventario' && <DashboardERP setPage={ir} />}
+      {page === 'finanzas' && <DashboardERP setPage={ir} />}
+      {page === 'reportes' && <DashboardERP setPage={ir} />}
 
       {page === 'produccion' &&
         (usuario?.rol === 'admin' || usuario?.rol === 'produccion' ? (
