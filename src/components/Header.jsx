@@ -1,5 +1,18 @@
 ﻿import React, { useState } from 'react';
-import { Building2, Menu, X, Home, BriefcaseBusiness, Image, ClipboardList, Phone, LayoutDashboard, Factory } from 'lucide-react';
+import {
+  Building2,
+  Menu,
+  X,
+  Home,
+  BriefcaseBusiness,
+  Image,
+  ClipboardList,
+  Phone,
+  LayoutDashboard,
+  Factory,
+  Calculator,
+  PackageCheck,
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export default function Header({ page, setPage }) {
@@ -26,10 +39,24 @@ export default function Header({ page, setPage }) {
 
   const internalLinks = [
     ...(usuario?.rol === 'admin'
-      ? [['crm', 'CRM', <LayoutDashboard size={22} />]]
+      ? [
+          ['crm', 'CRM', <LayoutDashboard size={22} />],
+          ['materiales', 'Materiales', <Calculator size={22} />],
+        ]
       : []),
+
+    ...(usuario?.rol === 'admin' || usuario?.rol === 'ventas'
+      ? [['cotizador', 'Cotizador', <Calculator size={22} />]]
+      : []),
+
+    ...(usuario?.rol === 'admin' ||
+    usuario?.rol === 'ventas' ||
+    usuario?.rol === 'produccion'
+      ? [['pedidos', 'Pedidos / OT', <PackageCheck size={22} />]]
+      : []),
+
     ...(usuario?.rol === 'admin' || usuario?.rol === 'produccion'
-      ? [['produccion', 'ProducciÃ³n', <Factory size={22} />]]
+      ? [['produccion', 'Producción', <Factory size={22} />]]
       : []),
   ];
 
@@ -126,4 +153,3 @@ export default function Header({ page, setPage }) {
     </>
   );
 }
-

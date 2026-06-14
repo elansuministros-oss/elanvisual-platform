@@ -10,6 +10,9 @@ import Login from './pages/Login';
 import Contacto from './pages/Contacto';
 import Trabajos from './pages/Trabajos';
 import Seguimiento from './pages/Seguimiento';
+import MaterialesCostos from './pages/MaterialesCostos';
+import CotizadorVisual from './pages/CotizadorVisual';
+import PedidosProduccion from './pages/PedidosProduccion';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -22,6 +25,9 @@ export default function App() {
     if (pathInicial.startsWith('/login')) return 'login';
     if (pathInicial.startsWith('/admin')) return 'admin';
     if (pathInicial.startsWith('/produccion')) return 'produccion';
+    if (pathInicial.startsWith('/materiales')) return 'materiales';
+    if (pathInicial.startsWith('/cotizador')) return 'cotizador';
+    if (pathInicial.startsWith('/pedidos')) return 'pedidos';
     return 'home';
   })();
 
@@ -42,6 +48,9 @@ export default function App() {
     if (destino === 'login') window.history.pushState({}, '', '/login');
     if (destino === 'admin') window.history.pushState({}, '', '/admin');
     if (destino === 'produccion') window.history.pushState({}, '', '/produccion');
+    if (destino === 'materiales') window.history.pushState({}, '', '/materiales');
+    if (destino === 'cotizador') window.history.pushState({}, '', '/cotizador');
+    if (destino === 'pedidos') window.history.pushState({}, '', '/pedidos');
   };
 
   return (
@@ -70,7 +79,29 @@ export default function App() {
         ) : (
           <Login setPage={ir} destino="admin" />
         ))}
+
+      {page === 'materiales' &&
+        (usuario?.rol === 'admin' ? (
+          <MaterialesCostos />
+        ) : (
+          <Login setPage={ir} destino="materiales" />
+        ))}
+
+      {page === 'cotizador' &&
+        (usuario?.rol === 'admin' || usuario?.rol === 'ventas' ? (
+          <CotizadorVisual />
+        ) : (
+          <Login setPage={ir} destino="cotizador" />
+        ))}
+
+      {page === 'pedidos' &&
+        (usuario?.rol === 'admin' ||
+        usuario?.rol === 'ventas' ||
+        usuario?.rol === 'produccion' ? (
+          <PedidosProduccion />
+        ) : (
+          <Login setPage={ir} destino="pedidos" />
+        ))}
     </>
   );
 }
-
