@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 export default function Empresas() {
@@ -49,10 +49,10 @@ export default function Empresas() {
 
       <form onSubmit={guardar} style={{ display: 'grid', gap: 10, maxWidth: 600 }}>
         <input name="nombre" placeholder="Nombre de empresa" value={form.nombre} onChange={cambiar} />
-        <input name="codigo" placeholder="Código" value={form.codigo} onChange={cambiar} />
-        <input name="telefono" placeholder="Teléfono" value={form.telefono} onChange={cambiar} />
+        <input name="codigo" placeholder="CÃ³digo" value={form.codigo} onChange={cambiar} />
+        <input name="telefono" placeholder="TelÃ©fono" value={form.telefono} onChange={cambiar} />
         <input name="correo" placeholder="Correo" value={form.correo} onChange={cambiar} />
-        <textarea name="descripcion" placeholder="Descripción" value={form.descripcion} onChange={cambiar} />
+        <textarea name="descripcion" placeholder="DescripciÃ³n" value={form.descripcion} onChange={cambiar} />
 
         <select name="estado" value={form.estado} onChange={cambiar}>
           <option value="Activo">Activo</option>
@@ -75,7 +75,7 @@ export default function Empresas() {
               <strong>{empresa.nombre}</strong>
               <p>{empresa.descripcion}</p>
               <small>
-                Código: {empresa.codigo || 'N/A'} | Tel: {empresa.telefono || 'N/A'} | Estado: {empresa.estado}
+                CÃ³digo: {empresa.codigo || 'N/A'} | Tel: {empresa.telefono || 'N/A'} | Estado: {empresa.estado}
               </small>
               <br />
               <button onClick={() => eliminarEmpresa(empresa.id)}>Eliminar</button>

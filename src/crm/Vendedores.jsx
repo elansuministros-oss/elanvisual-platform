@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 export default function Vendedores() {
@@ -84,7 +84,7 @@ export default function Vendedores() {
     e.preventDefault();
 
     if (!formulario.nombre.trim()) {
-      alert('Debés ingresar el nombre del vendedor.');
+      alert('DebÃ©s ingresar el nombre del vendedor.');
       return;
     }
 
@@ -120,7 +120,7 @@ export default function Vendedores() {
 
   const confirmarEliminarVendedor = (id) => {
     const confirmar = window.confirm(
-      '¿Seguro que querés eliminar este vendedor?'
+      'Â¿Seguro que querÃ©s eliminar este vendedor?'
     );
 
     if (!confirmar) return;
@@ -138,7 +138,7 @@ export default function Vendedores() {
         <div>
           <h2>Vendedores</h2>
           <p>
-            Administración de vendedores, ventas acumuladas y comisiones del CRM
+            AdministraciÃ³n de vendedores, ventas acumuladas y comisiones del CRM
             Central ELANKAV.
           </p>
         </div>
@@ -183,7 +183,7 @@ export default function Vendedores() {
           </label>
 
           <label>
-            Teléfono / WhatsApp
+            TelÃ©fono / WhatsApp
             <input
               type="text"
               value={formulario.telefono}
@@ -232,7 +232,7 @@ export default function Vendedores() {
           </label>
 
           <label>
-            Comisión %
+            ComisiÃ³n %
             <input
               type="number"
               min="0"
@@ -281,7 +281,7 @@ export default function Vendedores() {
 
             {editandoId && (
               <button type="button" onClick={limpiarFormulario}>
-                Cancelar edición
+                Cancelar ediciÃ³n
               </button>
             )}
           </div>
@@ -293,7 +293,7 @@ export default function Vendedores() {
               type="text"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar vendedor, teléfono, zona o nota..."
+              placeholder="Buscar vendedor, telÃ©fono, zona o nota..."
             />
 
             <select
@@ -316,8 +316,8 @@ export default function Vendedores() {
                   <th>Correo</th>
                   <th>Zona</th>
                   <th>Ventas</th>
-                  <th>Comisión %</th>
-                  <th>Comisión</th>
+                  <th>ComisiÃ³n %</th>
+                  <th>ComisiÃ³n</th>
                   <th>Estado</th>
                   <th>Nota</th>
                   <th>Acciones</th>
@@ -335,7 +335,7 @@ export default function Vendedores() {
                     return (
                       <tr key={vendedor.id}>
                         <td>{vendedor.nombre}</td>
-                        <td>{vendedor.telefono || 'Sin teléfono'}</td>
+                        <td>{vendedor.telefono || 'Sin telÃ©fono'}</td>
                         <td>{vendedor.correo || 'Sin correo'}</td>
                         <td>{vendedor.zona || 'Sin zona'}</td>
                         <td>{formatoCordobas(vendedor.ventas)}</td>

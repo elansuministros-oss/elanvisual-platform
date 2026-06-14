@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const CATEGORIAS = [
-  'Acrílico',
+  'AcrÃ­lico',
   'PVC',
   'Vinil',
   'Lona',
@@ -15,7 +15,7 @@ const CATEGORIAS = [
   'Otro',
 ];
 
-const UNIDADES = ['Lámina', 'Rollo', 'Metro', 'Metro cuadrado', 'Unidad', 'Galón', 'Caja'];
+const UNIDADES = ['LÃ¡mina', 'Rollo', 'Metro', 'Metro cuadrado', 'Unidad', 'GalÃ³n', 'Caja'];
 const MONEDAS = ['C$', 'USD'];
 
 const numero = (valor) => Number(valor || 0);
@@ -33,11 +33,11 @@ const dinero = (valor, moneda = 'C$') => {
 const formInicial = () => ({
   codigo: '',
   nombre: '',
-  categoria: 'Acrílico',
+  categoria: 'AcrÃ­lico',
   tipo: '',
   espesor: '',
   medida: '',
-  unidad: 'Lámina',
+  unidad: 'LÃ¡mina',
   costo: '',
   costoPromedio: '',
   moneda: 'C$',
@@ -183,7 +183,7 @@ export default function Materiales() {
       <div className="crm-page-header">
         <div>
           <h2>Materiales</h2>
-          <p>Base técnica para costos de producción, rendimiento y control de stock.</p>
+          <p>Base tÃ©cnica para costos de producciÃ³n, rendimiento y control de stock.</p>
         </div>
       </div>
 
@@ -207,8 +207,8 @@ export default function Materiales() {
 
         <form onSubmit={guardar} className="crm-form-grid">
           <label>
-            Código
-            <input name="codigo" value={form.codigo} onChange={cambiar} placeholder="Automático" />
+            CÃ³digo
+            <input name="codigo" value={form.codigo} onChange={cambiar} placeholder="AutomÃ¡tico" />
           </label>
 
           <label>
@@ -217,7 +217,7 @@ export default function Materiales() {
           </label>
 
           <label>
-            Categoría
+            CategorÃ­a
             <select name="categoria" value={form.categoria} onChange={cambiar}>
               {CATEGORIAS.map((categoria) => (
                 <option key={categoria} value={categoria}>{categoria}</option>
@@ -270,7 +270,7 @@ export default function Materiales() {
 
           <label>
             Rendimiento
-            <input name="rendimiento" type="number" step="0.01" value={form.rendimiento} onChange={cambiar} placeholder="Área o unidades que rinde" />
+            <input name="rendimiento" type="number" step="0.01" value={form.rendimiento} onChange={cambiar} placeholder="Ãrea o unidades que rinde" />
           </label>
 
           <label>
@@ -284,7 +284,7 @@ export default function Materiales() {
           </label>
 
           <label>
-            Stock mínimo
+            Stock mÃ­nimo
             <input name="stockMinimo" type="number" step="0.01" value={form.stockMinimo} onChange={cambiar} />
           </label>
 
@@ -314,7 +314,7 @@ export default function Materiales() {
           </label>
 
           <div className="crm-field-full crm-cost-box">
-            <strong>Resumen técnico</strong>
+            <strong>Resumen tÃ©cnico</strong>
             <span>Valor stock: {dinero(numero(form.stock) * numero(form.costoPromedio || form.costo), form.moneda)}</span>
             <span>Costo por unidad de uso: {dinero(form.costoPorUnidadUso, form.moneda)}</span>
           </div>
@@ -323,7 +323,7 @@ export default function Materiales() {
             <button type="submit">{editandoId ? 'Actualizar material' : 'Crear material'}</button>
             {editandoId && (
               <button type="button" onClick={limpiar} className="btn-secondary">
-                Cancelar edición
+                Cancelar ediciÃ³n
               </button>
             )}
           </div>
@@ -334,7 +334,7 @@ export default function Materiales() {
         <div className="crm-page-header">
           <div>
             <h3>Listado de materiales</h3>
-            <p>Costos base para presupuestos y producción.</p>
+            <p>Costos base para presupuestos y producciÃ³n.</p>
           </div>
           <input
             value={busqueda}
@@ -347,9 +347,9 @@ export default function Materiales() {
           <table className="crm-table">
             <thead>
               <tr>
-                <th>Código</th>
+                <th>CÃ³digo</th>
                 <th>Material</th>
-                <th>Categoría</th>
+                <th>CategorÃ­a</th>
                 <th>Medida</th>
                 <th>Stock</th>
                 <th>Costo</th>
@@ -371,7 +371,7 @@ export default function Materiales() {
                     <td>
                       <strong>{item.nombre}</strong>
                       <br />
-                      <small>{item.tipo || 'Sin tipo'} · {item.espesor || 'Sin espesor'}</small>
+                      <small>{item.tipo || 'Sin tipo'} Â· {item.espesor || 'Sin espesor'}</small>
                     </td>
                     <td>{item.categoria}</td>
                     <td>{item.medida || '-'}</td>
@@ -421,3 +421,4 @@ export default function Materiales() {
     </div>
   );
 }
+

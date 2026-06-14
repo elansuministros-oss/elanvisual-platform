@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { Maximize2, Ruler, Search, SlidersHorizontal, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -47,18 +47,18 @@ export default function Catalogo() {
     <main className="catalog-page">
       <section className="catalog-hero">
         <div>
-          <span className="badge">ELANVISUAL · Servicios Fabricables</span>
-          <h1>Servicios de rotulación, impresión y fabricación visual</h1>
+          <span className="badge">ELANVISUAL Â· Servicios Fabricables</span>
+          <h1>Servicios de rotulaciÃ³n, impresiÃ³n y fabricaciÃ³n visual</h1>
           <p>
-            Seleccioná el servicio que necesitás cotizar. Cada opción representa
-            una solución producible en taller con materiales reales, medidas
-            verificables e instalación planificada.
+            SeleccionÃ¡ el servicio que necesitÃ¡s cotizar. Cada opciÃ³n representa
+            una soluciÃ³n producible en taller con materiales reales, medidas
+            verificables e instalaciÃ³n planificada.
           </p>
         </div>
 
         <aside className="cart-summary-mini">
           <b>Flujo operativo</b>
-          <span>Cotización → OT → Producción</span>
+          <span>CotizaciÃ³n â†’ OT â†’ ProducciÃ³n</span>
           <strong>A cotizar</strong>
         </aside>
       </section>
@@ -67,14 +67,14 @@ export default function Catalogo() {
         <div className="search-box">
           <Search size={18} />
           <input
-            placeholder="Buscar servicio, material, medida o categoría..."
+            placeholder="Buscar servicio, material, medida o categorÃ­a..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
 
         <div className="filter-label">
-          <SlidersHorizontal size={18} /> Filtrar por categoría
+          <SlidersHorizontal size={18} /> Filtrar por categorÃ­a
         </div>
       </section>
 
@@ -126,7 +126,7 @@ export default function Catalogo() {
 
               <div className="measure">
                 <Ruler size={16} />
-                {p.medidas || 'Según levantamiento técnico'}
+                {p.medidas || 'SegÃºn levantamiento tÃ©cnico'}
               </div>
 
               <div className="product-footer">
@@ -151,7 +151,7 @@ export default function Catalogo() {
         <section className="panel empty-catalog">
           <h2>No se encontraron servicios</h2>
           <p className="note">
-            Probá con otra categoría o cambiá el texto de búsqueda.
+            ProbÃ¡ con otra categorÃ­a o cambiÃ¡ el texto de bÃºsqueda.
           </p>
         </section>
       ) : null}

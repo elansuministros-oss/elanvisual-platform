@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const UNIDADES_NEGOCIO = [
-  'ELANPET',
-  'ELANKAV VISUAL',
+  'ELANVISUAL',
+  'ELANVISUAL',
   'ELANKAV CENTER',
-  'ELANKAV SOLAR',
+  'ELANHOME',
   'ELAN AI',
 ];
 
@@ -27,7 +27,7 @@ const moneda = (valor) =>
 
 const porcentaje = (valor) => `${numero(valor).toFixed(2)}%`;
 
-const unidadRegistro = (item = {}) => item.unidadNegocio || item.unidad || 'ELANKAV VISUAL';
+const unidadRegistro = (item = {}) => item.unidadNegocio || item.unidad || 'ELANVISUAL';
 
 const fechaRegistro = (item = {}) =>
   item.fecha ||
@@ -292,7 +292,7 @@ export default function CentroUtilidades() {
     <div style={styles.page}>
       <section style={styles.header}>
         <h2 style={styles.title}>Centro de Utilidades por Unidad</h2>
-        <p style={styles.subtitle}>FASE 6.4 · Rentabilidad consolidada por unidad oficial de ELANKAV GROUP.</p>
+        <p style={styles.subtitle}>FASE 6.4 Â· Rentabilidad consolidada por unidad oficial de ELANKAV GROUP.</p>
       </section>
 
       <section style={styles.card}>
@@ -324,7 +324,7 @@ export default function CentroUtilidades() {
       <section style={styles.stats}>
         <div style={styles.stat}><span style={styles.statLabel}>Ventas</span><strong style={styles.statValue}>{moneda(datos.totales.ventas)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Compras</span><strong style={styles.statValue}>{moneda(datos.totales.compras)}</strong></div>
-        <div style={styles.stat}><span style={styles.statLabel}>Costos producción</span><strong style={styles.statValue}>{moneda(datos.totales.costosProduccion)}</strong></div>
+        <div style={styles.stat}><span style={styles.statLabel}>Costos producciÃ³n</span><strong style={styles.statValue}>{moneda(datos.totales.costosProduccion)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Cobros</span><strong style={styles.statValue}>{moneda(datos.totales.cobrado)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Cuentas por cobrar</span><strong style={styles.statValue}>{moneda(datos.totales.porCobrar)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Cuentas por pagar</span><strong style={styles.statValue}>{moneda(datos.totales.porPagar)}</strong></div>
@@ -343,7 +343,7 @@ export default function CentroUtilidades() {
                 <span style={styles.badge}>{item.unidad}</span>
               </div>
               <h3 style={{ margin: '12px 0 0', color: item.utilidadNeta >= 0 ? '#047857' : '#dc2626' }}>{moneda(item.utilidadNeta)}</h3>
-              <p style={styles.muted}>Margen: {porcentaje(item.margen)} · Ventas: {moneda(item.ventas)}</p>
+              <p style={styles.muted}>Margen: {porcentaje(item.margen)} Â· Ventas: {moneda(item.ventas)}</p>
             </div>
           ))}
         </div>
@@ -358,7 +358,7 @@ export default function CentroUtilidades() {
                 <th style={styles.th}>Unidad</th>
                 <th style={styles.th}>Ventas</th>
                 <th style={styles.th}>Compras</th>
-                <th style={styles.th}>Costos producción</th>
+                <th style={styles.th}>Costos producciÃ³n</th>
                 <th style={styles.th}>Cobros</th>
                 <th style={styles.th}>CxC</th>
                 <th style={styles.th}>CxP</th>
@@ -391,3 +391,4 @@ export default function CentroUtilidades() {
     </div>
   );
 }
+

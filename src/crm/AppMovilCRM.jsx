@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 const styles = {
   page: { display: 'grid', gap: 18 },
@@ -51,28 +51,28 @@ const styles = {
 
 const funciones = [
   {
-    titulo: 'Órdenes en campo',
-    texto: 'Consulta rápida de órdenes de trabajo, estado, cliente, ubicación y prioridad.',
+    titulo: 'Ã“rdenes en campo',
+    texto: 'Consulta rÃ¡pida de Ã³rdenes de trabajo, estado, cliente, ubicaciÃ³n y prioridad.',
   },
   {
-    titulo: 'Producción móvil',
-    texto: 'Registro de avances desde taller, instalación o visita técnica.',
+    titulo: 'ProducciÃ³n mÃ³vil',
+    texto: 'Registro de avances desde taller, instalaciÃ³n o visita tÃ©cnica.',
   },
   {
-    titulo: 'Evidencia fotográfica',
-    texto: 'Base preparada para adjuntar fotos de avance, entrega, instalación y garantía.',
+    titulo: 'Evidencia fotogrÃ¡fica',
+    texto: 'Base preparada para adjuntar fotos de avance, entrega, instalaciÃ³n y garantÃ­a.',
   },
   {
-    titulo: 'Alertas móviles',
-    texto: 'Vista preparada para futuras notificaciones push de cobros, cuentas y producción.',
+    titulo: 'Alertas mÃ³viles',
+    texto: 'Vista preparada para futuras notificaciones push de cobros, cuentas y producciÃ³n.',
   },
   {
-    titulo: 'Confirmación de entrega',
+    titulo: 'ConfirmaciÃ³n de entrega',
     texto: 'Base para cierre operativo con responsable, fecha, hora y observaciones.',
   },
   {
     titulo: 'Modo consulta',
-    texto: 'Acceso simplificado para vendedores, producción, supervisores y gerencia.',
+    texto: 'Acceso simplificado para vendedores, producciÃ³n, supervisores y gerencia.',
   },
 ];
 
@@ -80,10 +80,10 @@ export default function AppMovilCRM() {
   return (
     <div style={styles.page}>
       <section style={styles.header}>
-        <span style={styles.badge}>FASE 8.2 · Base APK</span>
-        <h2 style={styles.title}>App Móvil ELANKAV</h2>
+        <span style={styles.badge}>FASE 8.2 Â· Base APK</span>
+        <h2 style={styles.title}>App MÃ³vil ELANKAV</h2>
         <p style={styles.subtitle}>
-          Módulo base para preparar la futura aplicación Android conectada al CRM CENTRAL ELANKAV.
+          MÃ³dulo base para preparar la futura aplicaciÃ³n Android conectada al CRM CENTRAL ELANKAV.
         </p>
       </section>
 
@@ -91,33 +91,33 @@ export default function AppMovilCRM() {
         <div style={styles.card}>
           <h3 style={{ marginTop: 0 }}>Objetivo operativo</h3>
           <p style={styles.muted}>
-            Esta pantalla deja definida la estructura funcional que después se convertirá en APK: seguimiento de órdenes,
-            producción, instalaciones, evidencias, alertas y cierre de trabajos desde celular.
+            Esta pantalla deja definida la estructura funcional que despuÃ©s se convertirÃ¡ en APK: seguimiento de Ã³rdenes,
+            producciÃ³n, instalaciones, evidencias, alertas y cierre de trabajos desde celular.
           </p>
           <ul style={styles.list}>
-            <li>Acceso rápido a órdenes activas.</li>
-            <li>Seguimiento de producción por estado.</li>
+            <li>Acceso rÃ¡pido a Ã³rdenes activas.</li>
+            <li>Seguimiento de producciÃ³n por estado.</li>
             <li>Captura futura de fotos de avance.</li>
-            <li>Confirmación futura de instalación y entrega.</li>
-            <li>Alertas móviles conectadas al CRM.</li>
+            <li>ConfirmaciÃ³n futura de instalaciÃ³n y entrega.</li>
+            <li>Alertas mÃ³viles conectadas al CRM.</li>
           </ul>
         </div>
 
         <div style={styles.phone}>
           <div style={styles.screenCard}>
-            <h4 style={styles.screenTitle}>📋 Órdenes activas</h4>
-            <p style={styles.screenText}>Pendientes, en producción, listas e instaladas.</p>
+            <h4 style={styles.screenTitle}>ðŸ“‹ Ã“rdenes activas</h4>
+            <p style={styles.screenText}>Pendientes, en producciÃ³n, listas e instaladas.</p>
           </div>
           <div style={styles.screenCard}>
-            <h4 style={styles.screenTitle}>🏭 Producción</h4>
+            <h4 style={styles.screenTitle}>ðŸ­ ProducciÃ³n</h4>
             <p style={styles.screenText}>Avance por unidad, responsable y prioridad.</p>
           </div>
           <div style={styles.screenCard}>
-            <h4 style={styles.screenTitle}>📸 Evidencias</h4>
-            <p style={styles.screenText}>Preparado para fotos de taller e instalación.</p>
+            <h4 style={styles.screenTitle}>ðŸ“¸ Evidencias</h4>
+            <p style={styles.screenText}>Preparado para fotos de taller e instalaciÃ³n.</p>
           </div>
           <div style={styles.screenCard}>
-            <h4 style={styles.screenTitle}>🔔 Alertas</h4>
+            <h4 style={styles.screenTitle}>ðŸ”” Alertas</h4>
             <p style={styles.screenText}>Cobros, cuentas, vencimientos y entregas.</p>
           </div>
         </div>
@@ -137,3 +137,4 @@ export default function AppMovilCRM() {
     </div>
   );
 }
+

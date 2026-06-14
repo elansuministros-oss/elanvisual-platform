@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const formatearFecha = (valor) => {
@@ -50,8 +50,8 @@ export default function NotificacionesCRM() {
       const coincidePrioridad = filtros.prioridad === 'Todas' || item.prioridad === filtros.prioridad;
       const coincideEstado =
         filtros.estado === 'Todas' ||
-        (filtros.estado === 'No leídas' && !item.leida) ||
-        (filtros.estado === 'Leídas' && item.leida);
+        (filtros.estado === 'No leÃ­das' && !item.leida) ||
+        (filtros.estado === 'LeÃ­das' && item.leida);
       const coincideBusqueda =
         !texto ||
         `${item.titulo} ${item.detalle} ${item.modulo} ${item.tipo} ${item.unidadNegocio}`
@@ -300,8 +300,8 @@ export default function NotificacionesCRM() {
       </style>
 
       <section className="noti-header">
-        <h2>🔔 Notificaciones Internas</h2>
-        <p>Centro automático de alertas para cobros, pagos, producción, órdenes, compras e inventario.</p>
+        <h2>ðŸ”” Notificaciones Internas</h2>
+        <p>Centro automÃ¡tico de alertas para cobros, pagos, producciÃ³n, Ã³rdenes, compras e inventario.</p>
       </section>
 
       <section className="noti-grid">
@@ -310,7 +310,7 @@ export default function NotificacionesCRM() {
           <strong>{resumenNotificacionesCRM.total}</strong>
         </div>
         <div className="noti-card">
-          <span>No leídas</span>
+          <span>No leÃ­das</span>
           <strong>{resumenNotificacionesCRM.noLeidas}</strong>
         </div>
         <div className="noti-card">
@@ -318,7 +318,7 @@ export default function NotificacionesCRM() {
           <strong>{resumenNotificacionesCRM.altaPrioridad}</strong>
         </div>
         <div className="noti-card">
-          <span>Módulos con alerta</span>
+          <span>MÃ³dulos con alerta</span>
           <strong>{Object.keys(resumenPorModulo).length}</strong>
         </div>
       </section>
@@ -336,7 +336,7 @@ export default function NotificacionesCRM() {
           </div>
 
           <div className="noti-field">
-            <label>Módulo</label>
+            <label>MÃ³dulo</label>
             <select name="modulo" value={filtros.modulo} onChange={cambiarFiltro}>
               <option>Todos</option>
               {modulosDisponibles.map((modulo) => (
@@ -359,8 +359,8 @@ export default function NotificacionesCRM() {
             <label>Estado</label>
             <select name="estado" value={filtros.estado} onChange={cambiarFiltro}>
               <option>Todas</option>
-              <option>No leídas</option>
-              <option>Leídas</option>
+              <option>No leÃ­das</option>
+              <option>LeÃ­das</option>
             </select>
           </div>
 
@@ -370,7 +370,7 @@ export default function NotificacionesCRM() {
               name="busqueda"
               value={filtros.busqueda}
               onChange={cambiarFiltro}
-              placeholder="Cliente, módulo, detalle..."
+              placeholder="Cliente, mÃ³dulo, detalle..."
             />
           </div>
         </div>
@@ -378,7 +378,7 @@ export default function NotificacionesCRM() {
         <div className="noti-actions">
           <strong>{notificacionesFiltradas.length} alerta(s) visibles</strong>
           <button type="button" className="noti-btn" onClick={marcarTodasNotificacionesCRMLeidas}>
-            Marcar visibles como leídas
+            Marcar visibles como leÃ­das
           </button>
         </div>
       </section>
@@ -405,15 +405,15 @@ export default function NotificacionesCRM() {
                 <span className="noti-badge">{item.modulo}</span>
                 <span className="noti-badge">{item.unidadNegocio}</span>
                 <span className="noti-badge">Fecha: {formatearFecha(item.fechaObjetivo)}</span>
-                <span className="noti-badge">{item.leida ? 'Leída' : 'No leída'}</span>
+                <span className="noti-badge">{item.leida ? 'LeÃ­da' : 'No leÃ­da'}</span>
               </div>
 
               <div className="noti-footer">
-                <small>Acción sugerida: {item.accionSugerida}</small>
+                <small>AcciÃ³n sugerida: {item.accionSugerida}</small>
                 <div className="noti-badges">
                   {!item.leida && (
                     <button type="button" className="noti-btn secundario" onClick={() => marcarNotificacionCRMLeida(item.id)}>
-                      Marcar leída
+                      Marcar leÃ­da
                     </button>
                   )}
                   <button type="button" className="noti-btn" onClick={() => archivarNotificacionCRM(item.id)}>
@@ -428,3 +428,4 @@ export default function NotificacionesCRM() {
     </div>
   );
 }
+

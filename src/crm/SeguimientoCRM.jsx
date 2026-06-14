@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 export default function SeguimientoCRM() {
@@ -80,7 +80,7 @@ export default function SeguimientoCRM() {
     e.preventDefault();
 
     if (!formulario.empresaId || !formulario.contactoId) {
-      alert('Debés seleccionar empresa y contacto.');
+      alert('DebÃ©s seleccionar empresa y contacto.');
       return;
     }
 
@@ -110,7 +110,7 @@ export default function SeguimientoCRM() {
 
   const eliminarActividad = (id) => {
     const confirmar = window.confirm(
-      '¿Seguro que querés eliminar este seguimiento?'
+      'Â¿Seguro que querÃ©s eliminar este seguimiento?'
     );
 
     if (!confirmar) return;
@@ -211,7 +211,7 @@ export default function SeguimientoCRM() {
               <option>Nota</option>
               <option>WhatsApp</option>
               <option>Correo</option>
-              <option>Reunión</option>
+              <option>ReuniÃ³n</option>
             </select>
           </label>
 
@@ -287,7 +287,7 @@ export default function SeguimientoCRM() {
 
             {editandoId && (
               <button type="button" onClick={limpiarFormulario}>
-                Cancelar edición
+                Cancelar ediciÃ³n
               </button>
             )}
           </div>

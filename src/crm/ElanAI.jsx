@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 
@@ -22,7 +22,7 @@ const fechaRegistro = (item = {}) => item.fecha || item.fechaRegistro || item.ac
 const fmt = (valor) =>
   new Intl.NumberFormat('es-NI', { style: 'currency', currency: 'NIO', maximumFractionDigits: 2 }).format(numero(valor));
 
-const unidades = ['Corporativo', 'ELANPET', 'ELANKAV VISUAL', 'ELANKAV CENTER', 'ELANKAV SOLAR', 'ELAN AI'];
+const unidades = ['Corporativo', 'ELANVISUAL', 'ELANKAV CENTER', 'ELANHOME', 'ELAN AI'];
 
 const unidadDe = (item = {}) => item.unidadNegocio || item.unidad || item.area || 'Corporativo';
 
@@ -54,10 +54,12 @@ export default function ElanAI() {
     const recomendaciones = [];
     if (pendientesCobro > 0) recomendaciones.push(`Dar seguimiento a ${pendientesCobro} cuentas por cobrar pendientes.`);
     if (pendientesPago > 0) recomendaciones.push(`Programar pagos de ${pendientesPago} cuentas por pagar.`);
-    if (utilidad < 0) recomendaciones.push('Revisar costos: la utilidad estimada está negativa.');
-    if (ventas === 0) recomendaciones.push('Registrar ventas o cotizaciones para activar análisis comercial.');
-    if (recomendaciones.length === 0) recomendaciones.push('Operación estable según los datos registrados.');
+    if (utilidad < 0) recomendaciones.push('Revisar costos: la utilidad estimada estÃ¡ negativa.');
+    if (ventas === 0) recomendaciones.push('Registrar ventas o cotizaciones para activar anÃ¡lisis comercial.');
+    if (recomendaciones.length === 0) recomendaciones.push('OperaciÃ³n estable segÃºn los datos registrados.');
     return { ventas, costos, utilidad, recomendaciones };
   }, [cotizaciones, pedidos, compras, cobros, cuentasPorCobrar, cuentasPorPagar, produccion]);
-  return <div style={{ padding: 20 }}><h2>ELAN AI</h2><p style={{ color: '#6b7280' }}>Módulo base del asistente corporativo integrado al CRM.</p><div style={grid}><div style={tarjeta}><strong>Ventas analizadas</strong><h3>{fmt(diagnostico.ventas)}</h3></div><div style={tarjeta}><strong>Costos analizados</strong><h3>{fmt(diagnostico.costos)}</h3></div><div style={tarjeta}><strong>Utilidad estimada</strong><h3>{fmt(diagnostico.utilidad)}</h3></div></div><div style={{ ...tarjeta, marginTop: 18 }}><h3>Recomendaciones automáticas</h3>{diagnostico.recomendaciones.map((r,i)=><p key={i}>🤖 {r}</p>)}</div></div>;
+  return <div style={{ padding: 20 }}><h2>ELAN AI</h2><p style={{ color: '#6b7280' }}>MÃ³dulo base del asistente corporativo integrado al CRM.</p><div style={grid}><div style={tarjeta}><strong>Ventas analizadas</strong><h3>{fmt(diagnostico.ventas)}</h3></div><div style={tarjeta}><strong>Costos analizados</strong><h3>{fmt(diagnostico.costos)}</h3></div><div style={tarjeta}><strong>Utilidad estimada</strong><h3>{fmt(diagnostico.utilidad)}</h3></div></div><div style={{ ...tarjeta, marginTop: 18 }}><h3>Recomendaciones automÃ¡ticas</h3>{diagnostico.recomendaciones.map((r,i)=><p key={i}>ðŸ¤– {r}</p>)}</div></div>;
 }
+
+

@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
-const UNIDADES_NEGOCIO = ['Todas', 'ELANPET', 'ELANKAV VISUAL', 'ELANKAV CENTER', 'ELANKAV SOLAR', 'ELAN AI'];
+const UNIDADES_NEGOCIO = ['Todas', 'ELANVISUAL', 'ELANKAV CENTER', 'ELANHOME', 'ELAN AI'];
 
 const numero = (valor) => Number(valor) || 0;
 const moneda = (valor) =>
@@ -25,7 +25,7 @@ const dentroRango = (item, inicio, fin) => {
   return true;
 };
 
-const porUnidad = (item, unidad) => unidad === 'Todas' || (item?.unidadNegocio || 'ELANKAV VISUAL') === unidad;
+const porUnidad = (item, unidad) => unidad === 'Todas' || (item?.unidadNegocio || 'ELANVISUAL') === unidad;
 
 const sumar = (lista, selector) => lista.reduce((total, item) => total + numero(selector(item)), 0);
 
@@ -105,14 +105,14 @@ export default function ReportesCRM() {
     const ventasSinFactura = sumar(cobrosFiltrados, (item) => item.tipoFiscal === 'Sin factura' ? item.montoFactura : 0);
     const comprasSinFactura = sumar(comprasFiltradas, (item) => item.tipoFiscal === 'Sin factura' ? item.total || item.subtotal : 0);
 
-    const unidades = ['ELANPET', 'ELANKAV VISUAL', 'ELANKAV CENTER', 'ELANKAV SOLAR', 'ELAN AI'].map((unidad) => {
-      const ventasUnidad = sumar(cobrosFiltrados.filter((item) => (item.unidadNegocio || 'ELANKAV VISUAL') === unidad), (item) => item.montoFactura);
-      const comprasUnidad = sumar(comprasFiltradas.filter((item) => (item.unidadNegocio || 'ELANKAV VISUAL') === unidad), (item) => item.total || item.subtotal);
-      const cobrosUnidad = sumar(cobrosFiltrados.filter((item) => (item.unidadNegocio || 'ELANKAV VISUAL') === unidad), (item) => item.montoCobrado);
-      const cxcUnidad = sumar(cxcFiltradas.filter((item) => (item.unidadNegocio || 'ELANKAV VISUAL') === unidad), (item) => item.saldo || item.saldoPendiente);
-      const cxpUnidad = sumar(cxpFiltradas.filter((item) => (item.unidadNegocio || 'ELANKAV VISUAL') === unidad), (item) => item.saldo || item.saldoPendiente);
-      const produccionUnidad = produccionFiltrada.filter((item) => (item.unidadNegocio || 'ELANKAV VISUAL') === unidad).length;
-      const comisionesUnidad = sumar(comisionesFiltradas.filter((item) => (item.unidadNegocio || 'ELANKAV VISUAL') === unidad), (item) => item.monto || item.comision || item.total);
+    const unidades = ['ELANVISUAL', 'ELANKAV CENTER', 'ELANHOME', 'ELAN AI'].map((unidad) => {
+      const ventasUnidad = sumar(cobrosFiltrados.filter((item) => (item.unidadNegocio || 'ELANVISUAL') === unidad), (item) => item.montoFactura);
+      const comprasUnidad = sumar(comprasFiltradas.filter((item) => (item.unidadNegocio || 'ELANVISUAL') === unidad), (item) => item.total || item.subtotal);
+      const cobrosUnidad = sumar(cobrosFiltrados.filter((item) => (item.unidadNegocio || 'ELANVISUAL') === unidad), (item) => item.montoCobrado);
+      const cxcUnidad = sumar(cxcFiltradas.filter((item) => (item.unidadNegocio || 'ELANVISUAL') === unidad), (item) => item.saldo || item.saldoPendiente);
+      const cxpUnidad = sumar(cxpFiltradas.filter((item) => (item.unidadNegocio || 'ELANVISUAL') === unidad), (item) => item.saldo || item.saldoPendiente);
+      const produccionUnidad = produccionFiltrada.filter((item) => (item.unidadNegocio || 'ELANVISUAL') === unidad).length;
+      const comisionesUnidad = sumar(comisionesFiltradas.filter((item) => (item.unidadNegocio || 'ELANVISUAL') === unidad), (item) => item.monto || item.comision || item.total);
 
       return {
         unidad,
@@ -168,7 +168,7 @@ export default function ReportesCRM() {
     <div style={styles.page}>
       <div style={styles.header}>
         <h2 style={styles.title}>Reportes Corporativos</h2>
-        <p style={styles.subtitle}>FASE 5.1 · Reporte financiero, operativo y fiscal por unidad de negocio.</p>
+        <p style={styles.subtitle}>FASE 5.1 Â· Reporte financiero, operativo y fiscal por unidad de negocio.</p>
       </div>
 
       <div style={styles.card}>
@@ -186,7 +186,7 @@ export default function ReportesCRM() {
         <div style={styles.stat}><span style={styles.statLabel}>Cuentas por cobrar</span><strong style={styles.statValue}>{moneda(datos.cxcSaldo)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Cuentas por pagar</span><strong style={styles.statValue}>{moneda(datos.cxpSaldo)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Flujo de caja</span><strong style={styles.statValue}>{moneda(datos.flujoNeto)}</strong></div>
-        <div style={styles.stat}><span style={styles.statLabel}>Producción</span><strong style={styles.statValue}>{datos.produccion}</strong></div>
+        <div style={styles.stat}><span style={styles.statLabel}>ProducciÃ³n</span><strong style={styles.statValue}>{datos.produccion}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Comisiones</span><strong style={styles.statValue}>{moneda(datos.comisionesTotal)}</strong></div>
       </div>
 
@@ -212,7 +212,7 @@ export default function ReportesCRM() {
                 <th style={styles.th}>Cobros</th>
                 <th style={styles.th}>CxC</th>
                 <th style={styles.th}>CxP</th>
-                <th style={styles.th}>Producción</th>
+                <th style={styles.th}>ProducciÃ³n</th>
                 <th style={styles.th}>Comisiones</th>
                 <th style={styles.th}>Utilidad operativa</th>
               </tr>
@@ -239,10 +239,12 @@ export default function ReportesCRM() {
       <div style={styles.card}>
         <h3>Lectura ejecutiva</h3>
         <p>
-          Este reporte separa el dinero real del control fiscal. Las ventas y compras con IVA alimentan el IVA débito y crédito.
+          Este reporte separa el dinero real del control fiscal. Las ventas y compras con IVA alimentan el IVA dÃ©bito y crÃ©dito.
           Los registros sin factura se mantienen visibles como control interno para no perder rentabilidad real.
         </p>
       </div>
     </div>
   );
 }
+
+

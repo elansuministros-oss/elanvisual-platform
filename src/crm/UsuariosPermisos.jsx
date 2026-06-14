@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const estadoInicialUsuario = {
@@ -8,7 +8,7 @@ const estadoInicialUsuario = {
   telefono: '',
   cargo: '',
   rolId: 'rol-ventas',
-  unidadNegocio: 'ELANKAV VISUAL',
+  unidadNegocio: 'ELANVISUAL',
   estado: 'Activo',
   notas: '',
 };
@@ -138,7 +138,7 @@ export default function UsuariosPermisos() {
       telefono: usuario.telefono || '',
       cargo: usuario.cargo || '',
       rolId: usuario.rolId || 'rol-ventas',
-      unidadNegocio: usuario.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: usuario.unidadNegocio || 'ELANVISUAL',
       estado: usuario.estado || 'Activo',
       notas: usuario.notas || '',
     });
@@ -445,8 +445,8 @@ export default function UsuariosPermisos() {
       <div className="up-header">
         <h2>Usuarios y Permisos Corporativos</h2>
         <p>
-          Controla usuarios, roles, unidades de negocio y acceso por módulo dentro del CRM Central ELANKAV.
-          Este módulo deja preparada la base para auditoría, trazabilidad y operación multiusuario.
+          Controla usuarios, roles, unidades de negocio y acceso por mÃ³dulo dentro del CRM Central ELANKAV.
+          Este mÃ³dulo deja preparada la base para auditorÃ­a, trazabilidad y operaciÃ³n multiusuario.
         </p>
       </div>
 
@@ -462,7 +462,7 @@ export default function UsuariosPermisos() {
           <h3>Usuario activo</h3>
           <div className="up-current">
             <strong>{usuarioActivoCRM?.nombre || 'Administrador General'}</strong>
-            <span>{rolUsuarioActivoCRM?.nombre || 'Administrador General'} · {usuarioActivoCRM?.unidadNegocio || 'Corporativo'}</span>
+            <span>{rolUsuarioActivoCRM?.nombre || 'Administrador General'} Â· {usuarioActivoCRM?.unidadNegocio || 'Corporativo'}</span>
             <span className={`up-badge ${usuarioActivoCRM?.estado === 'Inactivo' ? 'off' : ''}`}>
               {usuarioActivoCRM?.estado || 'Activo'}
             </span>
@@ -473,7 +473,7 @@ export default function UsuariosPermisos() {
             <select value={usuarioActivoCRMId} onChange={(e) => cambiarUsuarioActivoCRM(e.target.value)}>
               {usuariosCRM.map((usuario) => (
                 <option key={usuario.id} value={usuario.id}>
-                  {usuario.nombre} — {obtenerRol(usuario.rolId)?.nombre || 'Sin rol'}
+                  {usuario.nombre} â€” {obtenerRol(usuario.rolId)?.nombre || 'Sin rol'}
                 </option>
               ))}
             </select>
@@ -489,7 +489,7 @@ export default function UsuariosPermisos() {
             </div>
             <div className="up-row">
               <label>Correo<input name="correo" value={usuarioForm.correo} onChange={cambiarUsuarioForm} /></label>
-              <label>Teléfono<input name="telefono" value={usuarioForm.telefono} onChange={cambiarUsuarioForm} /></label>
+              <label>TelÃ©fono<input name="telefono" value={usuarioForm.telefono} onChange={cambiarUsuarioForm} /></label>
             </div>
             <div className="up-row">
               <label>Cargo<input name="cargo" value={usuarioForm.cargo} onChange={cambiarUsuarioForm} /></label>
@@ -583,7 +583,7 @@ export default function UsuariosPermisos() {
                 </select>
               </label>
             </div>
-            <label>Descripción<textarea name="descripcion" value={rolForm.descripcion} onChange={cambiarRolForm} /></label>
+            <label>DescripciÃ³n<textarea name="descripcion" value={rolForm.descripcion} onChange={cambiarRolForm} /></label>
 
             <div className="up-permisos">
               {Object.entries(modulosPorGrupo).map(([grupo, modulos]) => (
@@ -650,3 +650,4 @@ export default function UsuariosPermisos() {
     </div>
   );
 }
+

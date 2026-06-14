@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { ShoppingCart, Ruler } from 'lucide-react';
 import { formatoC$ } from '../lib/calculos';
 import { useApp } from '../context/AppContext';
@@ -26,3 +26,4 @@ export default function ProductCard({ p }) {
     </article>
   );
 }
+

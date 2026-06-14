@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+ï»¿import React, { useState } from 'react';
 import { LockKeyhole, ShieldCheck, Building2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -22,7 +22,7 @@ export default function Login({ setPage, destino }) {
     const res = login({ email, password });
 
     if (!res.ok) {
-      setError('Usuario o contraseña incorrectos.');
+      setError('Usuario o contraseÃ±a incorrectos.');
       return;
     }
 
@@ -32,7 +32,7 @@ export default function Login({ setPage, destino }) {
     }
 
     if (destino === 'produccion' && !['admin', 'produccion'].includes(res.rol)) {
-      setError('Este usuario no tiene permisos de producción.');
+      setError('Este usuario no tiene permisos de producciÃ³n.');
       return;
     }
 
@@ -51,7 +51,7 @@ export default function Login({ setPage, destino }) {
         <h1>Portal ELANVISUAL</h1>
 
         <p>
-          Acceso para administración, CRM, producción y operaciones internas de ELANVISUAL.
+          Acceso para administraciÃ³n, CRM, producciÃ³n y operaciones internas de ELANVISUAL.
         </p>
 
         <form onSubmit={entrar}>
@@ -64,14 +64,14 @@ export default function Login({ setPage, destino }) {
             autoComplete="username"
           />
 
-          <label>Contraseña</label>
+          <label>ContraseÃ±a</label>
 
           <div className="password-field">
             <input
               type={mostrarPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Contraseña"
+              placeholder="ContraseÃ±a"
               autoComplete="current-password"
             />
 
@@ -94,9 +94,10 @@ export default function Login({ setPage, destino }) {
 
         <div className="login-footnote">
           <Building2 size={20} />
-          <p>ELANVISUAL · CRM · Producción · Seguimiento</p>
+          <p>ELANVISUAL Â· CRM Â· ProducciÃ³n Â· Seguimiento</p>
         </div>
       </section>
     </main>
   );
 }
+

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const numero = (valor) => {
@@ -25,10 +25,10 @@ const fmt = (valor) =>
 
 const unidades = [
   'Corporativo',
-  'ELANPET',
-  'ELANKAV VISUAL',
+  'ELANVISUAL',
+  'ELANVISUAL',
   'ELANKAV CENTER',
-  'ELANKAV SOLAR',
+  'ELANHOME',
   'ELAN AI',
 ];
 
@@ -153,7 +153,7 @@ export default function DashboardGerencial() {
     ['Ventas registradas', data.ventas],
     ['Cobros recibidos', data.cobrado],
     ['Compras', data.comprado],
-    ['Costos producción', data.costoProduccion],
+    ['Costos producciÃ³n', data.costoProduccion],
     ['Cuentas por cobrar', data.cxc],
     ['Cuentas por pagar', data.cxp],
     ['Utilidad estimada', data.utilidad],
@@ -197,7 +197,7 @@ export default function DashboardGerencial() {
 
         {(notificacionesInternasCRM || []).slice(0, 6).map((notificacion) => (
           <p key={notificacion.id}>
-            🔔 {notificacion.titulo || notificacion.detalle}
+            ðŸ”” {notificacion.titulo || notificacion.detalle}
           </p>
         ))}
 
@@ -208,3 +208,4 @@ export default function DashboardGerencial() {
     </div>
   );
 }
+

@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 
-const UNIDADES_NEGOCIO = ['ELANPET', 'ELANKAV VISUAL', 'ELANKAV CENTER', 'ELANKAV SOLAR', 'ELAN AI'];
+const UNIDADES_NEGOCIO = ['ELANVISUAL', 'ELANKAV CENTER', 'ELANHOME', 'ELAN AI'];
 const TIPOS_FISCALES = ['Con IVA', 'Sin factura', 'Exento'];
 const IVA = 0.15;
 
@@ -66,7 +66,7 @@ const inicial = {
   fecha: hoyISO(),
   tipo: 'Ingreso',
   concepto: '',
-  unidadNegocio: 'ELANKAV VISUAL',
+  unidadNegocio: 'ELANVISUAL',
   tipoFiscal: 'Sin factura',
   facturaFiscal: 'No',
   monto: '',
@@ -96,7 +96,7 @@ export default function FlujoCaja() {
     const { name, value } = e.target;
     setForm((prev) => {
       const nuevo = { ...prev, [name]: value };
-      if (name === 'tipoFiscal') nuevo.facturaFiscal = value === 'Con IVA' ? 'Sí' : 'No';
+      if (name === 'tipoFiscal') nuevo.facturaFiscal = value === 'Con IVA' ? 'SÃ­' : 'No';
       return nuevo;
     });
   };
@@ -111,9 +111,9 @@ export default function FlujoCaja() {
       fecha: form.fecha || hoyISO(),
       tipo: form.tipo || 'Ingreso',
       concepto: form.concepto.trim(),
-      unidadNegocio: form.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: form.unidadNegocio || 'ELANVISUAL',
       tipoFiscal: form.tipoFiscal || 'Sin factura',
-      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'Sí' : form.facturaFiscal || 'No',
+      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'SÃ­' : form.facturaFiscal || 'No',
       monto: numero(form.monto),
       estado: form.estado || 'Registrado',
       referencia: form.referencia.trim(),
@@ -133,7 +133,7 @@ export default function FlujoCaja() {
       fecha: item.fecha || hoyISO(),
       tipo: item.tipo || 'Ingreso',
       concepto: item.concepto || '',
-      unidadNegocio: item.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: item.unidadNegocio || 'ELANVISUAL',
       tipoFiscal: item.tipoFiscal || 'Sin factura',
       facturaFiscal: item.facturaFiscal || 'No',
       monto: String(item.monto || ''),
@@ -215,8 +215,8 @@ export default function FlujoCaja() {
         <div style={styles.stat}><span style={styles.statLabel}>Saldo operativo</span><strong style={styles.statValue}>{moneda(resumen.saldoOperativo)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Por cobrar</span><strong style={styles.statValue}>{moneda(resumen.porCobrar)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Por pagar</span><strong style={styles.statValue}>{moneda(resumen.porPagar)}</strong></div>
-        <div style={styles.stat}><span style={styles.statLabel}>IVA débito</span><strong style={styles.statValue}>{moneda(resumen.ivaDebito)}</strong></div>
-        <div style={styles.stat}><span style={styles.statLabel}>IVA crédito</span><strong style={styles.statValue}>{moneda(resumen.ivaCredito)}</strong></div>
+        <div style={styles.stat}><span style={styles.statLabel}>IVA dÃ©bito</span><strong style={styles.statValue}>{moneda(resumen.ivaDebito)}</strong></div>
+        <div style={styles.stat}><span style={styles.statLabel}>IVA crÃ©dito</span><strong style={styles.statValue}>{moneda(resumen.ivaCredito)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>IVA neto estimado</span><strong style={styles.statValue}>{moneda(resumen.ivaNeto)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Ingresos sin factura</span><strong style={styles.statValue}>{moneda(resumen.ingresosSinFactura)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Egresos sin factura</span><strong style={styles.statValue}>{moneda(resumen.egresosSinFactura)}</strong></div>
@@ -229,7 +229,7 @@ export default function FlujoCaja() {
           <label style={styles.label}>Concepto<input style={styles.input} name="concepto" value={form.concepto} onChange={cambiar} /></label>
           <label style={styles.label}>Unidad<select style={styles.select} name="unidadNegocio" value={form.unidadNegocio} onChange={cambiar}>{UNIDADES_NEGOCIO.map((u) => <option key={u} value={u}>{u}</option>)}</select></label>
           <label style={styles.label}>Tipo fiscal<select style={styles.select} name="tipoFiscal" value={form.tipoFiscal} onChange={cambiar}>{TIPOS_FISCALES.map((t) => <option key={t} value={t}>{t}</option>)}</select></label>
-          <label style={styles.label}>Factura fiscal<select style={styles.select} name="facturaFiscal" value={form.facturaFiscal} onChange={cambiar}><option>Sí</option><option>No</option></select></label>
+          <label style={styles.label}>Factura fiscal<select style={styles.select} name="facturaFiscal" value={form.facturaFiscal} onChange={cambiar}><option>SÃ­</option><option>No</option></select></label>
           <label style={styles.label}>Monto<input style={styles.input} type="number" step="0.01" name="monto" value={form.monto} onChange={cambiar} /></label>
           <label style={styles.label}>Estado<select style={styles.select} name="estado" value={form.estado} onChange={cambiar}>{ESTADOS.map((e) => <option key={e} value={e}>{e}</option>)}</select></label>
           <label style={styles.label}>Referencia<input style={styles.input} name="referencia" value={form.referencia} onChange={cambiar} /></label>
@@ -256,3 +256,5 @@ export default function FlujoCaja() {
     </div>
   );
 }
+
+

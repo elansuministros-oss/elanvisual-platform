@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 export default function Contactos() {
@@ -47,7 +47,7 @@ export default function Contactos() {
     e.preventDefault();
 
     if (!form.nombre.trim()) {
-      alert('Debés ingresar el nombre del contacto.');
+      alert('DebÃ©s ingresar el nombre del contacto.');
       return;
     }
 
@@ -87,7 +87,7 @@ export default function Contactos() {
 
   const confirmarEliminarContacto = (id) => {
     const confirmar = window.confirm(
-      '¿Seguro que querés eliminar este contacto?'
+      'Â¿Seguro que querÃ©s eliminar este contacto?'
     );
 
     if (!confirmar) return;
@@ -169,7 +169,7 @@ export default function Contactos() {
             Nombre del contacto
             <input
               name="nombre"
-              placeholder="Ej: Carlos López"
+              placeholder="Ej: Carlos LÃ³pez"
               value={form.nombre}
               onChange={cambiar}
             />
@@ -245,7 +245,7 @@ export default function Contactos() {
 
             {editandoId && (
               <button type="button" onClick={limpiarFormulario}>
-                Cancelar edición
+                Cancelar ediciÃ³n
               </button>
             )}
           </div>

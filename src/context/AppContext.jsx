@@ -183,7 +183,7 @@ function guardarStorage(clave, valor) {
   }
 }
 
-const APP_STATE_TABLE = 'elanpet_app_state';
+const APP_STATE_TABLE = 'ELANVISUAL_app_state';
 const APP_STATE_ID = 'elanvisual-v2';
 
 function construirEstadoCompartido({

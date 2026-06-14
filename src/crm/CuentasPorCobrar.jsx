@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 
-const UNIDADES_NEGOCIO = ['ELANPET', 'ELANKAV VISUAL', 'ELANKAV CENTER', 'ELANKAV SOLAR', 'ELAN AI'];
+const UNIDADES_NEGOCIO = ['ELANVISUAL', 'ELANKAV CENTER', 'ELANHOME', 'ELAN AI'];
 const TIPOS_FISCALES = ['Con IVA', 'Sin factura', 'Exento'];
 const IVA = 0.15;
 
@@ -74,9 +74,9 @@ const inicial = {
   factura: '',
   fechaEmision: hoyISO(),
   fechaVencimiento: sumarDias(15),
-  unidadNegocio: 'ELANKAV VISUAL',
+  unidadNegocio: 'ELANVISUAL',
   tipoFiscal: 'Con IVA',
-  facturaFiscal: 'Sí',
+  facturaFiscal: 'SÃ­',
   retencionPorcentaje: '',
   subtotal: '',
   iva: '',
@@ -103,7 +103,7 @@ export default function CuentasPorCobrar() {
     const estado = saldo <= 0 && numero(base.monto) > 0 ? 'Pagada' : numero(base.abonado) > 0 ? 'Parcial' : base.estado;
     return {
       ...base,
-      facturaFiscal: base.tipoFiscal === 'Con IVA' ? 'Sí' : base.facturaFiscal,
+      facturaFiscal: base.tipoFiscal === 'Con IVA' ? 'SÃ­' : base.facturaFiscal,
       subtotal: fiscal.subtotal.toFixed(2),
       iva: fiscal.iva.toFixed(2),
       retencionMonto: fiscal.retencion.toFixed(2),
@@ -126,9 +126,9 @@ export default function CuentasPorCobrar() {
             cliente: cobro.cliente || '',
             empresa: cobro.empresa || '',
             factura: cobro.factura || '',
-            unidadNegocio: cobro.unidadNegocio || 'ELANKAV VISUAL',
+            unidadNegocio: cobro.unidadNegocio || 'ELANVISUAL',
             tipoFiscal: cobro.tipoFiscal || 'Con IVA',
-            facturaFiscal: cobro.facturaFiscal || 'Sí',
+            facturaFiscal: cobro.facturaFiscal || 'SÃ­',
             retencionPorcentaje: String(cobro.retencionPorcentaje || ''),
             monto: String(cobro.montoFactura || ''),
             abonado: String(cobro.montoCobrado || ''),
@@ -156,9 +156,9 @@ export default function CuentasPorCobrar() {
       factura: form.factura.trim(),
       fechaEmision: form.fechaEmision || hoyISO(),
       fechaVencimiento: form.fechaVencimiento || sumarDias(15),
-      unidadNegocio: form.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: form.unidadNegocio || 'ELANVISUAL',
       tipoFiscal: form.tipoFiscal || 'Con IVA',
-      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'Sí' : form.facturaFiscal || 'No',
+      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'SÃ­' : form.facturaFiscal || 'No',
       subtotal: fiscal.subtotal,
       iva: fiscal.iva,
       ivaDebito: form.tipoFiscal === 'Con IVA' ? fiscal.iva : 0,
@@ -188,9 +188,9 @@ export default function CuentasPorCobrar() {
       factura: item.factura || '',
       fechaEmision: item.fechaEmision || hoyISO(),
       fechaVencimiento: item.fechaVencimiento || sumarDias(15),
-      unidadNegocio: item.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: item.unidadNegocio || 'ELANVISUAL',
       tipoFiscal: item.tipoFiscal || (numero(item.ivaDebito || item.iva) > 0 ? 'Con IVA' : 'Sin factura'),
-      facturaFiscal: item.facturaFiscal || (numero(item.ivaDebito || item.iva) > 0 ? 'Sí' : 'No'),
+      facturaFiscal: item.facturaFiscal || (numero(item.ivaDebito || item.iva) > 0 ? 'SÃ­' : 'No'),
       retencionPorcentaje: String(item.retencionPorcentaje || ''),
       subtotal: String(item.subtotal || ''),
       iva: String(item.ivaDebito || item.iva || ''),
@@ -216,32 +216,32 @@ export default function CuentasPorCobrar() {
 
   return (
     <div style={styles.page}>
-      <div style={styles.header}><h2 style={styles.title}>Cuentas por Cobrar</h2><p style={styles.subtitle}>Control de saldos pendientes con clasificación fiscal y retenciones.</p></div>
+      <div style={styles.header}><h2 style={styles.title}>Cuentas por Cobrar</h2><p style={styles.subtitle}>Control de saldos pendientes con clasificaciÃ³n fiscal y retenciones.</p></div>
       <div style={styles.stats}>
         <div style={styles.stat}><span style={styles.statLabel}>Total facturado</span><strong style={styles.statValue}>{moneda(resumen.monto)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Abonado</span><strong style={styles.statValue}>{moneda(resumen.abonado)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Saldo</span><strong style={styles.statValue}>{moneda(resumen.saldo)}</strong></div>
-        <div style={styles.stat}><span style={styles.statLabel}>IVA débito</span><strong style={styles.statValue}>{moneda(resumen.ivaDebito)}</strong></div>
+        <div style={styles.stat}><span style={styles.statLabel}>IVA dÃ©bito</span><strong style={styles.statValue}>{moneda(resumen.ivaDebito)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Retenciones</span><strong style={styles.statValue}>{moneda(resumen.retenciones)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Vencidas</span><strong style={styles.statValue}>{resumen.vencidas}</strong></div>
       </div>
 
       <form style={styles.card} onSubmit={guardar}>
         <div style={styles.grid}>
-          <label style={styles.label}>Código<input style={styles.input} name="codigo" value={form.codigo} onChange={cambiar} /></label>
-          <label style={styles.label}>Desde cobro<select style={styles.select} name="cobroId" value={form.cobroId} onChange={cambiar}><option value="">Manual</option>{cobros.map((c) => <option key={c.id} value={c.id}>{c.codigo} · {c.cliente || c.empresa}</option>)}</select></label>
+          <label style={styles.label}>CÃ³digo<input style={styles.input} name="codigo" value={form.codigo} onChange={cambiar} /></label>
+          <label style={styles.label}>Desde cobro<select style={styles.select} name="cobroId" value={form.cobroId} onChange={cambiar}><option value="">Manual</option>{cobros.map((c) => <option key={c.id} value={c.id}>{c.codigo} Â· {c.cliente || c.empresa}</option>)}</select></label>
           <label style={styles.label}>Cliente<input style={styles.input} name="cliente" value={form.cliente} onChange={cambiar} /></label>
           <label style={styles.label}>Empresa<input style={styles.input} name="empresa" value={form.empresa} onChange={cambiar} /></label>
           <label style={styles.label}>Factura<input style={styles.input} name="factura" value={form.factura} onChange={cambiar} /></label>
-          <label style={styles.label}>Emisión<input style={styles.input} type="date" name="fechaEmision" value={form.fechaEmision} onChange={cambiar} /></label>
+          <label style={styles.label}>EmisiÃ³n<input style={styles.input} type="date" name="fechaEmision" value={form.fechaEmision} onChange={cambiar} /></label>
           <label style={styles.label}>Vencimiento<input style={styles.input} type="date" name="fechaVencimiento" value={form.fechaVencimiento} onChange={cambiar} /></label>
           <label style={styles.label}>Unidad<select style={styles.select} name="unidadNegocio" value={form.unidadNegocio} onChange={cambiar}>{UNIDADES_NEGOCIO.map((u) => <option key={u} value={u}>{u}</option>)}</select></label>
           <label style={styles.label}>Tipo fiscal<select style={styles.select} name="tipoFiscal" value={form.tipoFiscal} onChange={cambiar}>{TIPOS_FISCALES.map((t) => <option key={t} value={t}>{t}</option>)}</select></label>
-          <label style={styles.label}>Retención %<input style={styles.input} type="number" step="0.01" name="retencionPorcentaje" value={form.retencionPorcentaje} onChange={cambiar} /></label>
+          <label style={styles.label}>RetenciÃ³n %<input style={styles.input} type="number" step="0.01" name="retencionPorcentaje" value={form.retencionPorcentaje} onChange={cambiar} /></label>
           <label style={styles.label}>Monto<input style={styles.input} type="number" step="0.01" name="monto" value={form.monto} onChange={cambiar} /></label>
           <label style={styles.label}>IVA<input style={styles.input} type="number" step="0.01" name="iva" value={form.iva} readOnly /></label>
           <label style={styles.label}>Abonado<input style={styles.input} type="number" step="0.01" name="abonado" value={form.abonado} onChange={cambiar} /></label>
-          <label style={styles.label}>Retención monto<input style={styles.input} type="number" step="0.01" name="retencionMonto" value={form.retencionMonto} readOnly /></label>
+          <label style={styles.label}>RetenciÃ³n monto<input style={styles.input} type="number" step="0.01" name="retencionMonto" value={form.retencionMonto} readOnly /></label>
           <label style={styles.label}>Saldo<input style={styles.input} type="number" step="0.01" name="saldo" value={form.saldo} readOnly /></label>
           <label style={styles.label}>Estado<select style={styles.select} name="estado" value={form.estado} onChange={cambiar}>{ESTADOS.map((e) => <option key={e} value={e}>{e}</option>)}</select></label>
         </div>
@@ -250,7 +250,7 @@ export default function CuentasPorCobrar() {
       </form>
 
       <div style={styles.card}><div style={styles.tableWrap}><table style={styles.table}>
-        <thead><tr><th style={styles.th}>Vence</th><th style={styles.th}>Código</th><th style={styles.th}>Cliente/Empresa</th><th style={styles.th}>Unidad</th><th style={styles.th}>Fiscal</th><th style={styles.th}>Monto</th><th style={styles.th}>Abonado</th><th style={styles.th}>Saldo</th><th style={styles.th}>Estado</th><th style={styles.th}>Acciones</th></tr></thead>
+        <thead><tr><th style={styles.th}>Vence</th><th style={styles.th}>CÃ³digo</th><th style={styles.th}>Cliente/Empresa</th><th style={styles.th}>Unidad</th><th style={styles.th}>Fiscal</th><th style={styles.th}>Monto</th><th style={styles.th}>Abonado</th><th style={styles.th}>Saldo</th><th style={styles.th}>Estado</th><th style={styles.th}>Acciones</th></tr></thead>
         <tbody>{cuentasPorCobrar.map((item) => <tr key={item.id}>
           <td style={styles.td}>{item.fechaVencimiento}</td><td style={styles.td}>{item.codigo}</td><td style={styles.td}>{item.cliente || item.empresa}</td><td style={styles.td}>{item.unidadNegocio}</td><td style={styles.td}><span style={styles.badge}>{item.tipoFiscal || 'Sin clasificar'}</span></td><td style={styles.td}>{moneda(item.monto)}</td><td style={styles.td}>{moneda(item.abonado)}</td><td style={styles.td}>{moneda(item.saldo)}</td><td style={styles.td}>{item.estado}</td><td style={styles.td}><button style={styles.edit} type="button" onClick={() => editar(item)}>Editar</button> <button style={styles.danger} type="button" onClick={() => eliminarCuentaPorCobrar(item.id)}>Eliminar</button></td>
         </tr>)}</tbody>
@@ -258,3 +258,5 @@ export default function CuentasPorCobrar() {
     </div>
   );
 }
+
+

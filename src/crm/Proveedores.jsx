@@ -1,22 +1,22 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const unidadesNegocio = [
-  'ELANPET',
-  'ELANKAV VISUAL',
+  'ELANVISUAL',
+  'ELANVISUAL',
   'ELANKAV CENTER',
-  'ELANKAV SOLAR',
+  'ELANHOME',
   'ELAN AI',
 ];
 
 const categoriasProveedor = [
-  'Materiales de rotulación',
-  'Impresión y acabados',
-  'CNC / Láser',
-  'Acrílicos / PVC',
-  'Ferretería',
-  'Tecnología',
-  'Energía solar',
+  'Materiales de rotulaciÃ³n',
+  'ImpresiÃ³n y acabados',
+  'CNC / LÃ¡ser',
+  'AcrÃ­licos / PVC',
+  'FerreterÃ­a',
+  'TecnologÃ­a',
+  'EnergÃ­a solar',
   'Transporte',
   'Servicios profesionales',
   'Otro',
@@ -40,8 +40,8 @@ export default function Proveedores() {
     whatsapp: '',
     correo: '',
     direccion: '',
-    categoria: 'Materiales de rotulación',
-    unidadNegocio: 'ELANKAV VISUAL',
+    categoria: 'Materiales de rotulaciÃ³n',
+    unidadNegocio: 'ELANVISUAL',
     estado: 'Activo',
     condicionesPago: 'Contado',
     observaciones: '',
@@ -61,8 +61,8 @@ export default function Proveedores() {
       whatsapp: '',
       correo: '',
       direccion: '',
-      categoria: 'Materiales de rotulación',
-      unidadNegocio: 'ELANKAV VISUAL',
+      categoria: 'Materiales de rotulaciÃ³n',
+      unidadNegocio: 'ELANVISUAL',
       estado: 'Activo',
       condicionesPago: 'Contado',
       observaciones: '',
@@ -110,8 +110,8 @@ export default function Proveedores() {
       whatsapp: item.whatsapp || '',
       correo: item.correo || '',
       direccion: item.direccion || '',
-      categoria: item.categoria || 'Materiales de rotulación',
-      unidadNegocio: item.unidadNegocio || 'ELANKAV VISUAL',
+      categoria: item.categoria || 'Materiales de rotulaciÃ³n',
+      unidadNegocio: item.unidadNegocio || 'ELANVISUAL',
       estado: item.estado || 'Activo',
       condicionesPago: item.condicionesPago || 'Contado',
       observaciones: item.observaciones || '',
@@ -126,9 +126,9 @@ export default function Proveedores() {
   const resumen = useMemo(() => {
     const activos = proveedores.filter((item) => item.estado === 'Activo').length;
     const inactivos = proveedores.filter((item) => item.estado === 'Inactivo').length;
-    const credito = proveedores.filter((item) => item.condicionesPago === 'Crédito').length;
+    const credito = proveedores.filter((item) => item.condicionesPago === 'CrÃ©dito').length;
     const visual = proveedores.filter(
-      (item) => item.unidadNegocio === 'ELANKAV VISUAL'
+      (item) => item.unidadNegocio === 'ELANVISUAL'
     ).length;
 
     return {
@@ -161,12 +161,12 @@ export default function Proveedores() {
         </div>
 
         <div className="crm-card">
-          <span>Crédito</span>
+          <span>CrÃ©dito</span>
           <strong>{resumen.credito}</strong>
         </div>
 
         <div className="crm-card">
-          <span>ELANKAV VISUAL</span>
+          <span>ELANVISUAL</span>
           <strong>{resumen.visual}</strong>
         </div>
       </div>
@@ -176,7 +176,7 @@ export default function Proveedores() {
 
         <div className="form-grid">
           <label>
-            Código
+            CÃ³digo
             <input
               name="codigo"
               value={form.codigo}
@@ -191,7 +191,7 @@ export default function Proveedores() {
               name="nombre"
               value={form.nombre}
               onChange={cambiar}
-              placeholder="Nombre comercial o razón social"
+              placeholder="Nombre comercial o razÃ³n social"
             />
           </label>
 
@@ -201,7 +201,7 @@ export default function Proveedores() {
               name="ruc"
               value={form.ruc}
               onChange={cambiar}
-              placeholder="Número RUC"
+              placeholder="NÃºmero RUC"
             />
           </label>
 
@@ -216,12 +216,12 @@ export default function Proveedores() {
           </label>
 
           <label>
-            WhatsApp / Teléfono
+            WhatsApp / TelÃ©fono
             <input
               name="whatsapp"
               value={form.whatsapp}
               onChange={cambiar}
-              placeholder="Número de contacto"
+              placeholder="NÃºmero de contacto"
             />
           </label>
 
@@ -237,7 +237,7 @@ export default function Proveedores() {
           </label>
 
           <label>
-            Categoría
+            CategorÃ­a
             <select name="categoria" value={form.categoria} onChange={cambiar}>
               {categoriasProveedor.map((categoria) => (
                 <option key={categoria}>{categoria}</option>
@@ -259,14 +259,14 @@ export default function Proveedores() {
           </label>
 
           <label>
-            Condición de pago
+            CondiciÃ³n de pago
             <select
               name="condicionesPago"
               value={form.condicionesPago}
               onChange={cambiar}
             >
               <option>Contado</option>
-              <option>Crédito</option>
+              <option>CrÃ©dito</option>
               <option>Transferencia</option>
               <option>Contra entrega</option>
               <option>Otro</option>
@@ -283,12 +283,12 @@ export default function Proveedores() {
           </label>
 
           <label className="form-full">
-            Dirección
+            DirecciÃ³n
             <input
               name="direccion"
               value={form.direccion}
               onChange={cambiar}
-              placeholder="Dirección física o punto de referencia"
+              placeholder="DirecciÃ³n fÃ­sica o punto de referencia"
             />
           </label>
 
@@ -311,7 +311,7 @@ export default function Proveedores() {
 
           {editandoId && (
             <button type="button" className="secondary" onClick={limpiar}>
-              Cancelar edición
+              Cancelar ediciÃ³n
             </button>
           )}
         </div>
@@ -321,11 +321,11 @@ export default function Proveedores() {
         <table className="crm-table">
           <thead>
             <tr>
-              <th>Código</th>
+              <th>CÃ³digo</th>
               <th>Proveedor</th>
               <th>Contacto</th>
               <th>WhatsApp</th>
-              <th>Categoría</th>
+              <th>CategorÃ­a</th>
               <th>Unidad</th>
               <th>Pago</th>
               <th>Estado</th>
@@ -376,3 +376,4 @@ export default function Proveedores() {
     </div>
   );
 }
+

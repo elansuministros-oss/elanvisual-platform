@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const UNIDADES_NEGOCIO = [
-  'ELANPET',
-  'ELANKAV VISUAL',
+  'ELANVISUAL',
+  'ELANVISUAL',
   'ELANKAV CENTER',
-  'ELANKAV SOLAR',
+  'ELANHOME',
   'ELAN AI',
 ];
 
@@ -22,7 +22,7 @@ const formInicial = () => ({
   cliente: '',
   telefono: '',
   producto: '',
-  unidadNegocio: 'ELANKAV VISUAL',
+  unidadNegocio: 'ELANVISUAL',
   cantidad: '',
   total: '',
   anticipo: '',
@@ -118,7 +118,7 @@ export default function Pedidos() {
           cliente: empresaNombre,
           telefono,
           producto: cotizacionSeleccionada.descripcion || cotizacionSeleccionada.categoria || '',
-          unidadNegocio: cotizacionSeleccionada.unidadNegocio || 'ELANKAV VISUAL',
+          unidadNegocio: cotizacionSeleccionada.unidadNegocio || 'ELANVISUAL',
           total: String(cotizacionSeleccionada.total || ''),
           observaciones:
             prev.observaciones ||
@@ -140,12 +140,12 @@ export default function Pedidos() {
     e.preventDefault();
 
     if (!form.cotizacionId && !form.cliente.trim()) {
-      alert('Debés seleccionar una cotización o indicar un cliente.');
+      alert('DebÃ©s seleccionar una cotizaciÃ³n o indicar un cliente.');
       return;
     }
 
     if (!form.producto.trim()) {
-      alert('Debés indicar el producto o trabajo del pedido.');
+      alert('DebÃ©s indicar el producto o trabajo del pedido.');
       return;
     }
 
@@ -216,7 +216,7 @@ export default function Pedidos() {
         '',
       telefono: item.telefono || '',
       producto: item.producto || cotizacion?.descripcion || '',
-      unidadNegocio: item.unidadNegocio || cotizacion?.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: item.unidadNegocio || cotizacion?.unidadNegocio || 'ELANVISUAL',
       cantidad: String(item.cantidad || ''),
       total: String(item.total || ''),
       anticipo: String(item.anticipo || ''),
@@ -227,7 +227,7 @@ export default function Pedidos() {
   };
 
   const eliminar = (id) => {
-    const confirmar = window.confirm('¿Seguro que querés eliminar este pedido?');
+    const confirmar = window.confirm('Â¿Seguro que querÃ©s eliminar este pedido?');
     if (!confirmar) return;
 
     eliminarPedido(id);
@@ -289,23 +289,23 @@ export default function Pedidos() {
 
         <div className="form-grid">
           <label>
-            Cotización
+            CotizaciÃ³n
             <select
               name="cotizacionId"
               value={form.cotizacionId}
               onChange={cambiar}
             >
-              <option value="">Seleccionar cotización</option>
+              <option value="">Seleccionar cotizaciÃ³n</option>
               {cotizacionesDisponibles.map((cotizacion) => (
                 <option key={cotizacion.id} value={cotizacion.id}>
-                  {cotizacion.codigo || 'Sin código'} - {obtenerEmpresaNombre(cotizacion) || 'Sin empresa'} - C$ {Number(cotizacion.total || 0).toFixed(2)}
+                  {cotizacion.codigo || 'Sin cÃ³digo'} - {obtenerEmpresaNombre(cotizacion) || 'Sin empresa'} - C$ {Number(cotizacion.total || 0).toFixed(2)}
                 </option>
               ))}
             </select>
           </label>
 
           <label>
-            Código pedido
+            CÃ³digo pedido
             <input
               name="codigo"
               value={form.codigo}
@@ -320,7 +320,7 @@ export default function Pedidos() {
               name="cliente"
               value={form.cliente}
               onChange={cambiar}
-              placeholder="Se completa desde la cotización"
+              placeholder="Se completa desde la cotizaciÃ³n"
               readOnly={Boolean(form.cotizacionId)}
             />
           </label>
@@ -349,12 +349,12 @@ export default function Pedidos() {
           </label>
 
           <label>
-            Teléfono / WhatsApp
+            TelÃ©fono / WhatsApp
             <input
               name="telefono"
               value={form.telefono}
               onChange={cambiar}
-              placeholder="Número de contacto"
+              placeholder="NÃºmero de contacto"
             />
           </label>
 
@@ -406,7 +406,7 @@ export default function Pedidos() {
             <select name="estado" value={form.estado} onChange={cambiar}>
               <option>Pendiente</option>
               <option>Aprobado</option>
-              <option>Producción</option>
+              <option>ProducciÃ³n</option>
               <option>Entregado</option>
               <option>Cancelado</option>
             </select>
@@ -441,7 +441,7 @@ export default function Pedidos() {
 
           {editandoId && (
             <button type="button" onClick={limpiar} className="btn-secundario">
-              Cancelar edición
+              Cancelar ediciÃ³n
             </button>
           )}
         </div>
@@ -451,8 +451,8 @@ export default function Pedidos() {
         <table className="crm-table">
           <thead>
             <tr>
-              <th>Código</th>
-              <th>Cotización</th>
+              <th>CÃ³digo</th>
+              <th>CotizaciÃ³n</th>
               <th>Empresa / Contacto</th>
               <th>Producto</th>
               <th>Unidad</th>
@@ -494,7 +494,7 @@ export default function Pedidos() {
                       <small>Cantidad: {item.cantidad}</small>
                     </td>
 
-                    <td>{item.unidadNegocio || 'ELANKAV VISUAL'}</td>
+                    <td>{item.unidadNegocio || 'ELANVISUAL'}</td>
 
                     <td>C$ {Number(item.total || 0).toFixed(2)}</td>
                     <td>C$ {Number(item.anticipo || 0).toFixed(2)}</td>
@@ -524,3 +524,4 @@ export default function Pedidos() {
     </div>
   );
 }
+

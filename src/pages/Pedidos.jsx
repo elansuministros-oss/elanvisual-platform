@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 
 export default function Pedidos() {
   const [pedidos, setPedidos] = useState([]);
@@ -146,7 +146,7 @@ export default function Pedidos() {
 
         <div className="form-grid">
           <label>
-            Código
+            CÃ³digo
             <input
               name="codigo"
               value={form.codigo}
@@ -166,12 +166,12 @@ export default function Pedidos() {
           </label>
 
           <label>
-            Teléfono / WhatsApp
+            TelÃ©fono / WhatsApp
             <input
               name="telefono"
               value={form.telefono}
               onChange={cambiar}
-              placeholder="Número de contacto"
+              placeholder="NÃºmero de contacto"
             />
           </label>
 
@@ -223,7 +223,7 @@ export default function Pedidos() {
             <select name="estado" value={form.estado} onChange={cambiar}>
               <option>Pendiente</option>
               <option>Confirmado</option>
-              <option>En producción</option>
+              <option>En producciÃ³n</option>
               <option>Listo</option>
               <option>Entregado</option>
               <option>Cancelado</option>
@@ -259,7 +259,7 @@ export default function Pedidos() {
 
           {editandoId && (
             <button type="button" onClick={limpiar} className="btn-secundario">
-              Cancelar edición
+              Cancelar ediciÃ³n
             </button>
           )}
         </div>
@@ -269,7 +269,7 @@ export default function Pedidos() {
         <table className="crm-table">
           <thead>
             <tr>
-              <th>Código</th>
+              <th>CÃ³digo</th>
               <th>Cliente</th>
               <th>Producto</th>
               <th>Total</th>

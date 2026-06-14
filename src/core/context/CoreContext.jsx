@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+﻿import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const CoreContext = createContext(null);
 
@@ -32,10 +32,10 @@ const MODULOS_CRM_PERMISOS = [
   { id: 'vendedores', label: 'Vendedores', grupo: 'Ventas' },
   { id: 'cotizaciones', label: 'Cotizaciones', grupo: 'Ventas' },
   { id: 'pedidos', label: 'Pedidos', grupo: 'Ventas' },
-  { id: 'ordenes', label: 'Órdenes Trabajo', grupo: 'Operación' },
-  { id: 'produccion', label: 'Producción', grupo: 'Operación' },
-  { id: 'inventario', label: 'Inventario', grupo: 'Operación' },
-  { id: 'materiales', label: 'Materiales', grupo: 'Operación' },
+  { id: 'ordenes', label: 'Ã“rdenes Trabajo', grupo: 'OperaciÃ³n' },
+  { id: 'produccion', label: 'ProducciÃ³n', grupo: 'OperaciÃ³n' },
+  { id: 'inventario', label: 'Inventario', grupo: 'OperaciÃ³n' },
+  { id: 'materiales', label: 'Materiales', grupo: 'OperaciÃ³n' },
   { id: 'cobros', label: 'Cobros', grupo: 'Finanzas' },
   { id: 'cuentas-cobrar', label: 'Cuentas por Cobrar', grupo: 'Finanzas' },
   { id: 'cuentas-pagar', label: 'Cuentas por Pagar', grupo: 'Finanzas' },
@@ -49,22 +49,22 @@ const MODULOS_CRM_PERMISOS = [
   { id: 'veterinarias', label: 'Veterinarias', grupo: 'Unidades' },
   { id: 'afiliados', label: 'Afiliados', grupo: 'Unidades' },
   { id: 'portal-cliente', label: 'Portal Cliente', grupo: 'Unidades' },
-  { id: 'portal-produccion', label: 'Portal Producción', grupo: 'Unidades' },
-  { id: 'app-movil', label: 'App Móvil', grupo: 'Tecnología' },
-  { id: 'elan-ai', label: 'ELAN AI', grupo: 'Tecnología' },
-  { id: 'usuarios-permisos', label: 'Usuarios y Permisos', grupo: 'Administración' },
-  { id: 'auditoria', label: 'Auditoría de Movimientos', grupo: 'Administración' },
-  { id: 'automatizaciones', label: 'Automatizaciones', grupo: 'Administración' },
-  { id: 'calendario', label: 'Calendario Corporativo', grupo: 'Administración' },
-  { id: 'documentos', label: 'Documentos Corporativos', grupo: 'Administración' },
+  { id: 'portal-produccion', label: 'Portal ProducciÃ³n', grupo: 'Unidades' },
+  { id: 'app-movil', label: 'App MÃ³vil', grupo: 'TecnologÃ­a' },
+  { id: 'elan-ai', label: 'ELAN AI', grupo: 'TecnologÃ­a' },
+  { id: 'usuarios-permisos', label: 'Usuarios y Permisos', grupo: 'AdministraciÃ³n' },
+  { id: 'auditoria', label: 'AuditorÃ­a de Movimientos', grupo: 'AdministraciÃ³n' },
+  { id: 'automatizaciones', label: 'Automatizaciones', grupo: 'AdministraciÃ³n' },
+  { id: 'calendario', label: 'Calendario Corporativo', grupo: 'AdministraciÃ³n' },
+  { id: 'documentos', label: 'Documentos Corporativos', grupo: 'AdministraciÃ³n' },
 ];
 
 const UNIDADES_OFICIALES_CRM = [
   'Corporativo',
-  'ELANPET',
-  'ELANKAV VISUAL',
+  'ELANVISUAL',
+  'ELANVISUAL',
   'ELANKAV CENTER',
-  'ELANKAV SOLAR',
+  'ELANHOME',
   'ELAN AI',
 ];
 
@@ -74,7 +74,7 @@ const rolesCRMIniciales = [
   {
     id: 'rol-admin-general',
     nombre: 'Administrador General',
-    descripcion: 'Acceso total a todos los módulos, unidades y funciones del CRM Central.',
+    descripcion: 'Acceso total a todos los mÃ³dulos, unidades y funciones del CRM Central.',
     permisos: todosLosPermisosCRM,
     nivel: 'Total',
     estado: 'Activo',
@@ -118,15 +118,15 @@ const rolesCRMIniciales = [
   {
     id: 'rol-ventas',
     nombre: 'Ventas',
-    descripcion: 'Gestión comercial: empresas, contactos, cotizaciones, pedidos y cobros básicos.',
+    descripcion: 'GestiÃ³n comercial: empresas, contactos, cotizaciones, pedidos y cobros bÃ¡sicos.',
     permisos: ['dashboard', 'notificaciones', 'centro-whatsapp', 'empresas', 'contactos', 'clientes', 'cotizaciones', 'pedidos', 'cobros'],
     nivel: 'Operativo',
     estado: 'Activo',
   },
   {
     id: 'rol-produccion',
-    nombre: 'Producción',
-    descripcion: 'Órdenes de trabajo, producción, inventario y materiales.',
+    nombre: 'ProducciÃ³n',
+    descripcion: 'Ã“rdenes de trabajo, producciÃ³n, inventario y materiales.',
     permisos: ['dashboard', 'notificaciones', 'ordenes', 'produccion', 'inventario', 'materiales'],
     nivel: 'Operativo',
     estado: 'Activo',
@@ -368,9 +368,9 @@ export function CoreProvider({ children }) {
   const limpiarAuditoriaCRM = () => {
     setAuditoriaCRM([]);
     registrarAuditoriaCRM({
-      modulo: 'Auditoría',
+      modulo: 'AuditorÃ­a',
       accion: 'LIMPIAR',
-      detalle: 'Se limpió el historial de auditoría del CRM.',
+      detalle: 'Se limpiÃ³ el historial de auditorÃ­a del CRM.',
       entidadTipo: 'auditoria',
     });
   };
@@ -891,7 +891,7 @@ export function CoreProvider({ children }) {
     const registro = crearRegistro('orden-trabajo', datos);
     setOrdenesTrabajo((prev) => [registro, ...prev]);
     registrarAuditoriaCRM({
-      modulo: 'Órdenes de Trabajo',
+      modulo: 'Ã“rdenes de Trabajo',
       accion: 'CREAR',
       detalle: `Registro creado: ${registro.cliente || registro.nombre || registro.concepto || registro.id}`,
       entidadId: registro.id,
@@ -904,7 +904,7 @@ export function CoreProvider({ children }) {
   const actualizarOrdenTrabajo = (id, datos) => {
     setOrdenesTrabajo((prev) => actualizarLista(prev, id, datos));
     registrarAuditoriaCRM({
-      modulo: 'Órdenes de Trabajo',
+      modulo: 'Ã“rdenes de Trabajo',
       accion: 'EDITAR',
       detalle: `Registro actualizado: ${datos.cliente || datos.nombre || datos.concepto || id}`,
       entidadId: id,
@@ -917,7 +917,7 @@ export function CoreProvider({ children }) {
     const registro = ordenesTrabajo.find((item) => item.id === id);
     setOrdenesTrabajo((prev) => eliminarDeLista(prev, id));
     registrarAuditoriaCRM({
-      modulo: 'Órdenes de Trabajo',
+      modulo: 'Ã“rdenes de Trabajo',
       accion: 'ELIMINAR',
       detalle: `Registro eliminado: ${registro?.cliente || registro?.nombre || registro?.concepto || id}`,
       entidadId: id,
@@ -930,7 +930,7 @@ export function CoreProvider({ children }) {
     const registro = crearRegistro('produccion', datos);
     setProduccion((prev) => [registro, ...prev]);
     registrarAuditoriaCRM({
-      modulo: 'Producción',
+      modulo: 'ProducciÃ³n',
       accion: 'CREAR',
       detalle: `Registro creado: ${registro.producto || registro.nombre || registro.concepto || registro.id}`,
       entidadId: registro.id,
@@ -943,7 +943,7 @@ export function CoreProvider({ children }) {
   const actualizarProduccion = (id, datos) => {
     setProduccion((prev) => actualizarLista(prev, id, datos));
     registrarAuditoriaCRM({
-      modulo: 'Producción',
+      modulo: 'ProducciÃ³n',
       accion: 'EDITAR',
       detalle: `Registro actualizado: ${datos.producto || datos.nombre || datos.concepto || id}`,
       entidadId: id,
@@ -956,7 +956,7 @@ export function CoreProvider({ children }) {
     const registro = produccion.find((item) => item.id === id);
     setProduccion((prev) => eliminarDeLista(prev, id));
     registrarAuditoriaCRM({
-      modulo: 'Producción',
+      modulo: 'ProducciÃ³n',
       accion: 'ELIMINAR',
       detalle: `Registro eliminado: ${registro?.producto || registro?.nombre || registro?.concepto || id}`,
       entidadId: id,
@@ -1265,7 +1265,7 @@ export function CoreProvider({ children }) {
     id,
     tipo = 'Sistema',
     prioridad = 'Media',
-    titulo = 'Notificación interna',
+    titulo = 'NotificaciÃ³n interna',
     detalle = '',
     modulo = 'Sistema',
     unidadNegocio = 'Corporativo',
@@ -1309,10 +1309,10 @@ export function CoreProvider({ children }) {
         alertas.push(
           crearNotificacionInternaCRM({
             id: `cxc-${cuenta.id}`,
-            tipo: dias < 0 ? 'Cobro vencido' : 'Cobro próximo',
+            tipo: dias < 0 ? 'Cobro vencido' : 'Cobro prÃ³ximo',
             prioridad: dias < 0 ? 'Alta' : 'Media',
-            titulo: dias < 0 ? 'Cuenta por cobrar vencida' : 'Cuenta por cobrar próxima',
-            detalle: `${cuenta.cliente || cuenta.empresa || cuenta.concepto || 'Cliente'} · Saldo estimado C$ ${saldo.toLocaleString('es-NI')} · ${dias < 0 ? `${Math.abs(dias)} día(s) vencida` : `vence en ${dias} día(s)`}`,
+            titulo: dias < 0 ? 'Cuenta por cobrar vencida' : 'Cuenta por cobrar prÃ³xima',
+            detalle: `${cuenta.cliente || cuenta.empresa || cuenta.concepto || 'Cliente'} Â· Saldo estimado C$ ${saldo.toLocaleString('es-NI')} Â· ${dias < 0 ? `${Math.abs(dias)} dÃ­a(s) vencida` : `vence en ${dias} dÃ­a(s)`}`,
             modulo: 'Cuentas por Cobrar',
             unidadNegocio: cuenta.unidadNegocio || 'Corporativo',
             fechaObjetivo: fecha,
@@ -1335,10 +1335,10 @@ export function CoreProvider({ children }) {
         alertas.push(
           crearNotificacionInternaCRM({
             id: `cxp-${cuenta.id}`,
-            tipo: dias < 0 ? 'Pago vencido' : 'Pago próximo',
+            tipo: dias < 0 ? 'Pago vencido' : 'Pago prÃ³ximo',
             prioridad: dias < 0 ? 'Alta' : 'Media',
-            titulo: dias < 0 ? 'Cuenta por pagar vencida' : 'Cuenta por pagar próxima',
-            detalle: `${cuenta.proveedor || cuenta.empresa || cuenta.concepto || 'Proveedor'} · Saldo estimado C$ ${saldo.toLocaleString('es-NI')} · ${dias < 0 ? `${Math.abs(dias)} día(s) vencida` : `vence en ${dias} día(s)`}`,
+            titulo: dias < 0 ? 'Cuenta por pagar vencida' : 'Cuenta por pagar prÃ³xima',
+            detalle: `${cuenta.proveedor || cuenta.empresa || cuenta.concepto || 'Proveedor'} Â· Saldo estimado C$ ${saldo.toLocaleString('es-NI')} Â· ${dias < 0 ? `${Math.abs(dias)} dÃ­a(s) vencida` : `vence en ${dias} dÃ­a(s)`}`,
             modulo: 'Cuentas por Pagar',
             unidadNegocio: cuenta.unidadNegocio || 'Corporativo',
             fechaObjetivo: fecha,
@@ -1360,16 +1360,16 @@ export function CoreProvider({ children }) {
         alertas.push(
           crearNotificacionInternaCRM({
             id: `produccion-${item.id}`,
-            tipo: 'Producción atrasada',
+            tipo: 'ProducciÃ³n atrasada',
             prioridad: 'Alta',
-            titulo: 'Producción atrasada',
-            detalle: `${item.producto || item.proyecto || item.cliente || item.concepto || 'Producción'} · ${Math.abs(dias)} día(s) de atraso`,
-            modulo: 'Producción',
+            titulo: 'ProducciÃ³n atrasada',
+            detalle: `${item.producto || item.proyecto || item.cliente || item.concepto || 'ProducciÃ³n'} Â· ${Math.abs(dias)} dÃ­a(s) de atraso`,
+            modulo: 'ProducciÃ³n',
             unidadNegocio: item.unidadNegocio || 'Corporativo',
             fechaObjetivo: fecha,
             entidadId: item.id,
             entidadTipo: 'produccion',
-            accionSugerida: 'Revisar producción',
+            accionSugerida: 'Revisar producciÃ³n',
           })
         );
       }
@@ -1388,8 +1388,8 @@ export function CoreProvider({ children }) {
             tipo: 'Orden atrasada',
             prioridad: 'Alta',
             titulo: 'Orden de trabajo atrasada',
-            detalle: `${orden.cliente || orden.proyecto || orden.concepto || orden.id} · ${Math.abs(dias)} día(s) de atraso`,
-            modulo: 'Órdenes de Trabajo',
+            detalle: `${orden.cliente || orden.proyecto || orden.concepto || orden.id} Â· ${Math.abs(dias)} dÃ­a(s) de atraso`,
+            modulo: 'Ã“rdenes de Trabajo',
             unidadNegocio: orden.unidadNegocio || 'Corporativo',
             fechaObjetivo: fecha,
             entidadId: orden.id,
@@ -1414,14 +1414,14 @@ export function CoreProvider({ children }) {
             id: `compra-${compra.id}`,
             tipo: 'Compra pendiente',
             prioridad: dias !== null && dias < 0 ? 'Alta' : 'Media',
-            titulo: 'Compra pendiente de recepción',
-            detalle: `${compra.proveedor || compra.concepto || compra.id} · ${dias !== null && dias < 0 ? `${Math.abs(dias)} día(s) de atraso` : 'requiere seguimiento'}`,
+            titulo: 'Compra pendiente de recepciÃ³n',
+            detalle: `${compra.proveedor || compra.concepto || compra.id} Â· ${dias !== null && dias < 0 ? `${Math.abs(dias)} dÃ­a(s) de atraso` : 'requiere seguimiento'}`,
             modulo: 'Compras',
             unidadNegocio: compra.unidadNegocio || 'Corporativo',
             fechaObjetivo: fecha,
             entidadId: compra.id,
             entidadTipo: 'compra',
-            accionSugerida: 'Confirmar recepción',
+            accionSugerida: 'Confirmar recepciÃ³n',
           })
         );
       }
@@ -1439,7 +1439,7 @@ export function CoreProvider({ children }) {
             tipo: 'Inventario bajo',
             prioridad: cantidad <= 0 ? 'Alta' : 'Media',
             titulo: cantidad <= 0 ? 'Inventario agotado' : 'Inventario bajo',
-            detalle: `${item.nombre || item.material || item.codigo || item.id} · existencia ${cantidad}${minimo > 0 ? ` / mínimo ${minimo}` : ''}`,
+            detalle: `${item.nombre || item.material || item.codigo || item.id} Â· existencia ${cantidad}${minimo > 0 ? ` / mÃ­nimo ${minimo}` : ''}`,
             modulo: 'Inventario',
             unidadNegocio: item.unidadNegocio || 'Corporativo',
             entidadId: item.id,
@@ -1487,7 +1487,7 @@ export function CoreProvider({ children }) {
     registrarAuditoriaCRM({
       modulo: 'Notificaciones',
       accion: 'MARCAR_LEIDA',
-      detalle: `Notificación marcada como leída: ${id}`,
+      detalle: `NotificaciÃ³n marcada como leÃ­da: ${id}`,
       entidadId: id,
       entidadTipo: 'notificacion',
     });
@@ -1506,7 +1506,7 @@ export function CoreProvider({ children }) {
     registrarAuditoriaCRM({
       modulo: 'Notificaciones',
       accion: 'ARCHIVAR',
-      detalle: `Notificación archivada: ${id}`,
+      detalle: `NotificaciÃ³n archivada: ${id}`,
       entidadId: id,
       entidadTipo: 'notificacion',
     });
@@ -1524,7 +1524,7 @@ export function CoreProvider({ children }) {
     registrarAuditoriaCRM({
       modulo: 'Notificaciones',
       accion: 'MARCAR_TODAS_LEIDAS',
-      detalle: 'Todas las notificaciones visibles fueron marcadas como leídas.',
+      detalle: 'Todas las notificaciones visibles fueron marcadas como leÃ­das.',
       entidadTipo: 'notificacion',
     });
   };
@@ -1535,12 +1535,12 @@ export function CoreProvider({ children }) {
       nombre: datos.nombre || '',
       whatsapp: datos.whatsapp || '',
       mensaje: datos.mensaje || '',
-      unidadNegocio: datos.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: datos.unidadNegocio || 'ELANVISUAL',
       servicioSolicitado: datos.servicioSolicitado || '',
       origenMensaje: datos.origenMensaje || 'WhatsApp',
       tipoCliente: datos.tipoCliente || 'Nuevo',
       estadoLead: datos.estadoLead || 'Nuevo',
-      clasificacion: datos.clasificacion || 'Información',
+      clasificacion: datos.clasificacion || 'InformaciÃ³n',
       seguimiento: datos.seguimiento || '',
       responsable: datos.responsable || '',
       contactoId: datos.contactoId || '',
@@ -1600,9 +1600,9 @@ export function CoreProvider({ children }) {
       empresaId: '',
       rol: lead.tipoCliente || 'Cliente',
       estado: 'Activo',
-      unidadNegocio: lead.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: lead.unidadNegocio || 'ELANVISUAL',
       origen: lead.origenMensaje || 'WhatsApp',
-      notas: `Lead generado desde Centro WhatsApp. Servicio: ${lead.servicioSolicitado || 'No definido'}. Clasificación: ${lead.clasificacion || 'No definida'}. Mensaje: ${lead.mensaje || ''}`,
+      notas: `Lead generado desde Centro WhatsApp. Servicio: ${lead.servicioSolicitado || 'No definido'}. ClasificaciÃ³n: ${lead.clasificacion || 'No definida'}. Mensaje: ${lead.mensaje || ''}`,
     });
 
     actualizarLeadWhatsApp(id, {
@@ -1634,8 +1634,8 @@ export function CoreProvider({ children }) {
       empresa: '',
       contacto: lead.nombre || '',
       descripcion: lead.servicioSolicitado || lead.mensaje || 'Solicitud recibida por WhatsApp',
-      categoria: lead.clasificacion || 'Cotización',
-      unidadNegocio: lead.unidadNegocio || 'ELANKAV VISUAL',
+      categoria: lead.clasificacion || 'CotizaciÃ³n',
+      unidadNegocio: lead.unidadNegocio || 'ELANVISUAL',
       moneda: 'C$',
       subtotal: 0,
       iva: 15,

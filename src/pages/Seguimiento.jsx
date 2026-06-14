@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { Camera, Clock, Search, Video } from 'lucide-react';
 import { estadosProduccion, etiquetasEstado, useApp } from '../context/AppContext';
 import { formatoC$ } from '../lib/calculos';
@@ -85,16 +85,16 @@ export default function Seguimiento() {
     <main className="tracking-page">
       <section className="panel tracking-card">
         <span className="badge">Seguimiento de pedido</span>
-        <h1>Consulta cómo va tu producto</h1>
-        <p className="note">Ingresa el código que ELANPET te envió por WhatsApp después de confirmar tu anticipo.</p>
+        <h1>Consulta cÃ³mo va tu producto</h1>
+        <p className="note">Ingresa el cÃ³digo que ELANVISUAL te enviÃ³ por WhatsApp despuÃ©s de confirmar tu anticipo.</p>
         <form className="form-grid" onSubmit={consultar}>
-          <input placeholder="Código. Ej: EP-2026-000123" value={form.codigo} onChange={(e) => setForm({ ...form, codigo: e.target.value })} />
+          <input placeholder="CÃ³digo. Ej: EP-2026-000123" value={form.codigo} onChange={(e) => setForm({ ...form, codigo: e.target.value })} />
           <input placeholder="WhatsApp usado en el pedido" value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} />
           <button><Search size={18} /> Consultar pedido</button>
         </form>
       </section>
 
-      {buscado && !pedido && <section className="panel"><p>No encontramos un pedido con esos datos. Revisá el código o el número de WhatsApp.</p></section>}
+      {buscado && !pedido && <section className="panel"><p>No encontramos un pedido con esos datos. RevisÃ¡ el cÃ³digo o el nÃºmero de WhatsApp.</p></section>}
 
       {pedido && <section className="panel">
         <h2>{pedido.codigoSeguimiento || pedido.numero}</h2>
@@ -106,11 +106,11 @@ export default function Seguimiento() {
         </div>
 
         <h3>Estado actual: {etiquetasEstado[pedido.estadoProduccion] || pedido.estadoProduccion}</h3>
-        <p className="note"><Clock size={15} /> Última actualización: {formatearFecha(ultimaActualizacion)}</p>
+        <p className="note"><Clock size={15} /> Ãšltima actualizaciÃ³n: {formatearFecha(ultimaActualizacion)}</p>
 
         {pedido.ordenTrabajo?.observaciones && (
           <div className="payment-box">
-            <h3>Observación de producción</h3>
+            <h3>ObservaciÃ³n de producciÃ³n</h3>
             <p>{pedido.ordenTrabajo.observaciones}</p>
           </div>
         )}
@@ -118,7 +118,7 @@ export default function Seguimiento() {
         <div className="timeline">
           {estadosProduccion.map((estado, idx) => (
             <div key={estado} className={idx <= indiceActual ? 'timeline-step done' : 'timeline-step'}>
-              <span>{idx < indiceActual ? '✓' : idx === indiceActual ? '●' : '○'}</span>
+              <span>{idx < indiceActual ? 'âœ“' : idx === indiceActual ? 'â—' : 'â—‹'}</span>
               <b>{etiquetasEstado[estado]}</b>
             </div>
           ))}
@@ -127,7 +127,7 @@ export default function Seguimiento() {
         <section className="section-block">
           <h3>Evidencias del pedido</h3>
           {evidencias.length === 0 ? (
-            <div className="evidencia-placeholder">Aún no hay fotos o videos cargados para este pedido.</div>
+            <div className="evidencia-placeholder">AÃºn no hay fotos o videos cargados para este pedido.</div>
           ) : (
             <div className="evidencias-grid">
               {evidencias.map(({ tipo, label, evidencia }) => (
@@ -152,3 +152,4 @@ export default function Seguimiento() {
     </main>
   );
 }
+

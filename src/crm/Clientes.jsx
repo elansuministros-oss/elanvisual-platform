@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 export default function Clientes() {

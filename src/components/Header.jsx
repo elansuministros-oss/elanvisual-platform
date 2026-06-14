@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Building2, Menu, X, Home, BriefcaseBusiness, Image, ClipboardList, Phone, LayoutDashboard, Factory } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -29,7 +29,7 @@ export default function Header({ page, setPage }) {
       ? [['crm', 'CRM', <LayoutDashboard size={22} />]]
       : []),
     ...(usuario?.rol === 'admin' || usuario?.rol === 'produccion'
-      ? [['produccion', 'Producción', <Factory size={22} />]]
+      ? [['produccion', 'ProducciÃ³n', <Factory size={22} />]]
       : []),
   ];
 
@@ -126,3 +126,4 @@ export default function Header({ page, setPage }) {
     </>
   );
 }
+

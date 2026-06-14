@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 
@@ -22,7 +22,7 @@ const fechaRegistro = (item = {}) => item.fecha || item.fechaRegistro || item.ac
 const fmt = (valor) =>
   new Intl.NumberFormat('es-NI', { style: 'currency', currency: 'NIO', maximumFractionDigits: 2 }).format(numero(valor));
 
-const unidades = ['Corporativo', 'ELANPET', 'ELANKAV VISUAL', 'ELANKAV CENTER', 'ELANKAV SOLAR', 'ELAN AI'];
+const unidades = ['Corporativo', 'ELANVISUAL', 'ELANKAV CENTER', 'ELANHOME', 'ELAN AI'];
 
 const unidadDe = (item = {}) => item.unidadNegocio || item.unidad || item.area || 'Corporativo';
 
@@ -50,5 +50,7 @@ export default function MetasKPIs() {
   const cobroReal = useMemo(() => cobros.reduce((a,i)=>a+montoRegistro(i),0), [cobros]);
   const produccionActiva = produccion.filter(i => ['pendiente','en proceso','activa'].includes((i.estado || '').toLowerCase())).length;
   const cumplimiento = metaVentas > 0 ? (ventaReal / metaVentas) * 100 : 0;
-  return <div style={{ padding: 20 }}><h2>Metas y KPIs Corporativos</h2><p style={{ color: '#6b7280' }}>Control de cumplimiento mensual para dirección.</p><div style={{ ...tarjeta, marginBottom: 18 }}><label>Meta de ventas C$ </label><input type="number" value={metaVentas} onChange={e=>setMetaVentas(Number(e.target.value))} style={{padding:10,borderRadius:10,border:'1px solid #d1d5db'}} /></div><div style={grid}><div style={tarjeta}><strong>Meta ventas</strong><h3>{fmt(metaVentas)}</h3></div><div style={tarjeta}><strong>Venta real</strong><h3>{fmt(ventaReal)}</h3></div><div style={tarjeta}><strong>Cumplimiento</strong><h3>{cumplimiento.toFixed(1)}%</h3></div><div style={tarjeta}><strong>Cobros</strong><h3>{fmt(cobroReal)}</h3></div><div style={tarjeta}><strong>Producción activa</strong><h3>{produccionActiva}</h3></div></div></div>;
+  return <div style={{ padding: 20 }}><h2>Metas y KPIs Corporativos</h2><p style={{ color: '#6b7280' }}>Control de cumplimiento mensual para direcciÃ³n.</p><div style={{ ...tarjeta, marginBottom: 18 }}><label>Meta de ventas C$ </label><input type="number" value={metaVentas} onChange={e=>setMetaVentas(Number(e.target.value))} style={{padding:10,borderRadius:10,border:'1px solid #d1d5db'}} /></div><div style={grid}><div style={tarjeta}><strong>Meta ventas</strong><h3>{fmt(metaVentas)}</h3></div><div style={tarjeta}><strong>Venta real</strong><h3>{fmt(ventaReal)}</h3></div><div style={tarjeta}><strong>Cumplimiento</strong><h3>{cumplimiento.toFixed(1)}%</h3></div><div style={tarjeta}><strong>Cobros</strong><h3>{fmt(cobroReal)}</h3></div><div style={tarjeta}><strong>ProducciÃ³n activa</strong><h3>{produccionActiva}</h3></div></div></div>;
 }
+
+

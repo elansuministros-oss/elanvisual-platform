@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const UNIDADES_NEGOCIO = [
-  'ELANPET',
-  'ELANKAV VISUAL',
+  'ELANVISUAL',
+  'ELANVISUAL',
   'ELANKAV CENTER',
-  'ELANKAV SOLAR',
+  'ELANHOME',
   'ELAN AI',
 ];
 
@@ -24,7 +24,7 @@ export default function Comisiones() {
     cliente: '',
     empresa: '',
     pedido: '',
-    unidadNegocio: 'ELANKAV VISUAL',
+    unidadNegocio: 'ELANVISUAL',
     ventaTotal: '',
     porcentaje: '10',
     comision: '',
@@ -56,7 +56,7 @@ export default function Comisiones() {
       cliente: '',
       empresa: '',
       pedido: '',
-      unidadNegocio: 'ELANKAV VISUAL',
+      unidadNegocio: 'ELANVISUAL',
       ventaTotal: '',
       porcentaje: '10',
       comision: '',
@@ -81,7 +81,7 @@ export default function Comisiones() {
       cliente: form.cliente.trim(),
       empresa: form.empresa.trim(),
       pedido: form.pedido.trim(),
-      unidadNegocio: form.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: form.unidadNegocio || 'ELANVISUAL',
       observaciones: form.observaciones.trim(),
       ventaTotal: Number(form.ventaTotal) || 0,
       porcentaje: Number(form.porcentaje) || 0,
@@ -107,7 +107,7 @@ export default function Comisiones() {
       cliente: item.cliente || '',
       empresa: item.empresa || '',
       pedido: item.pedido || '',
-      unidadNegocio: item.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: item.unidadNegocio || 'ELANVISUAL',
       ventaTotal: String(item.ventaTotal || ''),
       porcentaje: String(item.porcentaje || '10'),
       comision: String(item.comision || ''),
@@ -178,11 +178,11 @@ export default function Comisiones() {
       </div>
 
       <form className="crm-form" onSubmit={guardar}>
-        <h3>{editandoId ? 'Editar comisión' : 'Nueva comisión'}</h3>
+        <h3>{editandoId ? 'Editar comisiÃ³n' : 'Nueva comisiÃ³n'}</h3>
 
         <div className="form-grid">
           <label>
-            Código
+            CÃ³digo
             <input
               name="codigo"
               value={form.codigo}
@@ -264,7 +264,7 @@ export default function Comisiones() {
           </label>
 
           <label>
-            Comisión
+            ComisiÃ³n
             <input
               type="number"
               name="comision"
@@ -309,7 +309,7 @@ export default function Comisiones() {
 
         <div className="form-actions">
           <button type="submit">
-            {editandoId ? 'Actualizar comisión' : 'Guardar comisión'}
+            {editandoId ? 'Actualizar comisiÃ³n' : 'Guardar comisiÃ³n'}
           </button>
 
           {editandoId && (
@@ -318,7 +318,7 @@ export default function Comisiones() {
               onClick={limpiar}
               className="btn-secundario"
             >
-              Cancelar edición
+              Cancelar ediciÃ³n
             </button>
           )}
         </div>
@@ -328,13 +328,13 @@ export default function Comisiones() {
         <table className="crm-table">
           <thead>
             <tr>
-              <th>Código</th>
+              <th>CÃ³digo</th>
               <th>Vendedor</th>
               <th>Cliente</th>
               <th>Unidad</th>
               <th>Venta</th>
               <th>%</th>
-              <th>Comisión</th>
+              <th>ComisiÃ³n</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -354,7 +354,7 @@ export default function Comisiones() {
 
                   <td>{item.cliente || item.empresa}</td>
 
-                  <td>{item.unidadNegocio || 'ELANKAV VISUAL'}</td>
+                  <td>{item.unidadNegocio || 'ELANVISUAL'}</td>
 
                   <td>
                     C$ {Number(item.ventaTotal || 0).toFixed(2)}

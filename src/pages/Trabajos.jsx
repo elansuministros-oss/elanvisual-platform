@@ -1,49 +1,62 @@
-import React from 'react';
-import { PlayCircle } from 'lucide-react';
+﻿import React from 'react';
 import { useApp } from '../context/AppContext';
 
 export default function Trabajos() {
   const { trabajos } = useApp();
 
+  const trabajosActivos = Array.isArray(trabajos)
+    ? trabajos.filter((t) => t.activo)
+    : [];
+
   return (
     <main>
       <section className="catalog-hero">
         <div>
-          <span className="badge">Experiencias reales</span>
+          <span className="badge">Portafolio ELANVISUAL</span>
 
-          <h1>Nuestros trabajos realizados</h1>
+          <h1>Trabajos realizados</h1>
 
           <p>
-            Conocé algunos de los productos fabricados para nuestros clientes.
-            Fotografías reales de trabajos entregados, acabados y resultados
-            que reflejan la calidad, funcionalidad y compromiso de ELANPET.
+            Portafolio listo para cargar proyectos reales de rotulación,
+            impresión digital, acrílico, PVC, letras corpóreas,
+            fachadas, señalización y branding corporativo.
           </p>
         </div>
 
         <aside className="cart-summary-mini">
-          <b>Trabajos reales</b>
+          <b>Portafolio operativo</b>
+
           <span>
-            Proyectos fabricados y entregados a nuestros clientes.
+            Los trabajos se administran desde el panel interno
+            de ELANVISUAL.
           </span>
         </aside>
       </section>
 
-      <section className="work-grid">
-        {trabajos
-          .filter((t) => t.activo)
-          .map((t) => (
+      {trabajosActivos.length === 0 ? (
+        <section className="empty-state">
+          <b>Portafolio vacío</b>
+
+          <p>
+            No existen proyectos publicados.
+            Cargá trabajos reales desde Administración
+            para mostrarlos aquí.
+          </p>
+        </section>
+      ) : (
+        <section className="work-grid">
+          {trabajosActivos.map((t) => (
             <article className="work-card" key={t.id}>
-              <img src={t.imagen} alt={t.titulo} />
+              {t.imagen ? (
+                <img
+                  src={t.imagen}
+                  alt={t.titulo}
+                />
+              ) : null}
 
               <div>
                 <small>
-                  {t.tipo === 'Video' ? (
-                    <>
-                      <PlayCircle size={14} /> Video
-                    </>
-                  ) : (
-                    t.tipo
-                  )}
+                  {t.tipo || 'Trabajo realizado'}
                 </small>
 
                 <b>{t.titulo}</b>
@@ -52,7 +65,8 @@ export default function Trabajos() {
               </div>
             </article>
           ))}
-      </section>
+        </section>
+      )}
     </main>
   );
 }

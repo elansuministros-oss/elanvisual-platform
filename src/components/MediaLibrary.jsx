@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+Ôªøimport React, { useState } from 'react';
 import ImageUploader from './ImageUploader';
 
 const imagenBase = {
@@ -28,7 +28,7 @@ export default function MediaLibrary({
   };
 
   const guardarImagen = () => {
-    if (!nuevaImagen.src) return alert('Seleccion· una imagen primero.');
+    if (!nuevaImagen.src) return alert('Seleccion√° una imagen primero.');
 
     const item = {
       id: editandoId || Date.now(),
@@ -60,7 +60,7 @@ export default function MediaLibrary({
     <section className="media-library">
       <h3>{editandoId ? 'Editar imagen' : 'Gestor Multimedia'}</h3>
       <p>
-        SubÌ im·genes para usarlas en servicios, banners, portafolio,
+        Sub√≠ im√°genes para usarlas en servicios, banners, portafolio,
         identidad visual y logo corporativo.
       </p>
 

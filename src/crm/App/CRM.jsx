@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+ï»¿import React, { useMemo, useState } from 'react';
 import { useCore } from '../../core/context/CoreContext';
 
 import DashboardCRM from '../DashboardCRM';
@@ -81,13 +81,13 @@ export default function CRM() {
         ],
       },
       {
-        grupo: 'Operación',
+        grupo: 'OperaciÃ³n',
         items: [
-          { id: 'ordenes', label: 'Órdenes Trabajo', icono: '??', componente: <OrdenesTrabajo /> },
-          { id: 'produccion', label: 'Producción', icono: '??', componente: <Produccion /> },
+          { id: 'ordenes', label: 'Ã“rdenes Trabajo', icono: '??', componente: <OrdenesTrabajo /> },
+          { id: 'produccion', label: 'ProducciÃ³n', icono: '??', componente: <Produccion /> },
           { id: 'inventario', label: 'Inventario', icono: '??', componente: <Inventario /> },
           { id: 'materiales', label: 'Materiales', icono: '??', componente: <Materiales /> },
-          { id: 'portal-produccion', label: 'Portal Producción', icono: '???', componente: <PortalProduccionCRM /> },
+          { id: 'portal-produccion', label: 'Portal ProducciÃ³n', icono: '???', componente: <PortalProduccionCRM /> },
         ],
       },
       {
@@ -109,21 +109,21 @@ export default function CRM() {
         grupo: 'Portales',
         items: [
           { id: 'portal-cliente', label: 'Portal Cliente', icono: '??', componente: <PortalClienteCRM /> },
-          { id: 'app-movil', label: 'App Móvil', icono: '??', componente: <AppMovilCRM /> },
+          { id: 'app-movil', label: 'App MÃ³vil', icono: '??', componente: <AppMovilCRM /> },
         ],
       },
       {
-        grupo: 'Tecnología',
+        grupo: 'TecnologÃ­a',
         items: [
           { id: 'elan-ai', label: 'ELAN AI', icono: '??', componente: <ElanAI /> },
           { id: 'exportador-crm-central', label: 'Exportador CRM Central', icono: '??', componente: <ExportadorCRMCentral /> },
         ],
       },
       {
-        grupo: 'Administración',
+        grupo: 'AdministraciÃ³n',
         items: [
           { id: 'usuarios-permisos', label: 'Usuarios y Permisos', icono: '??', componente: <UsuariosPermisos /> },
-          { id: 'auditoria', label: 'Auditoría', icono: '??', componente: <AuditoriaCRM /> },
+          { id: 'auditoria', label: 'AuditorÃ­a', icono: '??', componente: <AuditoriaCRM /> },
           { id: 'automatizaciones', label: 'Automatizaciones', icono: '??', componente: <AutomatizacionesCRM /> },
           { id: 'calendario', label: 'Calendario', icono: '??', componente: <CalendarioCorporativo /> },
           { id: 'documentos', label: 'Documentos', icono: '???', componente: <DocumentosCorporativos /> },
@@ -392,7 +392,7 @@ export default function CRM() {
             className="crm-mobile-button"
             onClick={() => setMenuAbierto(true)}
           >
-            ? Menú
+            ? MenÃº
           </button>
 
           <div className="crm-topbar-title">
@@ -412,3 +412,4 @@ export default function CRM() {
     </div>
   );
 }
+

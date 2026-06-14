@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const UNIDADES_NEGOCIO = [
-  'ELANPET',
-  'ELANKAV VISUAL',
+  'ELANVISUAL',
+  'ELANVISUAL',
   'ELANKAV CENTER',
-  'ELANKAV SOLAR',
+  'ELANHOME',
   'ELAN AI',
 ];
 
@@ -62,7 +62,7 @@ const formInicial = () => ({
   cliente: '',
   telefono: '',
   producto: '',
-  unidadNegocio: 'ELANKAV VISUAL',
+  unidadNegocio: 'ELANVISUAL',
   cantidad: '',
   total: '',
   moneda: 'C$',
@@ -111,7 +111,7 @@ export default function Produccion() {
         acc.costo += calculo.costoTotal;
         acc.utilidad += calculo.utilidad;
 
-        if (['Pendiente', 'En proceso', 'Producción', 'Fabricación'].includes(item.etapa)) {
+        if (['Pendiente', 'En proceso', 'ProducciÃ³n', 'FabricaciÃ³n'].includes(item.etapa)) {
           acc.activa += 1;
         }
 
@@ -285,8 +285,8 @@ export default function Produccion() {
     <div className="crm-page">
       <div className="crm-page-header">
         <div>
-          <h2>Producción</h2>
-          <p>Control de fabricación con costos reales, utilidad y margen por trabajo.</p>
+          <h2>ProducciÃ³n</h2>
+          <p>Control de fabricaciÃ³n con costos reales, utilidad y margen por trabajo.</p>
         </div>
       </div>
 
@@ -308,7 +308,7 @@ export default function Produccion() {
           <strong>{porcentaje(margenGeneral)}</strong>
         </div>
         <div className="crm-stat-card">
-          <span>Producción activa</span>
+          <span>ProducciÃ³n activa</span>
           <strong>{resumen.activa}</strong>
         </div>
         <div className="crm-stat-card">
@@ -318,7 +318,7 @@ export default function Produccion() {
       </div>
 
       <div className="crm-card">
-        <h3>{editandoId ? 'Editar producción' : 'Nueva producción'}</h3>
+        <h3>{editandoId ? 'Editar producciÃ³n' : 'Nueva producciÃ³n'}</h3>
 
         <form onSubmit={guardarProduccion} className="crm-form-grid">
           <label>
@@ -327,15 +327,15 @@ export default function Produccion() {
               <option value="">Sin orden relacionada</option>
               {ordenesTrabajoDisponibles.map((orden) => (
                 <option key={orden.id} value={orden.id}>
-                  {orden.codigo || orden.id} · {orden.cliente || orden.empresaNombre || 'Sin cliente'}
+                  {orden.codigo || orden.id} Â· {orden.cliente || orden.empresaNombre || 'Sin cliente'}
                 </option>
               ))}
             </select>
           </label>
 
           <label>
-            Código producción
-            <input name="codigo" value={formulario.codigo} onChange={cambiarFormulario} placeholder="Automático" />
+            CÃ³digo producciÃ³n
+            <input name="codigo" value={formulario.codigo} onChange={cambiarFormulario} placeholder="AutomÃ¡tico" />
           </label>
 
           <label>
@@ -392,7 +392,7 @@ export default function Produccion() {
           </label>
 
           <label>
-            Instalación
+            InstalaciÃ³n
             <input name="costoInstalacion" type="number" step="0.01" value={formulario.costoInstalacion} onChange={cambiarFormulario} />
           </label>
 
@@ -410,10 +410,10 @@ export default function Produccion() {
             Etapa
             <select name="etapa" value={formulario.etapa} onChange={cambiarFormulario}>
               <option value="Pendiente">Pendiente</option>
-              <option value="Diseño">Diseño</option>
-              <option value="Producción">Producción</option>
-              <option value="Fabricación">Fabricación</option>
-              <option value="Instalación">Instalación</option>
+              <option value="DiseÃ±o">DiseÃ±o</option>
+              <option value="ProducciÃ³n">ProducciÃ³n</option>
+              <option value="FabricaciÃ³n">FabricaciÃ³n</option>
+              <option value="InstalaciÃ³n">InstalaciÃ³n</option>
               <option value="Terminada">Terminada</option>
               <option value="Entregada">Entregada</option>
               <option value="Cancelada">Cancelada</option>
@@ -456,7 +456,7 @@ export default function Produccion() {
           </label>
 
           <label className="crm-field-full">
-            Nota de producción
+            Nota de producciÃ³n
             <textarea name="nota" value={formulario.nota} onChange={cambiarFormulario} />
           </label>
 
@@ -469,10 +469,10 @@ export default function Produccion() {
           </div>
 
           <div className="crm-actions crm-field-full">
-            <button type="submit">{editandoId ? 'Actualizar producción' : 'Crear producción'}</button>
+            <button type="submit">{editandoId ? 'Actualizar producciÃ³n' : 'Crear producciÃ³n'}</button>
             {editandoId && (
               <button type="button" onClick={limpiar} className="btn-secondary">
-                Cancelar edición
+                Cancelar ediciÃ³n
               </button>
             )}
           </div>
@@ -482,13 +482,13 @@ export default function Produccion() {
       <div className="crm-card">
         <div className="crm-page-header">
           <div>
-            <h3>Listado de producción</h3>
-            <p>Control real de fabricación y rentabilidad.</p>
+            <h3>Listado de producciÃ³n</h3>
+            <p>Control real de fabricaciÃ³n y rentabilidad.</p>
           </div>
           <input
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscar producción..."
+            placeholder="Buscar producciÃ³n..."
           />
         </div>
 
@@ -496,7 +496,7 @@ export default function Produccion() {
           <table className="crm-table">
             <thead>
               <tr>
-                <th>Código</th>
+                <th>CÃ³digo</th>
                 <th>OT</th>
                 <th>Cliente</th>
                 <th>Trabajo</th>
@@ -520,7 +520,7 @@ export default function Produccion() {
                     <td>{item.ordenTrabajoCodigo || 'Sin OT'}</td>
                     <td>{item.cliente || item.empresaNombre || 'Sin cliente'}</td>
                     <td>{item.producto || 'Sin producto'}</td>
-                    <td>{item.unidadNegocio || 'ELANKAV VISUAL'}</td>
+                    <td>{item.unidadNegocio || 'ELANVISUAL'}</td>
                     <td>{dinero(calculo.venta, item.moneda)}</td>
                     <td>{dinero(calculo.costoTotal, item.moneda)}</td>
                     <td>{dinero(calculo.utilidad, item.moneda)}</td>
@@ -539,7 +539,7 @@ export default function Produccion() {
 
               {produccionFiltrada.length === 0 && (
                 <tr>
-                  <td colSpan="12">No hay producción registrada.</td>
+                  <td colSpan="12">No hay producciÃ³n registrada.</td>
                 </tr>
               )}
             </tbody>
@@ -547,7 +547,7 @@ export default function Produccion() {
         </div>
 
         <div className="crm-note">
-          Producción queda conectada con órdenes de trabajo y ahora controla costo real, utilidad real y margen.
+          ProducciÃ³n queda conectada con Ã³rdenes de trabajo y ahora controla costo real, utilidad real y margen.
         </div>
       </div>
 
@@ -565,3 +565,4 @@ export default function Produccion() {
     </div>
   );
 }
+

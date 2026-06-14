@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 
@@ -22,7 +22,7 @@ const fechaRegistro = (item = {}) => item.fecha || item.fechaRegistro || item.ac
 const fmt = (valor) =>
   new Intl.NumberFormat('es-NI', { style: 'currency', currency: 'NIO', maximumFractionDigits: 2 }).format(numero(valor));
 
-const unidades = ['Corporativo', 'ELANPET', 'ELANKAV VISUAL', 'ELANKAV CENTER', 'ELANKAV SOLAR', 'ELAN AI'];
+const unidades = ['Corporativo', 'ELANVISUAL', 'ELANKAV CENTER', 'ELANHOME', 'ELAN AI'];
 
 const unidadDe = (item = {}) => item.unidadNegocio || item.unidad || item.area || 'Corporativo';
 
@@ -54,3 +54,5 @@ export default function CRMComercialAvanzado() {
   ], [empresas, contactos, cotizaciones, pedidos, cobros]);
   return <div style={{ padding: 20 }}><h2>CRM Comercial Avanzado</h2><p style={{ color: '#6b7280' }}>Embudo comercial desde prospecto hasta cobro.</p><div style={grid}>{embudo.map(e=><div style={tarjeta} key={e.etapa}><strong>{e.etapa}</strong><h3>{e.cantidad}</h3>{e.monto>0 && <p>{fmt(e.monto)}</p>}</div>)}</div></div>;
 }
+
+

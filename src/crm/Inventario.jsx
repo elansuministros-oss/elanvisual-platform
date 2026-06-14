@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const CATEGORIAS = ['Material', 'Producto terminado', 'Herramienta', 'Insumo', 'Equipo', 'Otro'];
-const UNIDADES = ['Unidad', 'Lámina', 'Metro', 'Metro cuadrado', 'Rollo', 'Galón', 'Caja', 'Kit'];
+const UNIDADES = ['Unidad', 'LÃ¡mina', 'Metro', 'Metro cuadrado', 'Rollo', 'GalÃ³n', 'Caja', 'Kit'];
 const MONEDAS = ['C$', 'USD'];
 
 const numero = (valor) => Number(valor || 0);
@@ -186,8 +186,8 @@ export default function Inventario() {
 
         <form onSubmit={guardar} className="crm-form-grid">
           <label>
-            Código
-            <input name="codigo" value={form.codigo} onChange={cambiar} placeholder="Automático" />
+            CÃ³digo
+            <input name="codigo" value={form.codigo} onChange={cambiar} placeholder="AutomÃ¡tico" />
           </label>
 
           <label>
@@ -196,7 +196,7 @@ export default function Inventario() {
           </label>
 
           <label>
-            Categoría
+            CategorÃ­a
             <select name="categoria" value={form.categoria} onChange={cambiar}>
               {CATEGORIAS.map((categoria) => (
                 <option key={categoria} value={categoria}>{categoria}</option>
@@ -229,7 +229,7 @@ export default function Inventario() {
           </label>
 
           <label>
-            Stock mínimo
+            Stock mÃ­nimo
             <input name="stockMinimo" type="number" step="0.01" value={form.stockMinimo} onChange={cambiar} />
           </label>
 
@@ -258,7 +258,7 @@ export default function Inventario() {
           </label>
 
           <label>
-            Ubicación
+            UbicaciÃ³n
             <input name="ubicacion" value={form.ubicacion} onChange={cambiar} />
           </label>
 
@@ -269,7 +269,7 @@ export default function Inventario() {
               <option value="Reservado">Reservado</option>
               <option value="En uso">En uso</option>
               <option value="Agotado">Agotado</option>
-              <option value="Dañado">Dañado</option>
+              <option value="DaÃ±ado">DaÃ±ado</option>
             </select>
           </label>
 
@@ -300,7 +300,7 @@ export default function Inventario() {
             <button type="submit">{editandoId ? 'Actualizar item' : 'Crear item'}</button>
             {editandoId && (
               <button type="button" onClick={limpiar} className="btn-secondary">
-                Cancelar edición
+                Cancelar ediciÃ³n
               </button>
             )}
           </div>
@@ -311,7 +311,7 @@ export default function Inventario() {
         <div className="crm-page-header">
           <div>
             <h3>Listado de inventario</h3>
-            <p>Control de existencias y valor en almacén.</p>
+            <p>Control de existencias y valor en almacÃ©n.</p>
           </div>
           <input
             value={busqueda}
@@ -324,14 +324,14 @@ export default function Inventario() {
           <table className="crm-table">
             <thead>
               <tr>
-                <th>Código</th>
+                <th>CÃ³digo</th>
                 <th>Producto</th>
-                <th>Categoría</th>
+                <th>CategorÃ­a</th>
                 <th>Existencia</th>
-                <th>Stock mínimo</th>
+                <th>Stock mÃ­nimo</th>
                 <th>Costo promedio</th>
                 <th>Valor</th>
-                <th>Ubicación</th>
+                <th>UbicaciÃ³n</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -395,3 +395,4 @@ export default function Inventario() {
     </div>
   );
 }
+

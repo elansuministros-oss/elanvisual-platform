@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 
-const UNIDADES_NEGOCIO = ['ELANPET', 'ELANKAV VISUAL', 'ELANKAV CENTER', 'ELANKAV SOLAR', 'ELAN AI'];
+const UNIDADES_NEGOCIO = ['ELANVISUAL', 'ELANKAV CENTER', 'ELANHOME', 'ELAN AI'];
 const TIPOS_FISCALES = ['Con IVA', 'Sin factura', 'Exento'];
 const IVA = 0.15;
 
@@ -68,9 +68,9 @@ const inicial = {
   proveedor: '',
   factura: '',
   fecha: hoyISO(),
-  unidadNegocio: 'ELANKAV VISUAL',
+  unidadNegocio: 'ELANVISUAL',
   tipoFiscal: 'Con IVA',
-  facturaFiscal: 'Sí',
+  facturaFiscal: 'SÃ­',
   subtotal: '',
   iva: '',
   total: '',
@@ -97,7 +97,7 @@ export default function Compras() {
       }
 
       if (name === 'tipoFiscal') {
-        nuevo.facturaFiscal = value === 'Con IVA' ? 'Sí' : 'No';
+        nuevo.facturaFiscal = value === 'Con IVA' ? 'SÃ­' : 'No';
       }
 
       const fiscal = fiscalCompra(nuevo.subtotal, nuevo.tipoFiscal);
@@ -123,9 +123,9 @@ export default function Compras() {
       proveedor: proveedor?.nombre || form.proveedor.trim(),
       factura: form.factura.trim(),
       fecha: form.fecha || hoyISO(),
-      unidadNegocio: form.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: form.unidadNegocio || 'ELANVISUAL',
       tipoFiscal: form.tipoFiscal || 'Con IVA',
-      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'Sí' : form.facturaFiscal || 'No',
+      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'SÃ­' : form.facturaFiscal || 'No',
       subtotal: fiscal.subtotal,
       iva: fiscal.iva,
       ivaCredito: form.tipoFiscal === 'Con IVA' ? fiscal.iva : 0,
@@ -150,9 +150,9 @@ export default function Compras() {
       proveedor: item.proveedor || '',
       factura: item.factura || '',
       fecha: item.fecha || hoyISO(),
-      unidadNegocio: item.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: item.unidadNegocio || 'ELANVISUAL',
       tipoFiscal: item.tipoFiscal || (numero(item.iva) > 0 ? 'Con IVA' : 'Sin factura'),
-      facturaFiscal: item.facturaFiscal || (numero(item.iva) > 0 ? 'Sí' : 'No'),
+      facturaFiscal: item.facturaFiscal || (numero(item.iva) > 0 ? 'SÃ­' : 'No'),
       subtotal: String(item.subtotal || ''),
       iva: String(item.ivaCredito || item.iva || ''),
       total: String(item.total || ''),
@@ -175,31 +175,31 @@ export default function Compras() {
     <div style={styles.page}>
       <div style={styles.header}>
         <h2 style={styles.title}>Compras</h2>
-        <p style={styles.subtitle}>Compras con control fiscal: IVA crédito, compras sin factura y gasto interno real.</p>
+        <p style={styles.subtitle}>Compras con control fiscal: IVA crÃ©dito, compras sin factura y gasto interno real.</p>
       </div>
 
       <div style={styles.stats}>
         <div style={styles.stat}><span style={styles.statLabel}>Subtotal</span><strong style={styles.statValue}>{moneda(resumen.subtotal)}</strong></div>
-        <div style={styles.stat}><span style={styles.statLabel}>IVA crédito</span><strong style={styles.statValue}>{moneda(resumen.ivaCredito)}</strong></div>
+        <div style={styles.stat}><span style={styles.statLabel}>IVA crÃ©dito</span><strong style={styles.statValue}>{moneda(resumen.ivaCredito)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Total compras</span><strong style={styles.statValue}>{moneda(resumen.total)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Sin factura</span><strong style={styles.statValue}>{moneda(resumen.sinFactura)}</strong></div>
       </div>
 
       <form style={styles.card} onSubmit={guardar}>
         <div style={styles.grid}>
-          <label style={styles.label}>Código<input style={styles.input} name="codigo" value={form.codigo} onChange={cambiar} /></label>
+          <label style={styles.label}>CÃ³digo<input style={styles.input} name="codigo" value={form.codigo} onChange={cambiar} /></label>
           <label style={styles.label}>Proveedor registrado<select style={styles.select} name="proveedorId" value={form.proveedorId} onChange={cambiar}><option value="">Manual</option>{proveedores.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select></label>
           <label style={styles.label}>Proveedor<input style={styles.input} name="proveedor" value={form.proveedor} onChange={cambiar} /></label>
           <label style={styles.label}>Factura<input style={styles.input} name="factura" value={form.factura} onChange={cambiar} /></label>
           <label style={styles.label}>Fecha<input style={styles.input} type="date" name="fecha" value={form.fecha} onChange={cambiar} /></label>
           <label style={styles.label}>Unidad<select style={styles.select} name="unidadNegocio" value={form.unidadNegocio} onChange={cambiar}>{UNIDADES_NEGOCIO.map((u) => <option key={u} value={u}>{u}</option>)}</select></label>
           <label style={styles.label}>Tipo fiscal<select style={styles.select} name="tipoFiscal" value={form.tipoFiscal} onChange={cambiar}>{TIPOS_FISCALES.map((t) => <option key={t} value={t}>{t}</option>)}</select></label>
-          <label style={styles.label}>Factura fiscal<select style={styles.select} name="facturaFiscal" value={form.facturaFiscal} onChange={cambiar}><option>Sí</option><option>No</option></select></label>
+          <label style={styles.label}>Factura fiscal<select style={styles.select} name="facturaFiscal" value={form.facturaFiscal} onChange={cambiar}><option>SÃ­</option><option>No</option></select></label>
           <label style={styles.label}>Subtotal<input style={styles.input} type="number" step="0.01" name="subtotal" value={form.subtotal} onChange={cambiar} /></label>
           <label style={styles.label}>IVA<input style={styles.input} type="number" step="0.01" name="iva" value={form.iva} readOnly /></label>
           <label style={styles.label}>Total<input style={styles.input} type="number" step="0.01" name="total" value={form.total} readOnly /></label>
           <label style={styles.label}>Estado<select style={styles.select} name="estado" value={form.estado} onChange={cambiar}>{ESTADOS.map((e) => <option key={e} value={e}>{e}</option>)}</select></label>
-          <label style={styles.label}>Categoría<select style={styles.select} name="categoria" value={form.categoria} onChange={cambiar}>{CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
+          <label style={styles.label}>CategorÃ­a<select style={styles.select} name="categoria" value={form.categoria} onChange={cambiar}>{CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
         </div>
         <label style={{ ...styles.label, marginTop: 12 }}>Observaciones<textarea style={styles.textarea} name="observaciones" value={form.observaciones} onChange={cambiar} /></label>
         <div style={styles.actions}><button style={styles.primary} type="submit">{editandoId ? 'Actualizar compra' : 'Guardar compra'}</button><button style={styles.secondary} type="button" onClick={limpiar}>Limpiar</button></div>
@@ -208,7 +208,7 @@ export default function Compras() {
       <div style={styles.card}>
         <div style={styles.tableWrap}>
           <table style={styles.table}>
-            <thead><tr><th style={styles.th}>Fecha</th><th style={styles.th}>Código</th><th style={styles.th}>Proveedor</th><th style={styles.th}>Unidad</th><th style={styles.th}>Fiscal</th><th style={styles.th}>Subtotal</th><th style={styles.th}>IVA</th><th style={styles.th}>Total</th><th style={styles.th}>Estado</th><th style={styles.th}>Acciones</th></tr></thead>
+            <thead><tr><th style={styles.th}>Fecha</th><th style={styles.th}>CÃ³digo</th><th style={styles.th}>Proveedor</th><th style={styles.th}>Unidad</th><th style={styles.th}>Fiscal</th><th style={styles.th}>Subtotal</th><th style={styles.th}>IVA</th><th style={styles.th}>Total</th><th style={styles.th}>Estado</th><th style={styles.th}>Acciones</th></tr></thead>
             <tbody>{compras.map((item) => (
               <tr key={item.id}>
                 <td style={styles.td}>{item.fecha}</td><td style={styles.td}>{item.codigo}</td><td style={styles.td}>{item.proveedor}</td><td style={styles.td}>{item.unidadNegocio}</td><td style={styles.td}><span style={styles.badge}>{item.tipoFiscal || 'Sin clasificar'}</span></td><td style={styles.td}>{moneda(item.subtotal)}</td><td style={styles.td}>{moneda(item.ivaCredito || item.iva)}</td><td style={styles.td}>{moneda(item.total || item.subtotal)}</td><td style={styles.td}>{item.estado}</td><td style={styles.td}><button style={styles.edit} type="button" onClick={() => editar(item)}>Editar</button> <button style={styles.danger} type="button" onClick={() => eliminarCompra(item.id)}>Eliminar</button></td>
@@ -220,3 +220,5 @@ export default function Compras() {
     </div>
   );
 }
+
+

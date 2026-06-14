@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 
-const UNIDADES_NEGOCIO = ['ELANPET', 'ELANKAV VISUAL', 'ELANKAV CENTER', 'ELANKAV SOLAR', 'ELAN AI'];
+const UNIDADES_NEGOCIO = ['ELANVISUAL', 'ELANKAV CENTER', 'ELANHOME', 'ELAN AI'];
 const TIPOS_FISCALES = ['Con IVA', 'Sin factura', 'Exento'];
 const IVA = 0.15;
 
@@ -74,9 +74,9 @@ const inicial = {
   factura: '',
   fechaEmision: hoyISO(),
   fechaVencimiento: sumarDias(15),
-  unidadNegocio: 'ELANKAV VISUAL',
+  unidadNegocio: 'ELANVISUAL',
   tipoFiscal: 'Con IVA',
-  facturaFiscal: 'Sí',
+  facturaFiscal: 'SÃ­',
   subtotal: '',
   iva: '',
   monto: '',
@@ -120,9 +120,9 @@ export default function CuentasPorPagar() {
             proveedorId: compra.proveedorId || '',
             proveedor: compra.proveedor || '',
             factura: compra.factura || '',
-            unidadNegocio: compra.unidadNegocio || 'ELANKAV VISUAL',
+            unidadNegocio: compra.unidadNegocio || 'ELANVISUAL',
             tipoFiscal: compra.tipoFiscal || 'Con IVA',
-            facturaFiscal: compra.facturaFiscal || 'Sí',
+            facturaFiscal: compra.facturaFiscal || 'SÃ­',
             subtotal: String(compra.subtotal || ''),
             iva: String(compra.ivaCredito || compra.iva || ''),
             monto: String(compra.total || compra.subtotal || ''),
@@ -152,9 +152,9 @@ export default function CuentasPorPagar() {
       factura: form.factura.trim(),
       fechaEmision: form.fechaEmision || hoyISO(),
       fechaVencimiento: form.fechaVencimiento || sumarDias(15),
-      unidadNegocio: form.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: form.unidadNegocio || 'ELANVISUAL',
       tipoFiscal: form.tipoFiscal || 'Con IVA',
-      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'Sí' : form.facturaFiscal || 'No',
+      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'SÃ­' : form.facturaFiscal || 'No',
       subtotal: numero(form.subtotal),
       iva: numero(form.iva),
       ivaCredito: form.tipoFiscal === 'Con IVA' ? numero(form.iva) : 0,
@@ -182,9 +182,9 @@ export default function CuentasPorPagar() {
       factura: item.factura || '',
       fechaEmision: item.fechaEmision || hoyISO(),
       fechaVencimiento: item.fechaVencimiento || sumarDias(15),
-      unidadNegocio: item.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: item.unidadNegocio || 'ELANVISUAL',
       tipoFiscal: item.tipoFiscal || (numero(item.ivaCredito || item.iva) > 0 ? 'Con IVA' : 'Sin factura'),
-      facturaFiscal: item.facturaFiscal || (numero(item.ivaCredito || item.iva) > 0 ? 'Sí' : 'No'),
+      facturaFiscal: item.facturaFiscal || (numero(item.ivaCredito || item.iva) > 0 ? 'SÃ­' : 'No'),
       subtotal: String(item.subtotal || ''),
       iva: String(item.ivaCredito || item.iva || ''),
       monto: String(item.monto || ''),
@@ -208,28 +208,28 @@ export default function CuentasPorPagar() {
 
   return (
     <div style={styles.page}>
-      <div style={styles.header}><h2 style={styles.title}>Cuentas por Pagar</h2><p style={styles.subtitle}>Control de proveedores, IVA crédito pendiente y pagos sin factura fiscal.</p></div>
+      <div style={styles.header}><h2 style={styles.title}>Cuentas por Pagar</h2><p style={styles.subtitle}>Control de proveedores, IVA crÃ©dito pendiente y pagos sin factura fiscal.</p></div>
       <div style={styles.stats}>
         <div style={styles.stat}><span style={styles.statLabel}>Total por pagar</span><strong style={styles.statValue}>{moneda(resumen.monto)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Abonado</span><strong style={styles.statValue}>{moneda(resumen.abonado)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Saldo</span><strong style={styles.statValue}>{moneda(resumen.saldo)}</strong></div>
-        <div style={styles.stat}><span style={styles.statLabel}>IVA crédito</span><strong style={styles.statValue}>{moneda(resumen.ivaCredito)}</strong></div>
+        <div style={styles.stat}><span style={styles.statLabel}>IVA crÃ©dito</span><strong style={styles.statValue}>{moneda(resumen.ivaCredito)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Sin factura</span><strong style={styles.statValue}>{moneda(resumen.sinFactura)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Vencidas</span><strong style={styles.statValue}>{resumen.vencidas}</strong></div>
       </div>
 
       <form style={styles.card} onSubmit={guardar}>
         <div style={styles.grid}>
-          <label style={styles.label}>Código<input style={styles.input} name="codigo" value={form.codigo} onChange={cambiar} /></label>
+          <label style={styles.label}>CÃ³digo<input style={styles.input} name="codigo" value={form.codigo} onChange={cambiar} /></label>
           <label style={styles.label}>Proveedor<select style={styles.select} name="proveedorId" value={form.proveedorId} onChange={cambiar}><option value="">Manual</option>{proveedores.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}</select></label>
-          <label style={styles.label}>Compra<select style={styles.select} name="compraId" value={form.compraId} onChange={cambiar}><option value="">Manual</option>{compras.map((c) => <option key={c.id} value={c.id}>{c.codigo} · {c.proveedor}</option>)}</select></label>
+          <label style={styles.label}>Compra<select style={styles.select} name="compraId" value={form.compraId} onChange={cambiar}><option value="">Manual</option>{compras.map((c) => <option key={c.id} value={c.id}>{c.codigo} Â· {c.proveedor}</option>)}</select></label>
           <label style={styles.label}>Proveedor manual<input style={styles.input} name="proveedor" value={form.proveedor} onChange={cambiar} /></label>
           <label style={styles.label}>Factura<input style={styles.input} name="factura" value={form.factura} onChange={cambiar} /></label>
-          <label style={styles.label}>Emisión<input style={styles.input} type="date" name="fechaEmision" value={form.fechaEmision} onChange={cambiar} /></label>
+          <label style={styles.label}>EmisiÃ³n<input style={styles.input} type="date" name="fechaEmision" value={form.fechaEmision} onChange={cambiar} /></label>
           <label style={styles.label}>Vencimiento<input style={styles.input} type="date" name="fechaVencimiento" value={form.fechaVencimiento} onChange={cambiar} /></label>
           <label style={styles.label}>Unidad<select style={styles.select} name="unidadNegocio" value={form.unidadNegocio} onChange={cambiar}>{UNIDADES_NEGOCIO.map((u) => <option key={u} value={u}>{u}</option>)}</select></label>
           <label style={styles.label}>Tipo fiscal<select style={styles.select} name="tipoFiscal" value={form.tipoFiscal} onChange={cambiar}>{TIPOS_FISCALES.map((t) => <option key={t} value={t}>{t}</option>)}</select></label>
-          <label style={styles.label}>Factura fiscal<select style={styles.select} name="facturaFiscal" value={form.facturaFiscal} onChange={cambiar}><option>Sí</option><option>No</option></select></label>
+          <label style={styles.label}>Factura fiscal<select style={styles.select} name="facturaFiscal" value={form.facturaFiscal} onChange={cambiar}><option>SÃ­</option><option>No</option></select></label>
           <label style={styles.label}>Subtotal<input style={styles.input} type="number" step="0.01" name="subtotal" value={form.subtotal} onChange={cambiar} /></label>
           <label style={styles.label}>IVA<input style={styles.input} type="number" step="0.01" name="iva" value={form.iva} onChange={cambiar} /></label>
           <label style={styles.label}>Monto<input style={styles.input} type="number" step="0.01" name="monto" value={form.monto} onChange={cambiar} /></label>
@@ -242,7 +242,7 @@ export default function CuentasPorPagar() {
       </form>
 
       <div style={styles.card}><div style={styles.tableWrap}><table style={styles.table}>
-        <thead><tr><th style={styles.th}>Vence</th><th style={styles.th}>Código</th><th style={styles.th}>Proveedor</th><th style={styles.th}>Unidad</th><th style={styles.th}>Fiscal</th><th style={styles.th}>Monto</th><th style={styles.th}>Abonado</th><th style={styles.th}>Saldo</th><th style={styles.th}>Estado</th><th style={styles.th}>Acciones</th></tr></thead>
+        <thead><tr><th style={styles.th}>Vence</th><th style={styles.th}>CÃ³digo</th><th style={styles.th}>Proveedor</th><th style={styles.th}>Unidad</th><th style={styles.th}>Fiscal</th><th style={styles.th}>Monto</th><th style={styles.th}>Abonado</th><th style={styles.th}>Saldo</th><th style={styles.th}>Estado</th><th style={styles.th}>Acciones</th></tr></thead>
         <tbody>{cuentasPorPagar.map((item) => <tr key={item.id}>
           <td style={styles.td}>{item.fechaVencimiento}</td><td style={styles.td}>{item.codigo}</td><td style={styles.td}>{item.proveedor}</td><td style={styles.td}>{item.unidadNegocio}</td><td style={styles.td}><span style={styles.badge}>{item.tipoFiscal || 'Sin clasificar'}</span></td><td style={styles.td}>{moneda(item.monto)}</td><td style={styles.td}>{moneda(item.abonado)}</td><td style={styles.td}>{moneda(item.saldo)}</td><td style={styles.td}>{item.estado}</td><td style={styles.td}><button style={styles.edit} type="button" onClick={() => editar(item)}>Editar</button> <button style={styles.danger} type="button" onClick={() => eliminarCuentaPorPagar(item.id)}>Eliminar</button></td>
         </tr>)}</tbody>
@@ -250,3 +250,5 @@ export default function CuentasPorPagar() {
     </div>
   );
 }
+
+

@@ -1,40 +1,116 @@
-import React, { useMemo, useState } from 'react';
-import { Camera, ClipboardList, ExternalLink, PackageCheck, Save, Send, Video } from 'lucide-react';
-import { estadosProduccion, etiquetasEstado, useApp } from '../context/AppContext';
+﻿import React, { useMemo, useState } from 'react';
+import {
+  Camera,
+  ClipboardList,
+  ExternalLink,
+  PackageCheck,
+  Save,
+  Send,
+  Video,
+} from 'lucide-react';
+import { useApp } from '../context/AppContext';
+
+const ESTADOS_PRODUCCION_VISUAL = [
+  'pendiente',
+  'diseno',
+  'aprobacion_cliente',
+  'produccion',
+  'instalacion',
+  'entregado',
+  'cerrado',
+];
+
+const ETIQUETAS_ESTADO_VISUAL = {
+  pendiente: 'Pendiente',
+  diseno: 'Diseño',
+  aprobacion_cliente: 'Aprobación cliente',
+  produccion: 'Producción',
+  instalacion: 'Instalación',
+  entregado: 'Entregado',
+  cerrado: 'Cerrado',
+};
 
 const evidenciaLabels = {
   inicial: 'Evidencia inicial',
-  proceso: 'Evidencia proceso',
-  terminado: 'Evidencia terminado',
-  entrega: 'Evidencia entrega',
+  diseno: 'Diseño aprobado',
+  proceso: 'Evidencia de producción',
+  instalacion: 'Evidencia de instalación',
+  entrega: 'Evidencia de entrega',
 };
 
 const estadoDefault = 'pendiente';
-const seguimientoUrl = 'https://pet.elankav.com/seguimiento';
+const seguimientoUrl = 'https://visual.elankav.com/seguimiento';
 
 function estadoPedido(pedido) {
   return pedido.estadoProduccion || pedido.ordenTrabajo?.estadoProduccion || estadoDefault;
 }
 
+function limpiarNumero(valor) {
+  return String(valor || '').replace(/[^0-9]/g, '');
+}
+
+function numeroWhatsApp(numero) {
+  const limpio = limpiarNumero(numero);
+  if (limpio.length === 8) return `505${limpio}`;
+  return limpio;
+}
+
+function obtenerMonto(pedido) {
+  return Number(
+    pedido.total ||
+      pedido.monto ||
+      pedido.resumen?.total ||
+      pedido.cotizacion?.total ||
+      0
+  );
+}
+
+function obtenerAnticipo(pedido) {
+  return Number(
+    pedido.anticipo ||
+      pedido.montoAnticipo ||
+      pedido.pago?.anticipo ||
+      pedido.resumen?.anticipo ||
+      obtenerMonto(pedido) * 0.6 ||
+      0
+  );
+}
+
 function crearOTBase(pedido) {
-  const items = pedido.items || [];
+  const items = Array.isArray(pedido.items) ? pedido.items : [];
+  const monto = obtenerMonto(pedido);
+  const anticipo = obtenerAnticipo(pedido);
+  const saldo = Math.max(monto - anticipo, 0);
+
   return {
     codigoOT:
       pedido.ordenTrabajo?.codigoOT ||
-      `OT-${String(pedido.codigoSeguimiento || pedido.numero || pedido.id || Date.now()).replace(/[^0-9]/g, '').slice(-6)}`,
+      `OTV-${String(
+        pedido.codigoSeguimiento || pedido.numero || pedido.id || Date.now()
+      )
+        .replace(/[^0-9]/g, '')
+        .slice(-6)}`,
     pedido: pedido.codigoSeguimiento || pedido.numero || '',
-    cliente: pedido.cliente?.nombre || '',
-    veterinaria: pedido.veterinaria?.nombre || pedido.veterinariaNombre || '',
-    producto: items.map((item) => item.nombre).join(', '),
-    cantidad: items.reduce((total, item) => total + Number(item.cantidad || 0), 0),
+    cliente: pedido.cliente?.nombre || pedido.clienteNombre || '',
+    vendedor: pedido.vendedor || pedido.vendedorNombre || '',
+    fecha: pedido.ordenTrabajo?.fecha || pedido.createdAt || new Date().toISOString(),
+    servicio:
+      pedido.ordenTrabajo?.servicio ||
+      pedido.servicio ||
+      pedido.tipoServicio ||
+      items.map((item) => item.nombre).join(', ') ||
+      'Servicio ELANVISUAL',
+    monto: pedido.ordenTrabajo?.monto ?? monto,
+    anticipo: pedido.ordenTrabajo?.anticipo ?? anticipo,
+    saldo: pedido.ordenTrabajo?.saldo ?? saldo,
     responsable: pedido.ordenTrabajo?.responsable || '',
     observaciones: pedido.ordenTrabajo?.observaciones || '',
-    fecha: pedido.ordenTrabajo?.fecha || pedido.createdAt || new Date().toISOString(),
     estadoProduccion: estadoPedido(pedido),
     evidencias: {
       inicial: '',
+      diseno: '',
       proceso: '',
-      terminado: '',
+      instalacion: '',
       entrega: '',
       ...(pedido.ordenTrabajo?.evidencias || {}),
     },
@@ -52,6 +128,7 @@ function leerArchivoComoBase64(file) {
 
 function normalizarEvidencia(valor) {
   if (!valor) return null;
+
   if (typeof valor === 'string') {
     return {
       url: valor,
@@ -61,9 +138,12 @@ function normalizarEvidencia(valor) {
       fecha: '',
     };
   }
+
   return {
     url: valor.url || valor.dataUrl || valor.imagen || '',
-    tipo: valor.tipo || (String(valor.mime || '').startsWith('video') ? 'video' : 'imagen'),
+    tipo:
+      valor.tipo ||
+      (String(valor.mime || '').startsWith('video') ? 'video' : 'imagen'),
     mime: valor.mime || '',
     nombre: valor.nombre || 'Evidencia cargada',
     fecha: valor.fecha || valor.updatedAt || valor.createdAt || '',
@@ -73,6 +153,7 @@ function normalizarEvidencia(valor) {
 
 function formatearFecha(fecha) {
   if (!fecha) return '';
+
   try {
     return new Date(fecha).toLocaleString('es-NI', {
       dateStyle: 'medium',
@@ -83,27 +164,30 @@ function formatearFecha(fecha) {
   }
 }
 
-function numeroWhatsApp(numero) {
-  const limpio = String(numero || '').replace(/[^0-9]/g, '');
-  if (limpio.length === 8) return `505${limpio}`;
-  return limpio;
+function formatearDinero(valor) {
+  return new Intl.NumberFormat('es-NI', {
+    style: 'currency',
+    currency: 'NIO',
+    minimumFractionDigits: 2,
+  }).format(Number(valor || 0));
 }
 
-function crearMensajeWhatsApp(pedido, estado) {
-  const codigo = pedido.codigoSeguimiento || pedido.numero || '';
-  const cliente = pedido.cliente?.nombre || 'cliente';
-  const estadoTexto = etiquetasEstado[estado] || estado || 'Actualizado';
+function crearMensajeWhatsApp(pedido, estado, ot) {
+  const codigo = ot.codigoOT || pedido.codigoSeguimiento || pedido.numero || '';
+  const cliente = ot.cliente || pedido.cliente?.nombre || 'cliente';
+  const estadoTexto = ETIQUETAS_ESTADO_VISUAL[estado] || estado || 'Actualizado';
 
   return [
-    '🐾 ELANPET',
+    'ELANVISUAL',
     '',
     `Hola ${cliente}.`,
     '',
-    `Tu pedido ${codigo} fue actualizado.`,
+    `Tu orden de trabajo ${codigo} fue actualizada.`,
     '',
+    `Servicio: ${ot.servicio}`,
     `Estado actual: ${estadoTexto}`,
     '',
-    'Podés consultar el avance, fotos o videos desde:',
+    'Podés consultar el avance desde:',
     seguimientoUrl,
     '',
     `Código: ${codigo}`,
@@ -126,35 +210,65 @@ export default function ProduccionPanel() {
   const tieneAcceso = usuario?.rol === 'admin' || usuario?.rol === 'produccion';
 
   const pedidosProduccion = useMemo(() => {
-    return pedidos
+    const lista = Array.isArray(pedidos) ? pedidos : [];
+
+    return lista
       .filter((pedido) => pedido.estado !== 'cancelado')
       .filter((pedido) => {
-        const texto = `${pedido.codigoSeguimiento || ''} ${pedido.numero || ''} ${pedido.cliente?.nombre || ''} ${pedido.veterinaria?.nombre || ''}`.toLowerCase();
+        const ot = crearOTBase(pedido);
+
+        const texto = `
+          ${ot.codigoOT}
+          ${ot.pedido}
+          ${ot.cliente}
+          ${ot.vendedor}
+          ${ot.servicio}
+          ${pedido.cliente?.whatsapp || ''}
+          ${pedido.cliente?.correo || ''}
+        `.toLowerCase();
+
         return texto.includes(busqueda.toLowerCase().trim());
       })
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }, [pedidos, busqueda]);
 
   const conteos = useMemo(() => {
-    return estadosProduccion.reduce((acc, estado) => {
-      acc[estado] = pedidos.filter((pedido) => estadoPedido(pedido) === estado).length;
+    const lista = Array.isArray(pedidos) ? pedidos : [];
+
+    return ESTADOS_PRODUCCION_VISUAL.reduce((acc, estado) => {
+      acc[estado] = lista.filter((pedido) => estadoPedido(pedido) === estado).length;
       return acc;
     }, {});
   }, [pedidos]);
 
-  const pedidoActivo = pedidosProduccion.find((pedido) => pedido.id === pedidoActivoId) || pedidosProduccion[0];
+  const pedidoActivo =
+    pedidosProduccion.find((pedido) => pedido.id === pedidoActivoId) ||
+    pedidosProduccion[0];
+
   const ot = pedidoActivo ? crearOTBase(pedidoActivo) : null;
 
   const guardarCampoOT = (campo, valor) => {
-    if (!pedidoActivo) return;
-    actualizarOrdenTrabajo(pedidoActivo, { ...ot, [campo]: valor });
+    if (!pedidoActivo || !ot) return;
+
+    const nuevaOT = {
+      ...ot,
+      [campo]: valor,
+    };
+
+    const monto = Number(campo === 'monto' ? valor : nuevaOT.monto || 0);
+    const anticipo = Number(campo === 'anticipo' ? valor : nuevaOT.anticipo || 0);
+
+    nuevaOT.saldo = Math.max(monto - anticipo, 0);
+
+    actualizarOrdenTrabajo(pedidoActivo, nuevaOT);
     setMensaje('Orden de trabajo actualizada.');
   };
 
   const cambiarEstado = (estado) => {
     if (!pedidoActivo) return;
+
     cambiarEstadoProduccion(pedidoActivo, estado);
-    setMensaje(`Estado actualizado: ${etiquetasEstado[estado] || estado}.`);
+    setMensaje(`Estado actualizado: ${ETIQUETAS_ESTADO_VISUAL[estado] || estado}.`);
   };
 
   const subirEvidencia = async (tipo, file) => {
@@ -169,6 +283,7 @@ export default function ProduccionPanel() {
     }
 
     const maxMb = esVideo ? 25 : 8;
+
     if (file.size > maxMb * 1024 * 1024) {
       setMensaje(`Archivo muy pesado. Máximo recomendado: ${maxMb} MB.`);
       return;
@@ -176,6 +291,7 @@ export default function ProduccionPanel() {
 
     try {
       const dataUrl = await leerArchivoComoBase64(file);
+
       const evidencia = {
         url: dataUrl,
         tipo: esVideo ? 'video' : 'imagen',
@@ -186,23 +302,37 @@ export default function ProduccionPanel() {
       };
 
       guardarEvidenciaProduccion(pedidoActivo, tipo, evidencia);
-      setMensaje(`${evidenciaLabels[tipo]} guardada. El cliente podrá verla en Seguimiento con su código.`);
+      setMensaje(`${evidenciaLabels[tipo]} guardada correctamente.`);
     } catch {
       setMensaje('No se pudo cargar la evidencia.');
     }
   };
 
   const notificarWhatsApp = () => {
-    if (!pedidoActivo) return;
-    const numero = numeroWhatsApp(pedidoActivo.cliente?.whatsapp || pedidoActivo.cliente?.telefono);
+    if (!pedidoActivo || !ot) return;
+
+    const numero = numeroWhatsApp(
+      pedidoActivo.cliente?.whatsapp ||
+        pedidoActivo.cliente?.telefono ||
+        pedidoActivo.whatsapp
+    );
+
     if (!numero) {
       setMensaje('Este pedido no tiene WhatsApp válido para notificar.');
       return;
     }
 
-    const texto = encodeURIComponent(crearMensajeWhatsApp(pedidoActivo, estadoPedido(pedidoActivo)));
-    window.open(`https://wa.me/${numero}?text=${texto}`, '_blank', 'noopener,noreferrer');
-    setMensaje('Mensaje de WhatsApp preparado. No se envía la foto; el cliente la ve desde Seguimiento.');
+    const texto = encodeURIComponent(
+      crearMensajeWhatsApp(pedidoActivo, estadoPedido(pedidoActivo), ot)
+    );
+
+    window.open(
+      `https://wa.me/${numero}?text=${texto}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
+
+    setMensaje('Mensaje de WhatsApp preparado.');
   };
 
   if (!tieneAcceso) {
@@ -218,12 +348,12 @@ export default function ProduccionPanel() {
 
   return (
     <main>
-      <h1>Producción ELANPET</h1>
+      <h1>Producción ELANVISUAL</h1>
 
       <section className="dashboard produccion-dashboard">
-        {estadosProduccion.map((estado) => (
+        {ESTADOS_PRODUCCION_VISUAL.map((estado) => (
           <article className="panel stat-card" key={estado}>
-            <span>{etiquetasEstado[estado] || estado}</span>
+            <span>{ETIQUETAS_ESTADO_VISUAL[estado] || estado}</span>
             <b>{conteos[estado] || 0}</b>
           </article>
         ))}
@@ -237,26 +367,35 @@ export default function ProduccionPanel() {
         <input
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          placeholder="Buscar por pedido, cliente o veterinaria"
+          placeholder="Buscar por OT, cliente, vendedor o servicio"
         />
 
         {pedidosProduccion.length === 0 ? (
-          <p>No hay pedidos para producción todavía.</p>
+          <p>No hay órdenes de trabajo para producción todavía.</p>
         ) : (
           <div className="produccion-layout">
             <div className="produccion-lista">
-              {pedidosProduccion.map((pedido) => (
-                <button
-                  type="button"
-                  key={pedido.id}
-                  className={`produccion-item ${pedidoActivo?.id === pedido.id ? 'active' : ''}`}
-                  onClick={() => setPedidoActivoId(pedido.id)}
-                >
-                  <strong>{pedido.codigoSeguimiento || pedido.numero}</strong>
-                  <span>{pedido.cliente?.nombre || 'Cliente sin nombre'}</span>
-                  <small>{etiquetasEstado[estadoPedido(pedido)] || estadoPedido(pedido)}</small>
-                </button>
-              ))}
+              {pedidosProduccion.map((pedido) => {
+                const otLista = crearOTBase(pedido);
+                const estadoActual = estadoPedido(pedido);
+
+                return (
+                  <button
+                    type="button"
+                    key={pedido.id}
+                    className={`produccion-item ${
+                      pedidoActivo?.id === pedido.id ? 'active' : ''
+                    }`}
+                    onClick={() => setPedidoActivoId(pedido.id)}
+                  >
+                    <strong>{otLista.codigoOT}</strong>
+                    <span>{otLista.cliente || 'Cliente sin nombre'}</span>
+                    <small>
+                      {ETIQUETAS_ESTADO_VISUAL[estadoActual] || estadoActual}
+                    </small>
+                  </button>
+                );
+              })}
             </div>
 
             {pedidoActivo && ot && (
@@ -266,74 +405,139 @@ export default function ProduccionPanel() {
                     <span className="badge">Orden de Trabajo</span>
                     <h2>{ot.codigoOT}</h2>
                   </div>
+
                   <PackageCheck size={32} />
                 </div>
 
                 <div className="form-grid">
                   <label>
                     Código OT
-                    <input value={ot.codigoOT} onChange={(e) => guardarCampoOT('codigoOT', e.target.value)} />
-                  </label>
-
-                  <label>
-                    Pedido
-                    <input value={ot.pedido} readOnly />
+                    <input
+                      value={ot.codigoOT}
+                      onChange={(e) => guardarCampoOT('codigoOT', e.target.value)}
+                    />
                   </label>
 
                   <label>
                     Cliente
-                    <input value={ot.cliente} readOnly />
+                    <input
+                      value={ot.cliente}
+                      onChange={(e) => guardarCampoOT('cliente', e.target.value)}
+                      placeholder="Nombre del cliente"
+                    />
                   </label>
 
                   <label>
-                    Veterinaria
-                    <input value={ot.veterinaria} readOnly />
-                  </label>
-
-                  <label>
-                    Producto
-                    <input value={ot.producto} readOnly />
-                  </label>
-
-                  <label>
-                    Cantidad
-                    <input value={ot.cantidad} readOnly />
-                  </label>
-
-                  <label>
-                    Responsable
-                    <input value={ot.responsable} onChange={(e) => guardarCampoOT('responsable', e.target.value)} placeholder="Nombre del responsable" />
+                    Vendedor
+                    <input
+                      value={ot.vendedor}
+                      onChange={(e) => guardarCampoOT('vendedor', e.target.value)}
+                      placeholder="Nombre del vendedor"
+                    />
                   </label>
 
                   <label>
                     Fecha
-                    <input type="date" value={String(ot.fecha || '').slice(0, 10)} onChange={(e) => guardarCampoOT('fecha', e.target.value)} />
+                    <input
+                      type="date"
+                      value={String(ot.fecha || '').slice(0, 10)}
+                      onChange={(e) => guardarCampoOT('fecha', e.target.value)}
+                    />
+                  </label>
+
+                  <label className="full-row">
+                    Servicio
+                    <input
+                      value={ot.servicio}
+                      onChange={(e) => guardarCampoOT('servicio', e.target.value)}
+                      placeholder="Ej. Rótulo luminoso, vinil, letras PVC, acrílico"
+                    />
+                  </label>
+
+                  <label>
+                    Monto
+                    <input
+                      type="number"
+                      min="0"
+                      value={ot.monto}
+                      onChange={(e) => guardarCampoOT('monto', e.target.value)}
+                    />
+                    <small>{formatearDinero(ot.monto)}</small>
+                  </label>
+
+                  <label>
+                    Anticipo
+                    <input
+                      type="number"
+                      min="0"
+                      value={ot.anticipo}
+                      onChange={(e) => guardarCampoOT('anticipo', e.target.value)}
+                    />
+                    <small>{formatearDinero(ot.anticipo)}</small>
+                  </label>
+
+                  <label>
+                    Saldo
+                    <input value={formatearDinero(ot.saldo)} readOnly />
+                  </label>
+
+                  <label>
+                    Responsable
+                    <input
+                      value={ot.responsable}
+                      onChange={(e) =>
+                        guardarCampoOT('responsable', e.target.value)
+                      }
+                      placeholder="Responsable de producción"
+                    />
                   </label>
 
                   <label className="full-row">
                     Observaciones
-                    <textarea value={ot.observaciones} onChange={(e) => guardarCampoOT('observaciones', e.target.value)} placeholder="Notas internas de producción" rows={3} />
+                    <textarea
+                      value={ot.observaciones}
+                      onChange={(e) =>
+                        guardarCampoOT('observaciones', e.target.value)
+                      }
+                      placeholder="Notas internas: materiales, medidas, instalación, pendientes o restricciones técnicas"
+                      rows={3}
+                    />
                   </label>
                 </div>
 
                 <div className="actions-row">
-                  <button type="button" className="btn-outline" onClick={notificarWhatsApp}>
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    onClick={notificarWhatsApp}
+                  >
                     <Send size={17} /> Avisar por WhatsApp
                   </button>
-                  <button type="button" className="btn-outline" onClick={() => window.open(seguimientoUrl, '_blank', 'noopener,noreferrer')}>
+
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    onClick={() =>
+                      window.open(
+                        seguimientoUrl,
+                        '_blank',
+                        'noopener,noreferrer'
+                      )
+                    }
+                  >
                     <ExternalLink size={17} /> Abrir seguimiento
                   </button>
                 </div>
 
                 <div className="estado-produccion-bar">
-                  {estadosProduccion.map((estado) => (
+                  {ESTADOS_PRODUCCION_VISUAL.map((estado) => (
                     <button
                       type="button"
                       key={estado}
                       className={estadoPedido(pedidoActivo) === estado ? 'active' : ''}
                       onClick={() => cambiarEstado(estado)}
                     >
-                      {etiquetasEstado[estado] || estado}
+                      {ETIQUETAS_ESTADO_VISUAL[estado] || estado}
                     </button>
                   ))}
                 </div>
@@ -341,28 +545,51 @@ export default function ProduccionPanel() {
                 <section className="evidencias-grid">
                   {Object.entries(evidenciaLabels).map(([tipo, label]) => {
                     const evidencia = normalizarEvidencia(ot.evidencias?.[tipo]);
+
                     return (
                       <article className="evidencia-card" key={tipo}>
                         <h3>
-                          {evidencia?.tipo === 'video' ? <Video size={17} /> : <Camera size={17} />} {label}
+                          {evidencia?.tipo === 'video' ? (
+                            <Video size={17} />
+                          ) : (
+                            <Camera size={17} />
+                          )}
+                          {label}
                         </h3>
 
                         {evidencia?.url ? (
                           evidencia.tipo === 'video' ? (
-                            <video src={evidencia.url} controls playsInline style={{ width: '100%', borderRadius: 12, marginBottom: 10 }} />
+                            <video
+                              src={evidencia.url}
+                              controls
+                              playsInline
+                              style={{
+                                width: '100%',
+                                borderRadius: 12,
+                                marginBottom: 10,
+                              }}
+                            />
                           ) : (
                             <img src={evidencia.url} alt={label} />
                           )
                         ) : (
-                          <div className="evidencia-placeholder">Sin evidencia</div>
+                          <div className="evidencia-placeholder">
+                            Sin evidencia
+                          </div>
                         )}
 
-                        {evidencia?.fecha && <p className="note">Actualizado: {formatearFecha(evidencia.fecha)}</p>}
+                        {evidencia?.fecha && (
+                          <p className="note">
+                            Actualizado: {formatearFecha(evidencia.fecha)}
+                          </p>
+                        )}
 
                         <input
                           type="file"
                           accept="image/*,video/mp4,video/quicktime,video/webm"
-                          onChange={(e) => subirEvidencia(tipo, e.target.files?.[0])}
+                          onChange={(e) =>
+                            subirEvidencia(tipo, e.target.files?.[0])
+                          }
                         />
                       </article>
                     );

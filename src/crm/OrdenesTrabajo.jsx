@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const UNIDADES_NEGOCIO = [
-  'ELANPET',
-  'ELANKAV VISUAL',
+  'ELANVISUAL',
+  'ELANVISUAL',
   'ELANKAV CENTER',
-  'ELANKAV SOLAR',
+  'ELANHOME',
   'ELAN AI',
 ];
 
@@ -60,12 +60,12 @@ const formInicial = () => ({
   cliente: '',
   telefono: '',
   producto: '',
-  unidadNegocio: 'ELANKAV VISUAL',
+  unidadNegocio: 'ELANVISUAL',
   cantidad: '',
   total: '',
   moneda: 'C$',
   responsable: '',
-  area: 'Producción',
+  area: 'ProducciÃ³n',
   prioridad: 'Media',
   estado: 'Pendiente',
   fechaInicio: fechaActual(),
@@ -109,7 +109,7 @@ export default function OrdenesTrabajo() {
         acc.costo += calculo.costoTotal;
         acc.utilidad += calculo.utilidad;
 
-        if (['Pendiente', 'En proceso', 'Producción'].includes(item.estado)) {
+        if (['Pendiente', 'En proceso', 'ProducciÃ³n'].includes(item.estado)) {
           acc.activas += 1;
         }
 
@@ -272,7 +272,7 @@ export default function OrdenesTrabajo() {
     <div className="crm-page">
       <div className="crm-page-header">
         <div>
-          <h2>Órdenes de Trabajo</h2>
+          <h2>Ã“rdenes de Trabajo</h2>
           <p>Control operativo con costos estimados, utilidad y margen por proyecto.</p>
         </div>
       </div>
@@ -314,15 +314,15 @@ export default function OrdenesTrabajo() {
               <option value="">Sin pedido relacionado</option>
               {pedidosDisponibles.map((pedido) => (
                 <option key={pedido.id} value={pedido.id}>
-                  {pedido.codigo || pedido.id} · {pedido.cliente || pedido.empresaNombre || 'Sin cliente'}
+                  {pedido.codigo || pedido.id} Â· {pedido.cliente || pedido.empresaNombre || 'Sin cliente'}
                 </option>
               ))}
             </select>
           </label>
 
           <label>
-            Código OT
-            <input name="codigo" value={form.codigo} onChange={cambiar} placeholder="Automático" />
+            CÃ³digo OT
+            <input name="codigo" value={form.codigo} onChange={cambiar} placeholder="AutomÃ¡tico" />
           </label>
 
           <label>
@@ -379,7 +379,7 @@ export default function OrdenesTrabajo() {
           </label>
 
           <label>
-            Instalación
+            InstalaciÃ³n
             <input name="costoInstalacion" type="number" step="0.01" value={form.costoInstalacion} onChange={cambiar} />
           </label>
 
@@ -394,12 +394,12 @@ export default function OrdenesTrabajo() {
           </label>
 
           <label>
-            Área
+            Ãrea
             <select name="area" value={form.area} onChange={cambiar}>
-              <option value="Diseño">Diseño</option>
-              <option value="Producción">Producción</option>
-              <option value="Instalación">Instalación</option>
-              <option value="Administración">Administración</option>
+              <option value="DiseÃ±o">DiseÃ±o</option>
+              <option value="ProducciÃ³n">ProducciÃ³n</option>
+              <option value="InstalaciÃ³n">InstalaciÃ³n</option>
+              <option value="AdministraciÃ³n">AdministraciÃ³n</option>
             </select>
           </label>
 
@@ -418,7 +418,7 @@ export default function OrdenesTrabajo() {
             <select name="estado" value={form.estado} onChange={cambiar}>
               <option value="Pendiente">Pendiente</option>
               <option value="En proceso">En proceso</option>
-              <option value="Producción">Producción</option>
+              <option value="ProducciÃ³n">ProducciÃ³n</option>
               <option value="Terminada">Terminada</option>
               <option value="Entregada">Entregada</option>
               <option value="Cancelada">Cancelada</option>
@@ -436,7 +436,7 @@ export default function OrdenesTrabajo() {
           </label>
 
           <label className="crm-field-full">
-            Descripción
+            DescripciÃ³n
             <textarea name="descripcion" value={form.descripcion} onChange={cambiar} />
           </label>
 
@@ -467,7 +467,7 @@ export default function OrdenesTrabajo() {
             <button type="submit">{editandoId ? 'Actualizar orden' : 'Crear orden'}</button>
             {editandoId && (
               <button type="button" onClick={limpiar} className="btn-secondary">
-                Cancelar edición
+                Cancelar ediciÃ³n
               </button>
             )}
           </div>
@@ -477,7 +477,7 @@ export default function OrdenesTrabajo() {
       <div className="crm-card">
         <div className="crm-page-header">
           <div>
-            <h3>Listado de órdenes</h3>
+            <h3>Listado de Ã³rdenes</h3>
             <p>Seguimiento de venta, costo, utilidad y margen.</p>
           </div>
           <input
@@ -491,7 +491,7 @@ export default function OrdenesTrabajo() {
           <table className="crm-table">
             <thead>
               <tr>
-                <th>Código</th>
+                <th>CÃ³digo</th>
                 <th>Cliente</th>
                 <th>Trabajo</th>
                 <th>Unidad</th>
@@ -512,8 +512,8 @@ export default function OrdenesTrabajo() {
                   <tr key={item.id}>
                     <td>{item.codigo}</td>
                     <td>{item.cliente || item.empresaNombre || 'Sin cliente'}</td>
-                    <td>{item.producto || item.descripcion || 'Sin descripción'}</td>
-                    <td>{item.unidadNegocio || 'ELANKAV VISUAL'}</td>
+                    <td>{item.producto || item.descripcion || 'Sin descripciÃ³n'}</td>
+                    <td>{item.unidadNegocio || 'ELANVISUAL'}</td>
                     <td>{dinero(calculo.venta, item.moneda)}</td>
                     <td>{dinero(calculo.costoTotal, item.moneda)}</td>
                     <td>{dinero(calculo.utilidad, item.moneda)}</td>
@@ -532,7 +532,7 @@ export default function OrdenesTrabajo() {
 
               {ordenesFiltradas.length === 0 && (
                 <tr>
-                  <td colSpan="11">No hay órdenes registradas.</td>
+                  <td colSpan="11">No hay Ã³rdenes registradas.</td>
                 </tr>
               )}
             </tbody>
@@ -554,3 +554,4 @@ export default function OrdenesTrabajo() {
     </div>
   );
 }
+

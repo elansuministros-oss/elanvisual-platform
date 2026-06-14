@@ -1,1 +1,1 @@
-export { CoreProvider } from '../context/CoreContext';
+﻿export { CoreProvider } from '../context/CoreContext';

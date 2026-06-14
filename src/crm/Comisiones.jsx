@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 export default function Comisiones() {
@@ -166,11 +166,11 @@ export default function Comisiones() {
       </div>
 
       <form className="crm-form" onSubmit={guardar}>
-        <h3>{editandoId ? 'Editar comisión' : 'Nueva comisión'}</h3>
+        <h3>{editandoId ? 'Editar comisiÃ³n' : 'Nueva comisiÃ³n'}</h3>
 
         <div className="form-grid">
           <label>
-            Código
+            CÃ³digo
             <input
               name="codigo"
               value={form.codigo}
@@ -237,7 +237,7 @@ export default function Comisiones() {
           </label>
 
           <label>
-            Comisión
+            ComisiÃ³n
             <input
               type="number"
               name="comision"
@@ -282,7 +282,7 @@ export default function Comisiones() {
 
         <div className="form-actions">
           <button type="submit">
-            {editandoId ? 'Actualizar comisión' : 'Guardar comisión'}
+            {editandoId ? 'Actualizar comisiÃ³n' : 'Guardar comisiÃ³n'}
           </button>
 
           {editandoId && (
@@ -291,7 +291,7 @@ export default function Comisiones() {
               onClick={limpiar}
               className="btn-secundario"
             >
-              Cancelar edición
+              Cancelar ediciÃ³n
             </button>
           )}
         </div>
@@ -301,12 +301,12 @@ export default function Comisiones() {
         <table className="crm-table">
           <thead>
             <tr>
-              <th>Código</th>
+              <th>CÃ³digo</th>
               <th>Vendedor</th>
               <th>Cliente</th>
               <th>Venta</th>
               <th>%</th>
-              <th>Comisión</th>
+              <th>ComisiÃ³n</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>

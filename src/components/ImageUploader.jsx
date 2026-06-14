@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 
 export default function ImageUploader({
   label = 'Imagen',
@@ -17,7 +17,7 @@ export default function ImageUploader({
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setMensaje('Archivo no válido.');
+      setMensaje('Archivo no vÃ¡lido.');
       return;
     }
 
@@ -27,7 +27,7 @@ export default function ImageUploader({
       const original = reader.result;
       setPreview(original);
       onChange?.(original);
-      setMensaje('Imagen cargada sin compresión.');
+      setMensaje('Imagen cargada sin compresiÃ³n.');
     };
 
     reader.onerror = () => {

@@ -1,28 +1,20 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const UNIDADES_NEGOCIO = [
-  'ELANPET',
-  'ELANKAV VISUAL',
+  'ELANVISUAL',
   'ELANKAV CENTER',
-  'ELANKAV SOLAR',
+  'ELANHOME',
   'ELAN AI',
 ];
 
 const ORIGENES_MENSAJE = ['WhatsApp', 'Facebook', 'Instagram', 'TikTok', 'Referido', 'Web', 'Llamada'];
-const TIPOS_CLIENTE = ['Nuevo', 'Recurrente', 'Empresa', 'Veterinaria', 'Afiliado', 'Proveedor', 'Aliado'];
+const TIPOS_CLIENTE = ['Nuevo', 'Recurrente', 'Empresa', 'Proveedor', 'Aliado'];
 const ESTADOS_LEAD = ['Nuevo', 'Respondido', 'Cotizado', 'Ganado', 'Perdido'];
 const CLASIFICACIONES = ['Precio', 'Información', 'Ubicación', 'Catálogo', 'Cotización', 'Seguimiento'];
 
 const SERVICIOS_POR_UNIDAD = {
-  ELANPET: [
-    'Catálogo de productos para mascotas',
-    'Pedido ELANPET',
-    'Afiliación veterinaria',
-    'Seguimiento de pedido',
-    'Consulta general ELANPET',
-  ],
-  'ELANKAV VISUAL': [
+  ELANVISUAL: [
     'Rotulación',
     'Impresión digital',
     'Rótulo 3D',
@@ -38,12 +30,13 @@ const SERVICIOS_POR_UNIDAD = {
     'Servicio empresarial',
     'Consulta general CENTER',
   ],
-  'ELANKAV SOLAR': [
+  ELANHOME: [
+    'Decoración',
+    'Grama artificial',
+    'Luces decorativas',
+    'Lámparas',
     'Paneles solares',
-    'Cotización solar',
-    'Diagnóstico energético',
-    'Instalación solar',
-    'Mantenimiento solar',
+    'Instalación',
   ],
   'ELAN AI': [
     'Automatización con IA',
@@ -54,7 +47,7 @@ const SERVICIOS_POR_UNIDAD = {
   ],
 };
 
-const RESPUESTA_BASE = `Hola, gracias por escribirnos 😊
+const RESPUESTA_BASE = `Hola, gracias por escribirnos.
 
 Con gusto te ayudo.
 
@@ -63,7 +56,7 @@ Para cotizarte correctamente necesito:
 1. Medida aproximada
 2. Foto del lugar
 3. Ciudad o ubicación
-4. Tipo de trabajo que necesitas
+4. Tipo de trabajo que necesitás
 
 Con eso te preparo una propuesta clara y detallada.`;
 
@@ -74,7 +67,7 @@ const PLANTILLAS_RAPIDAS = [
   },
   {
     nombre: 'Enviar catálogo',
-    texto: 'Claro 😊 te puedo enviar el catálogo. Decime por favor qué tipo de producto o servicio estás buscando para mandarte la información correcta.',
+    texto: 'Claro, te puedo enviar el catálogo. Decime por favor qué tipo de producto o servicio estás buscando para mandarte la información correcta.',
   },
   {
     nombre: 'Ubicación y visita técnica',
@@ -82,11 +75,11 @@ const PLANTILLAS_RAPIDAS = [
   },
   {
     nombre: 'Seguimiento comercial',
-    texto: 'Hola 😊 solo te doy seguimiento a la solicitud. Si todavía estás interesado, puedo prepararte la propuesta o ajustar la cotización según lo que necesités.',
+    texto: 'Hola, solo te doy seguimiento a la solicitud. Si todavía estás interesado, puedo prepararte la propuesta o ajustar la cotización según lo que necesitás.',
   },
   {
     nombre: 'Cierre ganado',
-    texto: 'Perfecto, gracias por confirmar 😊 Para iniciar el trabajo dejamos registrado el pedido y coordinamos anticipo, medidas finales y fecha de entrega.',
+    texto: 'Perfecto, gracias por confirmar. Para iniciar el trabajo dejamos registrado el pedido y coordinamos anticipo, medidas finales y fecha de entrega.',
   },
 ];
 
@@ -94,7 +87,7 @@ const formInicial = {
   nombre: '',
   whatsapp: '',
   mensaje: '',
-  unidadNegocio: 'ELANKAV VISUAL',
+  unidadNegocio: 'ELANVISUAL',
   servicioSolicitado: 'Rotulación',
   origenMensaje: 'WhatsApp',
   tipoCliente: 'Nuevo',
@@ -106,6 +99,7 @@ const formInicial = {
 
 const fechaLegible = (valor) => {
   if (!valor) return 'Sin fecha';
+
   try {
     return new Date(valor).toLocaleString('es-NI', {
       year: 'numeric',
@@ -192,7 +186,7 @@ export default function CentroWhatsApp() {
       nombre: lead.nombre || '',
       whatsapp: lead.whatsapp || '',
       mensaje: lead.mensaje || '',
-      unidadNegocio: lead.unidadNegocio || 'ELANKAV VISUAL',
+      unidadNegocio: lead.unidadNegocio || 'ELANVISUAL',
       servicioSolicitado: lead.servicioSolicitado || 'Rotulación',
       origenMensaje: lead.origenMensaje || 'WhatsApp',
       tipoCliente: lead.tipoCliente || 'Nuevo',
@@ -256,6 +250,7 @@ export default function CentroWhatsApp() {
 
   const resumen = useMemo(() => {
     const lista = leadsWhatsApp || [];
+
     return {
       total: lista.length,
       nuevos: lista.filter((item) => item.estadoLead === 'Nuevo').length,
@@ -473,7 +468,10 @@ export default function CentroWhatsApp() {
       <div className="page-header">
         <div>
           <h2>Centro de WhatsApp y Leads</h2>
-          <p>Clasificación multinegocio para mensajes de WhatsApp, redes sociales, referidos y seguimiento comercial.</p>
+          <p>
+            Clasificación comercial para mensajes de WhatsApp, redes sociales,
+            referidos y seguimiento de oportunidades.
+          </p>
         </div>
       </div>
 
@@ -569,6 +567,7 @@ export default function CentroWhatsApp() {
         <div>
           <div className="wa-card" style={{ marginBottom: '18px' }}>
             <h3>Respuestas rápidas</h3>
+
             <label>
               Plantilla
               <select
@@ -580,7 +579,9 @@ export default function CentroWhatsApp() {
                 ))}
               </select>
             </label>
+
             <div className="wa-template" style={{ marginTop: '12px' }}>{respuestaSeleccionada}</div>
+
             <div className="wa-actions">
               <button type="button" className="wa-btn blue" onClick={copiarRespuesta}>Copiar respuesta</button>
             </div>
@@ -631,6 +632,7 @@ export default function CentroWhatsApp() {
                       <p><strong>WhatsApp:</strong> {lead.whatsapp || 'No registrado'}</p>
                       <p><strong>Servicio:</strong> {lead.servicioSolicitado || 'No definido'}</p>
                     </div>
+
                     <span className="wa-tag green">{lead.estadoLead || 'Nuevo'}</span>
                   </div>
 
@@ -643,6 +645,7 @@ export default function CentroWhatsApp() {
 
                   {lead.mensaje && <p><strong>Mensaje:</strong> {lead.mensaje}</p>}
                   {lead.seguimiento && <p><strong>Seguimiento:</strong> {lead.seguimiento}</p>}
+
                   <p><strong>Último movimiento:</strong> {fechaLegible(lead.actualizado || lead.fechaRegistro)}</p>
                   {lead.contactoId && <p><strong>Contacto creado:</strong> Sí</p>}
                   {lead.cotizacionId && <p><strong>Cotización creada:</strong> Sí</p>}

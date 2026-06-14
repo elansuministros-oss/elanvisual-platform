@@ -1,14 +1,14 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const IVA = 0.15;
 
 const UNIDADES_NEGOCIO = [
   'Todas',
-  'ELANPET',
-  'ELANKAV VISUAL',
+  'ELANVISUAL',
+  'ELANVISUAL',
   'ELANKAV CENTER',
-  'ELANKAV SOLAR',
+  'ELANHOME',
   'ELAN AI',
 ];
 
@@ -59,7 +59,7 @@ const dentroRango = (item, fechaInicio, fechaFin) => {
   return true;
 };
 
-const unidadRegistro = (item = {}) => item.unidadNegocio || item.unidad || 'ELANKAV VISUAL';
+const unidadRegistro = (item = {}) => item.unidadNegocio || item.unidad || 'ELANVISUAL';
 
 const porUnidad = (item, unidad) => unidad === 'Todas' || unidadRegistro(item) === unidad;
 
@@ -69,7 +69,7 @@ const filtrarRegistros = (lista = [], filtros) =>
 const sumar = (lista = [], obtenerValor) =>
   lista.reduce((total, item) => total + numero(obtenerValor(item)), 0);
 
-const esConIVA = (item = {}) => item.tipoFiscal === 'Con IVA' || item.facturaFiscal === 'Sí' || numero(item.ivaDebito || item.ivaCredito || item.iva) > 0;
+const esConIVA = (item = {}) => item.tipoFiscal === 'Con IVA' || item.facturaFiscal === 'SÃ­' || numero(item.ivaDebito || item.ivaCredito || item.iva) > 0;
 const esSinFactura = (item = {}) => item.tipoFiscal === 'Sin factura' || item.facturaFiscal === 'No';
 const esExento = (item = {}) => item.tipoFiscal === 'Exento';
 
@@ -266,11 +266,11 @@ export default function FiscalCRM() {
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <p style={styles.pretitle}>FASE 5.2 · MÓDULO FISCAL CORPORATIVO</p>
+        <p style={styles.pretitle}>FASE 5.2 Â· MÃ“DULO FISCAL CORPORATIVO</p>
         <h2 style={styles.title}>Fiscal CRM</h2>
         <p style={styles.subtitle}>
-          Control separado entre declaración fiscal y realidad interna: IVA débito, IVA crédito,
-          retenciones, facturación, compras sin factura y utilidad real por unidad de negocio.
+          Control separado entre declaraciÃ³n fiscal y realidad interna: IVA dÃ©bito, IVA crÃ©dito,
+          retenciones, facturaciÃ³n, compras sin factura y utilidad real por unidad de negocio.
         </p>
       </div>
 
@@ -298,9 +298,9 @@ export default function FiscalCRM() {
       </div>
 
       <div style={styles.stats}>
-        <div style={styles.stat}><span style={styles.statLabel}>IVA débito cobrado</span><strong style={styles.statValue}>{moneda(fiscal.debitoCobros)}</strong><span style={styles.statHelp}>Ventas con IVA registradas en cobros.</span></div>
-        <div style={styles.stat}><span style={styles.statLabel}>IVA crédito compras</span><strong style={styles.statValue}>{moneda(fiscal.creditoCompras)}</strong><span style={styles.statHelp}>Compras con factura fiscal.</span></div>
-        <div style={styles.stat}><span style={styles.statLabel}>IVA neto caja</span><strong style={styles.statValue}>{moneda(fiscal.ivaNetoCaja)}</strong><span style={styles.statHelp}>Débito cobrado menos crédito de compras.</span></div>
+        <div style={styles.stat}><span style={styles.statLabel}>IVA dÃ©bito cobrado</span><strong style={styles.statValue}>{moneda(fiscal.debitoCobros)}</strong><span style={styles.statHelp}>Ventas con IVA registradas en cobros.</span></div>
+        <div style={styles.stat}><span style={styles.statLabel}>IVA crÃ©dito compras</span><strong style={styles.statValue}>{moneda(fiscal.creditoCompras)}</strong><span style={styles.statHelp}>Compras con factura fiscal.</span></div>
+        <div style={styles.stat}><span style={styles.statLabel}>IVA neto caja</span><strong style={styles.statValue}>{moneda(fiscal.ivaNetoCaja)}</strong><span style={styles.statHelp}>DÃ©bito cobrado menos crÃ©dito de compras.</span></div>
         <div style={styles.stat}><span style={styles.statLabel}>Retenciones totales</span><strong style={styles.statValue}>{moneda(fiscal.retencionesTotales)}</strong><span style={styles.statHelp}>Cobros + cuentas por cobrar.</span></div>
       </div>
 
@@ -319,26 +319,26 @@ export default function FiscalCRM() {
       </div>
 
       <div style={styles.stats}>
-        <div style={styles.stat}><span style={styles.statLabel}>IVA débito pendiente</span><strong style={styles.statValue}>{moneda(fiscal.debitoPendiente)}</strong><span style={styles.statHelp}>CxC con IVA, aún no cobrada total o parcialmente.</span></div>
-        <div style={styles.stat}><span style={styles.statLabel}>IVA crédito pendiente</span><strong style={styles.statValue}>{moneda(fiscal.creditoPendiente)}</strong><span style={styles.statHelp}>CxP con factura fiscal pendiente.</span></div>
+        <div style={styles.stat}><span style={styles.statLabel}>IVA dÃ©bito pendiente</span><strong style={styles.statValue}>{moneda(fiscal.debitoPendiente)}</strong><span style={styles.statHelp}>CxC con IVA, aÃºn no cobrada total o parcialmente.</span></div>
+        <div style={styles.stat}><span style={styles.statLabel}>IVA crÃ©dito pendiente</span><strong style={styles.statValue}>{moneda(fiscal.creditoPendiente)}</strong><span style={styles.statHelp}>CxP con factura fiscal pendiente.</span></div>
         <div style={styles.stat}><span style={styles.statLabel}>IVA neto comprometido</span><strong style={styles.statValue}>{moneda(fiscal.ivaNetoComprometido)}</strong><span style={styles.statHelp}>Incluye cobros, CxC, compras y CxP.</span></div>
         <div style={styles.stat}><span style={styles.statLabel}>Flujo real interno</span><strong style={styles.statValue}>{moneda(fiscal.flujoReal)}</strong><span style={styles.statHelp}>Cobrado + ingresos caja - compras - egresos caja.</span></div>
       </div>
 
       <div style={styles.stats}>
-        <div style={styles.stat}><span style={styles.statLabel}>Utilidad fiscal estimada</span><strong style={styles.statValue}>{moneda(fiscal.utilidadFiscal)}</strong><span style={styles.statHelp}>Solo operación con soporte fiscal o exenta.</span></div>
+        <div style={styles.stat}><span style={styles.statLabel}>Utilidad fiscal estimada</span><strong style={styles.statValue}>{moneda(fiscal.utilidadFiscal)}</strong><span style={styles.statHelp}>Solo operaciÃ³n con soporte fiscal o exenta.</span></div>
         <div style={styles.stat}><span style={styles.statLabel}>Utilidad real interna</span><strong style={styles.statValue}>{moneda(fiscal.utilidadReal)}</strong><span style={styles.statHelp}>Incluye movimientos con y sin factura.</span></div>
         <div style={styles.stat}><span style={styles.statLabel}>Ingresos caja extra</span><strong style={styles.statValue}>{moneda(fiscal.ingresosNoOperativos)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Egresos caja extra</span><strong style={styles.statValue}>{moneda(fiscal.egresosNoOperativos)}</strong></div>
       </div>
 
       <div style={styles.warning}>
-        <strong>Nota operativa:</strong> este módulo separa control fiscal y control real interno. Los valores son estimaciones administrativas del CRM; antes de declarar, deben compararse con facturas oficiales, retenciones emitidas por clientes y criterios del contador.
+        <strong>Nota operativa:</strong> este mÃ³dulo separa control fiscal y control real interno. Los valores son estimaciones administrativas del CRM; antes de declarar, deben compararse con facturas oficiales, retenciones emitidas por clientes y criterios del contador.
       </div>
 
       <div style={styles.card}>
         <h3 style={styles.sectionTitle}>Resumen fiscal por unidad</h3>
-        <p style={styles.sectionText}>Periodo: {etiquetaPeriodo(filtros)} · Unidad seleccionada: {filtros.unidadNegocio}</p>
+        <p style={styles.sectionText}>Periodo: {etiquetaPeriodo(filtros)} Â· Unidad seleccionada: {filtros.unidadNegocio}</p>
         <div style={styles.tableWrap}>
           <table style={styles.table}>
             <thead>
@@ -346,8 +346,8 @@ export default function FiscalCRM() {
                 <th style={styles.th}>Unidad</th>
                 <th style={styles.th}>Ventas</th>
                 <th style={styles.th}>Compras</th>
-                <th style={styles.th}>IVA débito</th>
-                <th style={styles.th}>IVA crédito</th>
+                <th style={styles.th}>IVA dÃ©bito</th>
+                <th style={styles.th}>IVA crÃ©dito</th>
                 <th style={styles.th}>IVA neto</th>
                 <th style={styles.th}>Retenciones</th>
                 <th style={styles.th}>Mov. sin factura</th>
@@ -374,13 +374,14 @@ export default function FiscalCRM() {
       </div>
 
       <div style={styles.card}>
-        <h3 style={styles.sectionTitle}>Lectura rápida</h3>
+        <h3 style={styles.sectionTitle}>Lectura rÃ¡pida</h3>
         <p style={styles.sectionText}>
           IVA neto caja indica lo que ya se mueve con documentos registrados en cobros y compras.
           IVA neto comprometido agrega cuentas por cobrar y cuentas por pagar para anticipar carga fiscal futura.
-          La utilidad fiscal excluye movimientos sin factura; la utilidad real interna sí los incluye para que el negocio no pierda control de dinero.
+          La utilidad fiscal excluye movimientos sin factura; la utilidad real interna sÃ­ los incluye para que el negocio no pierda control de dinero.
         </p>
       </div>
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const formatoFecha = (valor) => {
@@ -113,7 +113,7 @@ export default function AuditoriaCRM() {
     }, {});
 
     const porModulo = auditoriaFiltrada.reduce((acc, registro) => {
-      const clave = registro.modulo || 'Sin módulo';
+      const clave = registro.modulo || 'Sin mÃ³dulo';
       acc[clave] = (acc[clave] || 0) + 1;
       return acc;
     }, {});
@@ -153,7 +153,7 @@ export default function AuditoriaCRM() {
 
   const confirmarLimpiar = () => {
     const confirmar = window.confirm(
-      '¿Deseás limpiar el historial de auditoría? Esta acción dejará registro de limpieza.'
+      'Â¿DeseÃ¡s limpiar el historial de auditorÃ­a? Esta acciÃ³n dejarÃ¡ registro de limpieza.'
     );
 
     if (confirmar && typeof limpiarAuditoriaCRM === 'function') {
@@ -435,9 +435,9 @@ export default function AuditoriaCRM() {
 
       <section className="auditoria-header">
         <div>
-          <h2>Auditoría de Movimientos</h2>
+          <h2>AuditorÃ­a de Movimientos</h2>
           <p>
-            Registro interno para saber quién creó, editó, eliminó o cambió información dentro del CRM Central ELANKAV.
+            Registro interno para saber quiÃ©n creÃ³, editÃ³, eliminÃ³ o cambiÃ³ informaciÃ³n dentro del CRM Central ELANKAV.
           </p>
         </div>
 
@@ -448,7 +448,7 @@ export default function AuditoriaCRM() {
         <div className="auditoria-card">
           <span>Movimientos filtrados</span>
           <strong>{resumen.total}</strong>
-          <small>Según filtros activos</small>
+          <small>SegÃºn filtros activos</small>
         </div>
 
         <div className="auditoria-card">
@@ -464,21 +464,21 @@ export default function AuditoriaCRM() {
         </div>
 
         <div className="auditoria-card">
-          <span>Módulos afectados</span>
+          <span>MÃ³dulos afectados</span>
           <strong>{resumen.modulosAfectados}</strong>
           <small>Con actividad</small>
         </div>
 
         <div className="auditoria-card">
-          <span>Usuario más activo</span>
+          <span>Usuario mÃ¡s activo</span>
           <strong style={{ fontSize: 16 }}>{resumen.usuarioMasActivo}</strong>
           <small>Mayor cantidad de registros</small>
         </div>
 
         <div className="auditoria-card">
-          <span>Módulo más movido</span>
+          <span>MÃ³dulo mÃ¡s movido</span>
           <strong style={{ fontSize: 16 }}>{resumen.moduloMasMovido}</strong>
-          <small>Más acciones registradas</small>
+          <small>MÃ¡s acciones registradas</small>
         </div>
       </section>
 
@@ -509,7 +509,7 @@ export default function AuditoriaCRM() {
           </div>
 
           <div className="auditoria-field">
-            <label>Módulo</label>
+            <label>MÃ³dulo</label>
             <select name="modulo" value={filtros.modulo} onChange={cambiarFiltro}>
               <option value="">Todos</option>
               {modulosDisponibles.map((modulo) => (
@@ -521,7 +521,7 @@ export default function AuditoriaCRM() {
           </div>
 
           <div className="auditoria-field">
-            <label>Acción</label>
+            <label>AcciÃ³n</label>
             <select name="accion" value={filtros.accion} onChange={cambiarFiltro}>
               <option value="">Todas</option>
               {accionesDisponibles.map((accion) => (
@@ -539,7 +539,7 @@ export default function AuditoriaCRM() {
               name="texto"
               value={filtros.texto}
               onChange={cambiarFiltro}
-              placeholder="Usuario, módulo, detalle..."
+              placeholder="Usuario, mÃ³dulo, detalle..."
             />
           </div>
         </div>
@@ -550,13 +550,13 @@ export default function AuditoriaCRM() {
           </button>
 
           <button type="button" className="auditoria-btn danger" onClick={confirmarLimpiar}>
-            Limpiar auditoría
+            Limpiar auditorÃ­a
           </button>
         </div>
       </section>
 
       <section className="auditoria-panel">
-        <h3>Últimos movimientos</h3>
+        <h3>Ãšltimos movimientos</h3>
 
         <div className="auditoria-table-wrap">
           <table className="auditoria-table">
@@ -566,8 +566,8 @@ export default function AuditoriaCRM() {
                 <th>Usuario</th>
                 <th>Rol</th>
                 <th>Unidad</th>
-                <th>Módulo</th>
-                <th>Acción</th>
+                <th>MÃ³dulo</th>
+                <th>AcciÃ³n</th>
                 <th>Detalle</th>
                 <th>Entidad</th>
               </tr>
@@ -619,3 +619,4 @@ export default function AuditoriaCRM() {
     </div>
   );
 }
+

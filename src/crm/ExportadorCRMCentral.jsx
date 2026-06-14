@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
 const asegurarArray = (valor) => (Array.isArray(valor) ? valor : []);
@@ -207,7 +207,7 @@ export default function ExportadorCRMCentral() {
           <h2 style={estilos.titulo}>Exportador CRM CENTRAL</h2>
 
           <p style={estilos.texto}>
-            Descarga los datos reales guardados en el CRM CENTRAL para alimentar ELAN KAVTORÉ
+            Descarga los datos reales guardados en el CRM CENTRAL para alimentar ELAN KAVTORÃ‰
             mediante el archivo <strong>crm-central.json</strong>.
           </p>
         </div>
@@ -234,7 +234,7 @@ export default function ExportadorCRMCentral() {
         </article>
 
         <article style={estilos.stat}>
-          <span style={estilos.label}>Producción</span>
+          <span style={estilos.label}>ProducciÃ³n</span>
           <strong style={estilos.valor}>{resumen.produccion}</strong>
         </article>
 
@@ -253,8 +253,8 @@ export default function ExportadorCRMCentral() {
         <h3>Cadena de transferencia</h3>
 
         <p style={estilos.texto}>
-          CRM CENTRAL → descarga <strong>crm-central.json</strong> → copiar a{' '}
-          <strong>D:\ELAN\LAB\public</strong> → publicar KAVTORÉ.
+          CRM CENTRAL â†’ descarga <strong>crm-central.json</strong> â†’ copiar a{' '}
+          <strong>D:\ELAN\LAB\public</strong> â†’ publicar KAVTORÃ‰.
         </p>
       </div>
 
@@ -265,8 +265,8 @@ export default function ExportadorCRMCentral() {
           <span style={estilos.itemLista}>Empresas: {resumen.empresas}</span>
           <span style={estilos.itemLista}>Contactos: {resumen.contactos}</span>
           <span style={estilos.itemLista}>Pedidos: {resumen.pedidos}</span>
-          <span style={estilos.itemLista}>Órdenes: {resumen.ordenesTrabajo}</span>
-          <span style={estilos.itemLista}>Producción: {resumen.produccion}</span>
+          <span style={estilos.itemLista}>Ã“rdenes: {resumen.ordenesTrabajo}</span>
+          <span style={estilos.itemLista}>ProducciÃ³n: {resumen.produccion}</span>
           <span style={estilos.itemLista}>Cobros: {resumen.cobros}</span>
           <span style={estilos.itemLista}>Inventario: {resumen.inventario}</span>
           <span style={estilos.itemLista}>Materiales: {resumen.materiales}</span>
