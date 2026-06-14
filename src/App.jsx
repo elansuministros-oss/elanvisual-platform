@@ -112,9 +112,9 @@ export default function App() {
       {page === 'dashboard' &&
         (accesoERP ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
 
-      {page === 'crm' &&
-        (accesoVentas ? <CRM /> : <Login setPage={ir} destino="crm" />)}
-
+{page === 'crm' &&
+  (accesoVentas ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="crm" />)}
+  
       {page === 'ventas' &&
         (accesoVentas ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="crm" />)}
 
