@@ -3,12 +3,7 @@ import {
   ArrowRight,
   BadgeCheck,
   Building2,
-  Layers3,
-  Lightbulb,
-  Ruler,
-  ShieldCheck,
   Sparkles,
-  Wrench,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -27,28 +22,24 @@ const serviciosClave = [
   'Señalización',
 ];
 
-const bloques = [
-  {
-    icono: <Ruler size={30} />,
-    titulo: 'Medidas reales',
-    texto: 'Diseños pensados para fabricar, instalar y mantener escala real.',
-  },
-  {
-    icono: <Layers3 size={30} />,
-    titulo: 'Materiales de taller',
-    texto: 'PVC, acrílico, vinil, lona, estructura metálica, CNC y láser.',
-  },
-  {
-    icono: <Lightbulb size={30} />,
-    titulo: 'Iluminación funcional',
-    texto: 'Luz frontal, halo, rebote o cajas luminosas según el uso real.',
-  },
-  {
-    icono: <Wrench size={30} />,
-    titulo: 'Producción instalada',
-    texto: 'Cotización, fabricación, instalación y seguimiento desde CRM.',
-  },
-];
+function textoValido(valor) {
+  if (!valor) return false;
+
+  const limpio = String(valor).trim().toLowerCase();
+
+  const basura = [
+    'fghdfgdfgdfgdf',
+    'dfgsdfgdfgsdfg',
+    'asdf',
+    'test',
+    'prueba',
+  ];
+
+  if (basura.includes(limpio)) return false;
+  if (limpio.length < 8) return false;
+
+  return true;
+}
 
 export default function Home({ setPage }) {
   const { banners, configuracion } = useApp();
@@ -62,16 +53,27 @@ export default function Home({ setPage }) {
     bannersActivos.find((banner) => banner.ubicacion === 'home') ||
     {};
 
+  const tituloBase =
+    textoValido(heroBanner.titulo)
+      ? heroBanner.titulo
+      : configuracion?.textoHero;
+
+  const descripcionBase =
+    textoValido(heroBanner.descripcion)
+      ? heroBanner.descripcion
+      : textoValido(heroBanner.subtitulo)
+        ? heroBanner.subtitulo
+        : configuracion?.descripcionHero;
+
   const heroTitulo =
-    heroBanner.titulo ||
-    configuracion?.textoHero ||
-    'Rotulación, impresión y fabricación visual para negocios reales';
+    textoValido(tituloBase)
+      ? tituloBase
+      : 'Rotulación, impresión y fabricación visual';
 
   const heroDescripcion =
-    heroBanner.descripcion ||
-    heroBanner.subtitulo ||
-    configuracion?.descripcionHero ||
-    'Diseñamos, cotizamos, fabricamos e instalamos soluciones visuales con materiales reales, medidas exactas y flujo operativo conectado al CRM.';
+    textoValido(descripcionBase)
+      ? descripcionBase
+      : 'Soluciones visuales fabricadas con medidas reales, materiales de taller e instalación profesional.';
 
   const heroImagen =
     heroBanner.imagen ||
@@ -79,32 +81,22 @@ export default function Home({ setPage }) {
     '/productos/portada2-01.png';
 
   return (
-    <main className="home-page home-launch-page">
-      <section className="elanpet-launch-hero">
-        <div className="elanpet-launch-copy">
-          <span className="elanpet-pill">
-            <Building2 size={18} /> ELANVISUAL APP MODE
+    <main className="home-page home-launch-page app-home">
+      <section className="elanpet-launch-hero app-hero-clean">
+        <div className="elanpet-launch-media app-hero-media">
+          <img src={heroImagen} alt="ELANVISUAL rotulación e impresión" />
+        </div>
+
+        <div className="elanpet-launch-copy app-hero-copy">
+          <span className="elanpet-pill app-pill">
+            <Building2 size={18} /> ELANVISUAL
           </span>
 
           <h1>{heroTitulo}</h1>
 
           <p>{heroDescripcion}</p>
 
-          <strong className="elanpet-hero-line">
-            Cotización, producción e instalación desde una sola operación.
-          </strong>
-
-          <div className="elanpet-benefits">
-            {bloques.map((item) => (
-              <div key={item.titulo}>
-                {item.icono}
-                <b>{item.titulo}</b>
-                <small>{item.texto}</small>
-              </div>
-            ))}
-          </div>
-
-          <div className="elanpet-hero-actions">
+          <div className="elanpet-hero-actions app-hero-actions">
             <button
               type="button"
               onClick={() => setPage('catalogo')}
@@ -120,30 +112,26 @@ export default function Home({ setPage }) {
               className="elanpet-whatsapp-btn"
             >
               <BadgeCheck size={20} />
-              Solicitar cotización
+              Cotizar
             </button>
           </div>
         </div>
-
-        <div className="elanpet-launch-media">
-          <img src={heroImagen} alt="ELANVISUAL rotulación e impresión" />
-        </div>
       </section>
 
-      <section className="elanpet-category-section">
+      <section className="elanpet-category-section app-service-section">
         <div className="elanpet-section-title">
-          <span>SERVICIOS FABRICABLES</span>
+          <span>SERVICIOS</span>
           <h2>
-            Soluciones visuales <strong>listas para cotizar</strong>
+            Soluciones visuales <strong>listas para producir</strong>
           </h2>
         </div>
 
-        <div className="elanpet-category-grid">
+        <div className="elanpet-category-grid app-service-grid">
           {serviciosClave.map((servicio) => (
             <button
               key={servicio}
               type="button"
-              className="elanpet-category-card"
+              className="elanpet-category-card app-service-card"
               onClick={() => setPage('catalogo')}
             >
               <b>{servicio}</b>
@@ -153,14 +141,6 @@ export default function Home({ setPage }) {
             </button>
           ))}
         </div>
-      </section>
-
-      <section className="panel">
-        <h2>Flujo operativo ELANVISUAL</h2>
-        <p className="note">
-          Cliente → Cotización → Pedido → Orden de Trabajo → Producción →
-          Instalación → Entrega → Cobro → Comisión.
-        </p>
       </section>
     </main>
   );

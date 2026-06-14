@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Menu, X } from 'lucide-react';
+import { Building2, Menu, X, Home, BriefcaseBusiness, Image, ClipboardList, Phone, LayoutDashboard, Factory } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export default function Header({ page, setPage }) {
@@ -17,17 +17,19 @@ export default function Header({ page, setPage }) {
   };
 
   const publicLinks = [
-    ['home', 'Inicio'],
-    ['catalogo', 'Servicios'],
-    ['trabajos', 'Portafolio'],
-    ['seguimiento', 'Seguimiento'],
-    ['contacto', 'Contacto'],
+    ['home', 'Inicio', <Home size={22} />],
+    ['catalogo', 'Servicios', <BriefcaseBusiness size={22} />],
+    ['trabajos', 'Portafolio', <Image size={22} />],
+    ['seguimiento', 'Seguimiento', <ClipboardList size={22} />],
+    ['contacto', 'Contacto', <Phone size={22} />],
   ];
 
   const internalLinks = [
-    ...(usuario?.rol === 'admin' ? [['crm', 'CRM']] : []),
+    ...(usuario?.rol === 'admin'
+      ? [['crm', 'CRM', <LayoutDashboard size={22} />]]
+      : []),
     ...(usuario?.rol === 'admin' || usuario?.rol === 'produccion'
-      ? [['produccion', 'Producción']]
+      ? [['produccion', 'Producción', <Factory size={22} />]]
       : []),
   ];
 
@@ -40,15 +42,15 @@ export default function Header({ page, setPage }) {
 
   return (
     <>
-      <header className="desktop-header">
+      <header className="desktop-header app-desktop-header">
         <div className="brand" onClick={() => go('home')}>
           <span className="brand-mark">
-            <Building2 size={20} />
+            <Building2 size={22} />
           </span>
           <strong>{brandName}</strong>
         </div>
 
-        <nav className="desktop-nav">
+        <nav className="desktop-nav app-desktop-nav">
           {links.map(([key, label]) => (
             <button
               key={key}
@@ -72,50 +74,53 @@ export default function Header({ page, setPage }) {
         </nav>
       </header>
 
-      <header className="mobile-header">
-        <div className="mobile-bar">
+      <header className="mobile-header app-mobile-header">
+        <div className="mobile-bar app-mobile-bar">
           <div className="brand" onClick={() => go('home')}>
             <span className="brand-mark">
-              <Building2 size={18} />
+              <Building2 size={22} />
             </span>
             <strong>{brandName}</strong>
           </div>
 
-          <div className="mobile-actions">
-            <button
-              type="button"
-              className="mobile-menu-btn"
-              onClick={() => setOpen(!open)}
-              aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
-            >
-              {open ? <X size={26} /> : <Menu size={26} />}
-            </button>
-          </div>
+          <button
+            type="button"
+            className="mobile-menu-btn app-menu-btn"
+            onClick={() => setOpen(!open)}
+            aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
+          >
+            {open ? <X size={38} /> : <Menu size={38} />}
+          </button>
         </div>
 
         {open && (
-          <nav className="mobile-nav">
-            {links.map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                className={page === key ? 'nav-active' : ''}
-                onClick={() => go(key)}
-              >
-                {label}
-              </button>
-            ))}
+          <div className="app-menu-overlay">
+            <nav className="mobile-nav app-mobile-nav">
+              {links.map(([key, label, icon]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={page === key ? 'nav-active' : ''}
+                  onClick={() => go(key)}
+                >
+                  {icon}
+                  <span>{label}</span>
+                </button>
+              ))}
 
-            {usuario ? (
-              <button type="button" onClick={salir}>
-                Salir
-              </button>
-            ) : (
-              <button type="button" onClick={() => go('login')}>
-                Portal
-              </button>
-            )}
-          </nav>
+              {usuario ? (
+                <button type="button" onClick={salir}>
+                  <X size={22} />
+                  <span>Salir</span>
+                </button>
+              ) : (
+                <button type="button" onClick={() => go('login')}>
+                  <LayoutDashboard size={22} />
+                  <span>Portal</span>
+                </button>
+              )}
+            </nav>
+          </div>
         )}
       </header>
     </>
