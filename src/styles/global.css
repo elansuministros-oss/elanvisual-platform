@@ -2848,3 +2848,424 @@ select:focus {
   color: #0B1220;
 }
 
+
+/* FASE 7.5.2 HERO APP FULL IMAGE OVERLAY ELANVISUAL */
+.elanpet-launch-hero {
+  position: relative !important;
+  min-height: calc(100vh - 92px) !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  border-radius: 0 !important;
+  padding: 64px 52px !important;
+  display: flex !important;
+  align-items: center !important;
+  background: #0b1220 !important;
+  box-shadow: none !important;
+}
+
+.elanpet-launch-hero::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(6, 12, 24, 0.92) 0%,
+      rgba(6, 12, 24, 0.78) 34%,
+      rgba(6, 12, 24, 0.28) 62%,
+      rgba(6, 12, 24, 0.06) 100%
+    ) !important;
+  pointer-events: none !important;
+}
+
+.elanpet-launch-hero::after {
+  display: none !important;
+}
+
+.elanpet-hero-copy {
+  position: relative !important;
+  z-index: 3 !important;
+  max-width: 720px !important;
+  width: min(720px, 100%) !important;
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  color: #ffffff !important;
+}
+
+.elanpet-hero-copy .badge,
+.elanpet-launch-hero .badge {
+  background: rgba(201, 162, 39, 0.12) !important;
+  border: 1px solid rgba(201, 162, 39, 0.8) !important;
+  color: #f5d56d !important;
+  box-shadow: none !important;
+}
+
+.elanpet-hero-copy h1 {
+  color: #ffffff !important;
+  font-size: clamp(48px, 7vw, 108px) !important;
+  line-height: 0.88 !important;
+  letter-spacing: -5px !important;
+  max-width: 760px !important;
+  margin: 26px 0 20px !important;
+  text-shadow: 0 18px 44px rgba(0, 0, 0, 0.45) !important;
+}
+
+.elanpet-hero-copy p {
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-size: clamp(18px, 2vw, 25px) !important;
+  line-height: 1.35 !important;
+  max-width: 680px !important;
+}
+
+.elanpet-hero-line,
+.elanpet-hero-copy strong,
+.elanpet-hero-copy b {
+  color: #d6ad2f !important;
+}
+
+.elanpet-hero-media {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background: #0b1220 !important;
+}
+
+.elanpet-hero-media img {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  border-radius: 0 !important;
+  display: block !important;
+  box-shadow: none !important;
+}
+
+.elanpet-hero-card {
+  position: relative !important;
+  z-index: 3 !important;
+  background: rgba(6, 12, 24, 0.48) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.elanpet-hero-actions,
+.hero-actions {
+  position: relative !important;
+  z-index: 4 !important;
+}
+
+.elanpet-hero-actions button,
+.hero-actions button {
+  min-height: 58px !important;
+  border-radius: 14px !important;
+}
+
+@media (max-width: 700px) {
+  .elanpet-launch-hero {
+    min-height: calc(100vh - 72px) !important;
+    padding: 34px 20px !important;
+    align-items: flex-end !important;
+  }
+
+  .elanpet-launch-hero::before {
+    background:
+      linear-gradient(
+        0deg,
+        rgba(6, 12, 24, 0.96) 0%,
+        rgba(6, 12, 24, 0.78) 45%,
+        rgba(6, 12, 24, 0.18) 100%
+      ) !important;
+  }
+
+  .elanpet-hero-copy h1 {
+    font-size: clamp(42px, 15vw, 64px) !important;
+    letter-spacing: -2px !important;
+  }
+
+  .elanpet-hero-copy p {
+    font-size: 17px !important;
+  }
+
+  .elanpet-hero-actions,
+  .hero-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .elanpet-hero-actions button,
+  .hero-actions button {
+    width: 100% !important;
+  }
+}
+
+
+/* FASE 7.5.3 CORRECCION HERO IMAGEN VISIBLE */
+.elanpet-launch-hero {
+  isolation: isolate !important;
+  background: transparent !important;
+}
+
+.elanpet-hero-media {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: -2 !important;
+  display: block !important;
+  opacity: 1 !important;
+}
+
+.elanpet-hero-media img {
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: none !important;
+}
+
+.elanpet-launch-hero::before {
+  z-index: -1 !important;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(6, 12, 24, 0.88) 0%,
+      rgba(6, 12, 24, 0.68) 38%,
+      rgba(6, 12, 24, 0.22) 68%,
+      rgba(6, 12, 24, 0.02) 100%
+    ) !important;
+}
+
+.elanpet-hero-copy {
+  z-index: 5 !important;
+}
+
+
+/* FASE 7.5.4 HERO 1-3 TEXTO 2-3 IMAGEN */
+.elanpet-launch-hero {
+  display: grid !important;
+  grid-template-columns: minmax(360px, 34%) 1fr !important;
+  align-items: center !important;
+  gap: 0 !important;
+  min-height: calc(100vh - 92px) !important;
+  padding: 0 !important;
+  background: #f4f6f8 !important;
+  overflow: hidden !important;
+}
+
+.elanpet-launch-hero::before {
+  display: none !important;
+}
+
+.elanpet-hero-copy {
+  grid-column: 1 !important;
+  position: relative !important;
+  z-index: 4 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 56px 34px !important;
+  color: #0b1220 !important;
+}
+
+.elanpet-hero-copy h1 {
+  color: #0b1220 !important;
+  font-size: clamp(42px, 4.4vw, 74px) !important;
+  line-height: 0.92 !important;
+  letter-spacing: -3px !important;
+  max-width: 430px !important;
+  margin: 22px 0 18px !important;
+  text-shadow: none !important;
+  overflow-wrap: normal !important;
+}
+
+.elanpet-hero-copy p {
+  color: #314155 !important;
+  font-size: 18px !important;
+  line-height: 1.45 !important;
+  max-width: 420px !important;
+}
+
+.elanpet-hero-line,
+.elanpet-hero-copy strong,
+.elanpet-hero-copy b {
+  color: #c9a227 !important;
+}
+
+.elanpet-hero-media {
+  grid-column: 2 !important;
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: calc(100vh - 92px) !important;
+  opacity: 1 !important;
+  display: block !important;
+  background: #d8dde5 !important;
+}
+
+.elanpet-hero-media img {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: calc(100vh - 92px) !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.elanpet-hero-card {
+  display: none !important;
+}
+
+@media (max-width: 700px) {
+  .elanpet-launch-hero {
+    grid-template-columns: 1fr !important;
+    min-height: auto !important;
+  }
+
+  .elanpet-hero-media {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    min-height: 58vh !important;
+  }
+
+  .elanpet-hero-media img {
+    min-height: 58vh !important;
+  }
+
+  .elanpet-hero-copy {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    padding: 28px 20px 34px !important;
+  }
+
+  .elanpet-hero-copy h1 {
+    font-size: clamp(38px, 12vw, 56px) !important;
+    max-width: 100% !important;
+    letter-spacing: -2px !important;
+  }
+}
+/* ==================================================
+   UX-06 HERO FULL IMAGE OVERLAY ELANVISUAL
+   Imagen completa de fondo + texto encima
+================================================== */
+
+.elanpet-launch-hero {
+  position: relative !important;
+  width: 100% !important;
+  min-height: calc(100vh - 76px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  overflow: hidden !important;
+  padding: 64px clamp(22px, 5vw, 82px) !important;
+  background: #0b1220 !important;
+}
+
+.elanpet-launch-media {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.elanpet-launch-media img {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  display: block !important;
+}
+
+.elanpet-launch-hero::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 2 !important;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(8, 13, 24, 0.92) 0%,
+      rgba(8, 13, 24, 0.78) 32%,
+      rgba(8, 13, 24, 0.38) 62%,
+      rgba(8, 13, 24, 0.10) 100%
+    ) !important;
+  pointer-events: none !important;
+}
+
+.elanpet-launch-copy {
+  position: relative !important;
+  z-index: 3 !important;
+  width: min(720px, 100%) !important;
+  max-width: 720px !important;
+  padding: 0 !important;
+  color: #ffffff !important;
+}
+
+.elanpet-launch-copy h1 {
+  color: #ffffff !important;
+  font-size: clamp(52px, 7vw, 108px) !important;
+  line-height: 0.9 !important;
+  letter-spacing: -4px !important;
+  max-width: 720px !important;
+  margin: 22px 0 18px !important;
+  text-shadow: 0 18px 42px rgba(0, 0, 0, 0.42) !important;
+}
+
+.elanpet-launch-copy p {
+  color: rgba(255, 255, 255, 0.92) !important;
+  max-width: 620px !important;
+  font-size: clamp(18px, 1.6vw, 24px) !important;
+  line-height: 1.42 !important;
+}
+
+.elanpet-hero-line {
+  color: #d4af37 !important;
+}
+
+.elanpet-benefits div,
+.elanpet-benefits b,
+.elanpet-benefits small {
+  color: #ffffff !important;
+}
+
+.elanpet-benefits svg {
+  color: #d4af37 !important;
+}
+
+@media (max-width: 1099px) {
+  .elanpet-launch-hero {
+    min-height: calc(100svh - 76px) !important;
+    align-items: flex-end !important;
+    padding: 30px 18px 34px !important;
+  }
+
+  .elanpet-launch-hero::before {
+    background:
+      linear-gradient(
+        0deg,
+        rgba(8, 13, 24, 0.96) 0%,
+        rgba(8, 13, 24, 0.82) 45%,
+        rgba(8, 13, 24, 0.24) 100%
+      ) !important;
+  }
+
+  .elanpet-launch-copy h1 {
+    font-size: clamp(42px, 13vw, 64px) !important;
+    letter-spacing: -2px !important;
+  }
+
+  .elanpet-benefits {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}

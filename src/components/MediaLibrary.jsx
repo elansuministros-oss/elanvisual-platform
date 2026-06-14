@@ -1,41 +1,64 @@
 import React, { useState } from 'react';
 import ImageUploader from './ImageUploader';
 
+const imagenBase = {
+  nombre: '',
+  categoria: 'general',
+  src: '',
+};
+
+function nombreVisible(img) {
+  if (img?.nombre && String(img.nombre).trim()) return img.nombre;
+  return `Imagen ${img?.id || ''}`.trim();
+}
+
 export default function MediaLibrary({
   imagenes = [],
   onAdd,
+  onUpdate,
   onRemove,
   onSelect,
 }) {
-  const [nuevaImagen, setNuevaImagen] = useState({
-    nombre: '',
-    categoria: 'general',
-    src: '',
-  });
+  const [nuevaImagen, setNuevaImagen] = useState(imagenBase);
+  const [editandoId, setEditandoId] = useState(null);
 
-  const agregarImagen = () => {
+  const limpiarFormulario = () => {
+    setNuevaImagen(imagenBase);
+    setEditandoId(null);
+  };
+
+  const guardarImagen = () => {
     if (!nuevaImagen.src) return alert('Seleccioná una imagen primero.');
 
     const item = {
-      id: Date.now(),
+      id: editandoId || Date.now(),
       nombre: nuevaImagen.nombre || 'Imagen sin nombre',
       categoria: nuevaImagen.categoria || 'general',
       src: nuevaImagen.src,
       fecha: new Date().toISOString(),
     };
 
-    if (onAdd) onAdd(item);
+    if (editandoId && onUpdate) {
+      onUpdate(item);
+    } else if (onAdd) {
+      onAdd(item);
+    }
 
+    limpiarFormulario();
+  };
+
+  const editarImagen = (img) => {
+    setEditandoId(img.id);
     setNuevaImagen({
-      nombre: '',
-      categoria: 'general',
-      src: '',
+      nombre: img.nombre || '',
+      categoria: img.categoria || 'general',
+      src: img.src || '',
     });
   };
 
   return (
     <section className="media-library">
-      <h3>Gestor Multimedia</h3>
+      <h3>{editandoId ? 'Editar imagen' : 'Gestor Multimedia'}</h3>
       <p>
         Subí imágenes para usarlas en servicios, banners, portafolio,
         identidad visual y logo corporativo.
@@ -43,7 +66,7 @@ export default function MediaLibrary({
 
       <div className="media-form">
         <input
-          placeholder="Nombre de la imagen"
+          placeholder="Nombre visible de la imagen"
           value={nuevaImagen.nombre}
           onChange={(e) =>
             setNuevaImagen({ ...nuevaImagen, nombre: e.target.value })
@@ -64,26 +87,37 @@ export default function MediaLibrary({
         </select>
 
         <ImageUploader
-          label="Subir imagen"
+          label={editandoId ? 'Reemplazar imagen' : 'Subir imagen'}
           value={nuevaImagen.src}
           onChange={(img) =>
             setNuevaImagen({ ...nuevaImagen, src: img })
           }
         />
 
-        <button type="button" onClick={agregarImagen}>
-          Guardar imagen
-        </button>
+        <div className="form-actions">
+          <button type="button" onClick={guardarImagen}>
+            {editandoId ? 'Guardar cambios' : 'Guardar imagen'}
+          </button>
+
+          {editandoId && (
+            <button type="button" className="ghost-btn" onClick={limpiarFormulario}>
+              Cancelar
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="media-grid">
         {imagenes.map((img) => (
           <article className="media-card" key={img.id}>
-            <img src={img.src} alt={img.nombre} />
+            <img src={img.src} alt={nombreVisible(img)} />
 
-            <div>
-              <strong>{img.nombre}</strong>
-              <small>{img.categoria}</small>
+            <div className="media-info">
+              <strong title={nombreVisible(img)}>
+                {nombreVisible(img)}
+              </strong>
+              <small>{img.categoria || 'general'}</small>
+              <span className="media-id">ID: {String(img.id)}</span>
             </div>
 
             <div className="media-actions">
@@ -92,6 +126,10 @@ export default function MediaLibrary({
                   Usar
                 </button>
               )}
+
+              <button type="button" onClick={() => editarImagen(img)}>
+                Editar
+              </button>
 
               {onRemove && (
                 <button type="button" onClick={() => onRemove(img.id)}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Building2,
   ClipboardList,
@@ -9,6 +9,11 @@ import {
   PlusCircle,
   Save,
   Trash2,
+  Pencil,
+  X,
+  Copy,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import MediaLibrary from '../components/MediaLibrary';
@@ -54,15 +59,23 @@ export default function AdminPanel() {
     crearImagen,
     eliminarImagen,
     crearProducto,
+    actualizarProducto,
     crearTrabajo,
+    actualizarTrabajo,
     crearBanner,
+    actualizarBanner,
     eliminarBanner,
+    actualizarImagen,
   } = useApp();
 
   const [tab, setTab] = useState('dashboard');
   const [servicio, setServicio] = useState(nuevoServicioBase);
   const [trabajo, setTrabajo] = useState(nuevoTrabajoBase);
   const [banner, setBanner] = useState(nuevoBannerBase);
+
+  const [editandoServicioId, setEditandoServicioId] = useState(null);
+  const [editandoTrabajoId, setEditandoTrabajoId] = useState(null);
+  const [editandoBannerId, setEditandoBannerId] = useState(null);
 
   const kpis = [
     { label: 'Servicios', value: productos.length },
@@ -72,65 +85,161 @@ export default function AdminPanel() {
     { label: 'Usuarios', value: usuarios.filter((u) => u.activo !== false).length },
   ];
 
-  const SelectorImagen = ({ valor, onPick }) => (
-    <div className="image-picker">
-      <h4>Seleccionar imagen desde Multimedia</h4>
+  const imagenesPorCategoria = useMemo(() => imagenes || [], [imagenes]);
 
-      {imagenes.length === 0 ? (
-        <p className="note">
-          Todavía no hay imágenes cargadas. Subí imágenes desde la pestaña Multimedia.
-        </p>
-      ) : (
-        <div className="image-picker-grid">
-          {imagenes.map((img) => (
-            <button
-              key={img.id}
-              type="button"
-              className={`image-picker-card ${valor === img.src ? 'active' : ''}`}
-              onClick={() => onPick(img.src)}
-            >
-              <img src={img.src} alt={img.nombre} />
-              <span>{img.nombre}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+  const SelectorImagen = ({ valor, onPick, categoriaPreferida = '' }) => {
+    const lista = categoriaPreferida
+      ? imagenesPorCategoria.filter(
+          (img) => img.categoria === categoriaPreferida || img.categoria === 'general'
+        )
+      : imagenesPorCategoria;
+
+    return (
+      <div className="image-picker">
+        <h4>Seleccionar imagen desde Multimedia</h4>
+
+        {lista.length === 0 ? (
+          <p className="note">
+            Todavía no hay imágenes cargadas. Subí imágenes desde la pestaña Multimedia.
+          </p>
+        ) : (
+          <div className="image-picker-grid">
+            {lista.map((img) => (
+              <button
+                key={img.id}
+                type="button"
+                className={`image-picker-card ${valor === img.src ? 'active' : ''}`}
+                onClick={() => onPick(img.src)}
+                title={img.nombre}
+              >
+                <img src={img.src} alt={img.nombre} />
+                <strong>{img.nombre || 'Imagen sin nombre'}</strong>
+                <small>{img.categoria || 'general'}</small>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const limpiarServicio = () => {
+    setServicio(nuevoServicioBase);
+    setEditandoServicioId(null);
+  };
+
+  const limpiarTrabajo = () => {
+    setTrabajo(nuevoTrabajoBase);
+    setEditandoTrabajoId(null);
+  };
+
+  const limpiarBanner = () => {
+    setBanner(nuevoBannerBase);
+    setEditandoBannerId(null);
+  };
 
   const guardarServicio = () => {
     if (!servicio.nombre.trim()) return alert('Escribí el nombre del servicio.');
 
-    crearProducto({
+    const datos = {
       ...servicio,
       precio: Number(servicio.precio || 0),
       activo: servicio.activo !== false,
-    });
+    };
 
-    setServicio(nuevoServicioBase);
+    if (editandoServicioId) {
+      actualizarProducto({ ...datos, id: editandoServicioId });
+    } else {
+      crearProducto(datos);
+    }
+
+    limpiarServicio();
   };
 
   const guardarTrabajo = () => {
     if (!trabajo.titulo.trim()) return alert('Escribí el título del trabajo.');
 
-    crearTrabajo({
+    const datos = {
       ...trabajo,
       activo: trabajo.activo !== false,
-    });
+    };
 
-    setTrabajo(nuevoTrabajoBase);
+    if (editandoTrabajoId) {
+      actualizarTrabajo({ ...datos, id: editandoTrabajoId });
+    } else {
+      crearTrabajo(datos);
+    }
+
+    limpiarTrabajo();
   };
 
   const guardarBanner = () => {
     if (!banner.titulo.trim()) return alert('Escribí el título del banner.');
 
-    crearBanner({
+    const datos = {
       ...banner,
       imagenRuta: banner.imagenRuta || banner.imagen,
       activo: banner.activo !== false,
-    });
+    };
 
-    setBanner(nuevoBannerBase);
+    if (editandoBannerId) {
+      actualizarBanner({ ...datos, id: editandoBannerId });
+    } else {
+      crearBanner(datos);
+    }
+
+    limpiarBanner();
+  };
+
+  const editarServicio = (p) => {
+    setServicio({
+      nombre: p.nombre || '',
+      categoria: p.categoria || 'Rotulación',
+      descripcion: p.descripcion || '',
+      medidas: p.medidas || '',
+      imagen: p.imagen || '',
+      etiqueta: p.etiqueta || 'A cotizar',
+      precio: Number(p.precio || 0),
+      activo: p.activo !== false,
+    });
+    setEditandoServicioId(p.id);
+    setTab('servicios');
+  };
+
+  const editarTrabajo = (t) => {
+    setTrabajo({
+      titulo: t.titulo || '',
+      tipo: t.tipo || 'Foto',
+      descripcion: t.descripcion || '',
+      imagen: t.imagen || '',
+      activo: t.activo !== false,
+    });
+    setEditandoTrabajoId(t.id);
+    setTab('portafolio');
+  };
+
+  const editarBanner = (b) => {
+    setBanner({
+      titulo: b.titulo || '',
+      subtitulo: b.subtitulo || '',
+      ubicacion: b.ubicacion || 'hero-principal',
+      link: b.link || 'catalogo',
+      imagen: b.imagen || b.imagenRuta || '',
+      imagenRuta: b.imagenRuta || b.imagen || '',
+      activo: b.activo !== false,
+    });
+    setEditandoBannerId(b.id);
+    setTab('banners');
+  };
+
+  const duplicarBanner = (b) => {
+    crearBanner({
+      ...b,
+      titulo: `${b.titulo || 'Banner'} copia`,
+      activo: false,
+      imagen: b.imagen || b.imagenRuta || '',
+      imagenRuta: b.imagenRuta || b.imagen || '',
+    });
   };
 
   return (
@@ -146,11 +255,22 @@ export default function AdminPanel() {
       </div>
 
       <nav className="admin-tabs">
-        <button type="button" className={tab === 'dashboard' ? 'active' : ''} onClick={() => setTab('dashboard')}>Resumen</button>
-        <button type="button" className={tab === 'servicios' ? 'active' : ''} onClick={() => setTab('servicios')}>Servicios</button>
-        <button type="button" className={tab === 'portafolio' ? 'active' : ''} onClick={() => setTab('portafolio')}>Portafolio</button>
-        <button type="button" className={tab === 'banners' ? 'active' : ''} onClick={() => setTab('banners')}>Banners</button>
-        <button type="button" className={tab === 'multimedia' ? 'active' : ''} onClick={() => setTab('multimedia')}>Multimedia</button>
+        {[
+          ['dashboard', 'Resumen'],
+          ['servicios', 'Servicios'],
+          ['portafolio', 'Portafolio'],
+          ['banners', 'Banners'],
+          ['multimedia', 'Multimedia'],
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            className={tab === key ? 'active' : ''}
+            onClick={() => setTab(key)}
+          >
+            {label}
+          </button>
+        ))}
       </nav>
 
       {tab === 'dashboard' && (
@@ -204,20 +324,35 @@ export default function AdminPanel() {
 
       {tab === 'servicios' && (
         <section className="panel">
-          <h2><FileText size={20} /> Servicios fabricables</h2>
+          <h2><FileText size={20} /> {editandoServicioId ? 'Editar servicio' : 'Servicios fabricables'}</h2>
 
           <div className="form-grid">
             <input placeholder="Nombre del servicio" value={servicio.nombre} onChange={(e) => setServicio({ ...servicio, nombre: e.target.value })} />
             <input placeholder="Categoría" value={servicio.categoria} onChange={(e) => setServicio({ ...servicio, categoria: e.target.value })} />
             <input placeholder="Medidas / referencia" value={servicio.medidas} onChange={(e) => setServicio({ ...servicio, medidas: e.target.value })} />
             <input placeholder="Etiqueta" value={servicio.etiqueta} onChange={(e) => setServicio({ ...servicio, etiqueta: e.target.value })} />
+            <input type="number" placeholder="Precio" value={servicio.precio} onChange={(e) => setServicio({ ...servicio, precio: e.target.value })} />
+            <select value={servicio.activo ? 'activo' : 'oculto'} onChange={(e) => setServicio({ ...servicio, activo: e.target.value === 'activo' })}>
+              <option value="activo">Activo</option>
+              <option value="oculto">Oculto</option>
+            </select>
             <input className="span-2" placeholder="URL o imagen seleccionada" value={servicio.imagen} onChange={(e) => setServicio({ ...servicio, imagen: e.target.value })} />
             <textarea className="span-2" placeholder="Descripción técnica" value={servicio.descripcion} onChange={(e) => setServicio({ ...servicio, descripcion: e.target.value })} />
           </div>
 
-          <SelectorImagen valor={servicio.imagen} onPick={(src) => setServicio({ ...servicio, imagen: src })} />
+          <SelectorImagen valor={servicio.imagen} categoriaPreferida="servicio" onPick={(src) => setServicio({ ...servicio, imagen: src })} />
 
-          <button type="button" onClick={guardarServicio}><PlusCircle size={18} /> Crear servicio</button>
+          <div className="form-actions">
+            <button type="button" onClick={guardarServicio}>
+              {editandoServicioId ? <Save size={18} /> : <PlusCircle size={18} />}
+              {editandoServicioId ? 'Guardar cambios' : 'Crear servicio'}
+            </button>
+            {editandoServicioId && (
+              <button type="button" className="ghost-btn" onClick={limpiarServicio}>
+                <X size={18} /> Cancelar
+              </button>
+            )}
+          </div>
 
           <div className="admin-list">
             {productos.map((p) => (
@@ -225,6 +360,11 @@ export default function AdminPanel() {
                 {p.imagen ? <img src={p.imagen} alt={p.nombre} /> : <div className="admin-thumb-empty">IMG</div>}
                 <div><b>{p.nombre}</b><span>{p.categoria} · {p.medidas || 'Medidas por definir'}</span></div>
                 <strong>{p.activo === false ? 'Oculto' : 'Activo'}</strong>
+                <button type="button" onClick={() => editarServicio(p)}><Pencil size={15} /> Editar</button>
+                <button type="button" onClick={() => actualizarProducto({ ...p, activo: p.activo === false })}>
+                  {p.activo === false ? <Eye size={15} /> : <EyeOff size={15} />}
+                  {p.activo === false ? 'Activar' : 'Ocultar'}
+                </button>
               </article>
             ))}
           </div>
@@ -233,18 +373,32 @@ export default function AdminPanel() {
 
       {tab === 'portafolio' && (
         <section className="panel">
-          <h2><ImagePlus size={20} /> Portafolio</h2>
+          <h2><ImagePlus size={20} /> {editandoTrabajoId ? 'Editar trabajo' : 'Portafolio'}</h2>
 
           <div className="form-grid">
             <input placeholder="Título del trabajo" value={trabajo.titulo} onChange={(e) => setTrabajo({ ...trabajo, titulo: e.target.value })} />
             <input placeholder="Tipo" value={trabajo.tipo} onChange={(e) => setTrabajo({ ...trabajo, tipo: e.target.value })} />
+            <select value={trabajo.activo ? 'activo' : 'oculto'} onChange={(e) => setTrabajo({ ...trabajo, activo: e.target.value === 'activo' })}>
+              <option value="activo">Activo</option>
+              <option value="oculto">Oculto</option>
+            </select>
             <input className="span-2" placeholder="URL o imagen seleccionada" value={trabajo.imagen} onChange={(e) => setTrabajo({ ...trabajo, imagen: e.target.value })} />
             <textarea className="span-2" placeholder="Descripción del trabajo" value={trabajo.descripcion} onChange={(e) => setTrabajo({ ...trabajo, descripcion: e.target.value })} />
           </div>
 
-          <SelectorImagen valor={trabajo.imagen} onPick={(src) => setTrabajo({ ...trabajo, imagen: src })} />
+          <SelectorImagen valor={trabajo.imagen} categoriaPreferida="portafolio" onPick={(src) => setTrabajo({ ...trabajo, imagen: src })} />
 
-          <button type="button" onClick={guardarTrabajo}><PlusCircle size={18} /> Crear trabajo</button>
+          <div className="form-actions">
+            <button type="button" onClick={guardarTrabajo}>
+              {editandoTrabajoId ? <Save size={18} /> : <PlusCircle size={18} />}
+              {editandoTrabajoId ? 'Guardar cambios' : 'Crear trabajo'}
+            </button>
+            {editandoTrabajoId && (
+              <button type="button" className="ghost-btn" onClick={limpiarTrabajo}>
+                <X size={18} /> Cancelar
+              </button>
+            )}
+          </div>
 
           <div className="admin-list">
             {trabajos.map((t) => (
@@ -252,6 +406,11 @@ export default function AdminPanel() {
                 {t.imagen ? <img src={t.imagen} alt={t.titulo} /> : <div className="admin-thumb-empty">IMG</div>}
                 <div><b>{t.titulo}</b><span>{t.tipo} · {t.descripcion}</span></div>
                 <strong>{t.activo === false ? 'Oculto' : 'Activo'}</strong>
+                <button type="button" onClick={() => editarTrabajo(t)}><Pencil size={15} /> Editar</button>
+                <button type="button" onClick={() => actualizarTrabajo({ ...t, activo: t.activo === false })}>
+                  {t.activo === false ? <Eye size={15} /> : <EyeOff size={15} />}
+                  {t.activo === false ? 'Activar' : 'Ocultar'}
+                </button>
               </article>
             ))}
           </div>
@@ -260,7 +419,7 @@ export default function AdminPanel() {
 
       {tab === 'banners' && (
         <section className="panel">
-          <h2><ShieldCheck size={20} /> Banners</h2>
+          <h2><ShieldCheck size={20} /> {editandoBannerId ? 'Editar banner' : 'Banners'}</h2>
 
           <div className="form-grid">
             <input placeholder="Título" value={banner.titulo} onChange={(e) => setBanner({ ...banner, titulo: e.target.value })} />
@@ -270,19 +429,39 @@ export default function AdminPanel() {
               <option value="home">Home</option>
               <option value="slider-home">Slider Home</option>
             </select>
+            <select value={banner.activo ? 'activo' : 'oculto'} onChange={(e) => setBanner({ ...banner, activo: e.target.value === 'activo' })}>
+              <option value="activo">Activo</option>
+              <option value="oculto">Oculto</option>
+            </select>
             <input className="span-2" placeholder="Subtítulo" value={banner.subtitulo} onChange={(e) => setBanner({ ...banner, subtitulo: e.target.value })} />
             <input className="span-2" placeholder="URL o imagen seleccionada" value={banner.imagen} onChange={(e) => setBanner({ ...banner, imagen: e.target.value, imagenRuta: e.target.value })} />
           </div>
 
-          <SelectorImagen valor={banner.imagen} onPick={(src) => setBanner({ ...banner, imagen: src, imagenRuta: src })} />
+          <SelectorImagen valor={banner.imagen} categoriaPreferida="banner" onPick={(src) => setBanner({ ...banner, imagen: src, imagenRuta: src })} />
 
-          <button type="button" onClick={guardarBanner}><Save size={18} /> Crear banner</button>
+          <div className="form-actions">
+            <button type="button" onClick={guardarBanner}>
+              <Save size={18} /> {editandoBannerId ? 'Guardar cambios' : 'Crear banner'}
+            </button>
+            {editandoBannerId && (
+              <button type="button" className="ghost-btn" onClick={limpiarBanner}>
+                <X size={18} /> Cancelar
+              </button>
+            )}
+          </div>
 
           <div className="admin-list">
             {banners.map((b) => (
               <article className="admin-row" key={b.id}>
                 {b.imagen ? <img src={b.imagen} alt={b.titulo} /> : <div className="admin-thumb-empty">IMG</div>}
                 <div><b>{b.titulo}</b><span>{b.ubicacion} · {b.subtitulo}</span></div>
+                <strong>{b.activo === false ? 'Oculto' : 'Activo'}</strong>
+                <button type="button" onClick={() => editarBanner(b)}><Pencil size={15} /> Editar</button>
+                <button type="button" onClick={() => duplicarBanner(b)}><Copy size={15} /> Duplicar</button>
+                <button type="button" onClick={() => actualizarBanner({ ...b, activo: b.activo === false })}>
+                  {b.activo === false ? <Eye size={15} /> : <EyeOff size={15} />}
+                  {b.activo === false ? 'Activar' : 'Ocultar'}
+                </button>
                 <button type="button" onClick={() => eliminarBanner(b.id)}><Trash2 size={15} /> Eliminar</button>
               </article>
             ))}
