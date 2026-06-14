@@ -199,6 +199,14 @@ export default function DashboardERP({ setPage }) {
     usuarios,
     configuracion,
     resumen,
+
+    costosReales,
+    utilidadesReales,
+    comisionesAutomaticas,
+
+    fondoComunidad,
+    fondoIncentivo,
+    fondoDireccion,
   } = app;
 
   const data = useMemo(() => {
@@ -217,6 +225,13 @@ export default function DashboardERP({ setPage }) {
       0
     );
 
+    const utilidadRealTotal = (utilidadesReales || []).reduce((acc, item) => acc + Number(item.utilidadReal || 0), 0);
+    const totalComisiones = (comisionesAutomaticas || []).reduce((acc, item) => acc + Number(item.comision || 0), 0);
+    const totalComunidad = (fondoComunidad || []).reduce((acc, item) => acc + Number(item.monto || 0), 0);
+    const totalIncentivo = (fondoIncentivo || []).reduce((acc, item) => acc + Number(item.monto || 0), 0);
+    const totalDireccion = (fondoDireccion || []).reduce((acc, item) => acc + Number(item.monto || 0), 0);
+    const utilidadElan = utilidadRealTotal - totalComisiones - totalComunidad - totalIncentivo - totalDireccion;
+
     return {
       clientes: contador(clientes),
       productos: contador(productos),
@@ -228,8 +243,14 @@ export default function DashboardERP({ setPage }) {
       usuarios: contador(usuarios),
       totalVentas,
       cxc,
+      utilidadRealTotal,
+      totalComisiones,
+      totalComunidad,
+      totalIncentivo,
+      totalDireccion,
+      utilidadElan,
     };
-  }, [clientes, productos, pedidos, trabajos, banners, usuarios]);
+  }, [clientes, productos, pedidos, trabajos, banners, usuarios, utilidadesReales, comisionesAutomaticas, fondoComunidad, fondoIncentivo, fondoDireccion]);
 
   const brandName = configuracion?.logoTexto || configuracion?.nombreSitio || 'ELANVISUAL';
 

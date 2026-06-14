@@ -489,6 +489,7 @@ function esUuid(valor) {
 }
 
 export function AppProvider({ children }) {
+
   const [configuracion, setConfiguracion] = useState(() =>
     leerStorage('elanvisual_configuracion', configuracionInicial)
   );
@@ -520,6 +521,29 @@ export function AppProvider({ children }) {
   const [productosProveedor, setProductosProveedor] = useState(() => leerStorage('elanvisual_productos_proveedor', []));
   const [cotizacionesProveedor, setCotizacionesProveedor] = useState(() => leerStorage('elanvisual_cotizaciones_proveedor', []));
   const [inventarioReal, setInventarioReal] = useState(() => leerStorage('elanvisual_inventario_real', []));
+  const [costosReales, setCostosReales] = useState(() =>
+  leerStorage('elanvisual_costos_reales', [])
+);
+
+const [utilidadesReales, setUtilidadesReales] = useState(() =>
+  leerStorage('elanvisual_utilidades_reales', [])
+);
+
+const [comisionesAutomaticas, setComisionesAutomaticas] = useState(() =>
+  leerStorage('elanvisual_comisiones_automaticas', [])
+);
+
+const [fondoComunidad, setFondoComunidad] = useState(() =>
+  leerStorage('elanvisual_fondo_comunidad', [])
+);
+
+const [fondoIncentivo, setFondoIncentivo] = useState(() =>
+  leerStorage('elanvisual_fondo_incentivo', [])
+);
+
+const [fondoDireccion, setFondoDireccion] = useState(() =>
+  leerStorage('elanvisual_fondo_direccion', [])
+);
   const [estadoCompartidoCargado, setEstadoCompartidoCargado] = useState(false);
 
   useEffect(() => guardarStorage('elanvisual_configuracion', configuracion), [configuracion]);
@@ -535,6 +559,17 @@ export function AppProvider({ children }) {
   useEffect(() => guardarStorage('elanvisual_productos_proveedor', productosProveedor), [productosProveedor]);
   useEffect(() => guardarStorage('elanvisual_cotizaciones_proveedor', cotizacionesProveedor), [cotizacionesProveedor]);
   useEffect(() => guardarStorage('elanvisual_inventario_real', inventarioReal), [inventarioReal]);
+  useEffect(() => guardarStorage('elanvisual_costos_reales', costosReales), [costosReales]);
+
+useEffect(() => guardarStorage('elanvisual_utilidades_reales', utilidadesReales), [utilidadesReales]);
+
+useEffect(() => guardarStorage('elanvisual_comisiones_automaticas', comisionesAutomaticas), [comisionesAutomaticas]);
+
+useEffect(() => guardarStorage('elanvisual_fondo_comunidad', fondoComunidad), [fondoComunidad]);
+
+useEffect(() => guardarStorage('elanvisual_fondo_incentivo', fondoIncentivo), [fondoIncentivo]);
+
+useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [fondoDireccion]);
 
   useEffect(() => {
     if (usuario) guardarStorage('elanvisual_usuario_actual', usuario);
@@ -1699,6 +1734,160 @@ export function AppProvider({ children }) {
 
   const eliminarCuentaBancaria = (id) =>
     setCuentasBancarias((prev) => prev.filter((c) => c.id !== id));
+const calcularCostoReal = ({
+  otId,
+  costoInventario = 0,
+  costoProveedor = 0,
+  costoImpresion = 0,
+  costoEstructura = 0,
+  costoTransporte = 0,
+  costoInstalacion = 0,
+  costoAdministracion = 0,
+}) => {
+  const costoTotalReal =
+    Number(costoInventario) +
+    Number(costoProveedor) +
+    Number(costoImpresion) +
+    Number(costoEstructura) +
+    Number(costoTransporte) +
+    Number(costoInstalacion) +
+    Number(costoAdministracion);
+
+  const registro = {
+    id: `cost-${Date.now()}`,
+    otId,
+    fecha: new Date().toISOString(),
+    costoInventario,
+    costoProveedor,
+    costoImpresion,
+    costoEstructura,
+    costoTransporte,
+    costoInstalacion,
+    costoAdministracion,
+    costoTotalReal,
+  };
+
+  setCostosReales((prev) => [registro, ...prev]);
+
+  return registro;
+};
+
+const calcularUtilidadReal = ({
+  otId,
+  ventaCliente,
+  costoReal,
+}) => {
+  const utilidadReal =
+    Number(ventaCliente) - Number(costoReal);
+
+  const porcentajeUtilidad =
+    ventaCliente > 0
+      ? (utilidadReal / ventaCliente) * 100
+      : 0;
+
+  const registro = {
+    id: `util-${Date.now()}`,
+    otId,
+    ventaCliente,
+    costoReal,
+    utilidadReal,
+    porcentajeUtilidad,
+    fecha: new Date().toISOString(),
+  };
+
+  setUtilidadesReales((prev) => [registro, ...prev]);
+
+  return registro;
+};
+
+const distribuirUtilidadReal = ({
+  utilidadReal,
+  vendedorId = '',
+  vendedorNombre = '',
+}) => {
+  const vendedor = utilidadReal * 0.40;
+
+  const bloqueElan = utilidadReal * 0.60;
+
+  const incentivo = bloqueElan * 0.05;
+  const comunidad = bloqueElan * 0.05;
+  const direccion = bloqueElan * 0.05;
+
+  const utilidadElan =
+    bloqueElan -
+    incentivo -
+    comunidad -
+    direccion;
+
+  return {
+    vendedor,
+    incentivo,
+    comunidad,
+    direccion,
+    utilidadElan,
+    vendedorId,
+    vendedorNombre,
+  };
+};
+
+const generarComisionAutomatica = ({
+  otId,
+  utilidadReal,
+  vendedorId,
+  vendedorNombre,
+}) => {
+  const datos = distribuirUtilidadReal({
+    utilidadReal,
+    vendedorId,
+    vendedorNombre,
+  });
+
+  const comision = {
+    id: `com-${Date.now()}`,
+    otId,
+    vendedorId,
+    vendedorNombre,
+    utilidadReal,
+    comision: datos.vendedor,
+    estado: 'Pendiente',
+    fecha: new Date().toISOString(),
+  };
+
+  setComisionesAutomaticas((prev) => [comision, ...prev]);
+
+  setFondoComunidad((prev) => [
+    {
+      id: `fc-${Date.now()}`,
+      otId,
+      monto: datos.comunidad,
+      fecha: new Date().toISOString(),
+    },
+    ...prev,
+  ]);
+
+  setFondoIncentivo((prev) => [
+    {
+      id: `fi-${Date.now()}`,
+      otId,
+      vendedorId,
+      monto: datos.incentivo,
+      fecha: new Date().toISOString(),
+    },
+    ...prev,
+  ]);
+
+  setFondoDireccion((prev) => [
+    {
+      id: `fd-${Date.now()}`,
+      otId,
+      monto: datos.direccion,
+      fecha: new Date().toISOString(),
+    },
+    ...prev,
+  ]);
+
+  return comision;
+};
 
   return (
     <AppContext.Provider
@@ -1784,6 +1973,20 @@ export function AppProvider({ children }) {
         eliminarUsuario,
 
         rolesSistema,
+                inventarioReal,
+
+        costosReales,
+        utilidadesReales,
+        comisionesAutomaticas,
+
+        fondoComunidad,
+        fondoIncentivo,
+        fondoDireccion,
+
+        calcularCostoReal,
+        calcularUtilidadReal,
+        distribuirUtilidadReal,
+        generarComisionAutomatica,
         supabaseListo,
       }}
     >
