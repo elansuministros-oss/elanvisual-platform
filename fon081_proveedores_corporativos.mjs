@@ -1,3 +1,9 @@
+﻿import fs from 'fs';
+
+const provPath = 'src/pages/ProveedoresCostos.jsx';
+const ctxPath = 'src/context/AppContext.jsx';
+
+const nuevo = `
 import React, { useMemo, useState } from 'react';
 import { Edit3, PlusCircle, Save, Search, Star, Truck, Trash2, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -122,7 +128,7 @@ export default function ProveedoresCostos() {
   const lista = useMemo(() => {
     const t = busqueda.toLowerCase();
     return proveedores.filter((p) =>
-      `${p.nombre} ${p.razonSocial || ''} ${p.categoria} ${p.subcategorias || ''} ${p.contacto} ${p.whatsapp} ${p.departamento || ''} ${p.municipio || ''} ${p.zonaCobertura || ''} ${p.ubicacion || ''}`
+      \`\${p.nombre} \${p.razonSocial || ''} \${p.categoria} \${p.subcategorias || ''} \${p.contacto} \${p.whatsapp} \${p.departamento || ''} \${p.municipio || ''} \${p.zonaCobertura || ''} \${p.ubicacion || ''}\`
         .toLowerCase()
         .includes(t)
     );
@@ -320,7 +326,7 @@ export default function ProveedoresCostos() {
           const promedio = promedioProveedor(p).toFixed(1);
 
           return (
-            <article className={`proveedor-card proveedor-item ${p.activo === false ? 'inactive' : ''}`} key={p.id}>
+            <article className={\`proveedor-card proveedor-item \${p.activo === false ? 'inactive' : ''}\`} key={p.id}>
               <div className="prov-head">
                 <div>
                   <span>{p.categoria}</span>
@@ -344,7 +350,7 @@ export default function ProveedoresCostos() {
               <div className="prov-info">
                 <p><b>Zona:</b> {p.zonaCobertura || p.ubicacion || 'No definida'}</p>
                 <p><b>Entrega:</b> {p.tiempoEntrega || 'Por confirmar'}</p>
-                <p><b>Crédito:</b> {p.aceptaCredito || 'No'} {Number(p.diasCredito || 0) > 0 ? `· ${p.diasCredito} días` : ''}</p>
+                <p><b>Crédito:</b> {p.aceptaCredito || 'No'} {Number(p.diasCredito || 0) > 0 ? \`· \${p.diasCredito} días\` : ''}</p>
                 <p><b>Correo:</b> {p.correo || 'No registrado'}</p>
                 <p><b>Dirección:</b> {p.direccion || 'No registrada'}</p>
               </div>
@@ -373,7 +379,7 @@ export default function ProveedoresCostos() {
         })}
       </section>
 
-      <style>{`
+      <style>{\`
         .proveedores-page{padding:14px;display:grid;gap:14px;background:#f4f6fb;min-height:100vh}
         .proveedor-hero,.proveedor-card{background:#fff;border-radius:24px;padding:18px;box-shadow:0 14px 35px rgba(15,23,42,.08)}
         .proveedor-hero span,.prov-head span{font-size:12px;font-weight:950;color:#b48722;text-transform:uppercase}
@@ -406,7 +412,50 @@ export default function ProveedoresCostos() {
         .empty-mini{color:#64748b;font-weight:800}
         .lock{text-align:center;margin:40px auto;max-width:420px}
         @media(max-width:900px){.proveedor-grid,.two,.three,.four{grid-template-columns:1fr}.proveedores-page{padding-bottom:90px}.form-head{align-items:flex-start;flex-direction:column}}
-      `}</style>
+      \`}</style>
     </main>
   );
 }
+`;
+
+fs.writeFileSync(provPath, nuevo.trim() + '\n', 'utf8');
+
+let ctx = fs.readFileSync(ctxPath, 'utf8');
+
+if (!ctx.includes('const actualizarProveedor = (datos) =>')) {
+  ctx = ctx.replace(
+    "const eliminarProveedor = (id) => {",
+    `const actualizarProveedor = (datos) => {
+    const actualizado = {
+      ...datos,
+      actualizadoEn: new Date().toISOString(),
+      calidad: Number(datos.calidad || 5),
+      cumplimiento: Number(datos.cumplimiento || 5),
+      precio: Number(datos.precio || 5),
+      tiempo: Number(datos.tiempo || 5),
+      diasCredito: Number(datos.diasCredito || 0),
+      activo: datos.activo !== false,
+      preferido: datos.preferido === true,
+    };
+
+    setProveedores((prev) =>
+      prev.map((p) => (p.id === actualizado.id ? { ...p, ...actualizado } : p))
+    );
+
+    return actualizado;
+  };
+
+  const eliminarProveedor = (id) => {`
+  );
+}
+
+if (!ctx.includes('actualizarProveedor,')) {
+  ctx = ctx.replace(
+    "crearProveedor,\n        eliminarProveedor,",
+    "crearProveedor,\n        actualizarProveedor,\n        eliminarProveedor,"
+  );
+}
+
+fs.writeFileSync(ctxPath, ctx, 'utf8');
+
+console.log('FON-08.1 aplicado: Proveedores corporativos por zona con edición y ficha completa.');

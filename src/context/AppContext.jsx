@@ -1353,6 +1353,26 @@ export function AppProvider({ children }) {
     return nuevo;
   };
 
+  const actualizarProveedor = (datos) => {
+    const actualizado = {
+      ...datos,
+      actualizadoEn: new Date().toISOString(),
+      calidad: Number(datos.calidad || 5),
+      cumplimiento: Number(datos.cumplimiento || 5),
+      precio: Number(datos.precio || 5),
+      tiempo: Number(datos.tiempo || 5),
+      diasCredito: Number(datos.diasCredito || 0),
+      activo: datos.activo !== false,
+      preferido: datos.preferido === true,
+    };
+
+    setProveedores((prev) =>
+      prev.map((p) => (p.id === actualizado.id ? { ...p, ...actualizado } : p))
+    );
+
+    return actualizado;
+  };
+
   const eliminarProveedor = (id) => {
     setProveedores((prev) => prev.filter((p) => p.id !== id));
     setProductosProveedor((prev) => prev.filter((p) => p.proveedorId !== id));
