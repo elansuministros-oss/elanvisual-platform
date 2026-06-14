@@ -1,4 +1,16 @@
 ﻿import React, { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
+
+const BUCKET = import.meta.env.VITE_SUPABASE_BUCKET || 'elanvisual';
+
+function limpiarNombreArchivo(nombre = '') {
+  return String(nombre)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9._-]/g, '-')
+    .replace(/-+/g, '-')
+    .toLowerCase();
+}
 
 export default function ImageUploader({
   label = 'Imagen',
@@ -7,34 +19,58 @@ export default function ImageUploader({
 }) {
   const [preview, setPreview] = useState(value || '');
   const [mensaje, setMensaje] = useState('');
+  const [subiendo, setSubiendo] = useState(false);
 
   useEffect(() => {
     setPreview(value || '');
   }, [value]);
 
-  const handleFile = (e) => {
+  const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setMensaje('Archivo no vÃ¡lido.');
+      setMensaje('Archivo no válido.');
       return;
     }
 
-    const reader = new FileReader();
+    if (!supabase) {
+      setMensaje('Supabase no está configurado.');
+      return;
+    }
 
-    reader.onload = () => {
-      const original = reader.result;
-      setPreview(original);
-      onChange?.(original);
-      setMensaje('Imagen cargada sin compresiÃ³n.');
-    };
+    try {
+      setSubiendo(true);
+      setMensaje('Subiendo imagen a Supabase...');
 
-    reader.onerror = () => {
-      setMensaje('No se pudo cargar la imagen.');
-    };
+      const extension = file.name.split('.').pop() || 'png';
+      const nombreLimpio = limpiarNombreArchivo(file.name);
+      const ruta = `elanvisual/${Date.now()}-${nombreLimpio || `imagen.${extension}`}`;
 
-    reader.readAsDataURL(file);
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET)
+        .upload(ruta, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(ruta);
+      const urlPublica = data?.publicUrl || '';
+
+      if (!urlPublica) throw new Error('No se pudo generar URL pública.');
+
+      setPreview(urlPublica);
+      onChange?.(urlPublica);
+      setMensaje('Imagen subida correctamente.');
+    } catch (error) {
+      console.error('Error subiendo imagen:', error);
+      setMensaje('No se pudo subir la imagen a Supabase.');
+    } finally {
+      setSubiendo(false);
+    }
   };
 
   const quitarImagen = () => {
@@ -53,7 +89,7 @@ export default function ImageUploader({
         </div>
       )}
 
-      <input type="file" accept="image/*" onChange={handleFile} />
+      <input type="file" accept="image/*" onChange={handleFile} disabled={subiendo} />
 
       {mensaje && <small className="note">{mensaje}</small>}
 
