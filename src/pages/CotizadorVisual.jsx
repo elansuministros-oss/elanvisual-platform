@@ -16,6 +16,7 @@ import { useApp } from '../context/AppContext';
 
 const STORAGE_MATERIALES = 'elanvisual_materiales_costos_v1';
 const STORAGE_CLIENTES = 'elanvisual_clientes_cotizador_v1';
+const STORAGE_PEDIDOS = 'elanvisual_pedidos_v1';
 
 const descuentos = [0, 5, 10, 15, 20];
 const tarifas = ['A', 'B', 'C', 'D'];
@@ -40,6 +41,11 @@ function leerStorage(key) {
 
 function guardarStorage(key, data) {
   localStorage.setItem(key, JSON.stringify(data));
+}
+
+function consecutivo(prefix, lista) {
+  const numero = String(lista.length + 1).padStart(4, '0');
+  return `${prefix}-${numero}`;
 }
 
 const clienteInicial = {
@@ -82,6 +88,7 @@ export default function CotizadorVisual() {
 
   const [materiales] = useState(() => leerStorage(STORAGE_MATERIALES));
   const [clientes, setClientes] = useState(() => leerStorage(STORAGE_CLIENTES));
+  const [pedidos, setPedidos] = useState(() => leerStorage(STORAGE_PEDIDOS));
 
   const [cliente, setCliente] = useState(clienteInicial);
   const [busquedaCliente, setBusquedaCliente] = useState('');
@@ -94,6 +101,7 @@ export default function CotizadorVisual() {
   const [km, setKm] = useState('');
   const [altura, setAltura] = useState('');
   const [complejidad, setComplejidad] = useState('Normal');
+  const [pedidoGenerado, setPedidoGenerado] = useState(null);
 
   const tieneAcceso = usuario?.rol === 'admin' || usuario?.rol === 'ventas';
 
@@ -102,20 +110,22 @@ export default function CotizadorVisual() {
     [materiales]
   );
 
-  const categorias = useMemo(() => {
-    return [...new Set(materialesActivos.map((m) => m.categoria).filter(Boolean))];
-  }, [materialesActivos]);
+  const categorias = useMemo(
+    () => [...new Set(materialesActivos.map((m) => m.categoria).filter(Boolean))],
+    [materialesActivos]
+  );
 
-  const subcategorias = useMemo(() => {
-    return [
+  const subcategorias = useMemo(
+    () => [
       ...new Set(
         materialesActivos
           .filter((m) => !itemForm.categoria || m.categoria === itemForm.categoria)
           .map((m) => m.subcategoria)
           .filter(Boolean)
       ),
-    ];
-  }, [materialesActivos, itemForm.categoria]);
+    ],
+    [materialesActivos, itemForm.categoria]
+  );
 
   const productosFiltrados = useMemo(() => {
     return materialesActivos.filter((m) => {
@@ -143,17 +153,23 @@ export default function CotizadorVisual() {
   const mostrarLogisticaExtra =
     logistica === 'Entrega' || logistica === 'Instalación' || logistica === 'Entrega + instalación';
 
-  const actualizarCliente = (campo, valor) => {
-    setCliente((prev) => ({ ...prev, [campo]: valor }));
-  };
+  const resumen = useMemo(() => {
+    const subtotal = items.reduce((acc, item) => acc + num(item.subtotal), 0);
+    const descuento = items.reduce((acc, item) => acc + num(item.montoDescuento), 0);
+    const total = items.reduce((acc, item) => acc + num(item.total), 0);
 
-  const actualizarProyecto = (campo, valor) => {
-    setProyecto((prev) => ({ ...prev, [campo]: valor }));
-  };
+    return {
+      subtotal,
+      descuento,
+      total,
+      anticipo: total * 0.6,
+      saldo: total * 0.4,
+    };
+  }, [items]);
 
-  const actualizarItem = (campo, valor) => {
-    setItemForm((prev) => ({ ...prev, [campo]: valor }));
-  };
+  const actualizarCliente = (campo, valor) => setCliente((prev) => ({ ...prev, [campo]: valor }));
+  const actualizarProyecto = (campo, valor) => setProyecto((prev) => ({ ...prev, [campo]: valor }));
+  const actualizarItem = (campo, valor) => setItemForm((prev) => ({ ...prev, [campo]: valor }));
 
   const actualizarAccesorio = (campo) => {
     setItemForm((prev) => ({
@@ -209,7 +225,6 @@ export default function CotizadorVisual() {
     const cantidad = Math.max(1, num(itemForm.cantidad));
 
     if (!material) return 0;
-
     if (material.tipoCalculo === 'unidad') return cantidad;
     if (material.tipoCalculo === 'metro_lineal') return ancho * cantidad;
 
@@ -221,40 +236,29 @@ export default function CotizadorVisual() {
     const alto = num(itemForm.alto);
     const cantidad = Math.max(1, num(itemForm.cantidad));
     const perimetro = 2 * (ancho + alto) * cantidad;
-
     const resultado = [];
 
     if (itemForm.accesorios.tuboPvc) {
-      resultado.push({
-        nombre: 'Tubo PVC',
-        tipo: 'metro lineal',
-        cantidad: 2 * ancho * cantidad,
-      });
+      resultado.push({ nombre: 'Tubo PVC', tipo: 'metro lineal', cantidad: 2 * ancho * cantidad });
     }
 
     if (itemForm.accesorios.tuboGalvanizado) {
-      resultado.push({
-        nombre: 'Tubo Galvanizado',
-        tipo: 'metro lineal',
-        cantidad: 2 * ancho * cantidad,
-      });
+      resultado.push({ nombre: 'Tubo Galvanizado', tipo: 'metro lineal', cantidad: 2 * ancho * cantidad });
     }
 
     if (itemForm.accesorios.ojete) {
-      const sep = Math.max(0.1, num(itemForm.separacionOjetes));
       resultado.push({
         nombre: 'Ojete',
         tipo: 'unidad',
-        cantidad: Math.ceil(perimetro / sep),
+        cantidad: Math.ceil(perimetro / Math.max(0.1, num(itemForm.separacionOjetes))),
       });
     }
 
     if (itemForm.accesorios.bridas) {
-      const sep = Math.max(0.1, num(itemForm.separacionBridas));
       resultado.push({
         nombre: 'Bridas',
         tipo: 'unidad',
-        cantidad: Math.ceil(perimetro / sep),
+        cantidad: Math.ceil(perimetro / Math.max(0.1, num(itemForm.separacionBridas))),
       });
     }
 
@@ -298,20 +302,10 @@ export default function CotizadorVisual() {
       nota: itemForm.nota,
       accesoriosProduccion: calcularAccesorios(),
       costoProduccion: materialSeleccionado.costoProduccion || 0,
-      flujoFuturo: {
-        lead: null,
-        cotizacion: true,
-        pedido: false,
-        ot: false,
-        produccion: false,
-        instalacion: itemForm.instalacion === 'Sí',
-        entrega: false,
-        cobro: false,
-        comision: false,
-      },
     };
 
     setItems((prev) => [nuevoItem, ...prev]);
+    setPedidoGenerado(null);
     setItemForm((prev) => ({
       ...itemInicial,
       tarifa: prev.tarifa,
@@ -322,21 +316,83 @@ export default function CotizadorVisual() {
 
   const quitarItem = (id) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
+    setPedidoGenerado(null);
   };
 
-  const resumen = useMemo(() => {
-    const subtotal = items.reduce((acc, item) => acc + num(item.subtotal), 0);
-    const descuento = items.reduce((acc, item) => acc + num(item.montoDescuento), 0);
-    const total = items.reduce((acc, item) => acc + num(item.total), 0);
+  const crearPedido = () => {
+    if (items.length === 0) {
+      alert('Agregá al menos un ítem antes de convertir a pedido.');
+      return;
+    }
 
-    return {
-      subtotal,
-      descuento,
-      total,
-      anticipo: total * 0.6,
-      saldo: total * 0.4,
+    if (!cliente.empresa && !cliente.contacto) {
+      alert('Completá el cliente antes de convertir a pedido.');
+      return;
+    }
+
+    const numeroPedido = consecutivo('PED', pedidos);
+    const numeroOT = consecutivo('OT', pedidos);
+
+    const nuevoPedido = {
+      id: `ped-${Date.now()}`,
+      numeroPedido,
+      numeroOT,
+      fecha: new Date().toISOString(),
+      estado: 'Pedido creado',
+      cliente,
+      proyecto,
+      logistica: {
+        modalidad: logistica,
+        km,
+        altura,
+        complejidad,
+      },
+      resumen,
+      items,
+      pagos: {
+        anticipoEsperado: resumen.anticipo,
+        saldoEsperado: resumen.saldo,
+        anticipoRecibido: 0,
+        saldoRecibido: 0,
+        estadoPago: 'Pendiente anticipo',
+      },
+      produccion: {
+        estado: 'Pendiente',
+        prioridad: 'Normal',
+        observaciones: '',
+        items: items.map((item) => ({
+          id: item.id,
+          descripcion: item.descripcion,
+          categoria: item.categoria,
+          subcategoria: item.subcategoria,
+          medidas:
+            item.tipoCalculo === 'unidad'
+              ? `Cantidad: ${item.cantidad}`
+              : `${item.ancho} x ${item.alto} m · Cantidad: ${item.cantidad}`,
+          instalacion: item.instalacion,
+          accesoriosProduccion: item.accesoriosProduccion,
+          nota: item.nota,
+        })),
+      },
+      flujo: {
+        lead: true,
+        cotizacion: true,
+        pedido: true,
+        ot: true,
+        produccion: false,
+        instalacion: false,
+        entrega: false,
+        cobro: false,
+        comision: false,
+      },
     };
-  }, [items]);
+
+    const lista = [nuevoPedido, ...pedidos];
+    setPedidos(lista);
+    guardarStorage(STORAGE_PEDIDOS, lista);
+    setPedidoGenerado(nuevoPedido);
+    alert(`Pedido generado: ${numeroPedido} / ${numeroOT}`);
+  };
 
   const textoWhatsApp = useMemo(() => {
     const detalle = items.map((item, index) => {
@@ -354,6 +410,8 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
     const lineas = [
       '*COTIZACIÓN ELANVISUAL*',
+      pedidoGenerado ? `Pedido interno: ${pedidoGenerado.numeroPedido}` : '',
+      pedidoGenerado ? `OT interna: ${pedidoGenerado.numeroOT}` : '',
       '',
       '*Cliente*',
       `Empresa: ${cliente.empresa || 'Cliente'}`,
@@ -386,12 +444,64 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
     ];
 
     return lineas.filter(Boolean).join('\n');
-  }, [cliente, proyecto, items, logistica, km, altura, complejidad, resumen, mostrarLogisticaExtra]);
+  }, [
+    cliente,
+    proyecto,
+    items,
+    logistica,
+    km,
+    altura,
+    complejidad,
+    resumen,
+    mostrarLogisticaExtra,
+    pedidoGenerado,
+  ]);
 
-  const copiarCotizacion = async () => {
+  const textoProduccion = useMemo(() => {
+    if (!pedidoGenerado) return 'Convertí la cotización a pedido para generar OT de producción.';
+
+    const lineas = [
+      `*ORDEN DE PRODUCCIÓN ${pedidoGenerado.numeroOT}*`,
+      `Pedido: ${pedidoGenerado.numeroPedido}`,
+      '',
+      `Cliente: ${cliente.empresa || cliente.contacto}`,
+      proyecto.lugar ? `Lugar: ${proyecto.lugar}` : '',
+      proyecto.direccion ? `Dirección: ${proyecto.direccion}` : '',
+      '',
+      '*Ítems producción*',
+      ...items.map((item, index) => {
+        const medida =
+          item.tipoCalculo === 'unidad'
+            ? `Cantidad: ${item.cantidad}`
+            : `${item.ancho} x ${item.alto} m · Cantidad: ${item.cantidad}`;
+
+        const accesorios =
+          item.accesoriosProduccion.length > 0
+            ? item.accesoriosProduccion
+                .map((a) => `${a.nombre}: ${Number(a.cantidad).toFixed(2)} ${a.tipo}`)
+                .join(' · ')
+            : 'Sin accesorios automáticos';
+
+        return `${index + 1}. ${item.descripcion}
+${medida}
+Instalación: ${item.instalacion}
+Accesorios: ${accesorios}
+${item.nota ? `Nota: ${item.nota}` : ''}`;
+      }),
+      '',
+      `Logística: ${logistica}`,
+      mostrarLogisticaExtra && km ? `KM: ${km}` : '',
+      mostrarLogisticaExtra && altura ? `Altura: ${altura}` : '',
+      mostrarLogisticaExtra ? `Complejidad: ${complejidad}` : '',
+    ];
+
+    return lineas.filter(Boolean).join('\n');
+  }, [pedidoGenerado, cliente, proyecto, items, logistica, km, altura, complejidad, mostrarLogisticaExtra]);
+
+  const copiarTexto = async (texto, mensaje) => {
     try {
-      await navigator.clipboard.writeText(textoWhatsApp);
-      alert('Cotización copiada para WhatsApp.');
+      await navigator.clipboard.writeText(texto);
+      alert(mensaje);
     } catch {
       alert('No se pudo copiar automáticamente. Seleccioná el texto manualmente.');
     }
@@ -413,8 +523,8 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
     <main className="cotizador-page">
       <section className="cotizador-hero">
         <span>ELANVISUAL · APP MODE</span>
-        <h1>Cotizador Visual V2</h1>
-        <p>Cliente, proyecto, ítems, accesorios automáticos, instalación y WhatsApp comercial limpio.</p>
+        <h1>Cotizador Visual V2.2</h1>
+        <p>Cotización, pedido y OT de producción desde celular.</p>
       </section>
 
       <section className="app-grid">
@@ -666,6 +776,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
           <div className="access-box">
             <strong>Accesorios automáticos</strong>
+
             <div className="access-grid">
               <button type="button" className={itemForm.accesorios.ojete ? 'active' : ''} onClick={() => actualizarAccesorio('ojete')}>Ojete</button>
               <button type="button" className={itemForm.accesorios.tuboPvc ? 'active' : ''} onClick={() => actualizarAccesorio('tuboPvc')}>Tubo PVC</button>
@@ -723,13 +834,14 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
                       ? `Cantidad: ${item.cantidad}`
                       : `${item.ancho} x ${item.alto} m · Cantidad: ${item.cantidad}`}
                   </p>
-                  <span>
-                    Instalación: {item.instalacion} · Desc. {item.descuento}%
-                  </span>
+                  <span>Instalación: {item.instalacion} · Desc. {item.descuento}%</span>
 
                   {item.accesoriosProduccion.length > 0 && (
                     <small>
-                      Producción: {item.accesoriosProduccion.map((a) => `${a.nombre}: ${a.cantidad.toFixed(2)} ${a.tipo}`).join(' · ')}
+                      Producción:{' '}
+                      {item.accesoriosProduccion
+                        .map((a) => `${a.nombre}: ${Number(a.cantidad).toFixed(2)} ${a.tipo}`)
+                        .join(' · ')}
                     </small>
                   )}
                 </div>
@@ -793,10 +905,30 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             <p><span>Saldo 40%</span><b>{money(resumen.saldo)}</b></p>
           </div>
 
-          <button className="primary-btn" type="button" onClick={copiarCotizacion}>
-            <Copy size={18} />
-            Copiar para WhatsApp
-          </button>
+          <div className="action-stack">
+            <button className="primary-btn" type="button" onClick={crearPedido}>
+              <PackageCheck size={18} />
+              Convertir a Pedido / OT
+            </button>
+
+            <button className="secondary-btn" type="button" onClick={() => copiarTexto(textoWhatsApp, 'Cotización copiada para WhatsApp.')}>
+              <Copy size={18} />
+              Copiar WhatsApp cliente
+            </button>
+
+            <button className="secondary-btn" type="button" onClick={() => copiarTexto(textoProduccion, 'OT copiada para producción.')}>
+              <Copy size={18} />
+              Copiar OT producción
+            </button>
+          </div>
+
+          {pedidoGenerado && (
+            <div className="pedido-ok">
+              <strong>{pedidoGenerado.numeroPedido}</strong>
+              <span>{pedidoGenerado.numeroOT}</span>
+              <small>Guardado en localStorage: {STORAGE_PEDIDOS}</small>
+            </div>
+          )}
 
           <textarea className="whatsapp-text" value={textoWhatsApp} readOnly />
         </section>
@@ -805,7 +937,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
       <section className="cotizador-card future-box">
         <PackageCheck size={22} />
         <div>
-          <strong>Estructura preparada</strong>
+          <strong>Flujo activo</strong>
           <p>Lead → Cotización → Pedido → OT → Producción → Instalación → Entrega → Cobro → Comisión.</p>
         </div>
       </section>
@@ -836,6 +968,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .primary-btn,.secondary-btn{width:100%;border:0;border-radius:18px;padding:15px;font-weight:950;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
         .primary-btn{background:#111827;color:#fff}
         .secondary-btn{background:#f3f4f6;color:#111827;border:1px solid #dbe3ef}
+        .action-stack{display:grid;gap:10px}
         .access-box,.logistica-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:18px;padding:14px;margin-bottom:14px}
         .access-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
         .access-grid button{border:1px solid #dbe3ef;background:#fff;border-radius:14px;padding:12px;font-weight:950}
@@ -851,6 +984,9 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .totals-box{background:#0f172a;color:#fff;border-radius:20px;padding:16px;margin:16px 0;display:grid;gap:8px}
         .totals-box p{display:flex;justify-content:space-between;margin:0;color:#dbeafe}
         .totals-box .total{font-size:21px;color:#fff;border-top:1px solid rgba(255,255,255,.18);padding-top:10px}
+        .pedido-ok{margin-top:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#065f46;border-radius:18px;padding:14px;display:grid;gap:4px;font-weight:900}
+        .pedido-ok span{font-size:20px}
+        .pedido-ok small{color:#047857}
         .whatsapp-text{margin-top:14px;font-family:monospace;min-height:300px}
         .empty{padding:24px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:18px;font-weight:800}
         .future-box{display:flex;gap:12px;align-items:flex-start}
