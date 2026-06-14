@@ -65,7 +65,9 @@ const categorias = [
 
 export default function Home({ setPage }) {
   const { banners = [] } = useApp();
-  const bannerHome = banners.find((b) => b.ubicacion === 'home' && b.activo);
+const bannerHome = banners.find(
+  (b) => b.ubicacion === 'hero-principal' && b.activo
+);
 
   const heroImg =
     bannerHome?.imagen ||
