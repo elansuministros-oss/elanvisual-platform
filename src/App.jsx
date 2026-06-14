@@ -16,6 +16,7 @@ import PedidosProduccion from './pages/PedidosProduccion';
 import DashboardERP from './pages/DashboardERP';
 import MiCuenta from './pages/MiCuenta';
 import ProveedoresCostos from './pages/ProveedoresCostos';
+import InventarioInteligente from './pages/InventarioInteligente';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -46,6 +47,7 @@ export default function App() {
     if (pathInicial.startsWith('/erp')) return 'dashboard';
     if (pathInicial.startsWith('/mi-cuenta')) return 'miCuenta';
     if (pathInicial.startsWith('/proveedores')) return 'proveedores';
+    if (pathInicial.startsWith('/inventario-real')) return 'inventarioReal';
     return 'home';
   })();
 
@@ -87,6 +89,7 @@ export default function App() {
       reportes: '/reportes',
         miCuenta: '/mi-cuenta',
         proveedores: '/proveedores',
+        inventarioReal: '/inventario-real',
     };
 
     setPage(destino);
@@ -121,6 +124,9 @@ export default function App() {
       {page === 'contacto' && <Contacto />}
       {page === 'seguimiento' && <Seguimiento />}
       {page === 'login' && <Login setPage={ir} />}
+
+      {page === 'inventarioReal' &&
+        (accesoAdmin ? <InventarioInteligente /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'proveedores' &&
         (accesoAdmin ? <ProveedoresCostos /> : <Login setPage={ir} destino="admin" />)}

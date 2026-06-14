@@ -519,6 +519,7 @@ export function AppProvider({ children }) {
   const [proveedores, setProveedores] = useState(() => leerStorage('elanvisual_proveedores_costos', []));
   const [productosProveedor, setProductosProveedor] = useState(() => leerStorage('elanvisual_productos_proveedor', []));
   const [cotizacionesProveedor, setCotizacionesProveedor] = useState(() => leerStorage('elanvisual_cotizaciones_proveedor', []));
+  const [inventarioReal, setInventarioReal] = useState(() => leerStorage('elanvisual_inventario_real', []));
   const [estadoCompartidoCargado, setEstadoCompartidoCargado] = useState(false);
 
   useEffect(() => guardarStorage('elanvisual_configuracion', configuracion), [configuracion]);
@@ -533,6 +534,7 @@ export function AppProvider({ children }) {
   useEffect(() => guardarStorage('elanvisual_proveedores_costos', proveedores), [proveedores]);
   useEffect(() => guardarStorage('elanvisual_productos_proveedor', productosProveedor), [productosProveedor]);
   useEffect(() => guardarStorage('elanvisual_cotizaciones_proveedor', cotizacionesProveedor), [cotizacionesProveedor]);
+  useEffect(() => guardarStorage('elanvisual_inventario_real', inventarioReal), [inventarioReal]);
 
   useEffect(() => {
     if (usuario) guardarStorage('elanvisual_usuario_actual', usuario);
@@ -1485,6 +1487,133 @@ export function AppProvider({ children }) {
 
     actualizarPedido(actualizado);
     return actualizado;
+  };
+
+  const areaInventario = (item = {}) => {
+    const ancho = Number(item.ancho || 0);
+    const largo = Number(item.largo || 0);
+    const cantidad = Number(item.cantidad || 1);
+    if (ancho > 0 && largo > 0) return ancho * largo * cantidad;
+    return cantidad;
+  };
+
+  const crearInventarioReal = (datos) => {
+    const area = areaInventario(datos);
+    const nuevo = {
+      ...datos,
+      id: datos.id || `inv-${Date.now()}`,
+      ancho: Number(datos.ancho || 0),
+      largo: Number(datos.largo || 0),
+      cantidad: Number(datos.cantidad || 1),
+      costoCompra: Number(datos.costoCompra || 0),
+      costoDisponible: Number(datos.costoCompra || 0),
+      estado: datos.estado || 'Disponible',
+      creadoEn: new Date().toISOString(),
+      historial: [
+        {
+          tipo: 'entrada',
+          fecha: new Date().toISOString(),
+          area,
+          nota: datos.observaciones || 'Entrada de inventario.',
+        },
+      ],
+    };
+
+    setInventarioReal((prev) => [nuevo, ...prev]);
+    return nuevo;
+  };
+
+  const eliminarInventarioReal = (id) => setInventarioReal((prev) => prev.filter((i) => i.id !== id));
+
+  const reservarInventarioReal = ({ id, ancho, largo, cantidad = 1, ot = '', nota = '' }) => {
+    setInventarioReal((prev) =>
+      prev.map((item) => {
+        if (item.id !== id) return item;
+        return {
+          ...item,
+          estado: 'Reservado',
+          otReserva: ot,
+          reserva: { ancho: Number(ancho || 0), largo: Number(largo || 0), cantidad: Number(cantidad || 1), ot, nota },
+          historial: [
+            ...(item.historial || []),
+            { tipo: 'reserva', fecha: new Date().toISOString(), nota: nota || `Reservado para ${ot || 'OT'}` },
+          ],
+        };
+      })
+    );
+  };
+
+  const liberarReservaInventarioReal = (id) => {
+    setInventarioReal((prev) =>
+      prev.map((item) => {
+        if (item.id !== id) return item;
+        return {
+          ...item,
+          estado: 'Disponible',
+          otReserva: '',
+          reserva: null,
+          historial: [
+            ...(item.historial || []),
+            { tipo: 'liberacion', fecha: new Date().toISOString(), nota: 'Reserva liberada.' },
+          ],
+        };
+      })
+    );
+  };
+
+  const consumirInventarioReal = ({ id, ancho, largo, cantidad = 1, ot = '', nota = '' }) => {
+    setInventarioReal((prev) => {
+      const item = prev.find((i) => i.id === id);
+      if (!item) return prev;
+
+      const anchoUso = Number(ancho || item.ancho || 0);
+      const largoUso = Number(largo || item.largo || 0);
+      const cantidadUso = Number(cantidad || 1);
+      const areaOriginal = areaInventario(item);
+      const areaUsada = anchoUso > 0 && largoUso > 0 ? anchoUso * largoUso * cantidadUso : cantidadUso;
+      const proporcion = areaOriginal > 0 ? Math.min(areaUsada / areaOriginal, 1) : 1;
+      const costoUsado = Number(item.costoDisponible ?? item.costoCompra ?? 0) * proporcion;
+      const areaRestante = Math.max(areaOriginal - areaUsada, 0);
+      const costoRestante = Math.max(Number(item.costoDisponible ?? item.costoCompra ?? 0) - costoUsado, 0);
+
+      const consumido = {
+        ...item,
+        estado: 'Consumido',
+        consumidoEn: new Date().toISOString(),
+        otConsumo: ot,
+        areaConsumida: areaUsada,
+        costoConsumido: costoUsado,
+        historial: [
+          ...(item.historial || []),
+          { tipo: 'consumo', fecha: new Date().toISOString(), area: areaUsada, costo: costoUsado, nota: nota || `Consumido para ${ot || 'OT'}` },
+        ],
+      };
+
+      const salida = prev.map((i) => (i.id === id ? consumido : i));
+
+      if (areaRestante > 0.05 && item.ancho > 0 && item.largo > 0) {
+        const retazo = {
+          ...item,
+          id: `ret-${Date.now()}`,
+          tipo: 'Retazo',
+          cantidad: 1,
+          ancho: Number(item.ancho || 0),
+          largo: Number((areaRestante / Math.max(Number(item.ancho || 1), 0.01)).toFixed(2)),
+          costoCompra: costoRestante,
+          costoDisponible: costoRestante,
+          estado: 'Disponible',
+          origen: `Retazo de ${item.material}`,
+          otOrigen: ot,
+          creadoEn: new Date().toISOString(),
+          historial: [
+            { tipo: 'retazo', fecha: new Date().toISOString(), area: areaRestante, costo: costoRestante, nota: `Retazo generado por consumo de ${ot || 'OT'}` },
+          ],
+        };
+        return [retazo, ...salida];
+      }
+
+      return salida;
+    });
   };
 
   const actualizarProducto = (producto) =>
