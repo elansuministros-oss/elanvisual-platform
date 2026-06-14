@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   PackageCheck,
   PackageSearch,
+  PlusCircle,
   Settings,
   ShieldCheck,
   Truck,
@@ -27,8 +28,76 @@ const money = (valor) =>
     minimumFractionDigits: 2,
   }).format(Number(valor || 0));
 
-function contador(lista) {
-  return Array.isArray(lista) ? lista.length : 0;
+const contador = (lista) => (Array.isArray(lista) ? lista.length : 0);
+
+const estadoActivo = (valor) => {
+  const estado = String(valor || '').toLowerCase().trim();
+  return !['entregado', 'cancelado', 'cerrado', 'finalizado'].includes(estado);
+};
+
+function KPI({ title, value, desc, icon }) {
+  return (
+    <div
+      style={{
+        background: 'rgba(255,255,255,.12)',
+        border: '1px solid rgba(255,255,255,.14)',
+        borderRadius: 18,
+        padding: 12,
+        minHeight: 86,
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+        <small style={{ color: 'rgba(255,255,255,.72)', fontWeight: 900 }}>{title}</small>
+        <span style={{ color: 'rgba(255,255,255,.75)' }}>{icon}</span>
+      </div>
+      <b style={{ display: 'block', fontSize: 25, marginTop: 8 }}>{value}</b>
+      <small style={{ color: 'rgba(255,255,255,.62)' }}>{desc}</small>
+    </div>
+  );
+}
+
+function QuickAction({ icon, title, desc, onClick, primary = false }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        border: '1px solid rgba(15,23,42,.08)',
+        background: primary ? '#0f172a' : '#fff',
+        color: primary ? '#fff' : '#0f172a',
+        borderRadius: 22,
+        padding: 15,
+        textAlign: 'left',
+        minHeight: 96,
+        display: 'grid',
+        gridTemplateColumns: '42px 1fr',
+        gap: 12,
+        alignItems: 'center',
+        cursor: 'pointer',
+        boxShadow: '0 14px 32px rgba(15,23,42,.08)',
+      }}
+    >
+      <span
+        style={{
+          width: 42,
+          height: 42,
+          borderRadius: 16,
+          display: 'grid',
+          placeItems: 'center',
+          background: primary ? 'rgba(255,255,255,.12)' : '#eef4ff',
+          color: primary ? '#fff' : '#1E5AA8',
+        }}
+      >
+        {icon}
+      </span>
+      <span>
+        <b style={{ display: 'block', fontSize: 15 }}>{title}</b>
+        <small style={{ color: primary ? 'rgba(255,255,255,.68)' : '#64748b', fontWeight: 700 }}>
+          {desc}
+        </small>
+      </span>
+    </button>
+  );
 }
 
 function ERPCard({ icon, title, count, desc, onClick, accent = '#1E5AA8' }) {
@@ -40,22 +109,23 @@ function ERPCard({ icon, title, count, desc, onClick, accent = '#1E5AA8' }) {
       style={{
         border: '1px solid rgba(15,23,42,.10)',
         background: '#fff',
-        borderRadius: 24,
-        padding: 18,
+        borderRadius: 22,
+        padding: 14,
         textAlign: 'left',
-        minHeight: 150,
-        boxShadow: '0 16px 38px rgba(15,23,42,.08)',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
+        minHeight: 112,
+        boxShadow: '0 14px 30px rgba(15,23,42,.07)',
+        display: 'grid',
+        gridTemplateColumns: '42px 1fr',
+        gap: 11,
+        alignItems: 'center',
         cursor: 'pointer',
       }}
     >
       <span
         style={{
-          width: 48,
-          height: 48,
-          borderRadius: 18,
+          width: 42,
+          height: 42,
+          borderRadius: 16,
           display: 'grid',
           placeItems: 'center',
           background: `${accent}16`,
@@ -65,40 +135,11 @@ function ERPCard({ icon, title, count, desc, onClick, accent = '#1E5AA8' }) {
         {icon}
       </span>
 
-      <div>
-        <strong
-          style={{
-            display: 'block',
-            fontSize: 17,
-            color: '#0f172a',
-            letterSpacing: '-.02em',
-          }}
-        >
-          {title}
-        </strong>
-
-        <b
-          style={{
-            display: 'block',
-            fontSize: 28,
-            color: '#0f172a',
-            marginTop: 4,
-          }}
-        >
-          {count}
-        </b>
-
-        <p
-          style={{
-            margin: '4px 0 0',
-            fontSize: 13,
-            lineHeight: 1.35,
-            color: '#64748b',
-          }}
-        >
-          {desc}
-        </p>
-      </div>
+      <span>
+        <strong style={{ display: 'block', fontSize: 15, color: '#0f172a' }}>{title}</strong>
+        <b style={{ display: 'block', fontSize: 24, color: '#0f172a', marginTop: 2 }}>{count}</b>
+        <small style={{ color: '#64748b', fontWeight: 700, lineHeight: 1.25 }}>{desc}</small>
+      </span>
     </button>
   );
 }
@@ -138,7 +179,7 @@ function MiniAction({ icon, title, desc, onClick }) {
       </span>
       <span>
         <b style={{ display: 'block', color: '#0f172a', fontSize: 14 }}>{title}</b>
-        <small style={{ color: '#64748b', fontSize: 12 }}>{desc}</small>
+        <small style={{ color: '#64748b', fontSize: 12, fontWeight: 700 }}>{desc}</small>
       </span>
     </button>
   );
@@ -155,46 +196,40 @@ export default function DashboardERP({ setPage }) {
     pedidos,
     trabajos,
     banners,
-    materiales,
-    materialesCostos,
-    ordenesTrabajo,
-    ordenes,
-    cotizaciones,
+    usuarios,
     configuracion,
+    resumen,
   } = app;
 
   const data = useMemo(() => {
-    const totalClientes = contador(clientes);
-    const totalProductos = contador(productos);
-    const totalPedidos = contador(pedidos);
-    const totalTrabajos = contador(trabajos);
-    const totalBanners = contador(banners);
-    const totalMateriales = contador(materiales) || contador(materialesCostos);
-    const totalOT = contador(ordenesTrabajo) || contador(ordenes);
-    const totalCotizaciones = contador(cotizaciones);
+    const listaPedidos = Array.isArray(pedidos) ? pedidos : [];
+
+    const pedidosActivos = listaPedidos.filter((p) => estadoActivo(p.estado)).length;
+    const produccionActiva = listaPedidos.filter((p) => estadoActivo(p.estadoProduccion)).length;
+
+    const totalVentas = listaPedidos.reduce(
+      (acc, p) => acc + Number(p.total || p.resumen?.total || p.monto || 0),
+      0
+    );
+
+    const cxc = listaPedidos.reduce(
+      (acc, p) => acc + Number(p.saldoPendiente || p.saldo || 0),
+      0
+    );
 
     return {
-      totalClientes,
-      totalProductos,
-      totalPedidos,
-      totalTrabajos,
-      totalBanners,
-      totalMateriales,
-      totalOT,
-      totalCotizaciones,
+      clientes: contador(clientes),
+      productos: contador(productos),
+      pedidos: listaPedidos.length,
+      pedidosActivos,
+      produccionActiva,
+      trabajos: contador(trabajos),
+      banners: contador(banners),
+      usuarios: contador(usuarios),
+      totalVentas,
+      cxc,
     };
-  }, [
-    clientes,
-    productos,
-    pedidos,
-    trabajos,
-    banners,
-    materiales,
-    materialesCostos,
-    ordenesTrabajo,
-    ordenes,
-    cotizaciones,
-  ]);
+  }, [clientes, productos, pedidos, trabajos, banners, usuarios]);
 
   const brandName = configuracion?.logoTexto || configuracion?.nombreSitio || 'ELANVISUAL';
 
@@ -202,57 +237,57 @@ export default function DashboardERP({ setPage }) {
     {
       key: 'crm',
       title: 'CRM',
-      count: data.totalClientes,
-      desc: 'Leads, prospectos, clientes, seguimiento y agenda comercial.',
-      icon: <Users size={25} />,
+      count: data.clientes,
+      desc: 'Clientes y seguimiento',
+      icon: <Users size={22} />,
       accent: '#1E5AA8',
     },
     {
       key: 'ventas',
       title: 'Ventas',
-      count: data.totalPedidos + data.totalCotizaciones,
-      desc: 'Cotizador, pedidos y órdenes de trabajo conectadas.',
-      icon: <HandCoins size={25} />,
+      count: data.pedidos,
+      desc: 'Pedidos y cotización',
+      icon: <HandCoins size={22} />,
       accent: '#059669',
     },
     {
       key: 'produccion',
       title: 'Producción',
-      count: data.totalOT,
-      desc: 'OT, fabricación, instalación, entrega y control operativo.',
-      icon: <Factory size={25} />,
+      count: data.produccionActiva,
+      desc: 'OT en proceso',
+      icon: <Factory size={22} />,
       accent: '#ea580c',
     },
     {
       key: 'inventario',
       title: 'Inventario',
-      count: data.totalMateriales,
-      desc: 'Material Master, compras, proveedores y consumos.',
-      icon: <PackageSearch size={25} />,
+      count: data.productos,
+      desc: 'Productos / materiales',
+      icon: <PackageSearch size={22} />,
       accent: '#7c3aed',
     },
     {
       key: 'finanzas',
       title: 'Finanzas',
-      count: money(0),
-      desc: 'Anticipos, cobros, CxC, CxP y comisiones.',
-      icon: <WalletCards size={25} />,
+      count: money(data.cxc),
+      desc: 'CxC estimada',
+      icon: <WalletCards size={22} />,
       accent: '#0f766e',
     },
     {
       key: 'reportes',
       title: 'Reportes',
-      count: data.totalPedidos + data.totalTrabajos,
-      desc: 'Ventas, producción, rentabilidad y comportamiento de clientes.',
-      icon: <BarChart3 size={25} />,
+      count: data.trabajos,
+      desc: 'Trabajos registrados',
+      icon: <BarChart3 size={22} />,
       accent: '#be123c',
     },
     {
       key: 'admin',
       title: 'Admin',
-      count: data.totalProductos + data.totalBanners,
-      desc: 'Usuarios, roles, configuración, catálogo y multimedia.',
-      icon: <Settings size={25} />,
+      count: data.usuarios,
+      desc: 'Usuarios activos',
+      icon: <Settings size={22} />,
       accent: '#334155',
     },
   ];
@@ -261,9 +296,9 @@ export default function DashboardERP({ setPage }) {
     if (area === 'crm') {
       return (
         <>
-          <MiniAction icon={<Users size={20} />} title="Abrir CRM" desc="Gestión comercial heredada funcional." onClick={() => setPage('crm')} />
-          <MiniAction icon={<CalendarDays size={20} />} title="Seguimiento" desc="Consulta pública y control de avances." onClick={() => setPage('seguimiento')} />
-          <MiniAction icon={<ClipboardList size={20} />} title="Clientes / prospectos" desc="Base local conectada al flujo actual." onClick={() => setPage('crm')} />
+          <MiniAction icon={<Users size={20} />} title="Abrir CRM" desc="Clientes, prospectos y seguimiento." onClick={() => setPage('crm')} />
+          <MiniAction icon={<CalendarDays size={20} />} title="Seguimiento" desc="Consulta y control de avances." onClick={() => setPage('seguimiento')} />
+          <MiniAction icon={<PlusCircle size={20} />} title="Nuevo cliente" desc="Crear contacto desde CRM." onClick={() => setPage('crm')} />
         </>
       );
     }
@@ -271,8 +306,8 @@ export default function DashboardERP({ setPage }) {
     if (area === 'ventas') {
       return (
         <>
-          <MiniAction icon={<Calculator size={20} />} title="Cotizador Visual V2" desc="Cotización por materiales, medidas y servicio." onClick={() => setPage('cotizador')} />
-          <MiniAction icon={<PackageCheck size={20} />} title="Pedidos / OT" desc="Convierte ventas en órdenes operativas." onClick={() => setPage('pedidos')} />
+          <MiniAction icon={<Calculator size={20} />} title="Cotizador Visual V2" desc="Cotización por medidas y materiales." onClick={() => setPage('cotizador')} />
+          <MiniAction icon={<PackageCheck size={20} />} title="Pedidos / OT" desc="Control de pedidos generados." onClick={() => setPage('pedidos')} />
           <MiniAction icon={<BriefcaseBusiness size={20} />} title="Servicios" desc="Catálogo comercial vigente." onClick={() => setPage('catalogo')} />
         </>
       );
@@ -281,9 +316,9 @@ export default function DashboardERP({ setPage }) {
     if (area === 'produccion') {
       return (
         <>
-          <MiniAction icon={<Factory size={20} />} title="Panel de producción" desc="Control de fabricación y estados." onClick={() => setPage('produccion')} />
+          <MiniAction icon={<Factory size={20} />} title="Panel de producción" desc="Estados, fabricación y entrega." onClick={() => setPage('produccion')} />
           <MiniAction icon={<ClipboardCheck size={20} />} title="Pedidos / OT" desc="Órdenes listas para taller." onClick={() => setPage('pedidos')} />
-          <MiniAction icon={<Truck size={20} />} title="Instalación / entrega" desc="Flujo operativo conectado a producción." onClick={() => setPage('produccion')} />
+          <MiniAction icon={<Truck size={20} />} title="Instalación / entrega" desc="Flujo operativo de cierre." onClick={() => setPage('produccion')} />
         </>
       );
     }
@@ -291,9 +326,9 @@ export default function DashboardERP({ setPage }) {
     if (area === 'inventario') {
       return (
         <>
-          <MiniAction icon={<PackageSearch size={20} />} title="Material Master V2" desc="Base real de materiales y costos." onClick={() => setPage('materiales')} />
-          <MiniAction icon={<Calculator size={20} />} title="Consumos por cotización" desc="Relación materiales → venta → OT." onClick={() => setPage('cotizador')} />
-          <MiniAction icon={<FileText size={20} />} title="Compras / proveedores" desc="Preparado sobre estructura de materiales." onClick={() => setPage('materiales')} />
+          <MiniAction icon={<PackageSearch size={20} />} title="Material Master V2" desc="Base de productos y costos." onClick={() => setPage('materiales')} />
+          <MiniAction icon={<Calculator size={20} />} title="Consumo cotizable" desc="Relación material → venta → OT." onClick={() => setPage('cotizador')} />
+          <MiniAction icon={<FileText size={20} />} title="Productos" desc="Catálogo operativo actual." onClick={() => setPage('admin')} />
         </>
       );
     }
@@ -301,9 +336,9 @@ export default function DashboardERP({ setPage }) {
     if (area === 'finanzas') {
       return (
         <>
-          <MiniAction icon={<WalletCards size={20} />} title="Anticipos y cobros" desc="Control financiero conectado a pedidos." onClick={() => setPage('pedidos')} />
-          <MiniAction icon={<HandCoins size={20} />} title="CxC / CxP" desc="Base operativa desde ventas y producción." onClick={() => setPage('pedidos')} />
-          <MiniAction icon={<BarChart3 size={20} />} title="Comisiones" desc="Preparado para vendedores y roles." onClick={() => setPage('crm')} />
+          <MiniAction icon={<WalletCards size={20} />} title="Cobros pendientes" desc="CxC desde pedidos existentes." onClick={() => setPage('pedidos')} />
+          <MiniAction icon={<HandCoins size={20} />} title="Ventas registradas" desc="Total acumulado de pedidos." onClick={() => setPage('pedidos')} />
+          <MiniAction icon={<BarChart3 size={20} />} title="Reporte financiero" desc="Base para siguiente fase ERP." onClick={() => setArea('reportes')} />
         </>
       );
     }
@@ -311,9 +346,9 @@ export default function DashboardERP({ setPage }) {
     if (area === 'reportes') {
       return (
         <>
-          <MiniAction icon={<BarChart3 size={20} />} title="Reporte comercial" desc="Pedidos, clientes y cotizaciones." onClick={() => setPage('pedidos')} />
-          <MiniAction icon={<Factory size={20} />} title="Reporte producción" desc="OT, instalación y entrega." onClick={() => setPage('produccion')} />
-          <MiniAction icon={<Users size={20} />} title="Reporte clientes" desc="CRM y seguimiento comercial." onClick={() => setPage('crm')} />
+          <MiniAction icon={<BarChart3 size={20} />} title="Reporte comercial" desc="Pedidos, clientes y trabajos." onClick={() => setPage('pedidos')} />
+          <MiniAction icon={<Factory size={20} />} title="Reporte producción" desc="Producción activa y entregas." onClick={() => setPage('produccion')} />
+          <MiniAction icon={<Users size={20} />} title="Reporte clientes" desc="Base CRM y seguimiento." onClick={() => setPage('crm')} />
         </>
       );
     }
@@ -322,8 +357,8 @@ export default function DashboardERP({ setPage }) {
       return (
         <>
           <MiniAction icon={<ShieldCheck size={20} />} title="Administración" desc="Usuarios, roles y configuración." onClick={() => setPage('admin')} />
-          <MiniAction icon={<BriefcaseBusiness size={20} />} title="Catálogo público" desc="Servicios visibles para cliente final." onClick={() => setPage('catalogo')} />
-          <MiniAction icon={<LayoutDashboard size={20} />} title="Portafolio / multimedia" desc="Trabajos, banners e identidad visual." onClick={() => setPage('trabajos')} />
+          <MiniAction icon={<BriefcaseBusiness size={20} />} title="Catálogo público" desc="Servicios visibles al cliente." onClick={() => setPage('catalogo')} />
+          <MiniAction icon={<LayoutDashboard size={20} />} title="Portafolio" desc="Trabajos, banners e identidad." onClick={() => setPage('trabajos')} />
         </>
       );
     }
@@ -337,19 +372,14 @@ export default function DashboardERP({ setPage }) {
         minHeight: '100vh',
         background:
           'radial-gradient(circle at top left, rgba(30,90,168,.16), transparent 34%), linear-gradient(180deg,#f8fafc 0%,#eef2f7 100%)',
-        padding: '22px 14px 40px',
+        padding: '14px 12px 38px',
       }}
     >
-      <section
-        style={{
-          maxWidth: 1180,
-          margin: '0 auto',
-        }}
-      >
+      <section style={{ maxWidth: 1180, margin: '0 auto' }}>
         <div
           style={{
-            borderRadius: 30,
-            padding: 22,
+            borderRadius: 28,
+            padding: 18,
             background: 'linear-gradient(135deg,#0f172a,#1E5AA8)',
             color: '#fff',
             boxShadow: '0 24px 60px rgba(15,23,42,.22)',
@@ -363,18 +393,18 @@ export default function DashboardERP({ setPage }) {
               padding: '8px 12px',
               borderRadius: 999,
               background: 'rgba(255,255,255,.12)',
-              fontSize: 13,
-              fontWeight: 800,
+              fontSize: 12,
+              fontWeight: 900,
             }}
           >
-            <LayoutDashboard size={18} />
+            <LayoutDashboard size={17} />
             ERP OPERATIVO
           </span>
 
           <h1
             style={{
-              margin: '16px 0 8px',
-              fontSize: 'clamp(30px, 7vw, 56px)',
+              margin: '14px 0 6px',
+              fontSize: 'clamp(30px, 8vw, 52px)',
               lineHeight: 1,
               letterSpacing: '-.05em',
             }}
@@ -387,43 +417,51 @@ export default function DashboardERP({ setPage }) {
               margin: 0,
               maxWidth: 720,
               color: 'rgba(255,255,255,.82)',
-              fontSize: 16,
-              lineHeight: 1.45,
+              fontSize: 15,
+              lineHeight: 1.4,
+              fontWeight: 650,
             }}
           >
-            Centro operativo móvil para CRM, ventas, producción, inventario, finanzas,
-            reportes y administración de rotulación.
+            Centro ejecutivo móvil para ventas, pedidos, producción, CRM, inventario y control administrativo.
           </p>
 
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))',
               gap: 10,
-              marginTop: 18,
+              marginTop: 16,
             }}
           >
-            <div>
-              <b style={{ fontSize: 24 }}>{data.totalPedidos}</b>
-              <small style={{ display: 'block', color: 'rgba(255,255,255,.72)' }}>Pedidos</small>
-            </div>
-            <div>
-              <b style={{ fontSize: 24 }}>{data.totalMateriales}</b>
-              <small style={{ display: 'block', color: 'rgba(255,255,255,.72)' }}>Materiales</small>
-            </div>
-            <div>
-              <b style={{ fontSize: 24 }}>{data.totalClientes}</b>
-              <small style={{ display: 'block', color: 'rgba(255,255,255,.72)' }}>Clientes</small>
-            </div>
+            <KPI title="Pedidos Activos" value={data.pedidosActivos} desc="No entregados" icon={<ClipboardList size={18} />} />
+            <KPI title="Producción" value={data.produccionActiva} desc="OT activas" icon={<Factory size={18} />} />
+            <KPI title="Clientes" value={data.clientes} desc="CRM base" icon={<Users size={18} />} />
+            <KPI title="CxC" value={money(data.cxc)} desc="Saldo pendiente" icon={<WalletCards size={18} />} />
+            <KPI title="Ventas" value={money(data.totalVentas)} desc="Pedidos acumulados" icon={<HandCoins size={18} />} />
+            <KPI title="Productos" value={data.productos} desc="Catálogo base" icon={<PackageSearch size={18} />} />
           </div>
         </div>
+
+        <section
+          style={{
+            marginTop: 14,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            gap: 10,
+          }}
+        >
+          <QuickAction primary icon={<Calculator size={22} />} title="Nueva Cotización" desc="Abrir cotizador" onClick={() => setPage('cotizador')} />
+          <QuickAction icon={<PackageCheck size={22} />} title="Nuevo Pedido" desc="Pedidos / OT" onClick={() => setPage('pedidos')} />
+          <QuickAction icon={<Factory size={22} />} title="Nueva OT" desc="Producción" onClick={() => setPage('produccion')} />
+          <QuickAction icon={<Users size={22} />} title="Nuevo Cliente" desc="CRM" onClick={() => setPage('crm')} />
+        </section>
 
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))',
-            gap: 14,
-            marginTop: 18,
+            gap: 10,
+            marginTop: 14,
           }}
         >
           {areas.map((item) => (
@@ -442,18 +480,18 @@ export default function DashboardERP({ setPage }) {
         {area !== 'dashboard' && (
           <section
             style={{
-              marginTop: 18,
+              marginTop: 14,
               background: '#fff',
-              borderRadius: 26,
-              padding: 18,
+              borderRadius: 24,
+              padding: 16,
               boxShadow: '0 18px 45px rgba(15,23,42,.08)',
               border: '1px solid rgba(15,23,42,.08)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center' }}>
               <div>
-                <small style={{ color: '#64748b', fontWeight: 800 }}>ÁREA ERP</small>
-                <h2 style={{ margin: '4px 0 0', color: '#0f172a', letterSpacing: '-.03em' }}>
+                <small style={{ color: '#64748b', fontWeight: 900 }}>ÁREA ERP</small>
+                <h2 style={{ margin: '3px 0 0', color: '#0f172a', letterSpacing: '-.03em' }}>
                   {areas.find((x) => x.key === area)?.title}
                 </h2>
               </div>
@@ -467,7 +505,7 @@ export default function DashboardERP({ setPage }) {
                   padding: '10px 14px',
                   background: '#0f172a',
                   color: '#fff',
-                  fontWeight: 800,
+                  fontWeight: 900,
                   cursor: 'pointer',
                 }}
               >
