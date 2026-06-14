@@ -27,10 +27,13 @@ const money = (v) =>
   }).format(Number(v || 0));
 
 export default function PedidosProduccion() {
-  const { usuario, pedidos, actualizarPedido } = useApp();
+  const { usuario, pedidos, actualizarPedido, proveedores = [], crearSolicitudProveedor, asignarProveedorPedido } = useApp();
   const [busqueda, setBusqueda] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('Todos');
   const [pedidoActivo, setPedidoActivo] = useState(null);
+  const [proveedorId, setProveedorId] = useState('');
+  const [costoReal, setCostoReal] = useState('');
+  const [tiempoEntrega, setTiempoEntrega] = useState('');
 
   const tieneAcceso =
     usuario?.rol === 'admin' ||
@@ -157,6 +160,30 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
     ]
       .filter(Boolean)
       .join('\n');
+  };
+
+  const solicitarRecotizacion = (pedido) => {
+    const solicitud = crearSolicitudProveedor?.(pedido);
+    alert(`Solicitud de recotización generada: ${solicitud?.codigo || ''}`);
+  };
+
+  const asignarProveedor = (pedido) => {
+    if (!proveedorId) return alert('Seleccioná proveedor.');
+    if (!costoReal) return alert('Indicá costo real.');
+    const actualizado = asignarProveedorPedido?.({
+      pedidoId: pedido.id,
+      proveedorId,
+      costoReal,
+      tiempoEntrega,
+      nota: 'Asignado desde Pedidos / OT',
+    });
+    if (actualizado) {
+      setPedidoActivo(actualizado);
+      setProveedorId('');
+      setCostoReal('');
+      setTiempoEntrega('');
+      alert('Proveedor asignado y costo real actualizado.');
+    }
   };
 
   const copiarOT = async (pedido) => {
@@ -377,7 +404,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .item-prod p,.item-prod span,.item-prod small{margin:0;color:#64748b;font-weight:800}
         .logistica-box{background:#fffbeb;border:1px solid #fde68a;border-radius:18px;padding:14px;display:flex;gap:10px;margin:16px 0;color:#92400e}
         .logistica-box p{margin:4px 0 0;font-weight:800}
-        .action-stack{display:grid;gap:10px}
+        .action-stack{display:grid;gap:10px}.costeo-real-box{background:#f8fafc;border:1px solid #cbd5e1;border-radius:20px;padding:14px;margin:16px 0;display:grid;gap:10px}.costeo-real-box h3{margin:0;color:#111827}.costeo-real-box p{display:flex;justify-content:space-between;margin:0;color:#475569;font-weight:800}.costeo-real-box b{color:#111827}.secondary-btn{width:100%;border:0;border-radius:18px;padding:15px;font-weight:950;font-size:16px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
         .primary-btn,.danger-btn{width:100%;border:0;border-radius:18px;padding:15px;font-weight:950;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
         .primary-btn{background:#111827;color:#fff}
         .danger-btn{background:#fee2e2;color:#991b1b}

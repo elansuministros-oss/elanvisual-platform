@@ -15,6 +15,7 @@ import CotizadorVisual from './pages/CotizadorVisual';
 import PedidosProduccion from './pages/PedidosProduccion';
 import DashboardERP from './pages/DashboardERP';
 import MiCuenta from './pages/MiCuenta';
+import ProveedoresCostos from './pages/ProveedoresCostos';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -44,6 +45,7 @@ export default function App() {
     if (pathInicial.startsWith('/reportes')) return 'reportes';
     if (pathInicial.startsWith('/erp')) return 'dashboard';
     if (pathInicial.startsWith('/mi-cuenta')) return 'miCuenta';
+    if (pathInicial.startsWith('/proveedores')) return 'proveedores';
     return 'home';
   })();
 
@@ -84,6 +86,7 @@ export default function App() {
       finanzas: '/finanzas',
       reportes: '/reportes',
         miCuenta: '/mi-cuenta',
+        proveedores: '/proveedores',
     };
 
     setPage(destino);
@@ -118,6 +121,9 @@ export default function App() {
       {page === 'contacto' && <Contacto />}
       {page === 'seguimiento' && <Seguimiento />}
       {page === 'login' && <Login setPage={ir} />}
+
+      {page === 'proveedores' &&
+        (accesoAdmin ? <ProveedoresCostos /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'miCuenta' &&
         (usuario ? <MiCuenta setPage={ir} /> : <Login setPage={ir} destino="miCuenta" />)}

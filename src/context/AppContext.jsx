@@ -516,6 +516,9 @@ export function AppProvider({ children }) {
     asegurarUsuariosBase(leerStorage('elanvisual_usuarios', usuariosIniciales))
   );
   const [supabaseListo, setSupabaseListo] = useState(false);
+  const [proveedores, setProveedores] = useState(() => leerStorage('elanvisual_proveedores_costos', []));
+  const [productosProveedor, setProductosProveedor] = useState(() => leerStorage('elanvisual_productos_proveedor', []));
+  const [cotizacionesProveedor, setCotizacionesProveedor] = useState(() => leerStorage('elanvisual_cotizaciones_proveedor', []));
   const [estadoCompartidoCargado, setEstadoCompartidoCargado] = useState(false);
 
   useEffect(() => guardarStorage('elanvisual_configuracion', configuracion), [configuracion]);
@@ -527,6 +530,9 @@ export function AppProvider({ children }) {
   useEffect(() => guardarStorage('elanvisual_clientes', clientes), [clientes]);
   useEffect(() => guardarStorage('elanvisual_pedidos', pedidos), [pedidos]);
   useEffect(() => guardarStorage('elanvisual_usuarios', usuarios), [usuarios]);
+  useEffect(() => guardarStorage('elanvisual_proveedores_costos', proveedores), [proveedores]);
+  useEffect(() => guardarStorage('elanvisual_productos_proveedor', productosProveedor), [productosProveedor]);
+  useEffect(() => guardarStorage('elanvisual_cotizaciones_proveedor', cotizacionesProveedor), [cotizacionesProveedor]);
 
   useEffect(() => {
     if (usuario) guardarStorage('elanvisual_usuario_actual', usuario);
@@ -1339,6 +1345,126 @@ export function AppProvider({ children }) {
           }
         });
     }
+  };
+
+  const crearProveedor = (datos) => {
+    const nuevo = { ...datos, id: datos.id || `prov-${Date.now()}`, activo: datos.activo !== false, creadoEn: new Date().toISOString() };
+    setProveedores((prev) => [nuevo, ...prev]);
+    return nuevo;
+  };
+
+  const eliminarProveedor = (id) => {
+    setProveedores((prev) => prev.filter((p) => p.id !== id));
+    setProductosProveedor((prev) => prev.filter((p) => p.proveedorId !== id));
+  };
+
+  const crearProductoProveedor = (datos) => {
+    const proveedor = proveedores.find((p) => p.id === datos.proveedorId);
+    const nuevo = {
+      ...datos,
+      id: datos.id || `prov-prod-${Date.now()}`,
+      proveedorNombre: proveedor?.nombre || '',
+      costo: Number(datos.costo || 0),
+      creadoEn: new Date().toISOString(),
+    };
+    setProductosProveedor((prev) => [nuevo, ...prev]);
+    return nuevo;
+  };
+
+  const eliminarProductoProveedor = (id) => setProductosProveedor((prev) => prev.filter((p) => p.id !== id));
+
+  const crearSolicitudProveedor = (pedido) => {
+    const codigo = `RC-${String(Date.now()).slice(-6)}`;
+    const solicitud = {
+      id: `rc-${Date.now()}`,
+      codigo,
+      pedidoId: pedido.id,
+      numeroPedido: pedido.numeroPedido || pedido.numero || '',
+      numeroOT: pedido.numeroOT || pedido.ordenTrabajo?.codigoOT || '',
+      cliente: pedido.cliente?.empresa || pedido.cliente?.nombre || pedido.cliente?.contacto || '',
+      items: pedido.items || [],
+      estado: 'pendiente_respuesta',
+      respuestas: [],
+      creadoEn: new Date().toISOString(),
+    };
+
+    setCotizacionesProveedor((prev) => [solicitud, ...prev]);
+
+    actualizarPedido({
+      ...pedido,
+      costeoReal: {
+        ...(pedido.costeoReal || {}),
+        solicitudProveedorId: solicitud.id,
+        codigoRecotizacion: codigo,
+        estado: 'recotizando',
+      },
+    });
+
+    return solicitud;
+  };
+
+  const registrarRespuestaProveedor = ({ solicitudId, proveedorId, monto, tiempoEntrega, nota }) => {
+    let actualizada = null;
+
+    setCotizacionesProveedor((prev) =>
+      prev.map((s) => {
+        if (s.id !== solicitudId) return s;
+        const proveedor = proveedores.find((p) => p.id === proveedorId);
+        actualizada = {
+          ...s,
+          respuestas: [
+            ...(s.respuestas || []),
+            {
+              id: `resp-${Date.now()}`,
+              proveedorId,
+              proveedorNombre: proveedor?.nombre || '',
+              monto: Number(monto || 0),
+              tiempoEntrega: tiempoEntrega || '',
+              nota: nota || '',
+              fecha: new Date().toISOString(),
+            },
+          ],
+        };
+        return actualizada;
+      })
+    );
+
+    return actualizada;
+  };
+
+  const asignarProveedorPedido = ({ pedidoId, proveedorId, costoReal, tiempoEntrega, nota }) => {
+    const pedido = pedidos.find((p) => p.id === pedidoId);
+    if (!pedido) return null;
+
+    const proveedor = proveedores.find((p) => p.id === proveedorId);
+    const total = Number(pedido.resumen?.total || pedido.total || 0);
+    const costo = Number(costoReal || 0);
+    const utilidadReal = Math.max(total - costo, 0);
+
+    const actualizado = {
+      ...pedido,
+      costos: {
+        ...(pedido.costos || {}),
+        realProveedor: costo,
+      },
+      costeoReal: {
+        ...(pedido.costeoReal || {}),
+        estado: 'proveedor_asignado',
+        proveedorId,
+        proveedorNombre: proveedor?.nombre || '',
+        costoReal: costo,
+        tiempoEntrega,
+        nota,
+        actualizadoEn: new Date().toISOString(),
+      },
+      utilidad: {
+        ...(pedido.utilidad || {}),
+        utilidadReal,
+      },
+    };
+
+    actualizarPedido(actualizado);
+    return actualizado;
   };
 
   const actualizarProducto = (producto) =>
