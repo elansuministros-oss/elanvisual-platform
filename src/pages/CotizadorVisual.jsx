@@ -84,11 +84,10 @@ const itemInicial = {
 };
 
 export default function CotizadorVisual() {
-  const { usuario } = useApp();
+ const { usuario, pedidos, crearPedidoOperativo } = useApp();
 
   const [materiales] = useState(() => leerStorage(STORAGE_MATERIALES));
   const [clientes, setClientes] = useState(() => leerStorage(STORAGE_CLIENTES));
-  const [pedidos, setPedidos] = useState(() => leerStorage(STORAGE_PEDIDOS));
 
   const [cliente, setCliente] = useState(clienteInicial);
   const [busquedaCliente, setBusquedaCliente] = useState('');
@@ -387,11 +386,10 @@ export default function CotizadorVisual() {
       },
     };
 
-    const lista = [nuevoPedido, ...pedidos];
-    setPedidos(lista);
-    guardarStorage(STORAGE_PEDIDOS, lista);
-    setPedidoGenerado(nuevoPedido);
-    alert(`Pedido generado: ${numeroPedido} / ${numeroOT}`);
+   const pedidoOperativo = crearPedidoOperativo(nuevoPedido);
+setPedidoGenerado(pedidoOperativo);
+alert(`Pedido generado: ${pedidoOperativo.numeroPedido} / ${pedidoOperativo.numeroOT}`);
+
   };
 
   const textoWhatsApp = useMemo(() => {
@@ -926,7 +924,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             <div className="pedido-ok">
               <strong>{pedidoGenerado.numeroPedido}</strong>
               <span>{pedidoGenerado.numeroOT}</span>
-              <small>Guardado en localStorage: {STORAGE_PEDIDOS}</small>
+<small>Guardado en flujo ERP global</small>
             </div>
           )}
 

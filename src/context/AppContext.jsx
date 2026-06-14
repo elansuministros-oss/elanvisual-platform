@@ -811,6 +811,103 @@ export function AppProvider({ children }) {
         });
     }
 
+       return pedido;
+  };
+
+  const crearPedidoOperativo = (pedidoBase) => {
+    const fecha = pedidoBase.fecha || pedidoBase.createdAt || new Date().toISOString();
+    const numero = pedidoBase.numero || pedidoBase.numeroPedido || `PED-${String(Date.now()).slice(-6)}`;
+    const numeroOT = pedidoBase.numeroOT || pedidoBase.ordenTrabajo?.codigoOT || `OT-${String(Date.now()).slice(-6)}`;
+
+    const clienteNormalizado = {
+      nombre:
+        pedidoBase.cliente?.nombre ||
+        pedidoBase.cliente?.empresa ||
+        pedidoBase.cliente?.contacto ||
+        'Cliente',
+      empresa: pedidoBase.cliente?.empresa || pedidoBase.cliente?.nombre || '',
+      contacto: pedidoBase.cliente?.contacto || '',
+      whatsapp: pedidoBase.cliente?.whatsapp || pedidoBase.cliente?.telefono || '',
+      telefono: pedidoBase.cliente?.telefono || pedidoBase.cliente?.whatsapp || '',
+      correo: pedidoBase.cliente?.correo || pedidoBase.cliente?.email || '',
+      email: pedidoBase.cliente?.email || pedidoBase.cliente?.correo || '',
+    };
+
+    const items = Array.isArray(pedidoBase.items) ? pedidoBase.items : [];
+    const total = Number(pedidoBase.resumen?.total || pedidoBase.total || 0);
+    const anticipo = Number(pedidoBase.resumen?.anticipo || total * 0.6);
+    const saldo = Number(pedidoBase.resumen?.saldo || Math.max(total - anticipo, 0));
+
+    const pedido = {
+      ...pedidoBase,
+      id: pedidoBase.id || `pedido-${Date.now()}`,
+      numero,
+      numeroPedido: pedidoBase.numeroPedido || numero,
+      numeroOT,
+      codigoSeguimiento: pedidoBase.codigoSeguimiento || '',
+      fecha,
+      createdAt: pedidoBase.createdAt || fecha,
+      cliente: clienteNormalizado,
+      items,
+      resumen: {
+        subtotal: Number(pedidoBase.resumen?.subtotal || 0),
+        descuento: Number(pedidoBase.resumen?.descuento || 0),
+        total,
+        anticipo,
+        saldo,
+        comision: Number(pedidoBase.resumen?.comision || 0),
+      },
+      estado: pedidoBase.estado || 'Pedido creado',
+      estadoProduccion:
+        pedidoBase.estadoProduccion ||
+        pedidoBase.produccion?.estado ||
+        pedidoBase.ordenTrabajo?.estadoProduccion ||
+        'pendiente',
+      pagoEstado: pedidoBase.pagoEstado || pedidoBase.pagos?.estadoPago || 'Pendiente anticipo',
+      seguimientoEstado: pedidoBase.seguimientoEstado || 'pendiente',
+      comisionEstado: pedidoBase.comisionEstado || 'no_generada',
+      anticipoRequerido: anticipo,
+      anticipoRecibido: Number(pedidoBase.anticipoRecibido || pedidoBase.pagos?.anticipoRecibido || 0),
+      saldoPendiente: Number(pedidoBase.saldoPendiente || saldo),
+      ordenTrabajo: {
+        codigoOT: numeroOT,
+        pedido: numero,
+        cliente: clienteNormalizado.nombre,
+        origenComercial: pedidoBase.vendedor?.nombre || '',
+        producto: items.map((item) => item.descripcion || item.nombre).join(', '),
+        cantidad: items.reduce((acc, item) => acc + Number(item.cantidad || 0), 0),
+        responsable: pedidoBase.ordenTrabajo?.responsable || '',
+        observaciones:
+          pedidoBase.ordenTrabajo?.observaciones ||
+          pedidoBase.produccion?.observaciones ||
+          '',
+        fecha,
+        estadoProduccion:
+          pedidoBase.estadoProduccion ||
+          pedidoBase.produccion?.estado ||
+          'pendiente',
+        evidencias: {
+          inicial: '',
+          diseno: '',
+          proceso: '',
+          instalacion: '',
+          entrega: '',
+          ...(pedidoBase.ordenTrabajo?.evidencias || {}),
+        },
+      },
+      historial: Array.isArray(pedidoBase.historial)
+        ? pedidoBase.historial
+        : [
+            {
+              estado: pedidoBase.estado || 'Pedido creado',
+              fecha,
+              nota: 'Pedido operativo creado desde Cotizador Visual.',
+            },
+          ],
+    };
+
+    setPedidos((prev) => [pedido, ...prev.filter((p) => p.id !== pedido.id)]);
+
     return pedido;
   };
 
@@ -1265,8 +1362,9 @@ export function AppProvider({ children }) {
         limpiar,
         resumen,
 
-        pedidos,
+         pedidos,
         crearPedidoTransferencia,
+        crearPedidoOperativo,
         actualizarPedido,
         confirmarAnticipo,
         cambiarEstadoProduccion,

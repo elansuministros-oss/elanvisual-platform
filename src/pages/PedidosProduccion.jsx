@@ -9,8 +9,6 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
-const STORAGE_PEDIDOS = 'elanvisual_pedidos_v1';
-
 const estados = [
   'Pedido creado',
   'Pendiente',
@@ -28,21 +26,8 @@ const money = (v) =>
     minimumFractionDigits: 2,
   }).format(Number(v || 0));
 
-function leerPedidos() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_PEDIDOS)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function guardarPedidos(data) {
-  localStorage.setItem(STORAGE_PEDIDOS, JSON.stringify(data));
-}
-
 export default function PedidosProduccion() {
-  const { usuario } = useApp();
-  const [pedidos, setPedidos] = useState(leerPedidos);
+  const { usuario, pedidos, actualizarPedido } = useApp();
   const [busqueda, setBusqueda] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('Todos');
   const [pedidoActivo, setPedidoActivo] = useState(null);
@@ -53,14 +38,17 @@ export default function PedidosProduccion() {
     usuario?.rol === 'produccion';
 
   const pedidosFiltrados = useMemo(() => {
-    return pedidos.filter((p) => {
+    const lista = Array.isArray(pedidos) ? pedidos : [];
+
+    return lista.filter((p) => {
       const texto = `
-        ${p.numeroPedido}
-        ${p.numeroOT}
-        ${p.cliente?.empresa}
-        ${p.cliente?.contacto}
-        ${p.proyecto?.lugar}
-        ${p.estado}
+        ${p.numeroPedido || p.numero || ''}
+        ${p.numeroOT || p.ordenTrabajo?.codigoOT || ''}
+        ${p.cliente?.empresa || ''}
+        ${p.cliente?.nombre || ''}
+        ${p.cliente?.contacto || ''}
+        ${p.proyecto?.lugar || ''}
+        ${p.estado || ''}
       `.toLowerCase();
 
       return (
@@ -71,33 +59,41 @@ export default function PedidosProduccion() {
   }, [pedidos, busqueda, estadoFiltro]);
 
   const actualizarEstado = (id, estado) => {
-    const lista = pedidos.map((p) => {
-      if (p.id !== id) return p;
+    const pedido = pedidos.find((p) => p.id === id);
+    if (!pedido) return;
 
-      return {
-        ...p,
+    const pedidoActualizado = {
+      ...pedido,
+      estado,
+      produccion: {
+        ...(pedido.produccion || {}),
         estado,
-        produccion: {
-          ...(p.produccion || {}),
-          estado,
-        },
-      };
-    });
+      },
+    };
 
-    setPedidos(lista);
-    guardarPedidos(lista);
+    actualizarPedido(pedidoActualizado);
 
     if (pedidoActivo?.id === id) {
-      setPedidoActivo(lista.find((p) => p.id === id));
+      setPedidoActivo(pedidoActualizado);
     }
   };
 
   const eliminarPedido = (id) => {
-    if (!confirm('¿Eliminar este pedido?')) return;
+    if (!confirm('¿Cancelar este pedido?')) return;
 
-    const lista = pedidos.filter((p) => p.id !== id);
-    setPedidos(lista);
-    guardarPedidos(lista);
+    const pedido = pedidos.find((p) => p.id === id);
+    if (!pedido) return;
+
+    actualizarPedido({
+      ...pedido,
+      estado: 'cancelado',
+      estadoProduccion: 'cancelado',
+      seguimientoEstado: 'cancelado',
+      produccion: {
+        ...(pedido.produccion || {}),
+        estado: 'cancelado',
+      },
+    });
 
     if (pedidoActivo?.id === id) setPedidoActivo(null);
   };
@@ -106,14 +102,17 @@ export default function PedidosProduccion() {
     if (!pedido) return '';
 
     const items = pedido.items || [];
+    const numeroOT = pedido.numeroOT || pedido.ordenTrabajo?.codigoOT || '';
+    const numeroPedido = pedido.numeroPedido || pedido.numero || '';
 
     return [
-      `*ORDEN DE PRODUCCIÓN ${pedido.numeroOT}*`,
-      `Pedido: ${pedido.numeroPedido}`,
-      `Estado: ${pedido.estado}`,
+      `*ORDEN DE PRODUCCIÓN ${numeroOT}*`,
+      `Pedido: ${numeroPedido}`,
+      `Estado: ${pedido.estado || ''}`,
       '',
       '*Cliente*',
       pedido.cliente?.empresa ? `Empresa: ${pedido.cliente.empresa}` : '',
+      pedido.cliente?.nombre ? `Nombre: ${pedido.cliente.nombre}` : '',
       pedido.cliente?.contacto ? `Contacto: ${pedido.cliente.contacto}` : '',
       pedido.cliente?.whatsapp ? `WhatsApp: ${pedido.cliente.whatsapp}` : '',
       '',
@@ -132,7 +131,7 @@ export default function PedidosProduccion() {
         const medida =
           item.tipoCalculo === 'unidad'
             ? `Cantidad: ${item.cantidad}`
-            : `${item.ancho} x ${item.alto} m · Cantidad: ${item.cantidad}`;
+            : `${item.ancho || ''} x ${item.alto || ''} m · Cantidad: ${item.cantidad}`;
 
         const accesorios =
           item.accesoriosProduccion?.length > 0
@@ -141,9 +140,9 @@ export default function PedidosProduccion() {
                 .join(' · ')
             : 'Sin accesorios automáticos';
 
-        return `${index + 1}. ${item.descripcion}
+        return `${index + 1}. ${item.descripcion || item.nombre || 'Ítem'}
 ${medida}
-Instalación: ${item.instalacion}
+Instalación: ${item.instalacion || 'No'}
 Accesorios: ${accesorios}
 ${item.nota ? `Nota: ${item.nota}` : ''}`;
       }),
@@ -209,49 +208,56 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
       <section className="pedidos-grid">
         <section className="pedidos-list">
-          {pedidosFiltrados.map((pedido) => (
-            <article
-              key={pedido.id}
-              className={`pedido-card ${pedidoActivo?.id === pedido.id ? 'active' : ''}`}
-              onClick={() => setPedidoActivo(pedido)}
-            >
-              <div>
-                <strong>{pedido.numeroPedido}</strong>
-                <span>{pedido.numeroOT}</span>
-              </div>
+          {pedidosFiltrados.map((pedido) => {
+            const numeroPedido = pedido.numeroPedido || pedido.numero || '';
+            const numeroOT = pedido.numeroOT || pedido.ordenTrabajo?.codigoOT || '';
 
-              <h2>{pedido.cliente?.empresa || pedido.cliente?.contacto || 'Cliente'}</h2>
-              <p>{pedido.proyecto?.lugar || 'Sin lugar definido'}</p>
+            return (
+              <article
+                key={pedido.id}
+                className={`pedido-card ${pedidoActivo?.id === pedido.id ? 'active' : ''}`}
+                onClick={() => setPedidoActivo(pedido)}
+              >
+                <div>
+                  <strong>{numeroPedido}</strong>
+                  <span>{numeroOT}</span>
+                </div>
 
-              <div className="pedido-meta">
-                <small>{pedido.estado}</small>
-                <b>{money(pedido.resumen?.total)}</b>
-              </div>
-            </article>
-          ))}
+                <h2>
+                  {pedido.cliente?.empresa ||
+                    pedido.cliente?.nombre ||
+                    pedido.cliente?.contacto ||
+                    'Cliente'}
+                </h2>
+                <p>{pedido.proyecto?.lugar || 'Sin lugar definido'}</p>
+
+                <div className="pedido-meta">
+                  <small>{pedido.estado}</small>
+                  <b>{money(pedido.resumen?.total)}</b>
+                </div>
+              </article>
+            );
+          })}
 
           {pedidosFiltrados.length === 0 && (
-            <div className="empty">
-              No hay pedidos guardados todavía.
-            </div>
+            <div className="empty">No hay pedidos guardados todavía.</div>
           )}
         </section>
 
         <section className="pedido-detail">
           {!pedidoActivo && (
-            <div className="empty detail-empty">
-              Seleccioná un pedido para ver la OT.
-            </div>
+            <div className="empty detail-empty">Seleccioná un pedido para ver la OT.</div>
           )}
 
           {pedidoActivo && (
             <>
               <div className="detail-head">
                 <div>
-                  <span>{pedidoActivo.numeroPedido}</span>
-                  <h2>{pedidoActivo.numeroOT}</h2>
+                  <span>{pedidoActivo.numeroPedido || pedidoActivo.numero}</span>
+                  <h2>{pedidoActivo.numeroOT || pedidoActivo.ordenTrabajo?.codigoOT}</h2>
                   <p>
                     {pedidoActivo.cliente?.empresa ||
+                      pedidoActivo.cliente?.nombre ||
                       pedidoActivo.cliente?.contacto ||
                       'Cliente'}
                   </p>
@@ -283,13 +289,13 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
                 {(pedidoActivo.items || []).map((item) => (
                   <article key={item.id} className="item-prod">
-                    <strong>{item.descripcion}</strong>
+                    <strong>{item.descripcion || item.nombre}</strong>
                     <p>
                       {item.tipoCalculo === 'unidad'
                         ? `Cantidad: ${item.cantidad}`
-                        : `${item.ancho} x ${item.alto} m · Cantidad: ${item.cantidad}`}
+                        : `${item.ancho || ''} x ${item.alto || ''} m · Cantidad: ${item.cantidad}`}
                     </p>
-                    <span>Instalación: {item.instalacion}</span>
+                    <span>Instalación: {item.instalacion || 'No'}</span>
 
                     {item.accesoriosProduccion?.length > 0 && (
                       <small>
@@ -325,7 +331,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
                 <button className="danger-btn" type="button" onClick={() => eliminarPedido(pedidoActivo.id)}>
                   <Trash2 size={18} />
-                  Eliminar pedido
+                  Cancelar pedido
                 </button>
               </div>
 
