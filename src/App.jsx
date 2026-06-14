@@ -14,6 +14,7 @@ import MaterialesCostos from './pages/MaterialesCostos';
 import CotizadorVisual from './pages/CotizadorVisual';
 import PedidosProduccion from './pages/PedidosProduccion';
 import DashboardERP from './pages/DashboardERP';
+import MiCuenta from './pages/MiCuenta';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -42,6 +43,7 @@ export default function App() {
     if (pathInicial.startsWith('/finanzas')) return 'finanzas';
     if (pathInicial.startsWith('/reportes')) return 'reportes';
     if (pathInicial.startsWith('/erp')) return 'dashboard';
+    if (pathInicial.startsWith('/mi-cuenta')) return 'miCuenta';
     return 'home';
   })();
 
@@ -81,6 +83,7 @@ export default function App() {
       inventario: '/inventario',
       finanzas: '/finanzas',
       reportes: '/reportes',
+        miCuenta: '/mi-cuenta',
     };
 
     setPage(destino);
@@ -99,6 +102,13 @@ export default function App() {
     <>
       <Header page={page} setPage={ir} />
 
+        {usuario && page !== 'home' && (
+          <div className="erp-floating-actions">
+            <button type="button" onClick={() => ir('home')}>🏠 Inicio</button>
+            <button type="button" onClick={() => ir('miCuenta')}>👤 Mi cuenta</button>
+          </div>
+        )}
+
       {page === 'home' && <Home setPage={ir} />}
       {page === 'servicios' && <Catalogo />}
       {page === 'tienda' && <Catalogo />}
@@ -108,6 +118,9 @@ export default function App() {
       {page === 'contacto' && <Contacto />}
       {page === 'seguimiento' && <Seguimiento />}
       {page === 'login' && <Login setPage={ir} />}
+
+      {page === 'miCuenta' &&
+        (usuario ? <MiCuenta setPage={ir} /> : <Login setPage={ir} destino="miCuenta" />)}
 
       {page === 'dashboard' &&
         (accesoERP ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}

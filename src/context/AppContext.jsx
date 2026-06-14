@@ -276,6 +276,98 @@ function normalizarRol(rol) {
   return 'produccion';
 }
 
+
+function codigoVendedorElanvisual(usuario = {}) {
+  if (usuario.codigoVendedor) return usuario.codigoVendedor;
+  if (usuario.codigoQR) return usuario.codigoQR;
+  if (usuario.usuario === 'admin') return 'ERICK-001';
+  if (usuario.rol === 'ventas') {
+    return `VEN-${String(usuario.usuario || usuario.id || '001')
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')}`;
+  }
+  return String(usuario.id || 'USR-001').toUpperCase();
+}
+
+function obtenerReferenciaVendedorElanvisual(usuarios = [], usuarioActivo = null) {
+  const ref = String(localStorage.getItem('elanvisual_ref_vendedor') || '').trim();
+
+  const buscar = (valor) => {
+    const normal = String(valor || '').toLowerCase().trim();
+    if (!normal) return null;
+
+    return usuarios.find((u) => {
+      const codigo = codigoVendedorElanvisual(u).toLowerCase();
+      return (
+        codigo === normal ||
+        String(u.usuario || '').toLowerCase() === normal ||
+        String(u.email || '').toLowerCase() === normal ||
+        String(u.id || '').toLowerCase() === normal
+      );
+    });
+  };
+
+  const desdeRef = buscar(ref);
+  if (desdeRef) {
+    return {
+      id: desdeRef.id,
+      nombre: desdeRef.nombre || desdeRef.usuario || desdeRef.email,
+      usuario: desdeRef.usuario,
+      email: desdeRef.email,
+      codigo: codigoVendedorElanvisual(desdeRef),
+      rol: desdeRef.rol,
+    };
+  }
+
+  if (usuarioActivo?.rol === 'ventas' || usuarioActivo?.usuario === 'admin') {
+    return {
+      id: usuarioActivo.id,
+      nombre: usuarioActivo.nombre || usuarioActivo.usuario || usuarioActivo.email,
+      usuario: usuarioActivo.usuario,
+      email: usuarioActivo.email,
+      codigo: codigoVendedorElanvisual(usuarioActivo),
+      rol: usuarioActivo.rol,
+    };
+  }
+
+  return null;
+}
+
+function crearComisionInicialElanvisual({ total = 0, costoProduccion = 0, vendedor = null }) {
+  const venta = Number(total || 0);
+  const costo = Number(costoProduccion || 0);
+  const utilidadRealEstimada = Math.max(venta - costo, 0);
+  const fondoComunitario = utilidadRealEstimada * 0.05;
+  const direccionGeneral = utilidadRealEstimada * 0.05;
+  const baseDistribuible = Math.max(utilidadRealEstimada - fondoComunitario - direccionGeneral, 0);
+  const comisionVendedor = vendedor ? baseDistribuible * 0.4 : 0;
+  const elanvisual = baseDistribuible - comisionVendedor;
+  const fondoIncentivoVendedor = vendedor ? elanvisual * 0.05 : 0;
+
+  return {
+    estado: 'en_proceso',
+    vendedorId: vendedor?.id || '',
+    vendedorCodigo: vendedor?.codigo || '',
+    vendedorNombre: vendedor?.nombre || '',
+    utilidadRealEstimada,
+    fondoComunitario,
+    direccionGeneral,
+    baseDistribuible,
+    comisionVendedor,
+    fondoIncentivoVendedor,
+    utilidadElanvisual: Math.max(elanvisual - fondoIncentivoVendedor, 0),
+    pagada: false,
+    pagoSolicitado: false,
+    historial: [
+      {
+        estado: 'en_proceso',
+        fecha: new Date().toISOString(),
+        nota: 'Comisión creada en proceso. Se valida hasta trabajo finalizado y pago cancelado.',
+      },
+    ],
+  };
+}
+
 function mapUsuarioFromDb(row) {
   return {
     id: row.id,
@@ -835,11 +927,46 @@ export function AppProvider({ children }) {
 
     const items = Array.isArray(pedidoBase.items) ? pedidoBase.items : [];
     const total = Number(pedidoBase.resumen?.total || pedidoBase.total || 0);
+    const costoProduccionEstimado = items.reduce(
+      (acc, item) =>
+        acc +
+        Number(item.costoProduccion || 0) +
+        (Array.isArray(item.accesoriosProduccion)
+          ? item.accesoriosProduccion.reduce((suma, accItem) => suma + Number(accItem.total || accItem.precio || 0), 0)
+          : 0),
+      0
+    );
+    const vendedorReferencia =
+      pedidoBase.vendedor ||
+      pedidoBase.origenComercial ||
+      obtenerReferenciaVendedorElanvisual(usuarios, usuario);
+    const comisionInicial = crearComisionInicialElanvisual({
+      total,
+      costoProduccion: costoProduccionEstimado,
+      vendedor: vendedorReferencia,
+    });
     const anticipo = Number(pedidoBase.resumen?.anticipo || total * 0.6);
     const saldo = Number(pedidoBase.resumen?.saldo || Math.max(total - anticipo, 0));
 
     const pedido = {
       ...pedidoBase,
+      vendedor: vendedorReferencia || pedidoBase.vendedor || null,
+      vendedorId: vendedorReferencia?.id || pedidoBase.vendedorId || '',
+      vendedorNombre: vendedorReferencia?.nombre || pedidoBase.vendedorNombre || '',
+      codigoVendedor: vendedorReferencia?.codigo || pedidoBase.codigoVendedor || '',
+      costos: {
+        ...(pedidoBase.costos || {}),
+        produccionEstimada: costoProduccionEstimado,
+      },
+      comisiones: pedidoBase.comisiones || comisionInicial,
+      utilidad: pedidoBase.utilidad || {
+        utilidadRealEstimada: comisionInicial.utilidadRealEstimada,
+        fondoComunitario: comisionInicial.fondoComunitario,
+        direccionGeneral: comisionInicial.direccionGeneral,
+        comisionVendedor: comisionInicial.comisionVendedor,
+        fondoIncentivoVendedor: comisionInicial.fondoIncentivoVendedor,
+        utilidadElanvisual: comisionInicial.utilidadElanvisual,
+      },
       id: pedidoBase.id || `pedido-${Date.now()}`,
       numero,
       numeroPedido: pedidoBase.numeroPedido || numero,
