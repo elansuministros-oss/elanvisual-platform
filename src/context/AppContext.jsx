@@ -2023,13 +2023,8 @@ const generarComisionAutomatica = ({
         eliminarUsuario,
 
         rolesSistema,
-                inventarioReal,
-        crearInventarioReal,
-        actualizarInventarioReal,
-        eliminarInventarioReal,
-        reservarInventarioReal,
-        consumirInventarioReal,
-        liberarReservainventarioReal,
+
+        inventarioReal,
         crearInventarioReal,
         actualizarInventarioReal,
         eliminarInventarioReal,
@@ -2058,6 +2053,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
