@@ -84,7 +84,7 @@ export default function Carrito() {
                 `${c.banco}\nCuenta: ${c.numero}\nTitular: ${c.titular}\nMoneda: ${c.moneda}`
             )
             .join('\n\n')
-        : 'No hay cuentas bancarias configuradas. ContactÃ¡ a ELANVISUAL para confirmar la cuenta oficial antes de transferir.';
+        : 'No hay cuentas bancarias configuradas. Contacta a ELANVISUAL para confirmar la cuenta oficial antes de transferir.';
 
     return `Hola ${cliente.nombre || 'cliente'}.
 
@@ -92,18 +92,18 @@ Gracias por solicitar un servicio en ELANVISUAL.
 
 Solicitud: ${pedido.numero}
 Empresa: ${cliente.empresa || 'No indicada'}
-UbicaciÃ³n: ${cliente.ubicacion || 'No indicada'}
+Ubicacion: ${cliente.ubicacion || 'No indicada'}
 
 Servicios solicitados:
 ${serviciosSeleccionados
   .map((i) => `- ${i.cantidad || 1} Ã— ${i.nombre} (${i.medidas || 'medidas por definir'})`)
   .join('\n')}
 
-DescripciÃ³n del proyecto:
+Descripcion del proyecto:
 ${cliente.descripcionProyecto || 'Pendiente de completar'}
 
 Medidas / referencia:
-${cliente.medidas || 'Pendiente de levantamiento tÃ©cnico'}
+${cliente.medidas || 'Pendiente de levantamiento tecnico'}
 
 Modalidad seleccionada:
 ${pagoTipo === 'total' ? 'Pago total 100%' : `Anticipo ${anticipoPorcentaje}%`}
@@ -112,18 +112,18 @@ Monto de referencia:
 ${baseCotizacion > 0 ? formatoC$(baseCotizacion) : 'A cotizar'}
 
 Monto a transferir ahora:
-${baseCotizacion > 0 ? formatoC$(montoSolicitado) : 'Pendiente de cotizaciÃ³n'}
+${baseCotizacion > 0 ? formatoC$(montoSolicitado) : 'Pendiente de cotizacion'}
 
 Saldo pendiente:
-${baseCotizacion > 0 ? formatoC$(saldoPendiente) : 'Pendiente de cotizaciÃ³n'}
+${baseCotizacion > 0 ? formatoC$(saldoPendiente) : 'Pendiente de cotizacion'}
 
 Cuentas oficiales:
 
 ${cuentas}
 
-${configuracion.instruccionesPago || 'DespuÃ©s de transferir, responde este mensaje enviando el comprobante para confirmar tu solicitud.'}
+${configuracion.instruccionesPago || 'Despues de transferir, responde este mensaje enviando el comprobante para confirmar tu solicitud.'}
 
-Tu solicitud serÃ¡ revisada para cotizaciÃ³n, orden de trabajo y programaciÃ³n de producciÃ³n.`;
+Tu solicitud sera revisada para cotizacion, orden de trabajo y programacion de produccion.`;
   }
 
   function textoElan(pedido) {
@@ -141,12 +141,12 @@ Cliente: ${cliente.nombre}
 Empresa: ${cliente.empresa || 'No indicada'}
 WhatsApp: ${normalizarWhatsApp(cliente.whatsapp)}
 Correo: ${cliente.correo || 'No indicado'}
-UbicaciÃ³n: ${cliente.ubicacion || 'No indicada'}
+Ubicacion: ${cliente.ubicacion || 'No indicada'}
 
 Servicios:
 ${lineas}
 
-DescripciÃ³n del proyecto:
+Descripcion del proyecto:
 ${cliente.descripcionProyecto || 'Pendiente'}
 
 Medidas / referencia:
@@ -154,27 +154,27 @@ ${cliente.medidas || 'Pendiente'}
 
 Monto de referencia: ${baseCotizacion > 0 ? formatoC$(baseCotizacion) : 'A cotizar'}
 Modalidad: ${pagoTipo === 'total' ? 'Pago total 100%' : `Anticipo ${anticipoPorcentaje}%`}
-Monto solicitado: ${baseCotizacion > 0 ? formatoC$(montoSolicitado) : 'Pendiente de cotizaciÃ³n'}
-Saldo pendiente: ${baseCotizacion > 0 ? formatoC$(saldoPendiente) : 'Pendiente de cotizaciÃ³n'}
+Monto solicitado: ${baseCotizacion > 0 ? formatoC$(montoSolicitado) : 'Pendiente de cotizacion'}
+Saldo pendiente: ${baseCotizacion > 0 ? formatoC$(saldoPendiente) : 'Pendiente de cotizacion'}
 
-Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ³n.`;
+Estado: Solicitud recibida. Revisar para cotizacion, pedido, OT y produccion.`;
   }
 
   function enviarSolicitud() {
     if (!cliente.nombre || !cliente.whatsapp) {
-      alert('EscribÃ­ el nombre y WhatsApp del cliente antes de enviar la solicitud.');
+      alert('Escribi el nombre y WhatsApp del cliente antes de enviar la solicitud.');
       return;
     }
 
     if (!whatsappValido(cliente.whatsapp)) {
       setErrorWhatsapp(
-        'WhatsApp invÃ¡lido. Escribilo con cÃ³digo de paÃ­s. Ej: 50588888888. Si escribÃ­s 8 dÃ­gitos, se agregarÃ¡ 505 automÃ¡ticamente.'
+        'WhatsApp invalido. Escribilo con codigo de pais. Ej: 50588888888. Si escribis 8 digitos, se agregara 505 automaticamente.'
       );
       return;
     }
 
     if (carrito.length === 0) {
-      alert('AgregÃ¡ al menos un servicio antes de enviar la solicitud.');
+      alert('Agrega al menos un servicio antes de enviar la solicitud.');
       return;
     }
 
@@ -183,12 +183,12 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
       whatsapp: normalizarWhatsApp(cliente.whatsapp),
       telefono: normalizarWhatsApp(cliente.whatsapp),
       nombre: cliente.empresa
-        ? `${cliente.nombre} Â· ${cliente.empresa}`
+        ? `${cliente.nombre} - ${cliente.empresa}`
         : cliente.nombre,
       observaciones: [
         cliente.descripcionProyecto,
         cliente.medidas ? `Medidas: ${cliente.medidas}` : '',
-        cliente.ubicacion ? `UbicaciÃ³n: ${cliente.ubicacion}` : '',
+        cliente.ubicacion ? `Ubicacion: ${cliente.ubicacion}` : '',
         cliente.correo ? `Correo: ${cliente.correo}` : '',
       ]
         .filter(Boolean)
@@ -210,7 +210,7 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
         pagoTipo,
       });
     } catch (error) {
-      setErrorWhatsapp('No se pudo crear la solicitud porque el WhatsApp no es vÃ¡lido.');
+      setErrorWhatsapp('No se pudo crear la solicitud porque el WhatsApp no es valido.');
       return;
     }
 
@@ -237,17 +237,17 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
     <main className="catalog-page">
       <section className="catalog-hero">
         <div>
-          <span className="badge">ELANVISUAL Â· Solicitud de Servicio</span>
-          <h1>Preparar solicitud para cotizaciÃ³n</h1>
+          <span className="badge">ELANVISUAL - Solicitud de Servicio</span>
+          <h1>Preparar solicitud para cotizacion</h1>
           <p>
-            ConfirmÃ¡ los servicios seleccionados, agregÃ¡ los datos del cliente y
-            enviÃ¡ la solicitud para revisiÃ³n comercial, cotizaciÃ³n y producciÃ³n.
+            Confirma los servicios seleccionados, agrega los datos del cliente y
+            envia la solicitud para revision comercial, cotizacion y produccion.
           </p>
         </div>
 
         <aside className="cart-summary-mini">
           <b>Flujo activo</b>
-          <span>Solicitud â†’ CotizaciÃ³n â†’ OT</span>
+          <span>Solicitud â†’ Cotizacion â†’ OT</span>
           <strong>{baseCotizacion > 0 ? formatoC$(baseCotizacion) : 'A cotizar'}</strong>
         </aside>
       </section>
@@ -256,7 +256,7 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
         <section className="panel empty-catalog">
           <h2>No hay servicios seleccionados</h2>
           <p className="note">
-            VolvÃ© a Servicios y seleccionÃ¡ al menos una opciÃ³n para preparar la
+            Volve a Servicios y selecciona al menos una opcion para preparar la
             solicitud.
           </p>
         </section>
@@ -296,7 +296,7 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
           </section>
 
           <section className="checkout">
-            <h2>Datos para cotizaciÃ³n</h2>
+            <h2>Datos para cotizacion</h2>
 
             <div className="form-grid">
               <input
@@ -316,7 +316,7 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
               />
 
               <input
-                placeholder="WhatsApp con cÃ³digo de paÃ­s. Ej: 50588888888"
+                placeholder="WhatsApp con codigo de pais. Ej: 50588888888"
                 value={cliente.whatsapp}
                 onChange={(e) => {
                   setCliente({ ...cliente, whatsapp: e.target.value });
@@ -331,7 +331,7 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
               />
 
               <input
-                placeholder="Correo electrÃ³nico"
+                placeholder="Correo electronico"
                 value={cliente.correo}
                 onChange={(e) =>
                   setCliente({ ...cliente, correo: e.target.value })
@@ -340,7 +340,7 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
 
               <input
                 className="span-2"
-                placeholder="UbicaciÃ³n del proyecto / instalaciÃ³n"
+                placeholder="Ubicacion del proyecto / instalacion"
                 value={cliente.ubicacion}
                 onChange={(e) =>
                   setCliente({ ...cliente, ubicacion: e.target.value })
@@ -349,7 +349,7 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
 
               <textarea
                 className="span-2"
-                placeholder="DescripciÃ³n del proyecto: tipo de rÃ³tulo, material, ubicaciÃ³n, uso, instalaciÃ³n, referencia visual..."
+                placeholder="Descripcion del proyecto: tipo de rotulo, material, ubicacion, uso, instalacion, referencia visual..."
                 rows="4"
                 value={cliente.descripcionProyecto}
                 onChange={(e) =>
@@ -362,7 +362,7 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
 
               <textarea
                 className="span-2"
-                placeholder="Medidas aproximadas, cantidades, color, iluminaciÃ³n, estructura o detalles tÃ©cnicos"
+                placeholder="Medidas aproximadas, cantidades, color, iluminacion, estructura o detalles tecnicos"
                 rows="3"
                 value={cliente.medidas}
                 onChange={(e) =>
@@ -386,7 +386,7 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
                 <b>{anticipoPorcentaje}%</b>
               </p>
               <p>
-                Este formulario conserva compatibilidad con pedidos, producciÃ³n y
+                Este formulario conserva compatibilidad con pedidos, produccion y
                 seguimiento mientras se conecta el flujo nativo de cotizaciones.
               </p>
             </div>
@@ -402,7 +402,7 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
                 <span>
                   <b>Solicitud con anticipo {anticipoPorcentaje}%</b>
                   <small>
-                    Se usarÃ¡ cuando el proyecto tenga precio confirmado.
+                    Se usara cuando el proyecto tenga precio confirmado.
                   </small>
                   <strong>
                     {baseCotizacion > 0 ? formatoC$(montoAnticipo) : 'A cotizar'}
@@ -434,8 +434,8 @@ Estado: Solicitud recibida. Revisar para cotizaciÃ³n, pedido, OT y producciÃ�
             {ultimoPedido && (
               <p className="success-msg">
                 Solicitud {ultimoPedido.numero} creada y registrada para
-                administraciÃ³n. Al validarse comercialmente podrÃ¡ continuar a
-                cotizaciÃ³n, orden de trabajo y producciÃ³n.
+                administracion. Al validarse comercialmente podra continuar a
+                cotizacion, orden de trabajo y produccion.
               </p>
             )}
           </section>

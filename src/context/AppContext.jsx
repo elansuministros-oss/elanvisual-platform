@@ -7,7 +7,7 @@ const AppContext = createContext(null);
 
 const configuracionInicial = {
   nombreSitio: 'ELANVISUAL',
-  slogan: 'Rotulación, impresión y fabricación visual profesional',
+  slogan: 'Rotulacin, impresin y fabricacin visual profesional',
   logoTexto: 'ELANVISUAL',
   logo: '',
   whatsapp: '+505 8522 8183',
@@ -15,11 +15,11 @@ const configuracionInicial = {
   instagram: '@elanvisual',
   colorPrincipal: '#111827',
   colorSecundario: '#C9A227',
-  textoHero: 'Rotulación profesional para negocios reales',
+  textoHero: 'Rotulacin profesional para negocios reales',
   descripcionHero:
-    'Rótulos, letras 3D, acrílico, PVC, impresión UV, DTF UV, CNC, láser, fachadas y displays fabricables desde una solicitud móvil.',
+    'Rtulos, letras 3D, acrlico, PVC, impresin UV, DTF UV, CNC, lser, fachadas y displays fabricables desde una solicitud mvil.',
   instruccionesPago:
-    'Después de transferir, responde este mensaje enviando el comprobante para confirmar tu solicitud.',
+    'Despus de transferir, responde este mensaje enviando el comprobante para confirmar tu solicitud.',
   anticipoPorcentaje: 60,
 };
 
@@ -28,9 +28,9 @@ const cuentasIniciales = [];
 const bannersIniciales = [
   {
     id: 'hero-principal-default',
-    titulo: 'Rotulación profesional para negocios reales',
+    titulo: 'Rotulacin profesional para negocios reales',
     subtitulo:
-      'Letras 3D, fachadas, acrílico, PVC, impresión UV, DTF UV, CNC, láser y displays fabricables.',
+      'Letras 3D, fachadas, acrlico, PVC, impresin UV, DTF UV, CNC, lser y displays fabricables.',
     ubicacion: 'hero-principal',
     link: 'catalogo',
     activo: true,
@@ -44,9 +44,9 @@ const bannersIniciales = [
 const trabajosIniciales = [
   {
     id: 'trabajo-1',
-    titulo: 'Letras PVC para recepción',
+    titulo: 'Letras PVC para recepcin',
     tipo: 'Foto',
-    descripcion: 'Fabricación en PVC con acabado limpio para instalación interior.',
+    descripcion: 'Fabricacin en PVC con acabado limpio para instalacin interior.',
     imagen: '/productos/letras-pvc.jpg',
     activo: true,
   },
@@ -54,15 +54,15 @@ const trabajosIniciales = [
     id: 'trabajo-2',
     titulo: 'Fachada comercial',
     tipo: 'Foto',
-    descripcion: 'Rotulación exterior con estructura, frente visual y montaje técnico.',
+    descripcion: 'Rotulacin exterior con estructura, frente visual y montaje tcnico.',
     imagen: '/productos/fachada.jpg',
     activo: true,
   },
   {
     id: 'trabajo-3',
-    titulo: 'Display y señalización',
+    titulo: 'Display y sealizacin',
     tipo: 'Foto',
-    descripcion: 'Piezas fabricadas para punto de venta, orientación y presentación de marca.',
+    descripcion: 'Piezas fabricadas para punto de venta, orientacin y presentacin de marca.',
     imagen: '/productos/display.jpg',
     activo: true,
   },
@@ -114,8 +114,8 @@ export const etiquetasEstado = {
   pedido_recibido: 'Pedido recibido',
   anticipo_confirmado: 'Anticipo confirmado',
   pago_total_confirmado: 'Pago total confirmado',
-  diseno: 'Diseño',
-  produccion: 'Producción',
+  diseno: 'Diseo',
+  produccion: 'Produccin',
   corte_cnc: 'Corte CNC',
   armado: 'Armado',
   pintura_acabado: 'Pintura / acabado',
@@ -181,7 +181,7 @@ function guardarStorage(clave, valor) {
   try {
     localStorage.setItem(clave, JSON.stringify(valor));
   } catch {
-    // Sin acción.
+    // Sin accin.
   }
 }
 
@@ -364,7 +364,7 @@ function crearComisionInicialElanvisual({ total = 0, costoProduccion = 0, vended
       {
         estado: 'en_proceso',
         fecha: new Date().toISOString(),
-        nota: 'Comisión creada en proceso. Se valida hasta trabajo finalizado y pago cancelado.',
+        nota: 'Comisin creada en proceso. Se valida hasta trabajo finalizado y pago cancelado.',
       },
     ],
   };
@@ -965,7 +965,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
           if (error) {
             console.error('Error guardando solicitud en Supabase:', error);
             window.alert(
-              'La solicitud fue creada y el WhatsApp salió, pero no se pudo guardar en Supabase. Revisá la tabla pedidos.'
+              'La solicitud fue creada y el WhatsApp sali, pero no se pudo guardar en Supabase. Revis la tabla pedidos.'
             );
             return;
           }
@@ -1185,7 +1185,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
         {
           estado: esTotal ? 'pago_total_confirmado' : 'anticipo_confirmado',
           fecha: new Date().toISOString(),
-          nota: 'Pago validado por administración.',
+          nota: 'Pago validado por administracin.',
         },
       ],
     });
@@ -1328,7 +1328,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
           if (error) {
             console.error('Error creando usuario en Supabase:', error);
             setUsuarios((prev) => prev.filter((u) => u.id !== tempId));
-            window.alert('No se pudo guardar el usuario en Supabase. Revisá duplicados.');
+            window.alert('No se pudo guardar el usuario en Supabase. Revis duplicados.');
             return;
           }
 

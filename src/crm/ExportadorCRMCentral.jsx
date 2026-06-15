@@ -234,7 +234,7 @@ export default function ExportadorCRMCentral() {
         </article>
 
         <article style={estilos.stat}>
-          <span style={estilos.label}>ProducciÃ³n</span>
+          <span style={estilos.label}>Produccion</span>
           <strong style={estilos.valor}>{resumen.produccion}</strong>
         </article>
 
@@ -266,7 +266,7 @@ export default function ExportadorCRMCentral() {
           <span style={estilos.itemLista}>Contactos: {resumen.contactos}</span>
           <span style={estilos.itemLista}>Pedidos: {resumen.pedidos}</span>
           <span style={estilos.itemLista}>Ã“rdenes: {resumen.ordenesTrabajo}</span>
-          <span style={estilos.itemLista}>ProducciÃ³n: {resumen.produccion}</span>
+          <span style={estilos.itemLista}>Produccion: {resumen.produccion}</span>
           <span style={estilos.itemLista}>Cobros: {resumen.cobros}</span>
           <span style={estilos.itemLista}>Inventario: {resumen.inventario}</span>
           <span style={estilos.itemLista}>Materiales: {resumen.materiales}</span>

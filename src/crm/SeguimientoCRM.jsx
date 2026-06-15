@@ -80,7 +80,7 @@ export default function SeguimientoCRM() {
     e.preventDefault();
 
     if (!formulario.empresaId || !formulario.contactoId) {
-      alert('DebÃ©s seleccionar empresa y contacto.');
+      alert('Debes seleccionar empresa y contacto.');
       return;
     }
 
@@ -110,7 +110,7 @@ export default function SeguimientoCRM() {
 
   const eliminarActividad = (id) => {
     const confirmar = window.confirm(
-      'Â¿Seguro que querÃ©s eliminar este seguimiento?'
+      '¿Seguro que queres eliminar este seguimiento?'
     );
 
     if (!confirmar) return;
@@ -211,7 +211,7 @@ export default function SeguimientoCRM() {
               <option>Nota</option>
               <option>WhatsApp</option>
               <option>Correo</option>
-              <option>ReuniÃ³n</option>
+              <option>Reunion</option>
             </select>
           </label>
 
@@ -287,7 +287,7 @@ export default function SeguimientoCRM() {
 
             {editandoId && (
               <button type="button" onClick={limpiarFormulario}>
-                Cancelar ediciÃ³n
+                Cancelar edicion
               </button>
             )}
           </div>

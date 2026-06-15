@@ -47,18 +47,18 @@ export default function Catalogo() {
     <main className="catalog-page">
       <section className="catalog-hero">
         <div>
-          <span className="badge">ELANVISUAL Â· Servicios Fabricables</span>
-          <h1>Servicios de rotulaciÃ³n, impresiÃ³n y fabricaciÃ³n visual</h1>
+          <span className="badge">ELANVISUAL - Servicios Fabricables</span>
+          <h1>Servicios de rotulacion, impresion y fabricacion visual</h1>
           <p>
-            SeleccionÃ¡ el servicio que necesitÃ¡s cotizar. Cada opciÃ³n representa
-            una soluciÃ³n producible en taller con materiales reales, medidas
-            verificables e instalaciÃ³n planificada.
+            Selecciona el servicio que necesitas cotizar. Cada opcion representa
+            una solucion producible en taller con materiales reales, medidas
+            verificables e instalacion planificada.
           </p>
         </div>
 
         <aside className="cart-summary-mini">
           <b>Flujo operativo</b>
-          <span>CotizaciÃ³n â†’ OT â†’ ProducciÃ³n</span>
+          <span>Cotizacion â†’ OT â†’ Produccion</span>
           <strong>A cotizar</strong>
         </aside>
       </section>
@@ -67,14 +67,14 @@ export default function Catalogo() {
         <div className="search-box">
           <Search size={18} />
           <input
-            placeholder="Buscar servicio, material, medida o categorÃ­a..."
+            placeholder="Buscar servicio, material, medida o categoria..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </div>
 
         <div className="filter-label">
-          <SlidersHorizontal size={18} /> Filtrar por categorÃ­a
+          <SlidersHorizontal size={18} /> Filtrar por categoria
         </div>
       </section>
 
@@ -126,7 +126,7 @@ export default function Catalogo() {
 
               <div className="measure">
                 <Ruler size={16} />
-                {p.medidas || 'SegÃºn levantamiento tÃ©cnico'}
+                {p.medidas || 'Segun levantamiento tecnico'}
               </div>
 
               <div className="product-footer">
@@ -151,7 +151,7 @@ export default function Catalogo() {
         <section className="panel empty-catalog">
           <h2>No se encontraron servicios</h2>
           <p className="note">
-            ProbÃ¡ con otra categorÃ­a o cambiÃ¡ el texto de bÃºsqueda.
+            Proba con otra categoria o cambia el texto de busqueda.
           </p>
         </section>
       ) : null}

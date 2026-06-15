@@ -111,7 +111,7 @@ export default function Produccion() {
         acc.costo += calculo.costoTotal;
         acc.utilidad += calculo.utilidad;
 
-        if (['Pendiente', 'En proceso', 'ProducciÃ³n', 'FabricaciÃ³n'].includes(item.etapa)) {
+        if (['Pendiente', 'En proceso', 'Produccion', 'Fabricacion'].includes(item.etapa)) {
           acc.activa += 1;
         }
 
@@ -285,8 +285,8 @@ export default function Produccion() {
     <div className="crm-page">
       <div className="crm-page-header">
         <div>
-          <h2>ProducciÃ³n</h2>
-          <p>Control de fabricaciÃ³n con costos reales, utilidad y margen por trabajo.</p>
+          <h2>Produccion</h2>
+          <p>Control de fabricacion con costos reales, utilidad y margen por trabajo.</p>
         </div>
       </div>
 
@@ -308,7 +308,7 @@ export default function Produccion() {
           <strong>{porcentaje(margenGeneral)}</strong>
         </div>
         <div className="crm-stat-card">
-          <span>ProducciÃ³n activa</span>
+          <span>Produccion activa</span>
           <strong>{resumen.activa}</strong>
         </div>
         <div className="crm-stat-card">
@@ -318,7 +318,7 @@ export default function Produccion() {
       </div>
 
       <div className="crm-card">
-        <h3>{editandoId ? 'Editar producciÃ³n' : 'Nueva producciÃ³n'}</h3>
+        <h3>{editandoId ? 'Editar produccion' : 'Nueva produccion'}</h3>
 
         <form onSubmit={guardarProduccion} className="crm-form-grid">
           <label>
@@ -327,15 +327,15 @@ export default function Produccion() {
               <option value="">Sin orden relacionada</option>
               {ordenesTrabajoDisponibles.map((orden) => (
                 <option key={orden.id} value={orden.id}>
-                  {orden.codigo || orden.id} Â· {orden.cliente || orden.empresaNombre || 'Sin cliente'}
+                  {orden.codigo || orden.id} - {orden.cliente || orden.empresaNombre || 'Sin cliente'}
                 </option>
               ))}
             </select>
           </label>
 
           <label>
-            CÃ³digo producciÃ³n
-            <input name="codigo" value={formulario.codigo} onChange={cambiarFormulario} placeholder="AutomÃ¡tico" />
+            Codigo produccion
+            <input name="codigo" value={formulario.codigo} onChange={cambiarFormulario} placeholder="Automatico" />
           </label>
 
           <label>
@@ -392,7 +392,7 @@ export default function Produccion() {
           </label>
 
           <label>
-            InstalaciÃ³n
+            Instalacion
             <input name="costoInstalacion" type="number" step="0.01" value={formulario.costoInstalacion} onChange={cambiarFormulario} />
           </label>
 
@@ -410,10 +410,10 @@ export default function Produccion() {
             Etapa
             <select name="etapa" value={formulario.etapa} onChange={cambiarFormulario}>
               <option value="Pendiente">Pendiente</option>
-              <option value="DiseÃ±o">DiseÃ±o</option>
-              <option value="ProducciÃ³n">ProducciÃ³n</option>
-              <option value="FabricaciÃ³n">FabricaciÃ³n</option>
-              <option value="InstalaciÃ³n">InstalaciÃ³n</option>
+              <option value="Diseno">Diseno</option>
+              <option value="Produccion">Produccion</option>
+              <option value="Fabricacion">Fabricacion</option>
+              <option value="Instalacion">Instalacion</option>
               <option value="Terminada">Terminada</option>
               <option value="Entregada">Entregada</option>
               <option value="Cancelada">Cancelada</option>
@@ -456,7 +456,7 @@ export default function Produccion() {
           </label>
 
           <label className="crm-field-full">
-            Nota de producciÃ³n
+            Nota de produccion
             <textarea name="nota" value={formulario.nota} onChange={cambiarFormulario} />
           </label>
 
@@ -469,10 +469,10 @@ export default function Produccion() {
           </div>
 
           <div className="crm-actions crm-field-full">
-            <button type="submit">{editandoId ? 'Actualizar producciÃ³n' : 'Crear producciÃ³n'}</button>
+            <button type="submit">{editandoId ? 'Actualizar produccion' : 'Crear produccion'}</button>
             {editandoId && (
               <button type="button" onClick={limpiar} className="btn-secondary">
-                Cancelar ediciÃ³n
+                Cancelar edicion
               </button>
             )}
           </div>
@@ -482,13 +482,13 @@ export default function Produccion() {
       <div className="crm-card">
         <div className="crm-page-header">
           <div>
-            <h3>Listado de producciÃ³n</h3>
-            <p>Control real de fabricaciÃ³n y rentabilidad.</p>
+            <h3>Listado de produccion</h3>
+            <p>Control real de fabricacion y rentabilidad.</p>
           </div>
           <input
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            placeholder="Buscar producciÃ³n..."
+            placeholder="Buscar produccion..."
           />
         </div>
 
@@ -496,7 +496,7 @@ export default function Produccion() {
           <table className="crm-table">
             <thead>
               <tr>
-                <th>CÃ³digo</th>
+                <th>Codigo</th>
                 <th>OT</th>
                 <th>Cliente</th>
                 <th>Trabajo</th>
@@ -539,7 +539,7 @@ export default function Produccion() {
 
               {produccionFiltrada.length === 0 && (
                 <tr>
-                  <td colSpan="12">No hay producciÃ³n registrada.</td>
+                  <td colSpan="12">No hay produccion registrada.</td>
                 </tr>
               )}
             </tbody>
@@ -547,7 +547,7 @@ export default function Produccion() {
         </div>
 
         <div className="crm-note">
-          ProducciÃ³n queda conectada con Ã³rdenes de trabajo y ahora controla costo real, utilidad real y margen.
+          Produccion queda conectada con ordenes de trabajo y ahora controla costo real, utilidad real y margen.
         </div>
       </div>
 

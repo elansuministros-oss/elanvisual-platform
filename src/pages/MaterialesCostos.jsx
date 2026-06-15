@@ -22,36 +22,36 @@ const tiposRegistro = [
 const categorias = [
   'Lonas',
   'Viniles Adhesivos',
-  'Viniles + LaminaciÃ³n',
-  'Viniles Alto DesempeÃ±o',
+  'Viniles + Laminacion',
+  'Viniles Alto Desempeno',
   'Otros Materiales',
-  'LÃ¡minas RÃ­gidas + Vinil',
-  'Portabanner + ImpresiÃ³n',
+  'Laminas Rigidas + Vinil',
+  'Portabanner + Impresion',
   'Vinil de Corte',
   'PVC',
-  'AcrÃ­licos',
-  'RotulaciÃ³n',
+  'Acrilicos',
+  'Rotulacion',
   'Accesorios',
   'Mano de Obra',
   'Transporte',
-  'InstalaciÃ³n',
+  'Instalacion',
 ];
 
 const tiposCalculo = [
-  { value: 'm2', label: 'mÂ²' },
+  { value: 'm2', label: 'm²' },
   { value: 'unidad', label: 'Unidad' },
   { value: 'lineal', label: 'Metro lineal' },
   { value: 'compuesto', label: 'Compuesto' },
   { value: 'personalizado', label: 'Personalizado' },
 ];
 
-const tintas = ['Sin impresiÃ³n', 'Solvente', 'UV'];
+const tintas = ['Sin impresion', 'Solvente', 'UV'];
 const protecciones = [
   'Ninguna',
   'Laminado brillante',
   'Laminado mate',
-  'Laminante lÃ­quido UV',
-  'GrÃ¡fica de piso',
+  'Laminante liquido UV',
+  'Grafica de piso',
 ];
 
 const accesoriosBase = [
@@ -200,7 +200,7 @@ export default function MaterialesCostos() {
         <section className="materiales-lock">
           <Lock size={42} />
           <h1>Acceso restringido</h1>
-          <p>Materiales y Costos es exclusivo para administraciÃ³n.</p>
+          <p>Materiales y Costos es exclusivo para administracion.</p>
         </section>
       </main>
     );
@@ -209,11 +209,11 @@ export default function MaterialesCostos() {
   return (
     <main className="materiales-page">
       <section className="materiales-hero">
-        <span>ELANVISUAL Â· AdministraciÃ³n</span>
+        <span>ELANVISUAL - Administracion</span>
         <h1>Material Master V2</h1>
         <p>
-          CatÃ¡logo maestro para productos cotizables, servicios operativos,
-          accesorios automÃ¡ticos, tarifas A/B/C/D e instalaciÃ³n.
+          Catalogo maestro para productos cotizables, servicios operativos,
+          accesorios automaticos, tarifas A/B/C/D e instalacion.
         </p>
       </section>
 
@@ -225,7 +225,7 @@ export default function MaterialesCostos() {
           </div>
 
           <label>
-            DescripciÃ³n
+            Descripcion
             <input
               value={form.descripcion}
               onChange={(e) => actualizar('descripcion', e.target.value)}
@@ -243,7 +243,7 @@ export default function MaterialesCostos() {
             </label>
 
             <label>
-              CategorÃ­a
+              Categoria
               <select value={form.categoria} onChange={(e) => actualizar('categoria', e.target.value)}>
                 {categorias.map((c) => <option key={c}>{c}</option>)}
               </select>
@@ -252,7 +252,7 @@ export default function MaterialesCostos() {
 
           <div className="two">
             <label>
-              SubcategorÃ­a
+              Subcategoria
               <input
                 value={form.subcategoria}
                 onChange={(e) => actualizar('subcategoria', e.target.value)}
@@ -261,7 +261,7 @@ export default function MaterialesCostos() {
             </label>
 
             <label>
-              Tipo cÃ¡lculo
+              Tipo calculo
               <select value={form.tipoCalculo} onChange={(e) => actualizar('tipoCalculo', e.target.value)}>
                 {tiposCalculo.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
@@ -277,7 +277,7 @@ export default function MaterialesCostos() {
             </label>
 
             <label>
-              ProtecciÃ³n
+              Proteccion
               <select value={form.proteccion} onChange={(e) => actualizar('proteccion', e.target.value)}>
                 {protecciones.map((p) => <option key={p}>{p}</option>)}
               </select>
@@ -309,7 +309,7 @@ export default function MaterialesCostos() {
                 checked={form.productoEstandar}
                 onChange={(e) => actualizar('productoEstandar', e.target.checked)}
               />
-              Producto estÃ¡ndar
+              Producto estandar
             </label>
           </div>
 
@@ -343,7 +343,7 @@ export default function MaterialesCostos() {
           </div>
 
           <label>
-            Descuento mÃ¡ximo libre %
+            Descuento maximo libre %
             <input
               type="number"
               step="1"
@@ -369,11 +369,11 @@ export default function MaterialesCostos() {
 
           <div className="two">
             <label>
-              SeparaciÃ³n ojetes / m
+              Separacion ojetes / m
               <input type="number" step="0.01" value={form.separacionOjetes} onChange={(e) => actualizar('separacionOjetes', e.target.value)} />
             </label>
             <label>
-              SeparaciÃ³n bridas / m
+              Separacion bridas / m
               <input type="number" step="0.01" value={form.separacionBridas} onChange={(e) => actualizar('separacionBridas', e.target.value)} />
             </label>
           </div>
@@ -383,14 +383,14 @@ export default function MaterialesCostos() {
             <textarea
               value={form.notas}
               onChange={(e) => actualizar('notas', e.target.value)}
-              placeholder="Reglas, proveedor, observaciones de producciÃ³n..."
+              placeholder="Reglas, proveedor, observaciones de produccion..."
             />
           </label>
 
           <div className="cost-box">
             <strong><Calculator size={18} /> Resumen interno</strong>
             <p>Total con IVA: <b>{money(calculo.totalConIva)}</b></p>
-            <p>Reglas: tubo = 2 Ã— ancho / ojete y bridas por perÃ­metro.</p>
+            <p>Reglas: tubo = 2 Ã— ancho / ojete y bridas por perimetro.</p>
           </div>
 
           <button className="primary-btn" type="submit">
@@ -436,7 +436,7 @@ export default function MaterialesCostos() {
             ))}
 
             {lista.length === 0 && (
-              <div className="empty">No hay registros todavÃ­a.</div>
+              <div className="empty">No hay registros todavia.</div>
             )}
           </div>
         </section>

@@ -168,7 +168,7 @@ export default function ReportesCRM() {
     <div style={styles.page}>
       <div style={styles.header}>
         <h2 style={styles.title}>Reportes Corporativos</h2>
-        <p style={styles.subtitle}>FASE 5.1 Â· Reporte financiero, operativo y fiscal por unidad de negocio.</p>
+        <p style={styles.subtitle}>FASE 5.1 - Reporte financiero, operativo y fiscal por unidad de negocio.</p>
       </div>
 
       <div style={styles.card}>
@@ -186,7 +186,7 @@ export default function ReportesCRM() {
         <div style={styles.stat}><span style={styles.statLabel}>Cuentas por cobrar</span><strong style={styles.statValue}>{moneda(datos.cxcSaldo)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Cuentas por pagar</span><strong style={styles.statValue}>{moneda(datos.cxpSaldo)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Flujo de caja</span><strong style={styles.statValue}>{moneda(datos.flujoNeto)}</strong></div>
-        <div style={styles.stat}><span style={styles.statLabel}>ProducciÃ³n</span><strong style={styles.statValue}>{datos.produccion}</strong></div>
+        <div style={styles.stat}><span style={styles.statLabel}>Produccion</span><strong style={styles.statValue}>{datos.produccion}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Comisiones</span><strong style={styles.statValue}>{moneda(datos.comisionesTotal)}</strong></div>
       </div>
 
@@ -212,7 +212,7 @@ export default function ReportesCRM() {
                 <th style={styles.th}>Cobros</th>
                 <th style={styles.th}>CxC</th>
                 <th style={styles.th}>CxP</th>
-                <th style={styles.th}>ProducciÃ³n</th>
+                <th style={styles.th}>Produccion</th>
                 <th style={styles.th}>Comisiones</th>
                 <th style={styles.th}>Utilidad operativa</th>
               </tr>
@@ -239,7 +239,7 @@ export default function ReportesCRM() {
       <div style={styles.card}>
         <h3>Lectura ejecutiva</h3>
         <p>
-          Este reporte separa el dinero real del control fiscal. Las ventas y compras con IVA alimentan el IVA dÃ©bito y crÃ©dito.
+          Este reporte separa el dinero real del control fiscal. Las ventas y compras con IVA alimentan el IVA debito y credito.
           Los registros sin factura se mantienen visibles como control interno para no perder rentabilidad real.
         </p>
       </div>

@@ -20,7 +20,7 @@ import MediaLibrary from '../components/MediaLibrary';
 
 const nuevoServicioBase = {
   nombre: '',
-  categoria: 'Rotulación',
+  categoria: 'Rotulacin',
   descripcion: '',
   medidas: '',
   imagen: '',
@@ -114,7 +114,7 @@ export default function AdminPanel() {
 
         {lista.length === 0 ? (
           <p className="note">
-            Todavía no hay imágenes cargadas. Subí imágenes desde la pestaña Multimedia.
+            Todava no hay imgenes cargadas. Sub imgenes desde la pestaa Multimedia.
           </p>
         ) : (
           <div className="image-picker-grid">
@@ -153,7 +153,7 @@ export default function AdminPanel() {
   };
 
   const guardarServicio = () => {
-    if (!servicio.nombre.trim()) return alert('Escribí el nombre del servicio.');
+    if (!servicio.nombre.trim()) return alert('Escrib el nombre del servicio.');
 
     const datos = {
       ...servicio,
@@ -171,7 +171,7 @@ export default function AdminPanel() {
   };
 
   const guardarTrabajo = () => {
-    if (!trabajo.titulo.trim()) return alert('Escribí el título del trabajo.');
+    if (!trabajo.titulo.trim()) return alert('Escrib el ttulo del trabajo.');
 
     const datos = {
       ...trabajo,
@@ -188,7 +188,7 @@ export default function AdminPanel() {
   };
 
   const guardarBanner = () => {
-    if (!banner.titulo.trim()) return alert('Escribí el título del banner.');
+    if (!banner.titulo.trim()) return alert('Escrib el ttulo del banner.');
 
     const datos = {
       ...banner,
@@ -210,7 +210,7 @@ export default function AdminPanel() {
   const editarServicio = (p) => {
     setServicio({
       nombre: p.nombre || '',
-      categoria: p.categoria || 'Rotulación',
+      categoria: p.categoria || 'Rotulacin',
       descripcion: p.descripcion || '',
       medidas: p.medidas || '',
       imagen: p.imagen || '',
@@ -264,10 +264,10 @@ export default function AdminPanel() {
     <main>
       <div className="admin-head">
         <div>
-          <span className="badge">ELANVISUAL · Administración</span>
+          <span className="badge">ELANVISUAL  Administracin</span>
           <h1>Panel Operativo ELANVISUAL</h1>
           <p className="note">
-            Administración visual del portal: servicios, portafolio, banners y multimedia.
+            Administracin visual del portal: servicios, portafolio, banners y multimedia.
           </p>
         </div>
       </div>
@@ -316,16 +316,16 @@ export default function AdminPanel() {
           <section className="panel">
             <h2><ClipboardList size={20} /> Flujo operativo vigente</h2>
             <p className="note">
-              Cliente ? Solicitud ? Cotización ? Pedido ? Orden de Trabajo ?
-              Producción ? Instalación ? Entrega ? Cobro ? Comisión.
+              Cliente ? Solicitud ? Cotizacin ? Pedido ? Orden de Trabajo ?
+              Produccin ? Instalacin ? Entrega ? Cobro ? Comisin.
             </p>
           </section>
 
           <section className="panel">
-            <h2><Factory size={20} /> Administración real</h2>
+            <h2><Factory size={20} /> Administracin real</h2>
             <div className="admin-list">
               <article className="admin-row no-image">
-                <div><b>Servicios</b><span>Catálogo público y solicitudes comerciales.</span></div>
+                <div><b>Servicios</b><span>Catlogo pblico y solicitudes comerciales.</span></div>
                 <strong>{productos.length}</strong>
               </article>
               <article className="admin-row no-image">
@@ -333,7 +333,7 @@ export default function AdminPanel() {
                 <strong>{trabajos.length}</strong>
               </article>
               <article className="admin-row no-image">
-                <div><b>Banners</b><span>Portada, catálogo y promociones.</span></div>
+                <div><b>Banners</b><span>Portada, catlogo y promociones.</span></div>
                 <strong>{banners.length}</strong>
               </article>
             </div>
@@ -347,7 +347,7 @@ export default function AdminPanel() {
 
           <div className="form-grid">
             <input placeholder="Nombre del servicio" value={servicio.nombre} onChange={(e) => setServicio({ ...servicio, nombre: e.target.value })} />
-            <input placeholder="Categoría" value={servicio.categoria} onChange={(e) => setServicio({ ...servicio, categoria: e.target.value })} />
+            <input placeholder="Categora" value={servicio.categoria} onChange={(e) => setServicio({ ...servicio, categoria: e.target.value })} />
             <input placeholder="Medidas / referencia" value={servicio.medidas} onChange={(e) => setServicio({ ...servicio, medidas: e.target.value })} />
             <input placeholder="Etiqueta" value={servicio.etiqueta} onChange={(e) => setServicio({ ...servicio, etiqueta: e.target.value })} />
             <input type="number" placeholder="Precio" value={servicio.precio} onChange={(e) => setServicio({ ...servicio, precio: e.target.value })} />
@@ -356,7 +356,7 @@ export default function AdminPanel() {
               <option value="oculto">Oculto</option>
             </select>
             <input className="span-2" placeholder="URL o imagen seleccionada" value={servicio.imagen} onChange={(e) => setServicio({ ...servicio, imagen: e.target.value })} />
-            <textarea className="span-2" placeholder="Descripción técnica" value={servicio.descripcion} onChange={(e) => setServicio({ ...servicio, descripcion: e.target.value })} />
+            <textarea className="span-2" placeholder="Descripcin tcnica" value={servicio.descripcion} onChange={(e) => setServicio({ ...servicio, descripcion: e.target.value })} />
           </div>
 
           <SelectorImagen valor={servicio.imagen} categoriaPreferida="servicio" onPick={(src) => setServicio({ ...servicio, imagen: src })} />
@@ -377,7 +377,7 @@ export default function AdminPanel() {
             {productos.map((p) => (
               <article className="admin-row" key={p.id}>
                 {p.imagen ? <img src={p.imagen} alt={p.nombre} /> : <div className="admin-thumb-empty">IMG</div>}
-                <div><b>{p.nombre}</b><span>{p.categoria} · {p.medidas || 'Medidas por definir'}</span></div>
+                <div><b>{p.nombre}</b><span>{p.categoria}  {p.medidas || 'Medidas por definir'}</span></div>
                 <strong>{p.activo === false ? 'Oculto' : 'Activo'}</strong>
                 <button type="button" onClick={() => editarServicio(p)}><Pencil size={15} /> Editar</button>
                 <button type="button" onClick={() => actualizarProducto({ ...p, activo: p.activo === false })}>
@@ -395,14 +395,14 @@ export default function AdminPanel() {
           <h2><ImagePlus size={20} /> {editandoTrabajoId ? 'Editar trabajo' : 'Portafolio'}</h2>
 
           <div className="form-grid">
-            <input placeholder="Título del trabajo" value={trabajo.titulo} onChange={(e) => setTrabajo({ ...trabajo, titulo: e.target.value })} />
+            <input placeholder="Ttulo del trabajo" value={trabajo.titulo} onChange={(e) => setTrabajo({ ...trabajo, titulo: e.target.value })} />
             <input placeholder="Tipo" value={trabajo.tipo} onChange={(e) => setTrabajo({ ...trabajo, tipo: e.target.value })} />
             <select value={trabajo.activo ? 'activo' : 'oculto'} onChange={(e) => setTrabajo({ ...trabajo, activo: e.target.value === 'activo' })}>
               <option value="activo">Activo</option>
               <option value="oculto">Oculto</option>
             </select>
             <input className="span-2" placeholder="URL o imagen seleccionada" value={trabajo.imagen} onChange={(e) => setTrabajo({ ...trabajo, imagen: e.target.value })} />
-            <textarea className="span-2" placeholder="Descripción del trabajo" value={trabajo.descripcion} onChange={(e) => setTrabajo({ ...trabajo, descripcion: e.target.value })} />
+            <textarea className="span-2" placeholder="Descripcin del trabajo" value={trabajo.descripcion} onChange={(e) => setTrabajo({ ...trabajo, descripcion: e.target.value })} />
           </div>
 
           <SelectorImagen valor={trabajo.imagen} categoriaPreferida="portafolio" onPick={(src) => setTrabajo({ ...trabajo, imagen: src })} />
@@ -423,7 +423,7 @@ export default function AdminPanel() {
             {trabajos.map((t) => (
               <article className="admin-row" key={t.id}>
                 {t.imagen ? <img src={t.imagen} alt={t.titulo} /> : <div className="admin-thumb-empty">IMG</div>}
-                <div><b>{t.titulo}</b><span>{t.tipo} · {t.descripcion}</span></div>
+                <div><b>{t.titulo}</b><span>{t.tipo}  {t.descripcion}</span></div>
                 <strong>{t.activo === false ? 'Oculto' : 'Activo'}</strong>
                 <button type="button" onClick={() => editarTrabajo(t)}><Pencil size={15} /> Editar</button>
                 <button type="button" onClick={() => actualizarTrabajo({ ...t, activo: t.activo === false })}>
@@ -441,10 +441,10 @@ export default function AdminPanel() {
           <h2><ShieldCheck size={20} /> {editandoBannerId ? 'Editar banner' : 'Banners'}</h2>
 
           <div className="form-grid">
-            <input placeholder="Título" value={banner.titulo} onChange={(e) => setBanner({ ...banner, titulo: e.target.value })} />
+            <input placeholder="Ttulo" value={banner.titulo} onChange={(e) => setBanner({ ...banner, titulo: e.target.value })} />
             <select value={banner.ubicacion} onChange={(e) => setBanner({ ...banner, ubicacion: e.target.value })}>
               <option value="hero-principal">Hero principal</option>
-              <option value="catalogo">Catálogo</option>
+              <option value="catalogo">Catlogo</option>
               <option value="home">Home</option>
               <option value="slider-home">Slider Home</option>
             </select>
@@ -452,7 +452,7 @@ export default function AdminPanel() {
               <option value="activo">Activo</option>
               <option value="oculto">Oculto</option>
             </select>
-            <input className="span-2" placeholder="Subtítulo" value={banner.subtitulo} onChange={(e) => setBanner({ ...banner, subtitulo: e.target.value })} />
+            <input className="span-2" placeholder="Subttulo" value={banner.subtitulo} onChange={(e) => setBanner({ ...banner, subtitulo: e.target.value })} />
             <input className="span-2" placeholder="URL o imagen seleccionada" value={banner.imagen} onChange={(e) => setBanner({ ...banner, imagen: e.target.value, imagenRuta: e.target.value, imagenDesktop: e.target.value })} />
             <input className="span-2" placeholder="Imagen Hero Desktop 1920x1080" value={banner.imagenDesktop || ''} onChange={(e) => setBanner({ ...banner, imagenDesktop: e.target.value })} />
             <input className="span-2" placeholder="Imagen Hero Mobile 1080x1920" value={banner.imagenMobile || ''} onChange={(e) => setBanner({ ...banner, imagenMobile: e.target.value })} />
@@ -477,7 +477,7 @@ export default function AdminPanel() {
             {banners.map((b) => (
               <article className="admin-row" key={b.id}>
                 {b.imagen ? <img src={b.imagen} alt={b.titulo} /> : <div className="admin-thumb-empty">IMG</div>}
-                <div><b>{b.titulo}</b><span>{b.ubicacion} · {b.subtitulo}</span></div>
+                <div><b>{b.titulo}</b><span>{b.ubicacion}  {b.subtitulo}</span></div>
                 <strong>{b.activo === false ? 'Oculto' : 'Activo'}</strong>
                 <button type="button" onClick={() => editarBanner(b)}><Pencil size={15} /> Editar</button>
                 <button type="button" onClick={() => duplicarBanner(b)}><Copy size={15} /> Duplicar</button>
@@ -570,7 +570,7 @@ export default function AdminPanel() {
                 <article className="admin-row no-image" key={u.id}>
                   <div>
                     <b>{u.nombre || u.usuario}</b>
-                    <span>{u.usuario} · {u.rol} · {u.activo === false ? 'Inactivo' : 'Activo'}</span>
+                    <span>{u.usuario}  {u.rol}  {u.activo === false ? 'Inactivo' : 'Activo'}</span>
                     {codigo && <small>QR vendedor: {codigo}</small>}
                   </div>
 

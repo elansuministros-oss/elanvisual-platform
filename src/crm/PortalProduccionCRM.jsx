@@ -45,7 +45,7 @@ const grid = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(22
 
 export default function PortalProduccionCRM() {
   const { ordenesTrabajo = [], produccion = [], materiales = [], inventario = [] } = useCore();
-  return <div style={{ padding: 20 }}><h2>Portal ProducciÃ³n</h2><p style={{ color: '#6b7280' }}>Panel operativo para taller, instaladores y supervisores.</p><div style={grid}><div style={tarjeta}><strong>Ã“rdenes</strong><h3>{ordenesTrabajo.length}</h3></div><div style={tarjeta}><strong>Producciones</strong><h3>{produccion.length}</h3></div><div style={tarjeta}><strong>Materiales</strong><h3>{materiales.length}</h3></div><div style={tarjeta}><strong>Inventario</strong><h3>{inventario.length}</h3></div></div></div>;
+  return <div style={{ padding: 20 }}><h2>Portal Produccion</h2><p style={{ color: '#6b7280' }}>Panel operativo para taller, instaladores y supervisores.</p><div style={grid}><div style={tarjeta}><strong>Ã“rdenes</strong><h3>{ordenesTrabajo.length}</h3></div><div style={tarjeta}><strong>Producciones</strong><h3>{produccion.length}</h3></div><div style={tarjeta}><strong>Materiales</strong><h3>{materiales.length}</h3></div><div style={tarjeta}><strong>Inventario</strong><h3>{inventario.length}</h3></div></div></div>;
 }
 
 

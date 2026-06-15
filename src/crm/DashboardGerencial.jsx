@@ -153,7 +153,7 @@ export default function DashboardGerencial() {
     ['Ventas registradas', data.ventas],
     ['Cobros recibidos', data.cobrado],
     ['Compras', data.comprado],
-    ['Costos producciÃ³n', data.costoProduccion],
+    ['Costos produccion', data.costoProduccion],
     ['Cuentas por cobrar', data.cxc],
     ['Cuentas por pagar', data.cxp],
     ['Utilidad estimada', data.utilidad],

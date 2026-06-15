@@ -113,7 +113,7 @@ export default function AuditoriaCRM() {
     }, {});
 
     const porModulo = auditoriaFiltrada.reduce((acc, registro) => {
-      const clave = registro.modulo || 'Sin mÃ³dulo';
+      const clave = registro.modulo || 'Sin modulo';
       acc[clave] = (acc[clave] || 0) + 1;
       return acc;
     }, {});
@@ -153,7 +153,7 @@ export default function AuditoriaCRM() {
 
   const confirmarLimpiar = () => {
     const confirmar = window.confirm(
-      'Â¿DeseÃ¡s limpiar el historial de auditorÃ­a? Esta acciÃ³n dejarÃ¡ registro de limpieza.'
+      '¿Deseas limpiar el historial de auditoria? Esta accion dejara registro de limpieza.'
     );
 
     if (confirmar && typeof limpiarAuditoriaCRM === 'function') {
@@ -435,9 +435,9 @@ export default function AuditoriaCRM() {
 
       <section className="auditoria-header">
         <div>
-          <h2>AuditorÃ­a de Movimientos</h2>
+          <h2>Auditoria de Movimientos</h2>
           <p>
-            Registro interno para saber quiÃ©n creÃ³, editÃ³, eliminÃ³ o cambiÃ³ informaciÃ³n dentro del CRM Central ELANKAV.
+            Registro interno para saber quien creo, edito, elimino o cambio informacion dentro del CRM Central ELANKAV.
           </p>
         </div>
 
@@ -448,7 +448,7 @@ export default function AuditoriaCRM() {
         <div className="auditoria-card">
           <span>Movimientos filtrados</span>
           <strong>{resumen.total}</strong>
-          <small>SegÃºn filtros activos</small>
+          <small>Segun filtros activos</small>
         </div>
 
         <div className="auditoria-card">
@@ -464,21 +464,21 @@ export default function AuditoriaCRM() {
         </div>
 
         <div className="auditoria-card">
-          <span>MÃ³dulos afectados</span>
+          <span>Modulos afectados</span>
           <strong>{resumen.modulosAfectados}</strong>
           <small>Con actividad</small>
         </div>
 
         <div className="auditoria-card">
-          <span>Usuario mÃ¡s activo</span>
+          <span>Usuario mas activo</span>
           <strong style={{ fontSize: 16 }}>{resumen.usuarioMasActivo}</strong>
           <small>Mayor cantidad de registros</small>
         </div>
 
         <div className="auditoria-card">
-          <span>MÃ³dulo mÃ¡s movido</span>
+          <span>Modulo mas movido</span>
           <strong style={{ fontSize: 16 }}>{resumen.moduloMasMovido}</strong>
-          <small>MÃ¡s acciones registradas</small>
+          <small>Mas acciones registradas</small>
         </div>
       </section>
 
@@ -509,7 +509,7 @@ export default function AuditoriaCRM() {
           </div>
 
           <div className="auditoria-field">
-            <label>MÃ³dulo</label>
+            <label>Modulo</label>
             <select name="modulo" value={filtros.modulo} onChange={cambiarFiltro}>
               <option value="">Todos</option>
               {modulosDisponibles.map((modulo) => (
@@ -521,7 +521,7 @@ export default function AuditoriaCRM() {
           </div>
 
           <div className="auditoria-field">
-            <label>AcciÃ³n</label>
+            <label>Accion</label>
             <select name="accion" value={filtros.accion} onChange={cambiarFiltro}>
               <option value="">Todas</option>
               {accionesDisponibles.map((accion) => (
@@ -539,7 +539,7 @@ export default function AuditoriaCRM() {
               name="texto"
               value={filtros.texto}
               onChange={cambiarFiltro}
-              placeholder="Usuario, mÃ³dulo, detalle..."
+              placeholder="Usuario, modulo, detalle..."
             />
           </div>
         </div>
@@ -550,7 +550,7 @@ export default function AuditoriaCRM() {
           </button>
 
           <button type="button" className="auditoria-btn danger" onClick={confirmarLimpiar}>
-            Limpiar auditorÃ­a
+            Limpiar auditoria
           </button>
         </div>
       </section>
@@ -566,8 +566,8 @@ export default function AuditoriaCRM() {
                 <th>Usuario</th>
                 <th>Rol</th>
                 <th>Unidad</th>
-                <th>MÃ³dulo</th>
-                <th>AcciÃ³n</th>
+                <th>Modulo</th>
+                <th>Accion</th>
                 <th>Detalle</th>
                 <th>Entidad</th>
               </tr>

@@ -146,7 +146,7 @@ export default function Pedidos() {
 
         <div className="form-grid">
           <label>
-            CÃ³digo
+            Codigo
             <input
               name="codigo"
               value={form.codigo}
@@ -166,12 +166,12 @@ export default function Pedidos() {
           </label>
 
           <label>
-            TelÃ©fono / WhatsApp
+            Telefono / WhatsApp
             <input
               name="telefono"
               value={form.telefono}
               onChange={cambiar}
-              placeholder="NÃºmero de contacto"
+              placeholder="Numero de contacto"
             />
           </label>
 
@@ -223,7 +223,7 @@ export default function Pedidos() {
             <select name="estado" value={form.estado} onChange={cambiar}>
               <option>Pendiente</option>
               <option>Confirmado</option>
-              <option>En producciÃ³n</option>
+              <option>En produccion</option>
               <option>Listo</option>
               <option>Entregado</option>
               <option>Cancelado</option>
@@ -259,7 +259,7 @@ export default function Pedidos() {
 
           {editandoId && (
             <button type="button" onClick={limpiar} className="btn-secundario">
-              Cancelar ediciÃ³n
+              Cancelar edicion
             </button>
           )}
         </div>
@@ -269,7 +269,7 @@ export default function Pedidos() {
         <table className="crm-table">
           <thead>
             <tr>
-              <th>CÃ³digo</th>
+              <th>Codigo</th>
               <th>Cliente</th>
               <th>Producto</th>
               <th>Total</th>

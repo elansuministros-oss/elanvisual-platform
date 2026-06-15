@@ -69,7 +69,7 @@ const inicial = {
   factura: '',
   unidadNegocio: 'ELANVISUAL',
   tipoFiscal: 'Con IVA',
-  facturaFiscal: 'SÃ­',
+  facturaFiscal: 'Si',
   retencionPorcentaje: '',
   subtotal: '',
   iva: '',
@@ -96,7 +96,7 @@ export default function Cobros() {
     const cobrado = numero(base.montoCobrado);
     return {
       ...base,
-      facturaFiscal: base.tipoFiscal === 'Con IVA' ? 'SÃ­' : base.facturaFiscal,
+      facturaFiscal: base.tipoFiscal === 'Con IVA' ? 'Si' : base.facturaFiscal,
       subtotal: fiscal.subtotal.toFixed(2),
       iva: fiscal.iva.toFixed(2),
       retencionMonto: fiscal.retencion.toFixed(2),
@@ -127,7 +127,7 @@ export default function Cobros() {
       factura: form.factura.trim(),
       unidadNegocio: form.unidadNegocio || 'ELANVISUAL',
       tipoFiscal: form.tipoFiscal || 'Con IVA',
-      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'SÃ­' : form.facturaFiscal || 'No',
+      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'Si' : form.facturaFiscal || 'No',
       subtotal: fiscal.subtotal,
       iva: fiscal.iva,
       ivaDebito: form.tipoFiscal === 'Con IVA' ? fiscal.iva : 0,
@@ -159,7 +159,7 @@ export default function Cobros() {
       factura: item.factura || '',
       unidadNegocio: item.unidadNegocio || 'ELANVISUAL',
       tipoFiscal: item.tipoFiscal || (numero(item.ivaDebito || item.iva) > 0 ? 'Con IVA' : 'Sin factura'),
-      facturaFiscal: item.facturaFiscal || (numero(item.ivaDebito || item.iva) > 0 ? 'SÃ­' : 'No'),
+      facturaFiscal: item.facturaFiscal || (numero(item.ivaDebito || item.iva) > 0 ? 'Si' : 'No'),
       retencionPorcentaje: String(item.retencionPorcentaje || ''),
       subtotal: String(item.subtotal || ''),
       iva: String(item.ivaDebito || item.iva || ''),
@@ -188,11 +188,11 @@ export default function Cobros() {
 
   return (
     <div style={styles.page}>
-      <div style={styles.header}><h2 style={styles.title}>Cobros</h2><p style={styles.subtitle}>Ventas y cobros con IVA dÃ©bito, retenciÃ³n y control de ingresos sin factura.</p></div>
+      <div style={styles.header}><h2 style={styles.title}>Cobros</h2><p style={styles.subtitle}>Ventas y cobros con IVA debito, retencion y control de ingresos sin factura.</p></div>
       <div style={styles.stats}>
         <div style={styles.stat}><span style={styles.statLabel}>Facturado</span><strong style={styles.statValue}>{moneda(resumen.facturado)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Cobrado</span><strong style={styles.statValue}>{moneda(resumen.cobrado)}</strong></div>
-        <div style={styles.stat}><span style={styles.statLabel}>IVA dÃ©bito</span><strong style={styles.statValue}>{moneda(resumen.ivaDebito)}</strong></div>
+        <div style={styles.stat}><span style={styles.statLabel}>IVA debito</span><strong style={styles.statValue}>{moneda(resumen.ivaDebito)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Retenciones</span><strong style={styles.statValue}>{moneda(resumen.retenciones)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Sin factura</span><strong style={styles.statValue}>{moneda(resumen.sinFactura)}</strong></div>
         <div style={styles.stat}><span style={styles.statLabel}>Saldo pendiente</span><strong style={styles.statValue}>{moneda(resumen.saldo)}</strong></div>
@@ -200,22 +200,22 @@ export default function Cobros() {
 
       <form style={styles.card} onSubmit={guardar}>
         <div style={styles.grid}>
-          <label style={styles.label}>CÃ³digo<input style={styles.input} name="codigo" value={form.codigo} onChange={cambiar} /></label>
+          <label style={styles.label}>Codigo<input style={styles.input} name="codigo" value={form.codigo} onChange={cambiar} /></label>
           <label style={styles.label}>Cliente<input style={styles.input} name="cliente" value={form.cliente} onChange={cambiar} /></label>
           <label style={styles.label}>Empresa<input style={styles.input} name="empresa" value={form.empresa} onChange={cambiar} /></label>
           <label style={styles.label}>Factura<input style={styles.input} name="factura" value={form.factura} onChange={cambiar} /></label>
           <label style={styles.label}>Unidad<select style={styles.select} name="unidadNegocio" value={form.unidadNegocio} onChange={cambiar}>{UNIDADES_NEGOCIO.map((u) => <option key={u} value={u}>{u}</option>)}</select></label>
           <label style={styles.label}>Tipo fiscal<select style={styles.select} name="tipoFiscal" value={form.tipoFiscal} onChange={cambiar}>{TIPOS_FISCALES.map((t) => <option key={t} value={t}>{t}</option>)}</select></label>
-          <label style={styles.label}>Factura fiscal<select style={styles.select} name="facturaFiscal" value={form.facturaFiscal} onChange={cambiar}><option>SÃ­</option><option>No</option></select></label>
-          <label style={styles.label}>RetenciÃ³n %<input style={styles.input} type="number" step="0.01" name="retencionPorcentaje" value={form.retencionPorcentaje} onChange={cambiar} /></label>
+          <label style={styles.label}>Factura fiscal<select style={styles.select} name="facturaFiscal" value={form.facturaFiscal} onChange={cambiar}><option>Si</option><option>No</option></select></label>
+          <label style={styles.label}>Retencion %<input style={styles.input} type="number" step="0.01" name="retencionPorcentaje" value={form.retencionPorcentaje} onChange={cambiar} /></label>
           <label style={styles.label}>Total factura<input style={styles.input} type="number" step="0.01" name="montoFactura" value={form.montoFactura} onChange={cambiar} /></label>
           <label style={styles.label}>Subtotal<input style={styles.input} type="number" step="0.01" name="subtotal" value={form.subtotal} readOnly /></label>
           <label style={styles.label}>IVA<input style={styles.input} type="number" step="0.01" name="iva" value={form.iva} readOnly /></label>
           <label style={styles.label}>Monto cobrado<input style={styles.input} type="number" step="0.01" name="montoCobrado" value={form.montoCobrado} onChange={cambiar} /></label>
-          <label style={styles.label}>RetenciÃ³n monto<input style={styles.input} type="number" step="0.01" name="retencionMonto" value={form.retencionMonto} readOnly /></label>
+          <label style={styles.label}>Retencion monto<input style={styles.input} type="number" step="0.01" name="retencionMonto" value={form.retencionMonto} readOnly /></label>
           <label style={styles.label}>Neto estimado<input style={styles.input} type="number" step="0.01" name="netoRecibido" value={form.netoRecibido} readOnly /></label>
           <label style={styles.label}>Saldo<input style={styles.input} type="number" step="0.01" name="saldoPendiente" value={form.saldoPendiente} readOnly /></label>
-          <label style={styles.label}>MÃ©todo<select style={styles.select} name="metodoPago" value={form.metodoPago} onChange={cambiar}>{METODOS.map((m) => <option key={m} value={m}>{m}</option>)}</select></label>
+          <label style={styles.label}>Metodo<select style={styles.select} name="metodoPago" value={form.metodoPago} onChange={cambiar}>{METODOS.map((m) => <option key={m} value={m}>{m}</option>)}</select></label>
           <label style={styles.label}>Estado<select style={styles.select} name="estado" value={form.estado} onChange={cambiar}>{ESTADOS.map((e) => <option key={e} value={e}>{e}</option>)}</select></label>
           <label style={styles.label}>Fecha<input style={styles.input} type="date" name="fechaCobro" value={form.fechaCobro} onChange={cambiar} /></label>
         </div>
@@ -224,7 +224,7 @@ export default function Cobros() {
       </form>
 
       <div style={styles.card}><div style={styles.tableWrap}><table style={styles.table}>
-        <thead><tr><th style={styles.th}>Fecha</th><th style={styles.th}>CÃ³digo</th><th style={styles.th}>Cliente/Empresa</th><th style={styles.th}>Unidad</th><th style={styles.th}>Fiscal</th><th style={styles.th}>Factura</th><th style={styles.th}>Cobrado</th><th style={styles.th}>IVA</th><th style={styles.th}>RetenciÃ³n</th><th style={styles.th}>Saldo</th><th style={styles.th}>Estado</th><th style={styles.th}>Acciones</th></tr></thead>
+        <thead><tr><th style={styles.th}>Fecha</th><th style={styles.th}>Codigo</th><th style={styles.th}>Cliente/Empresa</th><th style={styles.th}>Unidad</th><th style={styles.th}>Fiscal</th><th style={styles.th}>Factura</th><th style={styles.th}>Cobrado</th><th style={styles.th}>IVA</th><th style={styles.th}>Retencion</th><th style={styles.th}>Saldo</th><th style={styles.th}>Estado</th><th style={styles.th}>Acciones</th></tr></thead>
         <tbody>{cobros.map((item) => <tr key={item.id}>
           <td style={styles.td}>{item.fechaCobro}</td><td style={styles.td}>{item.codigo}</td><td style={styles.td}>{item.cliente || item.empresa}</td><td style={styles.td}>{item.unidadNegocio}</td><td style={styles.td}><span style={styles.badge}>{item.tipoFiscal || 'Sin clasificar'}</span></td><td style={styles.td}>{moneda(item.montoFactura)}</td><td style={styles.td}>{moneda(item.montoCobrado)}</td><td style={styles.td}>{moneda(item.ivaDebito || item.iva)}</td><td style={styles.td}>{moneda(item.retencionMonto)}</td><td style={styles.td}>{moneda(item.saldoPendiente)}</td><td style={styles.td}>{item.estado}</td><td style={styles.td}><button style={styles.edit} type="button" onClick={() => editar(item)}>Editar</button> <button style={styles.danger} type="button" onClick={() => eliminarCobro(item.id)}>Eliminar</button></td>
         </tr>)}</tbody>

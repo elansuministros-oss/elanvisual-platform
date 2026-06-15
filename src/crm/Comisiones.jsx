@@ -166,11 +166,11 @@ export default function Comisiones() {
       </div>
 
       <form className="crm-form" onSubmit={guardar}>
-        <h3>{editandoId ? 'Editar comisiÃ³n' : 'Nueva comisiÃ³n'}</h3>
+        <h3>{editandoId ? 'Editar comision' : 'Nueva comision'}</h3>
 
         <div className="form-grid">
           <label>
-            CÃ³digo
+            Codigo
             <input
               name="codigo"
               value={form.codigo}
@@ -237,7 +237,7 @@ export default function Comisiones() {
           </label>
 
           <label>
-            ComisiÃ³n
+            Comision
             <input
               type="number"
               name="comision"
@@ -282,7 +282,7 @@ export default function Comisiones() {
 
         <div className="form-actions">
           <button type="submit">
-            {editandoId ? 'Actualizar comisiÃ³n' : 'Guardar comisiÃ³n'}
+            {editandoId ? 'Actualizar comision' : 'Guardar comision'}
           </button>
 
           {editandoId && (
@@ -291,7 +291,7 @@ export default function Comisiones() {
               onClick={limpiar}
               className="btn-secundario"
             >
-              Cancelar ediciÃ³n
+              Cancelar edicion
             </button>
           )}
         </div>
@@ -301,12 +301,12 @@ export default function Comisiones() {
         <table className="crm-table">
           <thead>
             <tr>
-              <th>CÃ³digo</th>
+              <th>Codigo</th>
               <th>Vendedor</th>
               <th>Cliente</th>
               <th>Venta</th>
               <th>%</th>
-              <th>ComisiÃ³n</th>
+              <th>Comision</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>

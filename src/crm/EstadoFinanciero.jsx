@@ -317,7 +317,7 @@ export default function EstadoFinanciero() {
   const saludFinanciera = (() => {
     if (datos.totales.liquidez >= 1.5 && datos.totales.rentabilidad >= 20 && datos.totales.endeudamiento <= 40) return 'Salud financiera fuerte';
     if (datos.totales.liquidez >= 1 && datos.totales.rentabilidad >= 0 && datos.totales.endeudamiento <= 70) return 'Salud financiera estable';
-    return 'Requiere atenciÃ³n financiera';
+    return 'Requiere atencion financiera';
   })();
 
   return (
@@ -325,7 +325,7 @@ export default function EstadoFinanciero() {
       <section style={styles.header}>
         <h2 style={styles.title}>Estado Financiero Corporativo</h2>
         <p style={styles.subtitle}>
-          FASE 6.5 estabilizada Â· Activos, pasivos, utilidad, liquidez, endeudamiento y rentabilidad por unidad.
+          FASE 6.5 estabilizada - Activos, pasivos, utilidad, liquidez, endeudamiento y rentabilidad por unidad.
         </p>
       </section>
 
@@ -372,7 +372,7 @@ export default function EstadoFinanciero() {
           <h3 style={{ marginTop: 0 }}>Lectura ejecutiva</h3>
           <p style={styles.muted}><strong>Salud:</strong> {saludFinanciera}</p>
           <p style={styles.muted}>Liquidez superior a 1 indica capacidad para cubrir obligaciones corrientes con activos corrientes registrados.</p>
-          <p style={styles.muted}>Endeudamiento alto indica presiÃ³n de cuentas por pagar frente a la caja, cobros y cuentas por cobrar.</p>
+          <p style={styles.muted}>Endeudamiento alto indica presion de cuentas por pagar frente a la caja, cobros y cuentas por cobrar.</p>
         </div>
 
         <div style={styles.card}>

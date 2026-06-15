@@ -10,13 +10,13 @@ const unidadesNegocio = [
 ];
 
 const categoriasProveedor = [
-  'Materiales de rotulaciÃ³n',
-  'ImpresiÃ³n y acabados',
-  'CNC / LÃ¡ser',
-  'AcrÃ­licos / PVC',
-  'FerreterÃ­a',
-  'TecnologÃ­a',
-  'EnergÃ­a solar',
+  'Materiales de rotulacion',
+  'Impresion y acabados',
+  'CNC / Laser',
+  'Acrilicos / PVC',
+  'Ferreteria',
+  'Tecnologia',
+  'Energia solar',
   'Transporte',
   'Servicios profesionales',
   'Otro',
@@ -40,7 +40,7 @@ export default function Proveedores() {
     whatsapp: '',
     correo: '',
     direccion: '',
-    categoria: 'Materiales de rotulaciÃ³n',
+    categoria: 'Materiales de rotulacion',
     unidadNegocio: 'ELANVISUAL',
     estado: 'Activo',
     condicionesPago: 'Contado',
@@ -61,7 +61,7 @@ export default function Proveedores() {
       whatsapp: '',
       correo: '',
       direccion: '',
-      categoria: 'Materiales de rotulaciÃ³n',
+      categoria: 'Materiales de rotulacion',
       unidadNegocio: 'ELANVISUAL',
       estado: 'Activo',
       condicionesPago: 'Contado',
@@ -110,7 +110,7 @@ export default function Proveedores() {
       whatsapp: item.whatsapp || '',
       correo: item.correo || '',
       direccion: item.direccion || '',
-      categoria: item.categoria || 'Materiales de rotulaciÃ³n',
+      categoria: item.categoria || 'Materiales de rotulacion',
       unidadNegocio: item.unidadNegocio || 'ELANVISUAL',
       estado: item.estado || 'Activo',
       condicionesPago: item.condicionesPago || 'Contado',
@@ -126,7 +126,7 @@ export default function Proveedores() {
   const resumen = useMemo(() => {
     const activos = proveedores.filter((item) => item.estado === 'Activo').length;
     const inactivos = proveedores.filter((item) => item.estado === 'Inactivo').length;
-    const credito = proveedores.filter((item) => item.condicionesPago === 'CrÃ©dito').length;
+    const credito = proveedores.filter((item) => item.condicionesPago === 'Credito').length;
     const visual = proveedores.filter(
       (item) => item.unidadNegocio === 'ELANVISUAL'
     ).length;
@@ -161,7 +161,7 @@ export default function Proveedores() {
         </div>
 
         <div className="crm-card">
-          <span>CrÃ©dito</span>
+          <span>Credito</span>
           <strong>{resumen.credito}</strong>
         </div>
 
@@ -176,7 +176,7 @@ export default function Proveedores() {
 
         <div className="form-grid">
           <label>
-            CÃ³digo
+            Codigo
             <input
               name="codigo"
               value={form.codigo}
@@ -191,7 +191,7 @@ export default function Proveedores() {
               name="nombre"
               value={form.nombre}
               onChange={cambiar}
-              placeholder="Nombre comercial o razÃ³n social"
+              placeholder="Nombre comercial o razon social"
             />
           </label>
 
@@ -201,7 +201,7 @@ export default function Proveedores() {
               name="ruc"
               value={form.ruc}
               onChange={cambiar}
-              placeholder="NÃºmero RUC"
+              placeholder="Numero RUC"
             />
           </label>
 
@@ -216,12 +216,12 @@ export default function Proveedores() {
           </label>
 
           <label>
-            WhatsApp / TelÃ©fono
+            WhatsApp / Telefono
             <input
               name="whatsapp"
               value={form.whatsapp}
               onChange={cambiar}
-              placeholder="NÃºmero de contacto"
+              placeholder="Numero de contacto"
             />
           </label>
 
@@ -237,7 +237,7 @@ export default function Proveedores() {
           </label>
 
           <label>
-            CategorÃ­a
+            Categoria
             <select name="categoria" value={form.categoria} onChange={cambiar}>
               {categoriasProveedor.map((categoria) => (
                 <option key={categoria}>{categoria}</option>
@@ -259,14 +259,14 @@ export default function Proveedores() {
           </label>
 
           <label>
-            CondiciÃ³n de pago
+            Condicion de pago
             <select
               name="condicionesPago"
               value={form.condicionesPago}
               onChange={cambiar}
             >
               <option>Contado</option>
-              <option>CrÃ©dito</option>
+              <option>Credito</option>
               <option>Transferencia</option>
               <option>Contra entrega</option>
               <option>Otro</option>
@@ -283,12 +283,12 @@ export default function Proveedores() {
           </label>
 
           <label className="form-full">
-            DirecciÃ³n
+            Direccion
             <input
               name="direccion"
               value={form.direccion}
               onChange={cambiar}
-              placeholder="DirecciÃ³n fÃ­sica o punto de referencia"
+              placeholder="Direccion fisica o punto de referencia"
             />
           </label>
 
@@ -311,7 +311,7 @@ export default function Proveedores() {
 
           {editandoId && (
             <button type="button" className="secondary" onClick={limpiar}>
-              Cancelar ediciÃ³n
+              Cancelar edicion
             </button>
           )}
         </div>
@@ -321,11 +321,11 @@ export default function Proveedores() {
         <table className="crm-table">
           <thead>
             <tr>
-              <th>CÃ³digo</th>
+              <th>Codigo</th>
               <th>Proveedor</th>
               <th>Contacto</th>
               <th>WhatsApp</th>
-              <th>CategorÃ­a</th>
+              <th>Categoria</th>
               <th>Unidad</th>
               <th>Pago</th>
               <th>Estado</th>

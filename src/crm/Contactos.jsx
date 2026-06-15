@@ -47,7 +47,7 @@ export default function Contactos() {
     e.preventDefault();
 
     if (!form.nombre.trim()) {
-      alert('DebÃ©s ingresar el nombre del contacto.');
+      alert('Debes ingresar el nombre del contacto.');
       return;
     }
 
@@ -87,7 +87,7 @@ export default function Contactos() {
 
   const confirmarEliminarContacto = (id) => {
     const confirmar = window.confirm(
-      'Â¿Seguro que querÃ©s eliminar este contacto?'
+      '¿Seguro que queres eliminar este contacto?'
     );
 
     if (!confirmar) return;
@@ -169,7 +169,7 @@ export default function Contactos() {
             Nombre del contacto
             <input
               name="nombre"
-              placeholder="Ej: Carlos LÃ³pez"
+              placeholder="Ej: Carlos Lopez"
               value={form.nombre}
               onChange={cambiar}
             />
@@ -245,7 +245,7 @@ export default function Contactos() {
 
             {editandoId && (
               <button type="button" onClick={limpiarFormulario}>
-                Cancelar ediciÃ³n
+                Cancelar edicion
               </button>
             )}
           </div>

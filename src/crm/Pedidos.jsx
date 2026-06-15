@@ -140,12 +140,12 @@ export default function Pedidos() {
     e.preventDefault();
 
     if (!form.cotizacionId && !form.cliente.trim()) {
-      alert('DebÃ©s seleccionar una cotizaciÃ³n o indicar un cliente.');
+      alert('Debes seleccionar una cotizacion o indicar un cliente.');
       return;
     }
 
     if (!form.producto.trim()) {
-      alert('DebÃ©s indicar el producto o trabajo del pedido.');
+      alert('Debes indicar el producto o trabajo del pedido.');
       return;
     }
 
@@ -227,7 +227,7 @@ export default function Pedidos() {
   };
 
   const eliminar = (id) => {
-    const confirmar = window.confirm('Â¿Seguro que querÃ©s eliminar este pedido?');
+    const confirmar = window.confirm('¿Seguro que queres eliminar este pedido?');
     if (!confirmar) return;
 
     eliminarPedido(id);
@@ -289,23 +289,23 @@ export default function Pedidos() {
 
         <div className="form-grid">
           <label>
-            CotizaciÃ³n
+            Cotizacion
             <select
               name="cotizacionId"
               value={form.cotizacionId}
               onChange={cambiar}
             >
-              <option value="">Seleccionar cotizaciÃ³n</option>
+              <option value="">Seleccionar cotizacion</option>
               {cotizacionesDisponibles.map((cotizacion) => (
                 <option key={cotizacion.id} value={cotizacion.id}>
-                  {cotizacion.codigo || 'Sin cÃ³digo'} - {obtenerEmpresaNombre(cotizacion) || 'Sin empresa'} - C$ {Number(cotizacion.total || 0).toFixed(2)}
+                  {cotizacion.codigo || 'Sin codigo'} - {obtenerEmpresaNombre(cotizacion) || 'Sin empresa'} - C$ {Number(cotizacion.total || 0).toFixed(2)}
                 </option>
               ))}
             </select>
           </label>
 
           <label>
-            CÃ³digo pedido
+            Codigo pedido
             <input
               name="codigo"
               value={form.codigo}
@@ -320,7 +320,7 @@ export default function Pedidos() {
               name="cliente"
               value={form.cliente}
               onChange={cambiar}
-              placeholder="Se completa desde la cotizaciÃ³n"
+              placeholder="Se completa desde la cotizacion"
               readOnly={Boolean(form.cotizacionId)}
             />
           </label>
@@ -349,12 +349,12 @@ export default function Pedidos() {
           </label>
 
           <label>
-            TelÃ©fono / WhatsApp
+            Telefono / WhatsApp
             <input
               name="telefono"
               value={form.telefono}
               onChange={cambiar}
-              placeholder="NÃºmero de contacto"
+              placeholder="Numero de contacto"
             />
           </label>
 
@@ -406,7 +406,7 @@ export default function Pedidos() {
             <select name="estado" value={form.estado} onChange={cambiar}>
               <option>Pendiente</option>
               <option>Aprobado</option>
-              <option>ProducciÃ³n</option>
+              <option>Produccion</option>
               <option>Entregado</option>
               <option>Cancelado</option>
             </select>
@@ -441,7 +441,7 @@ export default function Pedidos() {
 
           {editandoId && (
             <button type="button" onClick={limpiar} className="btn-secundario">
-              Cancelar ediciÃ³n
+              Cancelar edicion
             </button>
           )}
         </div>
@@ -451,8 +451,8 @@ export default function Pedidos() {
         <table className="crm-table">
           <thead>
             <tr>
-              <th>CÃ³digo</th>
-              <th>CotizaciÃ³n</th>
+              <th>Codigo</th>
+              <th>Cotizacion</th>
               <th>Empresa / Contacto</th>
               <th>Producto</th>
               <th>Unidad</th>

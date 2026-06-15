@@ -2,7 +2,7 @@
 import { useCore } from '../core/context/CoreContext';
 
 const CATEGORIAS = [
-  'AcrÃ­lico',
+  'Acrilico',
   'PVC',
   'Vinil',
   'Lona',
@@ -15,7 +15,7 @@ const CATEGORIAS = [
   'Otro',
 ];
 
-const UNIDADES = ['LÃ¡mina', 'Rollo', 'Metro', 'Metro cuadrado', 'Unidad', 'GalÃ³n', 'Caja'];
+const UNIDADES = ['Lamina', 'Rollo', 'Metro', 'Metro cuadrado', 'Unidad', 'Galon', 'Caja'];
 const MONEDAS = ['C$', 'USD'];
 
 const numero = (valor) => Number(valor || 0);
@@ -33,11 +33,11 @@ const dinero = (valor, moneda = 'C$') => {
 const formInicial = () => ({
   codigo: '',
   nombre: '',
-  categoria: 'AcrÃ­lico',
+  categoria: 'Acrilico',
   tipo: '',
   espesor: '',
   medida: '',
-  unidad: 'LÃ¡mina',
+  unidad: 'Lamina',
   costo: '',
   costoPromedio: '',
   moneda: 'C$',
@@ -183,7 +183,7 @@ export default function Materiales() {
       <div className="crm-page-header">
         <div>
           <h2>Materiales</h2>
-          <p>Base tÃ©cnica para costos de producciÃ³n, rendimiento y control de stock.</p>
+          <p>Base tecnica para costos de produccion, rendimiento y control de stock.</p>
         </div>
       </div>
 
@@ -207,8 +207,8 @@ export default function Materiales() {
 
         <form onSubmit={guardar} className="crm-form-grid">
           <label>
-            CÃ³digo
-            <input name="codigo" value={form.codigo} onChange={cambiar} placeholder="AutomÃ¡tico" />
+            Codigo
+            <input name="codigo" value={form.codigo} onChange={cambiar} placeholder="Automatico" />
           </label>
 
           <label>
@@ -217,7 +217,7 @@ export default function Materiales() {
           </label>
 
           <label>
-            CategorÃ­a
+            Categoria
             <select name="categoria" value={form.categoria} onChange={cambiar}>
               {CATEGORIAS.map((categoria) => (
                 <option key={categoria} value={categoria}>{categoria}</option>
@@ -284,7 +284,7 @@ export default function Materiales() {
           </label>
 
           <label>
-            Stock mÃ­nimo
+            Stock minimo
             <input name="stockMinimo" type="number" step="0.01" value={form.stockMinimo} onChange={cambiar} />
           </label>
 
@@ -314,7 +314,7 @@ export default function Materiales() {
           </label>
 
           <div className="crm-field-full crm-cost-box">
-            <strong>Resumen tÃ©cnico</strong>
+            <strong>Resumen tecnico</strong>
             <span>Valor stock: {dinero(numero(form.stock) * numero(form.costoPromedio || form.costo), form.moneda)}</span>
             <span>Costo por unidad de uso: {dinero(form.costoPorUnidadUso, form.moneda)}</span>
           </div>
@@ -323,7 +323,7 @@ export default function Materiales() {
             <button type="submit">{editandoId ? 'Actualizar material' : 'Crear material'}</button>
             {editandoId && (
               <button type="button" onClick={limpiar} className="btn-secondary">
-                Cancelar ediciÃ³n
+                Cancelar edicion
               </button>
             )}
           </div>
@@ -334,7 +334,7 @@ export default function Materiales() {
         <div className="crm-page-header">
           <div>
             <h3>Listado de materiales</h3>
-            <p>Costos base para presupuestos y producciÃ³n.</p>
+            <p>Costos base para presupuestos y produccion.</p>
           </div>
           <input
             value={busqueda}
@@ -347,9 +347,9 @@ export default function Materiales() {
           <table className="crm-table">
             <thead>
               <tr>
-                <th>CÃ³digo</th>
+                <th>Codigo</th>
                 <th>Material</th>
-                <th>CategorÃ­a</th>
+                <th>Categoria</th>
                 <th>Medida</th>
                 <th>Stock</th>
                 <th>Costo</th>
@@ -371,7 +371,7 @@ export default function Materiales() {
                     <td>
                       <strong>{item.nombre}</strong>
                       <br />
-                      <small>{item.tipo || 'Sin tipo'} Â· {item.espesor || 'Sin espesor'}</small>
+                      <small>{item.tipo || 'Sin tipo'} - {item.espesor || 'Sin espesor'}</small>
                     </td>
                     <td>{item.categoria}</td>
                     <td>{item.medida || '-'}</td>
