@@ -1608,6 +1608,27 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
     );
   };
 
+  const actualizarInventarioReal = (itemActualizado) => {
+    setInventarioReal((prev) =>
+      prev.map((item) =>
+        item.id === itemActualizado.id
+          ? {
+              ...item,
+              ...itemActualizado,
+              ancho: Number(itemActualizado.ancho || 0),
+              largo: Number(itemActualizado.largo || 0),
+              cantidad: Number(itemActualizado.cantidad || 1),
+              costoCompra: Number(itemActualizado.costoCompra || 0),
+              costoDisponible: Number(
+                itemActualizado.costoDisponible ?? itemActualizado.costoCompra ?? 0
+              ),
+              actualizadoEn: new Date().toISOString(),
+            }
+          : item
+      )
+    );
+  };
+
   const eliminarInventarioReal = (id) => setInventarioReal((prev) => prev.filter((i) => i.id !== id));
 
   const reservarInventarioReal = ({ id, ancho, largo, cantidad = 1, ot = '', nota = '' }) => {
@@ -2029,6 +2050,12 @@ const generarComisionAutomatica = ({
         eliminarInventarioReal,
         reservarInventarioReal,
         consumirInventarioReal,
+        liberarReservainventarioReal,
+        crearInventarioReal,
+        actualizarInventarioReal,
+        eliminarInventarioReal,
+        reservarInventarioReal,
+        consumirInventarioReal,
         liberarReservaInventarioReal,
 
         costosReales,
@@ -2052,6 +2079,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
