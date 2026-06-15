@@ -422,19 +422,15 @@ export default function MaterialesCostos() {
               <article className="material-row" key={m.id}>
                 <div>
                   <h3>{m.descripcion}</h3>
-                  <p>{m.tipoRegistro} · {m.categoria} · {m.subcategoria || 'Sin subcategoría'}</p>
-                  <p>{m.tinta} · {m.proteccion}</p>
+                  <p>{m.categoria} � {m.subcategoria || 'General'}</p>
+                  
                   <div className="price-tags">
                     <span>A {money(m.tarifaA)}</span>
                     <span>B {money(m.tarifaB)}</span>
                     <span>C {money(m.tarifaC)}</span>
                     <span>D {money(m.tarifaD)}</span>
                   </div>
-                  {m.accesoriosPermitidos?.length > 0 && (
-                    <small>
-                      Accesorios: {m.accesoriosPermitidos.join(', ')}
-                    </small>
-                  )}
+                  
                 </div>
 
                 <div className="row-actions">
@@ -474,12 +470,12 @@ export default function MaterialesCostos() {
         .cost-box p{margin:0;color:#dbeafe}
         .primary-btn{width:100%;border:0;border-radius:18px;padding:15px;background:#111827;color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
         .materiales-list{display:grid;gap:12px;margin-top:14px}
-        .material-row{border:1px solid #e5e7eb;border-radius:18px;padding:14px;display:flex;justify-content:space-between;gap:14px;background:#f8fafc}
-        .material-row h3{margin:0 0 4px;font-size:16px;color:#111827}
-        .material-row p{margin:0 0 4px;color:#64748b;font-size:13px}
+        .material-row{border:1px solid #e5e7eb;border-radius:16px;padding:10px;display:grid;grid-template-columns:1fr;gap:8px}
+        .material-row h3{margin:0;font-size:14px;line-height:1.15}
+        .material-row p{margin:2px 0;color:#64748b;font-size:11px;line-height:1.15}
         .material-row small{display:block;margin-top:8px;color:#475569;font-weight:800}
-        .price-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-        .price-tags span{background:#fff;border:1px solid #e5e7eb;border-radius:999px;padding:6px 9px;font-size:12px;font-weight:900}
+        .price-tags{display:flex;gap:4px;flex-wrap:wrap}
+        .price-tags span{font-size:10px;padding:4px 6px;border:1px solid #e5e7eb;border-radius:999px;background:#fff;font-weight:800}
         .row-actions{display:flex;gap:8px}
         .row-actions button{width:38px;height:38px;border:0;border-radius:12px;background:#111827;color:#fff}
         .empty{padding:24px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:18px}
@@ -488,10 +484,11 @@ export default function MaterialesCostos() {
           .materiales-page{padding:14px}
           .materiales-grid,.two,.tarifas{grid-template-columns:1fr}
           .materiales-hero h1{font-size:27px}
-          .material-row{flex-direction:column}
+          .material-row{border:1px solid #e5e7eb;border-radius:16px;padding:10px;display:grid;grid-template-columns:1fr;gap:8px}
           .row-actions button{width:100%}
         }
       `}</style>
     </main>
   );
 }
+
