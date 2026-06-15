@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import {
   Calculator,
   CheckCircle2,
@@ -14,13 +14,13 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
-const STORAGE_MATERIALES = 'elanvisual_materiales_costos';
+const STORAGE_MATERIALES = 'elanvisual_materiales_costos_v1';
 const STORAGE_CLIENTES = 'elanvisual_clientes_cotizador_v1';
 const STORAGE_PEDIDOS = 'elanvisual_pedidos_v1';
 
 const descuentos = [0, 5, 10, 15, 20];
 const tarifas = ['A', 'B', 'C', 'D'];
-const logisticaOpciones = ['Retira en taller', 'Entrega', 'Instalación', 'Entrega + instalación'];
+const logisticaOpciones = ['Retira en taller', 'Entrega', 'InstalaciÃ³n', 'Entrega + instalaciÃ³n'];
 
 const money = (v) =>
   new Intl.NumberFormat('es-NI', {
@@ -150,7 +150,7 @@ export default function CotizadorVisual() {
   const materialSeleccionado = materialesActivos.find((m) => m.id === itemForm.materialId);
 
   const mostrarLogisticaExtra =
-    logistica === 'Entrega' || logistica === 'Instalación' || logistica === 'Entrega + instalación';
+    logistica === 'Entrega' || logistica === 'InstalaciÃ³n' || logistica === 'Entrega + instalaciÃ³n';
 
   const resumen = useMemo(() => {
     const subtotal = items.reduce((acc, item) => acc + num(item.subtotal), 0);
@@ -320,12 +320,12 @@ export default function CotizadorVisual() {
 
   const crearPedido = () => {
     if (items.length === 0) {
-      alert('Agregá al menos un ítem antes de convertir a pedido.');
+      alert('AgregÃ¡ al menos un Ã­tem antes de convertir a pedido.');
       return;
     }
 
     if (!cliente.empresa && !cliente.contacto) {
-      alert('Completá el cliente antes de convertir a pedido.');
+      alert('CompletÃ¡ el cliente antes de convertir a pedido.');
       return;
     }
 
@@ -367,7 +367,7 @@ export default function CotizadorVisual() {
           medidas:
             item.tipoCalculo === 'unidad'
               ? `Cantidad: ${item.cantidad}`
-              : `${item.ancho} x ${item.alto} m · Cantidad: ${item.cantidad}`,
+              : `${item.ancho} x ${item.alto} m Â· Cantidad: ${item.cantidad}`,
           instalacion: item.instalacion,
           accesoriosProduccion: item.accesoriosProduccion,
           nota: item.nota,
@@ -397,17 +397,17 @@ alert(`Pedido generado: ${pedidoOperativo.numeroPedido} / ${pedidoOperativo.nume
       const medida =
         item.tipoCalculo === 'unidad'
           ? `Cantidad: ${item.cantidad}`
-          : `Medida: ${item.ancho} x ${item.alto} m · Cantidad: ${item.cantidad}`;
+          : `Medida: ${item.ancho} x ${item.alto} m Â· Cantidad: ${item.cantidad}`;
 
       return `${index + 1}. ${item.descripcion}
 ${medida}
-${item.instalacion === 'Sí' ? 'Incluye solicitud de instalación por revisar en sitio.' : 'Solo suministro / entrega según logística.'}
-Total ítem: ${money(item.total)}
+${item.instalacion === 'SÃ­' ? 'Incluye solicitud de instalaciÃ³n por revisar en sitio.' : 'Solo suministro / entrega segÃºn logÃ­stica.'}
+Total Ã­tem: ${money(item.total)}
 ${item.nota ? `Nota: ${item.nota}` : ''}`;
     });
 
     const lineas = [
-      '*COTIZACIÓN ELANVISUAL*',
+      '*COTIZACIÃ“N ELANVISUAL*',
       pedidoGenerado ? `Pedido interno: ${pedidoGenerado.numeroPedido}` : '',
       pedidoGenerado ? `OT interna: ${pedidoGenerado.numeroOT}` : '',
       '',
@@ -419,14 +419,14 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
       '',
       '*Proyecto*',
       proyecto.lugar ? `Lugar: ${proyecto.lugar}` : '',
-      proyecto.direccion ? `Dirección: ${proyecto.direccion}` : '',
+      proyecto.direccion ? `DirecciÃ³n: ${proyecto.direccion}` : '',
       proyecto.contactoSitio ? `Contacto en sitio: ${proyecto.contactoSitio}` : '',
       proyecto.whatsappSitio ? `WhatsApp en sitio: ${proyecto.whatsappSitio}` : '',
       '',
       '*Detalle comercial*',
       ...detalle,
       '',
-      '*Logística*',
+      '*LogÃ­stica*',
       logistica,
       mostrarLogisticaExtra && km ? `KM: ${km}` : '',
       mostrarLogisticaExtra && altura ? `Altura: ${altura}` : '',
@@ -438,7 +438,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
       `Anticipo 60%: ${money(resumen.anticipo)}`,
       `Saldo 40%: ${money(resumen.saldo)}`,
       '',
-      'Precios sujetos a validación final según artes, medidas definitivas y condiciones reales de instalación.',
+      'Precios sujetos a validaciÃ³n final segÃºn artes, medidas definitivas y condiciones reales de instalaciÃ³n.',
     ];
 
     return lineas.filter(Boolean).join('\n');
@@ -456,38 +456,38 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
   ]);
 
   const textoProduccion = useMemo(() => {
-    if (!pedidoGenerado) return 'Convertí la cotización a pedido para generar OT de producción.';
+    if (!pedidoGenerado) return 'ConvertÃ­ la cotizaciÃ³n a pedido para generar OT de producciÃ³n.';
 
     const lineas = [
-      `*ORDEN DE PRODUCCIÓN ${pedidoGenerado.numeroOT}*`,
+      `*ORDEN DE PRODUCCIÃ“N ${pedidoGenerado.numeroOT}*`,
       `Pedido: ${pedidoGenerado.numeroPedido}`,
       '',
       `Cliente: ${cliente.empresa || cliente.contacto}`,
       proyecto.lugar ? `Lugar: ${proyecto.lugar}` : '',
-      proyecto.direccion ? `Dirección: ${proyecto.direccion}` : '',
+      proyecto.direccion ? `DirecciÃ³n: ${proyecto.direccion}` : '',
       '',
-      '*Ítems producción*',
+      '*Ãtems producciÃ³n*',
       ...items.map((item, index) => {
         const medida =
           item.tipoCalculo === 'unidad'
             ? `Cantidad: ${item.cantidad}`
-            : `${item.ancho} x ${item.alto} m · Cantidad: ${item.cantidad}`;
+            : `${item.ancho} x ${item.alto} m Â· Cantidad: ${item.cantidad}`;
 
         const accesorios =
           item.accesoriosProduccion.length > 0
             ? item.accesoriosProduccion
                 .map((a) => `${a.nombre}: ${Number(a.cantidad).toFixed(2)} ${a.tipo}`)
-                .join(' · ')
-            : 'Sin accesorios automáticos';
+                .join(' Â· ')
+            : 'Sin accesorios automÃ¡ticos';
 
         return `${index + 1}. ${item.descripcion}
 ${medida}
-Instalación: ${item.instalacion}
+InstalaciÃ³n: ${item.instalacion}
 Accesorios: ${accesorios}
 ${item.nota ? `Nota: ${item.nota}` : ''}`;
       }),
       '',
-      `Logística: ${logistica}`,
+      `LogÃ­stica: ${logistica}`,
       mostrarLogisticaExtra && km ? `KM: ${km}` : '',
       mostrarLogisticaExtra && altura ? `Altura: ${altura}` : '',
       mostrarLogisticaExtra ? `Complejidad: ${complejidad}` : '',
@@ -501,7 +501,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
       await navigator.clipboard.writeText(texto);
       alert(mensaje);
     } catch {
-      alert('No se pudo copiar automáticamente. Seleccioná el texto manualmente.');
+      alert('No se pudo copiar automÃ¡ticamente. SeleccionÃ¡ el texto manualmente.');
     }
   };
 
@@ -511,7 +511,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         <section className="cotizador-lock">
           <Calculator size={44} />
           <h1>Acceso restringido</h1>
-          <p>Este cotizador es solo para administración y vendedores.</p>
+          <p>Este cotizador es solo para administraciÃ³n y vendedores.</p>
         </section>
       </main>
     );
@@ -520,9 +520,9 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
   return (
     <main className="cotizador-page">
       <section className="cotizador-hero">
-        <span>ELANVISUAL · APP MODE</span>
+        <span>ELANVISUAL Â· APP MODE</span>
         <h1>Cotizador Visual V2.2</h1>
-        <p>Cotización, pedido y OT de producción desde celular.</p>
+        <p>CotizaciÃ³n, pedido y OT de producciÃ³n desde celular.</p>
       </section>
 
       <section className="app-grid">
@@ -596,7 +596,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
           </label>
 
           <label>
-            Dirección
+            DirecciÃ³n
             <textarea value={proyecto.direccion} onChange={(e) => actualizarProyecto('direccion', e.target.value)} />
           </label>
 
@@ -624,12 +624,12 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         <form className="cotizador-card" onSubmit={agregarItem}>
           <div className="card-title">
             <PlusCircle size={22} />
-            <h2>Agregar ítem</h2>
+            <h2>Agregar Ã­tem</h2>
           </div>
 
           <div className="two">
             <label>
-              Categoría
+              CategorÃ­a
               <select
                 value={itemForm.categoria}
                 onChange={(e) =>
@@ -649,7 +649,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             </label>
 
             <label>
-              Subcategoría
+              SubcategorÃ­a
               <select
                 value={itemForm.subcategoria}
                 onChange={(e) =>
@@ -700,8 +700,8 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             <div className="selected-box">
               <strong>{materialSeleccionado.descripcion}</strong>
               <span>
-                {materialSeleccionado.categoria || 'Sin categoría'} ·{' '}
-                {materialSeleccionado.subcategoria || 'Sin subcategoría'} ·{' '}
+                {materialSeleccionado.categoria || 'Sin categorÃ­a'} Â·{' '}
+                {materialSeleccionado.subcategoria || 'Sin subcategorÃ­a'} Â·{' '}
                 {materialSeleccionado.tipoCalculo || 'm2'}
               </span>
             </div>
@@ -718,7 +718,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             </label>
 
             <label>
-              Descuento ítem
+              Descuento Ã­tem
               <select value={itemForm.descuento} onChange={(e) => actualizarItem('descuento', e.target.value)}>
                 {descuentos.map((d) => (
                   <option key={d} value={d}>{d}%</option>
@@ -764,16 +764,16 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             </label>
 
             <label>
-              Instalación por ítem
+              InstalaciÃ³n por Ã­tem
               <select value={itemForm.instalacion} onChange={(e) => actualizarItem('instalacion', e.target.value)}>
                 <option>No</option>
-                <option>Sí</option>
+                <option>SÃ­</option>
               </select>
             </label>
           </div>
 
           <div className="access-box">
-            <strong>Accesorios automáticos</strong>
+            <strong>Accesorios automÃ¡ticos</strong>
 
             <div className="access-grid">
               <button type="button" className={itemForm.accesorios.ojete ? 'active' : ''} onClick={() => actualizarAccesorio('ojete')}>Ojete</button>
@@ -784,7 +784,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
             <div className="two compact">
               <label>
-                Separación ojetes m
+                SeparaciÃ³n ojetes m
                 <input
                   type="number"
                   step="0.05"
@@ -794,7 +794,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
               </label>
 
               <label>
-                Separación bridas m
+                SeparaciÃ³n bridas m
                 <input
                   type="number"
                   step="0.05"
@@ -812,7 +812,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
           <button className="primary-btn" type="submit">
             <CheckCircle2 size={18} />
-            Agregar ítem
+            Agregar Ã­tem
           </button>
         </form>
 
@@ -830,16 +830,16 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
                   <p>
                     {item.tipoCalculo === 'unidad'
                       ? `Cantidad: ${item.cantidad}`
-                      : `${item.ancho} x ${item.alto} m · Cantidad: ${item.cantidad}`}
+                      : `${item.ancho} x ${item.alto} m Â· Cantidad: ${item.cantidad}`}
                   </p>
-                  <span>Instalación: {item.instalacion} · Desc. {item.descuento}%</span>
+                  <span>InstalaciÃ³n: {item.instalacion} Â· Desc. {item.descuento}%</span>
 
                   {item.accesoriosProduccion.length > 0 && (
                     <small>
-                      Producción:{' '}
+                      ProducciÃ³n:{' '}
                       {item.accesoriosProduccion
                         .map((a) => `${a.nombre}: ${Number(a.cantidad).toFixed(2)} ${a.tipo}`)
-                        .join(' · ')}
+                        .join(' Â· ')}
                     </small>
                   )}
                 </div>
@@ -853,13 +853,13 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
               </article>
             ))}
 
-            {items.length === 0 && <div className="empty">Agregá ítems para construir la cotización.</div>}
+            {items.length === 0 && <div className="empty">AgregÃ¡ Ã­tems para construir la cotizaciÃ³n.</div>}
           </div>
 
           <div className="logistica-box">
             <div className="card-title small">
               <Truck size={20} />
-              <h2>Logística global</h2>
+              <h2>LogÃ­stica global</h2>
             </div>
 
             <label>
@@ -909,14 +909,14 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
               Convertir a Pedido / OT
             </button>
 
-            <button className="secondary-btn" type="button" onClick={() => copiarTexto(textoWhatsApp, 'Cotización copiada para WhatsApp.')}>
+            <button className="secondary-btn" type="button" onClick={() => copiarTexto(textoWhatsApp, 'CotizaciÃ³n copiada para WhatsApp.')}>
               <Copy size={18} />
               Copiar WhatsApp cliente
             </button>
 
-            <button className="secondary-btn" type="button" onClick={() => copiarTexto(textoProduccion, 'OT copiada para producción.')}>
+            <button className="secondary-btn" type="button" onClick={() => copiarTexto(textoProduccion, 'OT copiada para producciÃ³n.')}>
               <Copy size={18} />
-              Copiar OT producción
+              Copiar OT producciÃ³n
             </button>
           </div>
 
@@ -936,7 +936,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         <PackageCheck size={22} />
         <div>
           <strong>Flujo activo</strong>
-          <p>Lead → Cotización → Pedido → OT → Producción → Instalación → Entrega → Cobro → Comisión.</p>
+          <p>Lead â†’ CotizaciÃ³n â†’ Pedido â†’ OT â†’ ProducciÃ³n â†’ InstalaciÃ³n â†’ Entrega â†’ Cobro â†’ ComisiÃ³n.</p>
         </div>
       </section>
 
@@ -1005,3 +1005,4 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
     </main>
   );
 }
+
