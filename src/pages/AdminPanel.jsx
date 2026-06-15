@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import {
   Building2,
   ClipboardList,
@@ -51,30 +51,26 @@ const nuevoBannerBase = {
 
 export default function AdminPanel() {
   const {
+    configuracion,
+    actualizarConfiguracion,
     productos,
     trabajos,
     banners,
-    pedidos,
     usuarios,
-    configuracion,
-    imagenes,
-    crearImagen,
-    eliminarImagen,
     crearProducto,
     actualizarProducto,
+    eliminarProducto,
     crearTrabajo,
     actualizarTrabajo,
+    eliminarTrabajo,
     crearBanner,
     actualizarBanner,
     eliminarBanner,
-    actualizarImagen,
     crearUsuario,
     actualizarUsuario,
     eliminarUsuario,
-    rolesSistema,
   } = useApp();
-
-  const [tab, setTab] = useState('dashboard');
+const [tab, setTab] = useState('dashboard');
   const [servicio, setServicio] = useState(nuevoServicioBase);
   const [trabajo, setTrabajo] = useState(nuevoTrabajoBase);
   const [banner, setBanner] = useState(nuevoBannerBase);
@@ -306,10 +302,10 @@ export default function AdminPanel() {
           <section className="panel">
             <h2><Building2 size={20} /> Estado de unidad</h2>
             <div className="form-grid">
-              <label>Nombre visible<input value={configuracion?.nombreSitio || 'ELANVISUAL'} readOnly /></label>
-              <label>WhatsApp<input value={configuracion?.whatsapp || ''} readOnly /></label>
-              <label>Correo<input value={configuracion?.correo || ''} readOnly /></label>
-              <label>Anticipo configurado<input value={`${configuracion?.anticipoPorcentaje || 60}%`} readOnly /></label>
+              <label>Nombre visible<input value={configuracion?.nombreSitio || 'ELANVISUAL'} onChange={(e) => actualizarConfiguracion({ nombreSitio: e.target.value })} /></label>
+              <label>WhatsApp<input value={configuracion?.whatsapp || ''} onChange={(e) => actualizarConfiguracion({ whatsapp: e.target.value })} /></label>
+              <label>Correo<input value={configuracion?.correo || ''} onChange={(e) => actualizarConfiguracion({ correo: e.target.value })} /></label>
+              <label>Anticipo configurado<input type="number" value={configuracion?.anticipoPorcentaje || 60} onChange={(e) => actualizarConfiguracion({ anticipoPorcentaje: Number(e.target.value || 60) })} /></label>
             </div>
           </section>
 
@@ -615,5 +611,7 @@ export default function AdminPanel() {
     </main>
   );
 }
+
+
 
 

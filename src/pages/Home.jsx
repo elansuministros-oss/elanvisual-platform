@@ -16,7 +16,11 @@ import {
 import { useApp } from '../context/AppContext';
 import HorizontalCarousel from '../components/HorizontalCarousel';
 
-const whatsapp = 'https://wa.me/50588888888';
+const normalizarWhatsApp = (numero) => {
+  const limpio = String(numero || '').replace(/[^0-9]/g, '');
+  if (limpio.length === 8) return `505${limpio}`;
+  return limpio || '50585228183';
+};
 
 const servicios = [
   {
@@ -64,7 +68,7 @@ const categorias = [
 ];
 
 export default function Home({ setPage }) {
-  const { banners = [] } = useApp();
+  const { banners = [], configuracion = {} } = useApp();
 
 const bannersSeguros = Array.isArray(banners) && banners.length > 0
   ? banners
@@ -146,7 +150,7 @@ console.log('DEBUG HERO MOBILE heroImg', heroImg);
               Cotizar
             </button>
 
-            <a href={whatsapp} target="_blank" rel="noreferrer" className="app-btn whatsapp">
+            <a href={`https://wa.me/${normalizarWhatsApp(configuracion.whatsapp)}`} target="_blank" rel="noreferrer" className="app-btn whatsapp">
               <MessageCircle size={18} />
               WhatsApp
             </a>
@@ -242,7 +246,7 @@ console.log('DEBUG HERO MOBILE heroImg', heroImg);
             Solicitar cotización
           </button>
 
-          <a href={whatsapp} target="_blank" rel="noreferrer" className="app-btn whatsapp">
+          <a href={`https://wa.me/${normalizarWhatsApp(configuracion.whatsapp)}`} target="_blank" rel="noreferrer" className="app-btn whatsapp">
             WhatsApp
           </a>
         </div>
@@ -250,6 +254,8 @@ console.log('DEBUG HERO MOBILE heroImg', heroImg);
     </main>
   );
 }
+
+
 
 
 
