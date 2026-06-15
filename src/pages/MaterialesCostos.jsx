@@ -54,6 +54,17 @@ const protecciones = [
   'Grafica de piso',
 ];
 
+const subcategoriasPorCategoria = {
+  'Lonas': ['Lona 13 oz', 'Lona 8 oz', 'Traslucida', 'Mesh', 'Backlit', 'Smooth banner'],
+  'Viniles Adhesivos': ['Ritrama goma blanca', 'Ritrama goma gris', 'Viniles mate', 'Transparente mate', 'Transparente brillante', 'Koreano goma gris'],
+  'Viniles + Laminacion': ['Brillante', 'Mate', 'Premium conformable', 'Premium semiconformable', 'Microperforado'],
+  'Viniles Alto Desempeno': ['100% conformable', 'Semi conformable', 'Vehiculos', 'Paredes'],
+  'Laminas Rigidas + Vinil': ['PVC', 'Acrilico', 'Coroplas', 'Vinil + PVC', 'Vinil + Acrilico'],
+  'PVC': ['1 mm', '2 mm', '3 mm', '4 mm', '5 mm', '6 mm', '10 mm'],
+  'Acrilicos': ['Transparente', 'Lechoso', 'Color', 'Espejo'],
+  'Display y Portabanner': ['Roll up', 'Pluma', 'Counter'],
+  'Accesorios': ['Chapetones', 'Ojetes', 'Bridas', 'Tubo PVC', 'Tubo galvanizado'],
+};
 const accesoriosBase = [
   { id: 'ojete', label: 'Ojete', regla: 'perimetro_separacion' },
   { id: 'tuboPVC', label: 'Tubo PVC', regla: 'dos_por_ancho' },
@@ -253,11 +264,12 @@ export default function MaterialesCostos() {
           <div className="two">
             <label>
               Subcategoria
-              <input
-                value={form.subcategoria}
-                onChange={(e) => actualizar('subcategoria', e.target.value)}
-                placeholder="Banner 13 oz, brillante, roll up..."
-              />
+              <select value={form.subcategoria} onChange={(e) => actualizar('subcategoria', e.target.value)}>
+  <option value="">Seleccionar subcategoria</option>
+  {(subcategoriasPorCategoria[form.categoria] || ['General']).map((s) => (
+    <option key={s} value={s}>{s}</option>
+  ))}
+</select>
             </label>
 
             <label>
@@ -485,5 +497,6 @@ export default function MaterialesCostos() {
     </main>
   );
 }
+
 
 
