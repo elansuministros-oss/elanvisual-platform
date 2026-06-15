@@ -2024,3 +2024,4 @@ const generarComisionAutomatica = ({
 
 export const useApp = () => useContext(AppContext);
 
+
