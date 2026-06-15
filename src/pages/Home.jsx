@@ -75,10 +75,10 @@ const bannersSeguros = Array.isArray(banners) && banners.length > 0
         activo: true,
         titulo: 'Rotulacion profesional para negocios reales',
         subtitulo: 'Letras 3D, fachadas, acrilico, PVC, impresion UV, DTF UV, CNC, laser y displays fabricables.',
-        imagen: '/productos/portada-visual.png',
-        imagenRuta: '/productos/portada-visual.png',
-        imagenDesktop: '/productos/portada-visual.png',
-        imagenMobile: '/productos/portada-visual.png',
+        imagen: '/productos/portada2-01.png',
+        imagenRuta: '/productos/portada2-01.png',
+        imagenDesktop: '/productos/portada2-01.png',
+        imagenMobile: '/productos/portada2-01.png',
       },
     ];
 const bannerHome = bannersSeguros.find(
@@ -250,5 +250,6 @@ console.log('DEBUG HERO MOBILE heroImg', heroImg);
     </main>
   );
 }
+
 
 
