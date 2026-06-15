@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import {
   Calculator,
   CheckCircle2,
@@ -22,36 +22,36 @@ const tiposRegistro = [
 const categorias = [
   'Lonas',
   'Viniles Adhesivos',
-  'Viniles + Laminación',
-  'Viniles Alto Desempeño',
+  'Viniles + LaminaciÃ³n',
+  'Viniles Alto DesempeÃ±o',
   'Otros Materiales',
-  'Láminas Rígidas + Vinil',
-  'Portabanner + Impresión',
+  'LÃ¡minas RÃ­gidas + Vinil',
+  'Portabanner + ImpresiÃ³n',
   'Vinil de Corte',
   'PVC',
-  'Acrílicos',
-  'Rotulación',
+  'AcrÃ­licos',
+  'RotulaciÃ³n',
   'Accesorios',
   'Mano de Obra',
   'Transporte',
-  'Instalación',
+  'InstalaciÃ³n',
 ];
 
 const tiposCalculo = [
-  { value: 'm2', label: 'm²' },
+  { value: 'm2', label: 'mÂ²' },
   { value: 'unidad', label: 'Unidad' },
   { value: 'lineal', label: 'Metro lineal' },
   { value: 'compuesto', label: 'Compuesto' },
   { value: 'personalizado', label: 'Personalizado' },
 ];
 
-const tintas = ['Sin impresión', 'Solvente', 'UV'];
+const tintas = ['Sin impresiÃ³n', 'Solvente', 'UV'];
 const protecciones = [
   'Ninguna',
   'Laminado brillante',
   'Laminado mate',
-  'Laminante líquido UV',
-  'Gráfica de piso',
+  'Laminante lÃ­quido UV',
+  'GrÃ¡fica de piso',
 ];
 
 const accesoriosBase = [
@@ -200,7 +200,7 @@ export default function MaterialesCostos() {
         <section className="materiales-lock">
           <Lock size={42} />
           <h1>Acceso restringido</h1>
-          <p>Materiales y Costos es exclusivo para administración.</p>
+          <p>Materiales y Costos es exclusivo para administraciÃ³n.</p>
         </section>
       </main>
     );
@@ -209,11 +209,11 @@ export default function MaterialesCostos() {
   return (
     <main className="materiales-page">
       <section className="materiales-hero">
-        <span>ELANVISUAL · Administración</span>
+        <span>ELANVISUAL Â· AdministraciÃ³n</span>
         <h1>Material Master V2</h1>
         <p>
-          Catálogo maestro para productos cotizables, servicios operativos,
-          accesorios automáticos, tarifas A/B/C/D e instalación.
+          CatÃ¡logo maestro para productos cotizables, servicios operativos,
+          accesorios automÃ¡ticos, tarifas A/B/C/D e instalaciÃ³n.
         </p>
       </section>
 
@@ -225,7 +225,7 @@ export default function MaterialesCostos() {
           </div>
 
           <label>
-            Descripción
+            DescripciÃ³n
             <input
               value={form.descripcion}
               onChange={(e) => actualizar('descripcion', e.target.value)}
@@ -243,7 +243,7 @@ export default function MaterialesCostos() {
             </label>
 
             <label>
-              Categoría
+              CategorÃ­a
               <select value={form.categoria} onChange={(e) => actualizar('categoria', e.target.value)}>
                 {categorias.map((c) => <option key={c}>{c}</option>)}
               </select>
@@ -252,7 +252,7 @@ export default function MaterialesCostos() {
 
           <div className="two">
             <label>
-              Subcategoría
+              SubcategorÃ­a
               <input
                 value={form.subcategoria}
                 onChange={(e) => actualizar('subcategoria', e.target.value)}
@@ -261,7 +261,7 @@ export default function MaterialesCostos() {
             </label>
 
             <label>
-              Tipo cálculo
+              Tipo cÃ¡lculo
               <select value={form.tipoCalculo} onChange={(e) => actualizar('tipoCalculo', e.target.value)}>
                 {tiposCalculo.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
@@ -277,7 +277,7 @@ export default function MaterialesCostos() {
             </label>
 
             <label>
-              Protección
+              ProtecciÃ³n
               <select value={form.proteccion} onChange={(e) => actualizar('proteccion', e.target.value)}>
                 {protecciones.map((p) => <option key={p}>{p}</option>)}
               </select>
@@ -309,7 +309,7 @@ export default function MaterialesCostos() {
                 checked={form.productoEstandar}
                 onChange={(e) => actualizar('productoEstandar', e.target.checked)}
               />
-              Producto estándar
+              Producto estÃ¡ndar
             </label>
           </div>
 
@@ -343,7 +343,7 @@ export default function MaterialesCostos() {
           </div>
 
           <label>
-            Descuento máximo libre %
+            Descuento mÃ¡ximo libre %
             <input
               type="number"
               step="1"
@@ -369,11 +369,11 @@ export default function MaterialesCostos() {
 
           <div className="two">
             <label>
-              Separación ojetes / m
+              SeparaciÃ³n ojetes / m
               <input type="number" step="0.01" value={form.separacionOjetes} onChange={(e) => actualizar('separacionOjetes', e.target.value)} />
             </label>
             <label>
-              Separación bridas / m
+              SeparaciÃ³n bridas / m
               <input type="number" step="0.01" value={form.separacionBridas} onChange={(e) => actualizar('separacionBridas', e.target.value)} />
             </label>
           </div>
@@ -383,14 +383,14 @@ export default function MaterialesCostos() {
             <textarea
               value={form.notas}
               onChange={(e) => actualizar('notas', e.target.value)}
-              placeholder="Reglas, proveedor, observaciones de producción..."
+              placeholder="Reglas, proveedor, observaciones de producciÃ³n..."
             />
           </label>
 
           <div className="cost-box">
             <strong><Calculator size={18} /> Resumen interno</strong>
             <p>Total con IVA: <b>{money(calculo.totalConIva)}</b></p>
-            <p>Reglas: tubo = 2 × ancho / ojete y bridas por perímetro.</p>
+            <p>Reglas: tubo = 2 Ã— ancho / ojete y bridas por perÃ­metro.</p>
           </div>
 
           <button className="primary-btn" type="submit">
@@ -422,14 +422,9 @@ export default function MaterialesCostos() {
               <article className="material-row" key={m.id}>
                 <div>
                   <h3>{m.descripcion}</h3>
-                  <p>{m.categoria} � {m.subcategoria || 'General'}</p>
+                  <p>{m.categoria} · {m.subcategoria || 'General'}</p>
                   
-                  <div className="price-tags">
-                    <span>A {money(m.tarifaA)}</span>
-                    <span>B {money(m.tarifaB)}</span>
-                    <span>C {money(m.tarifaC)}</span>
-                    <span>D {money(m.tarifaD)}</span>
-                  </div>
+                  <div className="price-tags compact"><span>Venta {money(m.tarifaA || m.precioBase || m.totalConIva)}</span><span>Desc max {m.descuentoMaximo || 0}%</span></div>
                   
                 </div>
 
@@ -441,7 +436,7 @@ export default function MaterialesCostos() {
             ))}
 
             {lista.length === 0 && (
-              <div className="empty">No hay registros todavía.</div>
+              <div className="empty">No hay registros todavÃ­a.</div>
             )}
           </div>
         </section>
@@ -469,14 +464,13 @@ export default function MaterialesCostos() {
         .cost-box strong{display:flex;align-items:center;gap:8px}
         .cost-box p{margin:0;color:#dbeafe}
         .primary-btn{width:100%;border:0;border-radius:18px;padding:15px;background:#111827;color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
-        .materiales-list{display:grid;gap:12px;margin-top:14px}
-        .material-row{border:1px solid #e5e7eb;border-radius:16px;padding:10px;display:grid;grid-template-columns:1fr;gap:8px}
-        .material-row h3{margin:0;font-size:14px;line-height:1.15}
-        .material-row p{margin:2px 0;color:#64748b;font-size:11px;line-height:1.15}
+        .materiales-list{display:grid;gap:8px;margin-top:14px;max-height:560px;overflow-y:auto;padding-right:6px;overscroll-behavior:contain}
+        .material-row{border:1px solid #e5e7eb;border-radius:14px;padding:9px 10px;display:grid;grid-template-columns:1fr;gap:6px;background:#fff}
+        .material-row h3{margin:0;font-size:13px;line-height:1.15;color:#111827}
+        .material-row p{margin:2px 0;color:#64748b;font-size:11px;line-height:1.15;font-weight:800}
         .material-row small{display:block;margin-top:8px;color:#475569;font-weight:800}
         .price-tags{display:flex;gap:4px;flex-wrap:wrap}
-        .price-tags span{font-size:10px;padding:4px 6px;border:1px solid #e5e7eb;border-radius:999px;background:#fff;font-weight:800}
-        .row-actions{display:flex;gap:8px}
+        .price-tags span{font-size:10px;padding:4px 6px;border:1px solid #e5e7eb;border-radius:999px;background:#fff;font-weight:800}.price-tags.compact span{background:#f8fafc}.row-actions{display:flex;gap:8px}
         .row-actions button{width:38px;height:38px;border:0;border-radius:12px;background:#111827;color:#fff}
         .empty{padding:24px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:18px}
         .materiales-lock{text-align:center;margin:40px auto;max-width:420px}
@@ -484,11 +478,12 @@ export default function MaterialesCostos() {
           .materiales-page{padding:14px}
           .materiales-grid,.two,.tarifas{grid-template-columns:1fr}
           .materiales-hero h1{font-size:27px}
-          .material-row{border:1px solid #e5e7eb;border-radius:16px;padding:10px;display:grid;grid-template-columns:1fr;gap:8px}
+          .material-row{border:1px solid #e5e7eb;border-radius:14px;padding:9px 10px;display:grid;grid-template-columns:1fr;gap:6px;background:#fff}
           .row-actions button{width:100%}
         }
       `}</style>
     </main>
   );
 }
+
 
