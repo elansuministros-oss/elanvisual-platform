@@ -268,7 +268,7 @@ const [tab, setTab] = useState('dashboard');
       <div className="admin-head">
         <div>
           <span className="badge">ELANVISUAL  Administracin</span>
-          <h1>Panel Operativo ELANVISUAL</h1>
+          <h1>Panel Operativo ELANVISUAL </h1>
           <p className="note">
             Administracin visual del portal: servicios, portafolio, banners y multimedia.
           </p>
@@ -618,6 +618,7 @@ const [tab, setTab] = useState('dashboard');
     </main>
   );
 }
+
 
 
 
