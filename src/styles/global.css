@@ -1674,3 +1674,28 @@ th,td{
     padding-bottom:86px;
   }
 }
+
+/* UX HERO TEXTO PRIMER TERCIO */
+@media (min-width:1100px){
+  .app-hero-content{
+    width:33%;
+    min-width:320px;
+    max-width:560px;
+  }
+
+  .app-hero-content h1{
+    max-width:8ch;
+  }
+}
+
+@media (max-width:1099px){
+  .app-hero-content{
+    width:100%;
+    max-width:none;
+    min-width:auto;
+  }
+
+  .app-hero-content h1{
+    max-width:100%;
+  }
+}
