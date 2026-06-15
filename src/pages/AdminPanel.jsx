@@ -53,11 +53,12 @@ export default function AdminPanel() {
   const {
     configuracion,
     actualizarConfiguracion,
-    productos,
-    trabajos,
-    banners,
+    productos = [],
+    trabajos = [],
+    banners = [],
     pedidos = [],
-    usuarios,
+    usuarios = [],
+    imagenes = [],
     crearProducto,
     actualizarProducto,
     eliminarProducto,
@@ -70,7 +71,12 @@ export default function AdminPanel() {
     crearUsuario,
     actualizarUsuario,
     eliminarUsuario,
+    crearImagen,
+    actualizarImagen,
+    eliminarImagen,
   } = useApp();
+
+  const rolesSistema = ['admin', 'ventas', 'produccion'];
 const [tab, setTab] = useState('dashboard');
   const [servicio, setServicio] = useState(nuevoServicioBase);
   const [trabajo, setTrabajo] = useState(nuevoTrabajoBase);
@@ -612,6 +618,7 @@ const [tab, setTab] = useState('dashboard');
     </main>
   );
 }
+
 
 
 
