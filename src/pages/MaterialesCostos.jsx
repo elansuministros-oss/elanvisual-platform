@@ -405,7 +405,7 @@ export default function MaterialesCostos() {
             <p>Reglas: tubo = 2 Ã— ancho / ojete y bridas por perimetro.</p>
           </div>
 
-          <button className="primary-btn" type="button" onClick={guardar}>
+          <button className="primary-btn" type="submit">
             <CheckCircle2 size={18} />
             {editando ? 'Guardar cambios' : 'Guardar registro'}
           </button>
@@ -497,6 +497,7 @@ export default function MaterialesCostos() {
     </main>
   );
 }
+
 
 
 
