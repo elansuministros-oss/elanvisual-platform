@@ -66,12 +66,20 @@ const categorias = [
 export default function Home({ setPage }) {
   const { banners = [] } = useApp();
 const bannerHome = banners.find(
+  
   (b) => b.ubicacion === 'hero-principal' && b.activo
 );
 
+console.log('BANNERS', banners);
+console.log('BANNER HOME', bannerHome);
+console.log('BANNER HOME JSON', JSON.stringify(bannerHome, null, 2));
+
   const heroImg =
-    bannerHome?.imagen ||
-    'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=85';
+  bannerHome?.imagenRuta ||
+  bannerHome?.imagen ||
+  bannerHome?.url ||
+  bannerHome?.src ||
+  'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=85';
 
   const go = (page) => {
     if (typeof setPage === 'function') setPage(page);
@@ -91,8 +99,12 @@ const bannerHome = banners.find(
             Rotulación · Producción · Imagen Comercial
           </span>
 
-          <h1>ELANVISUAL</h1>
-          <p>Diseño, fabricación e instalación de soluciones visuales profesionales.</p>
+         <h1>{bannerHome?.titulo || 'ELANVISUAL'}</h1>
+
+<p>
+  {bannerHome?.subtitulo ||
+    'Diseño, fabricación e instalación de soluciones visuales profesionales.'}
+</p>
 
           <div className="app-hero-buttons">
             <button type="button" onClick={() => go('servicios')} className="app-btn primary">

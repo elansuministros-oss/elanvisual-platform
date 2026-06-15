@@ -473,6 +473,7 @@ export default function AdminPanel() {
         <MediaLibrary
           imagenes={imagenes}
           onAdd={crearImagen}
+          onUpdate={actualizarImagen}
           onRemove={eliminarImagen}
         />
       )}
