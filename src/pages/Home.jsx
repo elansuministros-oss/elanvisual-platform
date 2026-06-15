@@ -1,4 +1,4 @@
-ï»¿import React from 'react';
+import React from 'react';
 import {
   ArrowRight,
   BadgeCheck,
@@ -21,46 +21,46 @@ const whatsapp = 'https://wa.me/50588888888';
 const servicios = [
   {
     titulo: 'Letras 3D',
-    texto: 'PVC, acrÃ­lico, channelum y luz frontal.',
+    texto: 'PVC, acrílico, channelum y luz frontal.',
     img: 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?auto=format&fit=crop&w=900&q=80',
   },
   {
     titulo: 'Fachadas',
-    texto: 'RÃ³tulos exteriores, fascia y estructuras.',
+    texto: 'Rótulos exteriores, fascia y estructuras.',
     img: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80',
   },
   {
-    titulo: 'AcrÃ­lico',
+    titulo: 'Acrílico',
     texto: 'Placas, cajas, logos y piezas premium.',
     img: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=80',
   },
   {
-    titulo: 'ImpresiÃ³n UV',
-    texto: 'Vinil, PVC, acrÃ­lico y materiales rÃ­gidos.',
+    titulo: 'Impresión UV',
+    texto: 'Vinil, PVC, acrílico y materiales rígidos.',
     img: 'https://images.unsplash.com/photo-1581090700227-1e37b190418e?auto=format&fit=crop&w=900&q=80',
   },
   {
-    titulo: 'CNC / LÃ¡ser',
-    texto: 'Corte tÃ©cnico para producciÃ³n real.',
+    titulo: 'CNC / Láser',
+    texto: 'Corte técnico para producción real.',
     img: 'https://images.unsplash.com/photo-1565018054866-968e244671af?auto=format&fit=crop&w=900&q=80',
   },
 ];
 
 const portafolio = [
   { titulo: 'Recepciones', texto: 'Logos corporativos interiores.' },
-  { titulo: 'Botones', texto: 'RÃ³tulos circulares luminosos.' },
+  { titulo: 'Botones', texto: 'Rótulos circulares luminosos.' },
   { titulo: 'Jalavistas', texto: 'Doble cara para fachada.' },
   { titulo: 'Retail', texto: 'Imagen comercial para tiendas.' },
   { titulo: 'Eventos', texto: 'Stands, displays y activaciones.' },
 ];
 
 const categorias = [
-  'RÃ³tulos luminosos',
-  'Letras corpÃ³reas',
-  'ImpresiÃ³n gran formato',
-  'PVC / AcrÃ­lico',
-  'Estructuras metÃ¡licas',
-  'SeÃ±alizaciÃ³n',
+  'Rótulos luminosos',
+  'Letras corpóreas',
+  'Impresión gran formato',
+  'PVC / Acrílico',
+  'Estructuras metálicas',
+  'Señalización',
 ];
 
 export default function Home({ setPage }) {
@@ -100,20 +100,20 @@ console.log('BANNER HOME JSON', JSON.stringify(bannerHome, null, 2));
       <section className="app-hero-screen">
         <div className="app-hero-image">
           <img src={heroImg} alt="ELANVISUAL" />
-          <div className="app-hero-overlay" />
         </div>
+        <div className="app-hero-overlay" />
 
         <div className="app-hero-content">
           <span className="app-pill">
             <Sparkles size={15} />
-            RotulaciÃ³n Â· ProducciÃ³n Â· Imagen Comercial
+            Rotulación · Producción · Imagen Comercial
           </span>
 
          <h1>{bannerHome?.titulo || 'ELANVISUAL'}</h1>
 
 <p>
   {bannerHome?.subtitulo ||
-    'DiseÃ±o, fabricaciÃ³n e instalaciÃ³n de soluciones visuales profesionales.'}
+    'Diseño, fabricación e instalación de soluciones visuales profesionales.'}
 </p>
 
           <div className="app-hero-buttons">
@@ -167,7 +167,7 @@ console.log('BANNER HOME JSON', JSON.stringify(bannerHome, null, 2));
 
       <HorizontalCarousel
         title="Servicios destacados"
-        subtitle="DeslizÃ¡ para explorar"
+        subtitle="Deslizá para explorar"
         items={servicios}
         renderItem={(item) => (
           <>
@@ -182,7 +182,7 @@ console.log('BANNER HOME JSON', JSON.stringify(bannerHome, null, 2));
 
       <HorizontalCarousel
         title="Portafolio"
-        subtitle="Trabajos por tipo de aplicaciÃ³n"
+        subtitle="Trabajos por tipo de aplicación"
         items={portafolio}
         renderItem={(item) => (
           <div className="app-portfolio-card">
@@ -196,8 +196,8 @@ console.log('BANNER HOME JSON', JSON.stringify(bannerHome, null, 2));
       <section className="app-category-section">
         <div className="app-section-head">
           <div>
-            <h2>CategorÃ­as</h2>
-            <p>ProducciÃ³n lista para cotizar</p>
+            <h2>Categorías</h2>
+            <p>Producción lista para cotizar</p>
           </div>
         </div>
 
@@ -213,12 +213,12 @@ console.log('BANNER HOME JSON', JSON.stringify(bannerHome, null, 2));
 
       <section className="app-final-cta">
         <Factory size={34} />
-        <h2>ConvertÃ­ tu idea en producciÃ³n real.</h2>
-        <p>Medidas, materiales, fabricaciÃ³n e instalaciÃ³n desde un solo flujo.</p>
+        <h2>Convertí tu idea en producción real.</h2>
+        <p>Medidas, materiales, fabricación e instalación desde un solo flujo.</p>
 
         <div className="app-hero-buttons">
           <button type="button" onClick={() => go('contacto')} className="app-btn primary">
-            Solicitar cotizaciÃ³n
+            Solicitar cotización
           </button>
 
           <a href={whatsapp} target="_blank" rel="noreferrer" className="app-btn whatsapp">
