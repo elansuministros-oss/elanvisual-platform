@@ -44,6 +44,8 @@ const nuevoBannerBase = {
   link: 'catalogo',
   imagen: '',
   imagenRuta: '',
+  imagenDesktop: '',
+  imagenMobile: '',
   activo: true,
 };
 
@@ -179,6 +181,8 @@ export default function AdminPanel() {
     const datos = {
       ...banner,
       imagenRuta: banner.imagenRuta || banner.imagen,
+      imagenDesktop: banner.imagenDesktop || banner.imagenRuta || banner.imagen,
+      imagenMobile: banner.imagenMobile || '',
       activo: banner.activo !== false,
     };
 
@@ -434,10 +438,12 @@ export default function AdminPanel() {
               <option value="oculto">Oculto</option>
             </select>
             <input className="span-2" placeholder="Subtítulo" value={banner.subtitulo} onChange={(e) => setBanner({ ...banner, subtitulo: e.target.value })} />
-            <input className="span-2" placeholder="URL o imagen seleccionada" value={banner.imagen} onChange={(e) => setBanner({ ...banner, imagen: e.target.value, imagenRuta: e.target.value })} />
+            <input className="span-2" placeholder="URL o imagen seleccionada" value={banner.imagen} onChange={(e) => setBanner({ ...banner, imagen: e.target.value, imagenRuta: e.target.value, imagenDesktop: e.target.value })} />
+            <input className="span-2" placeholder="Imagen Hero Desktop 1920x1080" value={banner.imagenDesktop || ''} onChange={(e) => setBanner({ ...banner, imagenDesktop: e.target.value })} />
+            <input className="span-2" placeholder="Imagen Hero Mobile 1080x1920" value={banner.imagenMobile || ''} onChange={(e) => setBanner({ ...banner, imagenMobile: e.target.value })} />
           </div>
 
-          <SelectorImagen valor={banner.imagen} categoriaPreferida="banner" onPick={(src) => setBanner({ ...banner, imagen: src, imagenRuta: src })} />
+          <SelectorImagen valor={banner.imagen} categoriaPreferida="banner" onPick={(src) => setBanner({ ...banner, imagen: src, imagenRuta: src, imagenDesktop: src })} />
 
           <div className="form-actions">
             <button type="button" onClick={guardarBanner}>
