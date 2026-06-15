@@ -441,8 +441,8 @@ export default function MaterialesCostos() {
                 </div>
 
                 <div className="row-actions">
-                  <button type="button" onClick={() => editar(m)}><Edit3 size={16} /></button>
-                  <button type="button" onClick={() => eliminar(m.id)}><Trash2 size={16} /></button>
+                  <button type="button" onClick={() => editar(m)}>Editar</button>
+                  <button type="button" onClick={() => eliminar(m.id)}>Eliminar</button>
                 </div>
               </article>
             ))}
@@ -483,7 +483,7 @@ export default function MaterialesCostos() {
         .material-row small{display:block;margin-top:8px;color:#475569;font-weight:800}
         .price-tags{display:flex;gap:4px;flex-wrap:wrap}
         .price-tags span{font-size:10px;padding:4px 6px;border:1px solid #e5e7eb;border-radius:999px;background:#fff;font-weight:800}.price-tags.compact span{background:#f8fafc}.row-actions{display:flex;gap:8px}
-        .row-actions button{width:38px;height:38px;border:0;border-radius:12px;background:#111827;color:#fff}
+        .row-actions button{width:auto;min-width:78px;height:38px;border:0;border-radius:12px;background:#111827;color:#fff;font-size:12px;font-weight:900;padding:0 12px}
         .empty{padding:24px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:18px}
         .materiales-lock{text-align:center;margin:40px auto;max-width:420px}
         @media(max-width:850px){
@@ -497,6 +497,7 @@ export default function MaterialesCostos() {
     </main>
   );
 }
+
 
 
 
