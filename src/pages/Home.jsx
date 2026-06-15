@@ -65,7 +65,23 @@ const categorias = [
 
 export default function Home({ setPage }) {
   const { banners = [] } = useApp();
-const bannerHome = banners.find(
+
+const bannersSeguros = Array.isArray(banners) && banners.length > 0
+  ? banners
+  : [
+      {
+        id: 'hero-fallback',
+        ubicacion: 'hero-principal',
+        activo: true,
+        titulo: 'Rotulacion profesional para negocios reales',
+        subtitulo: 'Letras 3D, fachadas, acrilico, PVC, impresion UV, DTF UV, CNC, laser y displays fabricables.',
+        imagen: '/productos/portada-visual.png',
+        imagenRuta: '/productos/portada-visual.png',
+        imagenDesktop: '/productos/portada-visual.png',
+        imagenMobile: '/productos/portada-visual.png',
+      },
+    ];
+const bannerHome = bannersSeguros.find(
   
   (b) => b.ubicacion === 'hero-principal' && b.activo
 );
@@ -234,4 +250,5 @@ console.log('DEBUG HERO MOBILE heroImg', heroImg);
     </main>
   );
 }
+
 
