@@ -1,4 +1,4 @@
-ï»¿import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { productosIniciales } from '../data/productos';
 import { resumenCarrito } from '../lib/calculos';
 import { supabase } from '../lib/supabase';
@@ -7,7 +7,7 @@ const AppContext = createContext(null);
 
 const configuracionInicial = {
   nombreSitio: 'ELANVISUAL',
-  slogan: 'RotulaciÃ³n, impresiÃ³n y fabricaciÃ³n visual profesional',
+  slogan: 'Rotulación, impresión y fabricación visual profesional',
   logoTexto: 'ELANVISUAL',
   logo: '',
   whatsapp: '+505 8522 8183',
@@ -15,11 +15,11 @@ const configuracionInicial = {
   instagram: '@elanvisual',
   colorPrincipal: '#111827',
   colorSecundario: '#C9A227',
-  textoHero: 'RotulaciÃ³n profesional para negocios reales',
+  textoHero: 'Rotulación profesional para negocios reales',
   descripcionHero:
-    'RÃ³tulos, letras 3D, acrÃ­lico, PVC, impresiÃ³n UV, DTF UV, CNC, lÃ¡ser, fachadas y displays fabricables desde una solicitud mÃ³vil.',
+    'Rótulos, letras 3D, acrílico, PVC, impresión UV, DTF UV, CNC, láser, fachadas y displays fabricables desde una solicitud móvil.',
   instruccionesPago:
-    'DespuÃ©s de transferir, responde este mensaje enviando el comprobante para confirmar tu solicitud.',
+    'Después de transferir, responde este mensaje enviando el comprobante para confirmar tu solicitud.',
   anticipoPorcentaje: 60,
 };
 
@@ -28,9 +28,9 @@ const cuentasIniciales = [];
 const bannersIniciales = [
   {
     id: 'hero-principal-default',
-    titulo: 'RotulaciÃ³n profesional para negocios reales',
+    titulo: 'Rotulación profesional para negocios reales',
     subtitulo:
-      'Letras 3D, fachadas, acrÃ­lico, PVC, impresiÃ³n UV, DTF UV, CNC, lÃ¡ser y displays fabricables.',
+      'Letras 3D, fachadas, acrílico, PVC, impresión UV, DTF UV, CNC, láser y displays fabricables.',
     ubicacion: 'hero-principal',
     link: 'catalogo',
     activo: true,
@@ -44,9 +44,9 @@ const bannersIniciales = [
 const trabajosIniciales = [
   {
     id: 'trabajo-1',
-    titulo: 'Letras PVC para recepciÃ³n',
+    titulo: 'Letras PVC para recepción',
     tipo: 'Foto',
-    descripcion: 'FabricaciÃ³n en PVC con acabado limpio para instalaciÃ³n interior.',
+    descripcion: 'Fabricación en PVC con acabado limpio para instalación interior.',
     imagen: '/productos/letras-pvc.jpg',
     activo: true,
   },
@@ -54,15 +54,15 @@ const trabajosIniciales = [
     id: 'trabajo-2',
     titulo: 'Fachada comercial',
     tipo: 'Foto',
-    descripcion: 'RotulaciÃ³n exterior con estructura, frente visual y montaje tÃ©cnico.',
+    descripcion: 'Rotulación exterior con estructura, frente visual y montaje técnico.',
     imagen: '/productos/fachada.jpg',
     activo: true,
   },
   {
     id: 'trabajo-3',
-    titulo: 'Display y seÃ±alizaciÃ³n',
+    titulo: 'Display y señalización',
     tipo: 'Foto',
-    descripcion: 'Piezas fabricadas para punto de venta, orientaciÃ³n y presentaciÃ³n de marca.',
+    descripcion: 'Piezas fabricadas para punto de venta, orientación y presentación de marca.',
     imagen: '/productos/display.jpg',
     activo: true,
   },
@@ -114,8 +114,8 @@ export const etiquetasEstado = {
   pedido_recibido: 'Pedido recibido',
   anticipo_confirmado: 'Anticipo confirmado',
   pago_total_confirmado: 'Pago total confirmado',
-  diseno: 'DiseÃ±o',
-  produccion: 'ProducciÃ³n',
+  diseno: 'Diseño',
+  produccion: 'Producción',
   corte_cnc: 'Corte CNC',
   armado: 'Armado',
   pintura_acabado: 'Pintura / acabado',
@@ -146,6 +146,8 @@ function normalizarBanner(banner = {}) {
   return {
     ...banner,
     imagenRuta: rutaPublica,
+    imagenDesktop: banner.imagenDesktop || banner.imagen_desktop || rutaPublica,
+    imagenMobile: banner.imagenMobile || banner.imagen_mobile || '',
     imagen: rutaPublica,
     activo: banner.activo !== false,
     ubicacion: banner.ubicacion || 'hero-principal',
@@ -179,7 +181,7 @@ function guardarStorage(clave, valor) {
   try {
     localStorage.setItem(clave, JSON.stringify(valor));
   } catch {
-    // Sin acciÃ³n.
+    // Sin acción.
   }
 }
 
@@ -362,7 +364,7 @@ function crearComisionInicialElanvisual({ total = 0, costoProduccion = 0, vended
       {
         estado: 'en_proceso',
         fecha: new Date().toISOString(),
-        nota: 'ComisiÃ³n creada en proceso. Se valida hasta trabajo finalizado y pago cancelado.',
+        nota: 'Comisión creada en proceso. Se valida hasta trabajo finalizado y pago cancelado.',
       },
     ],
   };
@@ -963,7 +965,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
           if (error) {
             console.error('Error guardando solicitud en Supabase:', error);
             window.alert(
-              'La solicitud fue creada y el WhatsApp saliÃ³, pero no se pudo guardar en Supabase. RevisÃ¡ la tabla pedidos.'
+              'La solicitud fue creada y el WhatsApp salió, pero no se pudo guardar en Supabase. Revisá la tabla pedidos.'
             );
             return;
           }
@@ -1183,7 +1185,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
         {
           estado: esTotal ? 'pago_total_confirmado' : 'anticipo_confirmado',
           fecha: new Date().toISOString(),
-          nota: 'Pago validado por administraciÃ³n.',
+          nota: 'Pago validado por administración.',
         },
       ],
     });
@@ -1326,7 +1328,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
           if (error) {
             console.error('Error creando usuario en Supabase:', error);
             setUsuarios((prev) => prev.filter((u) => u.id !== tempId));
-            window.alert('No se pudo guardar el usuario en Supabase. RevisÃ¡ duplicados.');
+            window.alert('No se pudo guardar el usuario en Supabase. Revisá duplicados.');
             return;
           }
 
@@ -2023,5 +2025,6 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
