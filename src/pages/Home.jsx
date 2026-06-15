@@ -74,12 +74,22 @@ console.log('BANNERS', banners);
 console.log('BANNER HOME', bannerHome);
 console.log('BANNER HOME JSON', JSON.stringify(bannerHome, null, 2));
 
-  const heroImg =
-  bannerHome?.imagenRuta ||
-  bannerHome?.imagen ||
-  bannerHome?.url ||
-  bannerHome?.src ||
-  'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=85';
+  const isMobileHero =
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 1099px)').matches;
+
+  const heroImgDesktop =
+    bannerHome?.imagenDesktop ||
+    bannerHome?.imagenRuta ||
+    bannerHome?.imagen ||
+    bannerHome?.url ||
+    bannerHome?.src ||
+    'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=85';
+
+  const heroImgMobile =
+    bannerHome?.imagenMobile ||
+    heroImgDesktop;
+
+  const heroImg = isMobileHero ? heroImgMobile : heroImgDesktop;
 
   const go = (page) => {
     if (typeof setPage === 'function') setPage(page);
