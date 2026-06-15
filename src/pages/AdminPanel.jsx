@@ -56,6 +56,7 @@ export default function AdminPanel() {
     productos,
     trabajos,
     banners,
+    pedidos = [],
     usuarios,
     crearProducto,
     actualizarProducto,
@@ -611,6 +612,7 @@ const [tab, setTab] = useState('dashboard');
     </main>
   );
 }
+
 
 
 
