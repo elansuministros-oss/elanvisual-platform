@@ -147,10 +147,10 @@ export default function App() {
         (accesoAdmin ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'finanzas' &&
-        (accesoAdmin ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
+        (accesoAdmin ? <DashboardERP setPage={ir} areaInicial="finanzas" /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'reportes' &&
-        (accesoAdmin ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
+        (accesoAdmin ? <DashboardERP setPage={ir} areaInicial="reportes" /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'produccion' &&
         (accesoProduccion ? (

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+﻿import React, { useMemo, useState } from 'react';
 import {
   BarChart3,
   BriefcaseBusiness,
@@ -185,9 +185,9 @@ function MiniAction({ icon, title, desc, onClick }) {
   );
 }
 
-export default function DashboardERP({ setPage }) {
+export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
   const app = useApp();
-  const [area, setArea] = useState('dashboard');
+  const [area, setArea] = useState(areaInicial);
 
   const {
     usuario,
@@ -267,13 +267,13 @@ export default function DashboardERP({ setPage }) {
       key: 'ventas',
       title: 'Ventas',
       count: data.pedidos,
-      desc: 'Pedidos y cotización',
+      desc: 'Pedidos y cotizaciÃ³n',
       icon: <HandCoins size={22} />,
       accent: '#059669',
     },
     {
       key: 'produccion',
-      title: 'Producción',
+      title: 'ProducciÃ³n',
       count: data.produccionActiva,
       desc: 'OT en proceso',
       icon: <Factory size={22} />,
@@ -327,9 +327,9 @@ export default function DashboardERP({ setPage }) {
     if (area === 'ventas') {
       return (
         <>
-          <MiniAction icon={<Calculator size={20} />} title="Cotizador Visual V2" desc="Cotización por medidas y materiales." onClick={() => setPage('cotizador')} />
+          <MiniAction icon={<Calculator size={20} />} title="Cotizador Visual V2" desc="CotizaciÃ³n por medidas y materiales." onClick={() => setPage('cotizador')} />
           <MiniAction icon={<PackageCheck size={20} />} title="Pedidos / OT" desc="Control de pedidos generados." onClick={() => setPage('pedidos')} />
-          <MiniAction icon={<BriefcaseBusiness size={20} />} title="Servicios" desc="Catálogo comercial vigente." onClick={() => setPage('catalogo')} />
+          <MiniAction icon={<BriefcaseBusiness size={20} />} title="Servicios" desc="CatÃ¡logo comercial vigente." onClick={() => setPage('catalogo')} />
         </>
       );
     }
@@ -337,9 +337,9 @@ export default function DashboardERP({ setPage }) {
     if (area === 'produccion') {
       return (
         <>
-          <MiniAction icon={<Factory size={20} />} title="Panel de producción" desc="Estados, fabricación y entrega." onClick={() => setPage('produccion')} />
-          <MiniAction icon={<ClipboardCheck size={20} />} title="Pedidos / OT" desc="Órdenes listas para taller." onClick={() => setPage('pedidos')} />
-          <MiniAction icon={<Truck size={20} />} title="Instalación / entrega" desc="Flujo operativo de cierre." onClick={() => setPage('produccion')} />
+          <MiniAction icon={<Factory size={20} />} title="Panel de producciÃ³n" desc="Estados, fabricaciÃ³n y entrega." onClick={() => setPage('produccion')} />
+          <MiniAction icon={<ClipboardCheck size={20} />} title="Pedidos / OT" desc="Ã“rdenes listas para taller." onClick={() => setPage('pedidos')} />
+          <MiniAction icon={<Truck size={20} />} title="InstalaciÃ³n / entrega" desc="Flujo operativo de cierre." onClick={() => setPage('produccion')} />
         </>
       );
     }
@@ -348,8 +348,8 @@ export default function DashboardERP({ setPage }) {
       return (
         <>
           <MiniAction icon={<PackageSearch size={20} />} title="Material Master V2" desc="Base de productos y costos." onClick={() => setPage('materiales')} />
-          <MiniAction icon={<Calculator size={20} />} title="Consumo cotizable" desc="Relación material → venta → OT." onClick={() => setPage('cotizador')} />
-          <MiniAction icon={<FileText size={20} />} title="Productos" desc="Catálogo operativo actual." onClick={() => setPage('admin')} />
+          <MiniAction icon={<Calculator size={20} />} title="Consumo cotizable" desc="RelaciÃ³n material â†’ venta â†’ OT." onClick={() => setPage('cotizador')} />
+          <MiniAction icon={<FileText size={20} />} title="Productos" desc="CatÃ¡logo operativo actual." onClick={() => setPage('admin')} />
         </>
       );
     }
@@ -368,7 +368,7 @@ export default function DashboardERP({ setPage }) {
       return (
         <>
           <MiniAction icon={<BarChart3 size={20} />} title="Reporte comercial" desc="Pedidos, clientes y trabajos." onClick={() => setPage('pedidos')} />
-          <MiniAction icon={<Factory size={20} />} title="Reporte producción" desc="Producción activa y entregas." onClick={() => setPage('produccion')} />
+          <MiniAction icon={<Factory size={20} />} title="Reporte producciÃ³n" desc="ProducciÃ³n activa y entregas." onClick={() => setPage('produccion')} />
           <MiniAction icon={<Users size={20} />} title="Reporte clientes" desc="Base CRM y seguimiento." onClick={() => setPage('crm')} />
         </>
       );
@@ -377,8 +377,8 @@ export default function DashboardERP({ setPage }) {
     if (area === 'admin') {
       return (
         <>
-          <MiniAction icon={<ShieldCheck size={20} />} title="Administración" desc="Usuarios, roles y configuración." onClick={() => setPage('admin')} />
-          <MiniAction icon={<BriefcaseBusiness size={20} />} title="Catálogo público" desc="Servicios visibles al cliente." onClick={() => setPage('catalogo')} />
+          <MiniAction icon={<ShieldCheck size={20} />} title="AdministraciÃ³n" desc="Usuarios, roles y configuraciÃ³n." onClick={() => setPage('admin')} />
+          <MiniAction icon={<BriefcaseBusiness size={20} />} title="CatÃ¡logo pÃºblico" desc="Servicios visibles al cliente." onClick={() => setPage('catalogo')} />
           <MiniAction icon={<LayoutDashboard size={20} />} title="Portafolio" desc="Trabajos, banners e identidad." onClick={() => setPage('trabajos')} />
         </>
       );
@@ -443,7 +443,7 @@ export default function DashboardERP({ setPage }) {
               fontWeight: 650,
             }}
           >
-            Centro ejecutivo móvil para ventas, pedidos, producción, CRM, inventario y control administrativo.
+            Centro ejecutivo mÃ³vil para ventas, pedidos, producciÃ³n, CRM, inventario y control administrativo.
           </p>
 
           <div
@@ -455,11 +455,11 @@ export default function DashboardERP({ setPage }) {
             }}
           >
             <KPI title="Pedidos Activos" value={data.pedidosActivos} desc="No entregados" icon={<ClipboardList size={18} />} />
-            <KPI title="Producción" value={data.produccionActiva} desc="OT activas" icon={<Factory size={18} />} />
+            <KPI title="ProducciÃ³n" value={data.produccionActiva} desc="OT activas" icon={<Factory size={18} />} />
             <KPI title="Clientes" value={data.clientes} desc="CRM base" icon={<Users size={18} />} />
             <KPI title="CxC" value={money(data.cxc)} desc="Saldo pendiente" icon={<WalletCards size={18} />} />
             <KPI title="Ventas" value={money(data.totalVentas)} desc="Pedidos acumulados" icon={<HandCoins size={18} />} />
-            <KPI title="Productos" value={data.productos} desc="Catálogo base" icon={<PackageSearch size={18} />} />
+            <KPI title="Productos" value={data.productos} desc="CatÃ¡logo base" icon={<PackageSearch size={18} />} />
           </div>
         </div>
 
@@ -471,9 +471,9 @@ export default function DashboardERP({ setPage }) {
             gap: 10,
           }}
         >
-          <QuickAction primary icon={<Calculator size={22} />} title="Nueva Cotización" desc="Abrir cotizador" onClick={() => setPage('cotizador')} />
+          <QuickAction primary icon={<Calculator size={22} />} title="Nueva CotizaciÃ³n" desc="Abrir cotizador" onClick={() => setPage('cotizador')} />
           <QuickAction icon={<PackageCheck size={22} />} title="Nuevo Pedido" desc="Pedidos / OT" onClick={() => setPage('pedidos')} />
-          <QuickAction icon={<Factory size={22} />} title="Nueva OT" desc="Producción" onClick={() => setPage('produccion')} />
+          <QuickAction icon={<Factory size={22} />} title="Nueva OT" desc="ProducciÃ³n" onClick={() => setPage('produccion')} />
           <QuickAction icon={<Users size={22} />} title="Nuevo Cliente" desc="CRM" onClick={() => setPage('crm')} />
         </section>
 
@@ -511,7 +511,7 @@ export default function DashboardERP({ setPage }) {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center' }}>
               <div>
-                <small style={{ color: '#64748b', fontWeight: 900 }}>ÁREA ERP</small>
+                <small style={{ color: '#64748b', fontWeight: 900 }}>ÃREA ERP</small>
                 <h2 style={{ margin: '3px 0 0', color: '#0f172a', letterSpacing: '-.03em' }}>
                   {areas.find((x) => x.key === area)?.title}
                 </h2>
