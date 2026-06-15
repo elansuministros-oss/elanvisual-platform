@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
-const STORAGE_MATERIALES = 'elanvisual_materiales_costos_v1';
+const STORAGE_MATERIALES = 'elanvisual_materiales_costos';
 const STORAGE_CLIENTES = 'elanvisual_clientes_cotizador_v1';
 const STORAGE_PEDIDOS = 'elanvisual_pedidos_v1';
 
