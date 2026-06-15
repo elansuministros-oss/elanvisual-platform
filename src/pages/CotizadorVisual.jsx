@@ -105,9 +105,9 @@ export default function CotizadorVisual() {
   const tieneAcceso = usuario?.rol === 'admin' || usuario?.rol === 'ventas';
 
   const materialesActivos = useMemo(
-    () => materiales.filter((m) => m.activo !== false),
-    [materiales]
-  );
+  () => materiales.filter((m) => m && m.activo !== false && (m.descripcion || m.nombre || m.categoria)),
+  [materiales]
+);
 
   const categorias = useMemo(
     () => [...new Set(materialesActivos.map((m) => m.categoria).filter(Boolean))],
@@ -283,7 +283,7 @@ export default function CotizadorVisual() {
     const nuevoItem = {
       id: `item-${Date.now()}`,
       materialId: materialSeleccionado.id,
-      descripcion: materialSeleccionado.descripcion,
+      descripcion: materialSeleccionado.descripcion || materialSeleccionado.nombre || 'Material sin nombre',
       categoria: materialSeleccionado.categoria || '',
       subcategoria: materialSeleccionado.subcategoria || '',
       tipoCalculo: materialSeleccionado.tipoCalculo || 'm2',
@@ -698,7 +698,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
           {materialSeleccionado && (
             <div className="selected-box">
-              <strong>{materialSeleccionado.descripcion}</strong>
+              <strong>{materialSeleccionado.descripcion || materialSeleccionado.nombre || 'Material sin nombre'}</strong>
               <span>
                 {materialSeleccionado.categoria || 'Sin categorÃ­a'} Â·{' '}
                 {materialSeleccionado.subcategoria || 'Sin subcategorÃ­a'} Â·{' '}
@@ -1005,4 +1005,5 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
     </main>
   );
 }
+
 
