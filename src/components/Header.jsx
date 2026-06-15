@@ -1,4 +1,4 @@
-ï»¿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Building2,
   Menu,
@@ -54,11 +54,11 @@ export default function Header({ page, setPage }) {
     ['crm', 'CRM', <Users size={24} />],
     ['cotizador', 'Cotizador', <Calculator size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
-    ['produccion', 'ProducciÃ³n', <Factory size={24} />],
+    ['produccion', 'Producción', <Factory size={24} />],
     ['materiales', 'Inventario', <PackageSearch size={24} />],
     ['finanzas', 'Finanzas', <WalletCards size={24} />],
     ['reportes', 'Reportes', <BarChart3 size={24} />],
-    ['admin', 'AdministraciÃ³n', <Settings size={24} />],
+    ['admin', 'Administración', <Settings size={24} />],
   ];
 
   const ventasLinks = [
@@ -70,7 +70,7 @@ export default function Header({ page, setPage }) {
 
   const produccionLinks = [
     ['pedidos', 'Pedidos / OT', <ClipboardList size={24} />],
-    ['produccion', 'ProducciÃ³n', <Factory size={24} />],
+    ['produccion', 'Producción', <Factory size={24} />],
   ];
 
   const links = !usuario
@@ -124,11 +124,17 @@ export default function Header({ page, setPage }) {
             <strong>{usuario ? `${brandName} ERP` : brandName}</strong>
           </div>
 
+          {usuario && (
+            <button type="button" className="mobile-logout-fixed" onClick={salir}>
+              Salir
+            </button>
+          )}
+
           <button
             type="button"
             className="mobile-menu-btn app-menu-btn"
             onClick={() => setOpen(!open)}
-            aria-label={open ? 'Cerrar menÃº' : 'Abrir menÃº'}
+            aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
           >
             {open ? <X size={42} /> : <Menu size={42} />}
           </button>

@@ -1813,3 +1813,19 @@ th,td{
     max-width:100%;
   }
 }
+
+/* FIX MOBILE SESSION ACCESS */
+.mobile-logout-fixed{
+  border:0;
+  border-radius:999px;
+  background:#e8bd2f;
+  color:#0f172a;
+  font-weight:900;
+  padding:10px 14px;
+  font-size:14px;
+  box-shadow:0 8px 18px rgba(15,23,42,.18);
+}
+
+@media (min-width:1100px){
+  .mobile-logout-fixed{display:none}
+}
