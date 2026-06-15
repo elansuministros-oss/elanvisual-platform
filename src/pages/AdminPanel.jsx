@@ -242,6 +242,8 @@ export default function AdminPanel() {
       link: b.link || 'catalogo',
       imagen: b.imagen || b.imagenRuta || '',
       imagenRuta: b.imagenRuta || b.imagen || '',
+      imagenDesktop: b.imagenDesktop || b.imagenRuta || b.imagen || '',
+      imagenMobile: b.imagenMobile || '',
       activo: b.activo !== false,
     });
     setEditandoBannerId(b.id);
@@ -458,6 +460,8 @@ export default function AdminPanel() {
 
           <SelectorImagen valor={banner.imagen} categoriaPreferida="banner" onPick={(src) => setBanner({ ...banner, imagen: src, imagenRuta: src, imagenDesktop: src })} />
 
+          <SelectorImagen valor={banner.imagenMobile} categoriaPreferida="banner" onPick={(src) => setBanner({ ...banner, imagenMobile: src })} />
+
           <div className="form-actions">
             <button type="button" onClick={guardarBanner}>
               <Save size={18} /> {editandoBannerId ? 'Guardar cambios' : 'Crear banner'}
@@ -611,4 +615,5 @@ export default function AdminPanel() {
     </main>
   );
 }
+
 
