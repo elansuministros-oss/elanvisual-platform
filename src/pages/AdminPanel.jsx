@@ -24,8 +24,8 @@ const nuevoServicioBase = {
   descripcion: '',
   medidas: '',
   imagen: '',
-  etiqueta: 'A cotizar',
-  precio: 0,
+  etiqueta: '',
+  precio: '',
   activo: true,
 };
 
