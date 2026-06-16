@@ -1,5 +1,4 @@
 ﻿import React, { useMemo, useState } from 'react';
-import Usuarios20Panel from '../components/admin/Usuarios20Panel';
 import {
   Building2,
   ClipboardList,
@@ -502,7 +501,118 @@ const [tab, setTab] = useState('dashboard');
           </div>
         </section>
       )}
-      {tab === 'usuarios' && <Usuarios20Panel />}
+      {tab === 'usuarios' && (
+        <section className="panel">
+          <h2><ShieldCheck size={20} /> Usuarios, vendedores y produccion</h2>
+
+          <div className="form-grid">
+            <input
+              placeholder="Nombre completo"
+              value={nuevoUsuario.nombre}
+              onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, nombre: e.target.value })}
+            />
+            <input
+              placeholder="Usuario de acceso"
+              value={nuevoUsuario.usuario}
+              onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, usuario: e.target.value })}
+            />
+            <input
+              placeholder="Correo"
+              value={nuevoUsuario.email}
+              onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, email: e.target.value })}
+            />
+            <input
+              placeholder="Contrasena temporal"
+              value={nuevoUsuario.password}
+              onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, password: e.target.value })}
+            />
+            <select
+              value={nuevoUsuario.rol}
+              onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, rol: e.target.value })}
+            >
+              {(rolesSistema || ['admin', 'ventas', 'produccion']).map((rol) => (
+                <option key={rol} value={rol}>{rol}</option>
+              ))}
+            </select>
+            <select
+              value={nuevoUsuario.activo ? 'activo' : 'inactivo'}
+              onChange={(e) => setNuevoUsuario({ ...nuevoUsuario, activo: e.target.value === 'activo' })}
+            >
+              <option value="activo">Activo</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+          </div>
+
+          <div className="form-actions">
+            <button
+              type="button"
+              onClick={() => {
+                if (!nuevoUsuario.usuario.trim()) return alert('Escribi el usuario.');
+                if (!nuevoUsuario.password.trim()) return alert('Escribi una contrasena temporal.');
+                crearUsuario({
+                  ...nuevoUsuario,
+                  codigoVendedor:
+                    nuevoUsuario.rol === 'ventas'
+                      ? `VEN-${nuevoUsuario.usuario.toUpperCase().replace(/[^A-Z0-9]/g, '')}`
+                      : '',
+                });
+                setNuevoUsuario({
+                  nombre: '',
+                  usuario: '',
+                  email: '',
+                  password: '',
+                  rol: 'ventas',
+                  activo: true,
+                });
+              }}
+            >
+              <PlusCircle size={18} />
+              Crear usuario
+            </button>
+          </div>
+
+          <div className="admin-list">
+            {(usuarios || []).map((u) => {
+              const codigo = u.codigoVendedor || (u.rol === 'ventas' ? `VEN-${String(u.usuario || u.id).toUpperCase().replace(/[^A-Z0-9]/g, '')}` : '');
+              const linkQR = codigo ? `${window.location.origin}/?ref=${encodeURIComponent(codigo)}` : '';
+
+              return (
+                <article className="admin-row no-image" key={u.id}>
+                  <div>
+                    <b>{u.nombre || u.usuario}</b>
+                    <span>{u.usuario}  {u.rol}  {u.activo === false ? 'Inactivo' : 'Activo'}</span>
+                    {codigo && <small>QR vendedor: {codigo}</small>}
+                  </div>
+
+                  <select
+                    value={u.rol}
+                    onChange={(e) => actualizarUsuario({ ...u, rol: e.target.value })}
+                  >
+                    {(rolesSistema || ['admin', 'ventas', 'produccion']).map((rol) => (
+                      <option key={rol} value={rol}>{rol}</option>
+                    ))}
+                  </select>
+
+                  {linkQR && (
+                    <button type="button" onClick={() => navigator.clipboard.writeText(linkQR)}>
+                      <Copy size={15} /> Copiar QR
+                    </button>
+                  )}
+
+                  <button type="button" onClick={() => actualizarUsuario({ ...u, activo: u.activo === false })}>
+                    {u.activo === false ? <Eye size={15} /> : <EyeOff size={15} />}
+                    {u.activo === false ? 'Activar' : 'Desactivar'}
+                  </button>
+
+                  <button type="button" onClick={() => eliminarUsuario(u.id)}>
+                    <Trash2 size={15} /> Eliminar
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {tab === 'multimedia' && (
         <MediaLibrary
@@ -515,7 +625,6 @@ const [tab, setTab] = useState('dashboard');
     </main>
   );
 }
-
 
 
 
