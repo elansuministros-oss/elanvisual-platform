@@ -73,7 +73,7 @@ const categorias = [
 ];
 
 export default function Home({ setPage }) {
-  const { banners = [], configuracion = {} } = useApp();
+  const { banners = [], configuracion = {}, productos = [], agregarAlCarrito } = useApp();
 
 const bannersSeguros = Array.isArray(banners) && banners.length > 0
   ? banners
@@ -123,6 +123,29 @@ console.log('DEBUG HERO MOBILE heroImg', heroImg);
 
   const go = (page) => {
     if (typeof setPage === 'function') setPage(page);
+  };
+
+  const productosAdmin = Array.isArray(productos)
+    ? productos.filter((p) => p.activo !== false)
+    : [];
+
+  const catalogoHome = productosAdmin.length > 0
+    ? productosAdmin.map((p) => ({
+        id: p.id,
+        titulo: p.nombre || p.titulo || 'Producto',
+        texto: p.descripcion || p.texto || 'Producto personalizado ELANVISUAL.',
+        precio: p.etiqueta || (Number(p.precio || 0) > 0 ? `Desde ${p.precio}` : 'Cotizar'),
+        img: p.imagen || p.img || '/productos/portada2-01.png',
+        raw: p,
+      }))
+    : productosCatalogo;
+
+  const agregarProducto = (item) => {
+    if (typeof agregarAlCarrito === 'function' && item.raw) {
+      agregarAlCarrito(item.raw);
+    }
+
+    go('tienda');
   };
 
   return (
@@ -198,7 +221,7 @@ console.log('DEBUG HERO MOBILE heroImg', heroImg);
       <HorizontalCarousel
         title="Catalogo personalizado"
         subtitle="Productos listos para agregar o cotizar"
-        items={productosCatalogo}
+        items={catalogoHome}
         renderItem={(item) => (
           <>
             <div className="app-card-img">
@@ -208,7 +231,7 @@ console.log('DEBUG HERO MOBILE heroImg', heroImg);
             <p>{item.texto}</p>
             <div className="catalog-price-row">
               <strong>{item.precio}</strong>
-              <button type="button" onClick={() => go('tienda')}>
+              <button type="button" onClick={() => agregarProducto(item)}>
                 Agregar
               </button>
             </div>
