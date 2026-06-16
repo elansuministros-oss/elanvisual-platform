@@ -187,13 +187,15 @@ export default function CotizadorVisual() {
       const texto = `${m.descripcion || ''} ${m.nombre || ''} ${m.categoria || ''} ${m.subcategoria || ''}`.toLowerCase();
       return (
         (!itemForm.categoria || m.categoria === itemForm.categoria) &&
-        (!itemForm.subcategoria || itemForm.subcategoria === 'General' || (m.subcategoria || 'General') === itemForm.subcategoria) &&
         texto.includes(q)
       );
     });
-  }, [materialesActivos, itemForm.categoria, itemForm.subcategoria, busquedaProducto]);
+  }, [materialesActivos, itemForm.categoria, busquedaProducto]);
 
-  const materialSeleccionado = materialesActivos.find((m) => m.id === itemForm.materialId);
+  const materialSeleccionado =
+    materialesActivos.find((m) => m.id === itemForm.materialId) ||
+    productosFiltrados.find((m) => m.subcategoria === itemForm.subcategoria) ||
+    null;
 
   useEffect(() => {
     if (!materialSeleccionado) return;
@@ -629,9 +631,21 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             </label>
 
             <label>
-              Subcategoria
-              <select value={itemForm.subcategoria} onChange={(e) => setItemForm((p) => ({ ...p, subcategoria: e.target.value, materialId: '' }))}>
-                <option value="">Todas</option>
+              Producto / Subcategoria
+              <select
+                value={itemForm.subcategoria}
+                onChange={(e) => {
+                  const valor = e.target.value;
+                  const material = productosFiltrados.find((m) => m.subcategoria === valor);
+                  setItemForm((p) => ({
+                    ...p,
+                    subcategoria: valor,
+                    materialId: material?.id || '',
+                  }));
+                }}
+                required
+              >
+                <option value="">Seleccionar producto</option>
                 {subcategorias.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </label>
@@ -643,16 +657,6 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
               <Search size={18} />
               <input value={busquedaProducto} onChange={(e) => setBusquedaProducto(e.target.value)} placeholder="Lona, vinil, PVC, roll up..." />
             </div>
-          </label>
-
-          <label>
-            Producto
-            <select value={itemForm.materialId} onChange={(e) => actualizarItem('materialId', e.target.value)} required>
-              <option value="">Seleccionar producto</option>
-              {productosFiltrados.map((m) => (
-                <option key={m.id} value={m.id}>{m.descripcion || m.nombre}</option>
-              ))}
-            </select>
           </label>
 
           {materialSeleccionado && (
