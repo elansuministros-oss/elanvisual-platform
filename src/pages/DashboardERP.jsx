@@ -347,7 +347,7 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     if (area === 'inventario') {
       return (
         <>
-          <MiniAction icon={<PackageSearch size={20} />} title="Material Master V2" desc="Base de productos y costos." onClick={() => setPage('materiales')} />
+          <MiniAction icon={<PackageSearch size={20} />} title="Material Master V3" desc="Materiales, tintas y combinaciones." onClick={() => setPage('materiales')} />
           <MiniAction icon={<Calculator size={20} />} title="Consumo cotizable" desc="Relacion material â†’ venta â†’ OT." onClick={() => setPage('cotizador')} />
           <MiniAction icon={<FileText size={20} />} title="Productos" desc="Catalogo operativo actual." onClick={() => setPage('admin')} />
         </>
@@ -543,3 +543,4 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     </main>
   );
 }
+
