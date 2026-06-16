@@ -22,30 +22,35 @@ const normalizarWhatsApp = (numero) => {
   return limpio || '50585228183';
 };
 
-const servicios = [
+const productosCatalogo = [
   {
     titulo: 'Letras 3D',
-    texto: 'PVC, acrílico, channelum y luz frontal.',
+    texto: 'PVC, acrilico, channelum y luz frontal.',
+    precio: 'Desde $130',
     img: 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?auto=format&fit=crop&w=900&q=80',
   },
   {
-    titulo: 'Fachadas',
-    texto: 'Rótulos exteriores, fascia y estructuras.',
+    titulo: 'Boton luminoso',
+    texto: 'Rotulo circular personalizado para fachada o interior.',
+    precio: 'Desde $130',
     img: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=900&q=80',
   },
   {
-    titulo: 'Acrílico',
-    texto: 'Placas, cajas, logos y piezas premium.',
+    titulo: 'Jalavista',
+    texto: 'Rotulo doble cara con brazo metalico.',
+    precio: 'Desde $260',
     img: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=80',
   },
   {
-    titulo: 'Impresión UV',
-    texto: 'Vinil, PVC, acrílico y materiales rígidos.',
+    titulo: 'Roll Up',
+    texto: 'Display portatil para eventos, ferias y puntos de venta.',
+    precio: 'Cotizar',
     img: 'https://images.unsplash.com/photo-1581090700227-1e37b190418e?auto=format&fit=crop&w=900&q=80',
   },
   {
-    titulo: 'CNC / Láser',
-    texto: 'Corte técnico para producción real.',
+    titulo: 'Banner impreso',
+    texto: 'Lona, vinil o material rigido segun aplicacion.',
+    precio: 'Desde $25/m2',
     img: 'https://images.unsplash.com/photo-1565018054866-968e244671af?auto=format&fit=crop&w=900&q=80',
   },
 ];
@@ -191,9 +196,9 @@ console.log('DEBUG HERO MOBILE heroImg', heroImg);
       </section>
 
       <HorizontalCarousel
-        title="Servicios destacados"
-        subtitle="Deslizá para explorar"
-        items={servicios}
+        title="Catalogo personalizado"
+        subtitle="Productos listos para agregar o cotizar"
+        items={productosCatalogo}
         renderItem={(item) => (
           <>
             <div className="app-card-img">
@@ -201,6 +206,12 @@ console.log('DEBUG HERO MOBILE heroImg', heroImg);
             </div>
             <h3>{item.titulo}</h3>
             <p>{item.texto}</p>
+            <div className="catalog-price-row">
+              <strong>{item.precio}</strong>
+              <button type="button" onClick={() => go('tienda')}>
+                Agregar
+              </button>
+            </div>
           </>
         )}
       />
@@ -251,9 +262,33 @@ console.log('DEBUG HERO MOBILE heroImg', heroImg);
           </a>
         </div>
       </section>
+          <style>{`
+        .catalog-price-row{
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:10px;
+          margin-top:10px;
+        }
+        .catalog-price-row strong{
+          font-size:14px;
+          font-weight:950;
+          color:#0f172a;
+        }
+        .catalog-price-row button{
+          border:0;
+          border-radius:999px;
+          padding:9px 13px;
+          background:#111827;
+          color:white;
+          font-weight:950;
+          cursor:pointer;
+        }
+      `}</style>
     </main>
   );
 }
+
 
 
 
