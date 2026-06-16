@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import {
   Calculator,
   CheckCircle2,
@@ -13,14 +13,30 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../lib/supabase';
 
-const STORAGE_MATERIALES = 'elanvisual_materiales_costos_v1';
-const STORAGE_CLIENTES = 'elanvisual_clientes_cotizador_v1';
-const STORAGE_PEDIDOS = 'elanvisual_pedidos_v1';
+const STORAGE_CLIENTES = 'elanvisual_cotizador_clientes_v1';
 
 const descuentos = [0, 5, 10, 15, 20];
 const tarifas = ['A', 'B', 'C', 'D'];
-const logisticaOpciones = ['Retira en taller', 'Entrega', 'Instalacion', 'Entrega + instalacion'];
+const tintas = ['ecosolvente', 'solvente', 'uv'];
+const labelsTinta = {
+  ecosolvente: 'Ecosolvente',
+  solvente: 'Solvente',
+  uv: 'UV',
+};
+
+const costosTintaDefault = {
+  ecosolvente: 1.5,
+  solvente: 0,
+  uv: 0,
+};
+
+const markupTarifa = {
+  A: 2,
+  B: 2.5,
+  C: 3,
+};
 
 const money = (v) =>
   new Intl.NumberFormat('es-NI', {
@@ -44,7 +60,7 @@ function guardarStorage(key, data) {
 }
 
 function consecutivo(prefix, lista) {
-  const numero = String(lista.length + 1).padStart(4, '0');
+  const numero = String((lista || []).length + 1).padStart(4, '0');
   return `${prefix}-${numero}`;
 }
 
@@ -66,48 +82,87 @@ const itemInicial = {
   categoria: '',
   subcategoria: '',
   materialId: '',
+  tinta: 'ecosolvente',
   tarifa: 'B',
   ancho: '',
   alto: '',
   cantidad: 1,
   descuento: 0,
   instalacion: 'No',
+  costoInstalacionM2: '',
   nota: '',
-  accesorios: {
-    ojete: false,
-    tuboPvc: false,
-    tuboGalvanizado: false,
-    bridas: false,
-  },
-  separacionOjetes: 0.5,
-  separacionBridas: 0.5,
 };
 
-export default function CotizadorVisual() {
- const { usuario, pedidos, crearPedidoOperativo } = useApp();
+function adaptarMaterial(row) {
+  const extra = row.data || {};
+  return {
+    ...extra,
+    id: row.id,
+    nombre: row.nombre || extra.nombre || extra.descripcion || '',
+    descripcion: extra.descripcion || row.nombre || '',
+    categoria: row.categoria || extra.categoria || '',
+    subcategoria: row.subcategoria || extra.subcategoria || '',
+    unidad: row.unidad || extra.unidad || extra.tipoCalculo || 'm2',
+    tipoCalculo: extra.tipoCalculo || row.unidad || 'm2',
+    precioBase: Number(row.costo ?? extra.precioBase ?? 0),
+    precioVenta: Number(row.precio ?? extra.precioVenta ?? extra.tarifaB ?? 0),
+    stock: Number(row.stock ?? extra.stock ?? 0),
+    proveedor: row.proveedor || extra.proveedor || '',
+    activo: row.activo !== false,
+    costosTinta: extra.costosTinta || {},
+    costoInstalacionM2: Number(extra.costoInstalacionM2 || extra.instalacionM2 || 0),
+  };
+}
 
-  const [materiales] = useState(() => leerStorage(STORAGE_MATERIALES));
+export default function CotizadorVisual() {
+  const { usuario, pedidos = [], crearPedidoOperativo } = useApp();
+
+  const [materiales, setMateriales] = useState([]);
+  const [cargandoMateriales, setCargandoMateriales] = useState(false);
   const [clientes, setClientes] = useState(() => leerStorage(STORAGE_CLIENTES));
 
   const [cliente, setCliente] = useState(clienteInicial);
   const [busquedaCliente, setBusquedaCliente] = useState('');
   const [proyecto, setProyecto] = useState(proyectoInicial);
+
   const [itemForm, setItemForm] = useState(itemInicial);
   const [items, setItems] = useState([]);
   const [busquedaProducto, setBusquedaProducto] = useState('');
 
-  const [logistica, setLogistica] = useState('Retira en taller');
   const [km, setKm] = useState('');
-  const [altura, setAltura] = useState('');
-  const [complejidad, setComplejidad] = useState('Normal');
+  const [costoKm, setCostoKm] = useState(1);
+  const [aplicaIva, setAplicaIva] = useState(false);
   const [pedidoGenerado, setPedidoGenerado] = useState(null);
 
   const tieneAcceso = usuario?.rol === 'admin' || usuario?.rol === 'ventas';
 
+  const cargarMateriales = async () => {
+    try {
+      setCargandoMateriales(true);
+      const { data, error } = await supabase
+        .from('materiales')
+        .select('*')
+        .eq('activo', true)
+        .order('categoria', { ascending: true });
+
+      if (error) throw error;
+      setMateriales((data || []).map(adaptarMaterial));
+    } catch (error) {
+      console.error('Error cargando materiales:', error);
+      alert('No se pudieron cargar materiales desde Supabase.');
+    } finally {
+      setCargandoMateriales(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarMateriales();
+  }, []);
+
   const materialesActivos = useMemo(
-  () => materiales.filter((m) => m && m.activo !== false && (m.descripcion || m.nombre || m.categoria)),
-  [materiales]
-);
+    () => materiales.filter((m) => m && m.activo !== false && (m.descripcion || m.nombre || m.categoria)),
+    [materiales]
+  );
 
   const categorias = useMemo(
     () => [...new Set(materialesActivos.map((m) => m.categoria).filter(Boolean))],
@@ -127,58 +182,98 @@ export default function CotizadorVisual() {
   );
 
   const productosFiltrados = useMemo(() => {
+    const q = busquedaProducto.toLowerCase();
     return materialesActivos.filter((m) => {
-      const texto = `${m.descripcion || ''} ${m.categoria || ''} ${m.subcategoria || ''}`.toLowerCase();
-
+      const texto = `${m.descripcion || ''} ${m.nombre || ''} ${m.categoria || ''} ${m.subcategoria || ''}`.toLowerCase();
       return (
         (!itemForm.categoria || m.categoria === itemForm.categoria) &&
         (!itemForm.subcategoria || itemForm.subcategoria === 'General' || (m.subcategoria || 'General') === itemForm.subcategoria) &&
-        texto.includes(busquedaProducto.toLowerCase())
+        texto.includes(q)
       );
     });
   }, [materialesActivos, itemForm.categoria, itemForm.subcategoria, busquedaProducto]);
 
+  const materialSeleccionado = materialesActivos.find((m) => m.id === itemForm.materialId);
+
+  useEffect(() => {
+    if (!materialSeleccionado) return;
+    setItemForm((prev) => ({
+      ...prev,
+      costoInstalacionM2:
+        prev.instalacion === 'Si'
+          ? String(prev.costoInstalacionM2 || materialSeleccionado.costoInstalacionM2 || '')
+          : prev.costoInstalacionM2,
+    }));
+  }, [materialSeleccionado]);
+
   const clientesFiltrados = useMemo(() => {
     const q = busquedaCliente.toLowerCase();
     if (!q) return clientes.slice(0, 6);
-
     return clientes.filter((c) =>
       `${c.empresa} ${c.contacto} ${c.whatsapp} ${c.correo}`.toLowerCase().includes(q)
     );
   }, [clientes, busquedaCliente]);
 
-  const materialSeleccionado = materialesActivos.find((m) => m.id === itemForm.materialId);
+  const areaItem = useMemo(() => {
+    const cantidad = Math.max(1, num(itemForm.cantidad));
+    if (materialSeleccionado?.tipoCalculo === 'unidad') return cantidad;
+    if (materialSeleccionado?.tipoCalculo === 'metro_lineal' || materialSeleccionado?.tipoCalculo === 'lineal') {
+      return num(itemForm.ancho) * cantidad;
+    }
+    return num(itemForm.ancho) * num(itemForm.alto) * cantidad;
+  }, [itemForm.ancho, itemForm.alto, itemForm.cantidad, materialSeleccionado]);
 
-  const mostrarLogisticaExtra =
-    logistica === 'Entrega' || logistica === 'Instalacion' || logistica === 'Entrega + instalacion';
+  const costoTinta = (material, tinta) => {
+    if (!material) return 0;
+    return num(material.costosTinta?.[tinta] ?? costosTintaDefault[tinta]);
+  };
+
+  const precioTarifa = (material, tarifa, tinta) => {
+    if (!material) return 0;
+
+    if (tarifa === 'D') {
+      return num(material.tarifaD || material.precioAprobado || material.precioVenta || material.tarifaC);
+    }
+
+    const tarifaGuardada = num(material[`tarifa${tarifa}`] || material[`precio${tarifa}`]);
+    const costoMaterial = num(material.precioBase || material.costoMaterialSinTinta || material.costo);
+
+    if (costoMaterial > 0) {
+      const costoProduccion = (costoMaterial + costoTinta(material, tinta)) * 1.1;
+      return costoProduccion * (markupTarifa[tarifa] || markupTarifa.B);
+    }
+
+    return tarifaGuardada || num(material.precioVenta);
+  };
 
   const resumen = useMemo(() => {
-    const subtotal = items.reduce((acc, item) => acc + num(item.subtotal), 0);
+    const subtotalItems = items.reduce((acc, item) => acc + num(item.total), 0);
     const descuento = items.reduce((acc, item) => acc + num(item.montoDescuento), 0);
-    const total = items.reduce((acc, item) => acc + num(item.total), 0);
+    const totalM2Instalacion = items
+      .filter((item) => item.categoria === 'Instalacion')
+      .reduce((acc, item) => acc + num(item.cantidadBase), 0);
+
+    const transporte = num(km) * num(costoKm);
+    const subtotal = subtotalItems + transporte;
+    const iva = aplicaIva ? subtotal * 0.15 : 0;
+    const total = subtotal + iva;
 
     return {
-      subtotal,
+      subtotalItems,
       descuento,
+      totalM2Instalacion,
+      transporte,
+      subtotal,
+      iva,
       total,
       anticipo: total * 0.6,
       saldo: total * 0.4,
     };
-  }, [items]);
+  }, [items, km, costoKm, aplicaIva]);
 
   const actualizarCliente = (campo, valor) => setCliente((prev) => ({ ...prev, [campo]: valor }));
   const actualizarProyecto = (campo, valor) => setProyecto((prev) => ({ ...prev, [campo]: valor }));
   const actualizarItem = (campo, valor) => setItemForm((prev) => ({ ...prev, [campo]: valor }));
-
-  const actualizarAccesorio = (campo) => {
-    setItemForm((prev) => ({
-      ...prev,
-      accesorios: {
-        ...prev.accesorios,
-        [campo]: !prev.accesorios[campo],
-      },
-    }));
-  };
 
   const seleccionarCliente = (c) => {
     setCliente({
@@ -213,70 +308,19 @@ export default function CotizadorVisual() {
     alert('Cliente guardado.');
   };
 
-  const precioTarifa = (material, tarifa) => {
-    if (!material) return 0;
-    return num(material[`tarifa${tarifa}`] || material[`precio${tarifa}`] || material.precioVenta);
-  };
-
-  const calcularCantidadBase = (material) => {
-    const ancho = num(itemForm.ancho);
-    const alto = num(itemForm.alto);
-    const cantidad = Math.max(1, num(itemForm.cantidad));
-
-    if (!material) return 0;
-    if (material.tipoCalculo === 'unidad') return cantidad;
-    if (material.tipoCalculo === 'metro_lineal') return ancho * cantidad;
-
-    return ancho * alto * cantidad;
-  };
-
-  const calcularAccesorios = () => {
-    const ancho = num(itemForm.ancho);
-    const alto = num(itemForm.alto);
-    const cantidad = Math.max(1, num(itemForm.cantidad));
-    const perimetro = 2 * (ancho + alto) * cantidad;
-    const resultado = [];
-
-    if (itemForm.accesorios.tuboPvc) {
-      resultado.push({ nombre: 'Tubo PVC', tipo: 'metro lineal', cantidad: 2 * ancho * cantidad });
-    }
-
-    if (itemForm.accesorios.tuboGalvanizado) {
-      resultado.push({ nombre: 'Tubo Galvanizado', tipo: 'metro lineal', cantidad: 2 * ancho * cantidad });
-    }
-
-    if (itemForm.accesorios.ojete) {
-      resultado.push({
-        nombre: 'Ojete',
-        tipo: 'unidad',
-        cantidad: Math.ceil(perimetro / Math.max(0.1, num(itemForm.separacionOjetes))),
-      });
-    }
-
-    if (itemForm.accesorios.bridas) {
-      resultado.push({
-        nombre: 'Bridas',
-        tipo: 'unidad',
-        cantidad: Math.ceil(perimetro / Math.max(0.1, num(itemForm.separacionBridas))),
-      });
-    }
-
-    return resultado;
-  };
-
   const agregarItem = (e) => {
     e.preventDefault();
     if (!materialSeleccionado) return;
 
-    const cantidadBase = calcularCantidadBase(materialSeleccionado);
-    const precioUnitario = precioTarifa(materialSeleccionado, itemForm.tarifa);
+    const cantidadBase = areaItem;
+    if (cantidadBase <= 0) {
+      alert('Ingresa medidas validas.');
+      return;
+    }
+
+    const precioUnitario = precioTarifa(materialSeleccionado, itemForm.tarifa, itemForm.tinta);
     const subtotal = precioUnitario * cantidadBase;
-
-    const descuentoPermitido = Math.min(
-      num(itemForm.descuento),
-      num(materialSeleccionado.descuentoMaximo || 20)
-    );
-
+    const descuentoPermitido = Math.min(num(itemForm.descuento), num(materialSeleccionado.descuentoMaximo || 20));
     const montoDescuento = subtotal * (descuentoPermitido / 100);
     const total = subtotal - montoDescuento;
 
@@ -284,6 +328,8 @@ export default function CotizadorVisual() {
       id: `item-${Date.now()}`,
       materialId: materialSeleccionado.id,
       descripcion: materialSeleccionado.descripcion || materialSeleccionado.nombre || 'Material sin nombre',
+      tinta: itemForm.tinta,
+      tintaLabel: labelsTinta[itemForm.tinta],
       categoria: materialSeleccionado.categoria || '',
       subcategoria: materialSeleccionado.subcategoria || '',
       tipoCalculo: materialSeleccionado.tipoCalculo || 'm2',
@@ -299,17 +345,46 @@ export default function CotizadorVisual() {
       total,
       instalacion: itemForm.instalacion,
       nota: itemForm.nota,
-      accesoriosProduccion: calcularAccesorios(),
-      costoProduccion: materialSeleccionado.costoProduccion || 0,
     };
 
-    setItems((prev) => [nuevoItem, ...prev]);
+    const nuevos = [nuevoItem];
+
+    if (itemForm.instalacion === 'Si') {
+      const instalacionM2 = num(itemForm.costoInstalacionM2 || materialSeleccionado.costoInstalacionM2);
+      if (instalacionM2 <= 0) {
+        alert('Ingresa costo de instalacion por m2.');
+        return;
+      }
+
+      nuevos.push({
+        id: `inst-${Date.now()}`,
+        descripcion: `Instalacion de ${nuevoItem.descripcion}`,
+        categoria: 'Instalacion',
+        subcategoria: 'Instalacion por m2',
+        tipoCalculo: 'm2',
+        ancho: nuevoItem.ancho,
+        alto: nuevoItem.alto,
+        cantidad: nuevoItem.cantidad,
+        cantidadBase,
+        tarifa: 'Instalacion',
+        precioUnitario: instalacionM2,
+        subtotal: instalacionM2 * cantidadBase,
+        descuento: 0,
+        montoDescuento: 0,
+        total: instalacionM2 * cantidadBase,
+        instalacion: 'Si',
+        nota: 'Instalacion calculada por m2.',
+      });
+    }
+
+    setItems((prev) => [...nuevos, ...prev]);
     setPedidoGenerado(null);
     setItemForm((prev) => ({
       ...itemInicial,
-      tarifa: prev.tarifa,
       categoria: prev.categoria,
       subcategoria: prev.subcategoria,
+      tinta: prev.tinta,
+      tarifa: prev.tarifa,
     }));
   };
 
@@ -319,35 +394,36 @@ export default function CotizadorVisual() {
   };
 
   const crearPedido = () => {
-    if (items.length === 0) {
-      alert('Agrega al menos un item antes de convertir a pedido.');
-      return;
-    }
-
-    if (!cliente.empresa && !cliente.contacto) {
-      alert('Completa el cliente antes de convertir a pedido.');
-      return;
-    }
-
-    const numeroPedido = consecutivo('PED', pedidos);
-    const numeroOT = consecutivo('OT', pedidos);
+    if (items.length === 0) return alert('Agrega al menos un item.');
+    if (!cliente.empresa && !cliente.contacto) return alert('Completa el cliente.');
 
     const nuevoPedido = {
       id: `ped-${Date.now()}`,
-      numeroPedido,
-      numeroOT,
+      numeroPedido: consecutivo('PED', pedidos),
+      numeroOT: consecutivo('OT', pedidos),
       fecha: new Date().toISOString(),
       estado: 'Pedido creado',
       cliente,
       proyecto,
       logistica: {
-        modalidad: logistica,
         km,
-        altura,
-        complejidad,
+        costoKm,
+        transporte: resumen.transporte,
       },
       resumen,
-      items,
+      items: [
+        ...items,
+        ...(resumen.transporte > 0
+          ? [{
+              id: `trans-${Date.now()}`,
+              descripcion: `Transporte ${km} km`,
+              categoria: 'Transporte',
+              cantidadBase: num(km),
+              precioUnitario: num(costoKm),
+              total: resumen.transporte,
+            }]
+          : []),
+      ],
       pagos: {
         anticipoEsperado: resumen.anticipo,
         saldoEsperado: resumen.saldo,
@@ -359,19 +435,7 @@ export default function CotizadorVisual() {
         estado: 'Pendiente',
         prioridad: 'Normal',
         observaciones: '',
-        items: items.map((item) => ({
-          id: item.id,
-          descripcion: item.descripcion,
-          categoria: item.categoria,
-          subcategoria: item.subcategoria,
-          medidas:
-            item.tipoCalculo === 'unidad'
-              ? `Cantidad: ${item.cantidad}`
-              : `${item.ancho} x ${item.alto} m - Cantidad: ${item.cantidad}`,
-          instalacion: item.instalacion,
-          accesoriosProduccion: item.accesoriosProduccion,
-          nota: item.nota,
-        })),
+        items,
       },
       flujo: {
         lead: true,
@@ -386,10 +450,9 @@ export default function CotizadorVisual() {
       },
     };
 
-   const pedidoOperativo = crearPedidoOperativo(nuevoPedido);
-setPedidoGenerado(pedidoOperativo);
-alert(`Pedido generado: ${pedidoOperativo.numeroPedido} / ${pedidoOperativo.numeroOT}`);
-
+    const pedidoOperativo = crearPedidoOperativo(nuevoPedido);
+    setPedidoGenerado(pedidoOperativo);
+    alert(`Pedido generado: ${pedidoOperativo.numeroPedido} / ${pedidoOperativo.numeroOT}`);
   };
 
   const textoWhatsApp = useMemo(() => {
@@ -397,17 +460,18 @@ alert(`Pedido generado: ${pedidoOperativo.numeroPedido} / ${pedidoOperativo.nume
       const medida =
         item.tipoCalculo === 'unidad'
           ? `Cantidad: ${item.cantidad}`
-          : `Medida: ${item.ancho} x ${item.alto} m - Cantidad: ${item.cantidad}`;
+          : `Medida: ${item.ancho} x ${item.alto} m - Cantidad: ${item.cantidad} - Total: ${Number(item.cantidadBase).toFixed(2)} m2`;
 
       return `${index + 1}. ${item.descripcion}
+${item.tintaLabel ? `Tinta: ${item.tintaLabel}` : ''}
 ${medida}
-${item.instalacion === 'Si' ? 'Incluye solicitud de instalacion por revisar en sitio.' : 'Solo suministro / entrega segun logistica.'}
+${item.instalacion === 'Si' ? 'Incluye instalacion.' : 'Sin instalacion.'}
 Total item: ${money(item.total)}
 ${item.nota ? `Nota: ${item.nota}` : ''}`;
     });
 
     const lineas = [
-      '*COTIZACIÃ“N ELANVISUAL*',
+      '*COTIZACION ELANVISUAL*',
       pedidoGenerado ? `Pedido interno: ${pedidoGenerado.numeroPedido}` : '',
       pedidoGenerado ? `OT interna: ${pedidoGenerado.numeroOT}` : '',
       '',
@@ -420,20 +484,16 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
       '*Proyecto*',
       proyecto.lugar ? `Lugar: ${proyecto.lugar}` : '',
       proyecto.direccion ? `Direccion: ${proyecto.direccion}` : '',
-      proyecto.contactoSitio ? `Contacto en sitio: ${proyecto.contactoSitio}` : '',
-      proyecto.whatsappSitio ? `WhatsApp en sitio: ${proyecto.whatsappSitio}` : '',
       '',
-      '*Detalle comercial*',
+      '*Detalle*',
       ...detalle,
       '',
-      '*Logistica*',
-      logistica,
-      mostrarLogisticaExtra && km ? `KM: ${km}` : '',
-      mostrarLogisticaExtra && altura ? `Altura: ${altura}` : '',
-      mostrarLogisticaExtra ? `Complejidad: ${complejidad}` : '',
+      resumen.totalM2Instalacion > 0 ? `Total m2 instalacion: ${resumen.totalM2Instalacion.toFixed(2)} m2` : '',
+      resumen.transporte > 0 ? `Transporte: ${km} km x ${money(costoKm)} = ${money(resumen.transporte)}` : '',
       '',
+      `Subtotal items: ${money(resumen.subtotalItems)}`,
       `Subtotal: ${money(resumen.subtotal)}`,
-      `Descuento aplicado: ${money(resumen.descuento)}`,
+      aplicaIva ? `IVA 15%: ${money(resumen.iva)}` : 'IVA: No aplicado',
       `Total: ${money(resumen.total)}`,
       `Anticipo 60%: ${money(resumen.anticipo)}`,
       `Saldo 40%: ${money(resumen.saldo)}`,
@@ -442,66 +502,14 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
     ];
 
     return lineas.filter(Boolean).join('\n');
-  }, [
-    cliente,
-    proyecto,
-    items,
-    logistica,
-    km,
-    altura,
-    complejidad,
-    resumen,
-    mostrarLogisticaExtra,
-    pedidoGenerado,
-  ]);
-
-  const textoProduccion = useMemo(() => {
-    if (!pedidoGenerado) return 'Converti la cotizacion a pedido para generar OT de produccion.';
-
-    const lineas = [
-      `*ORDEN DE PRODUCCIÃ“N ${pedidoGenerado.numeroOT}*`,
-      `Pedido: ${pedidoGenerado.numeroPedido}`,
-      '',
-      `Cliente: ${cliente.empresa || cliente.contacto}`,
-      proyecto.lugar ? `Lugar: ${proyecto.lugar}` : '',
-      proyecto.direccion ? `Direccion: ${proyecto.direccion}` : '',
-      '',
-      '*Ãtems produccion*',
-      ...items.map((item, index) => {
-        const medida =
-          item.tipoCalculo === 'unidad'
-            ? `Cantidad: ${item.cantidad}`
-            : `${item.ancho} x ${item.alto} m - Cantidad: ${item.cantidad}`;
-
-        const accesorios =
-          item.accesoriosProduccion.length > 0
-            ? item.accesoriosProduccion
-                .map((a) => `${a.nombre}: ${Number(a.cantidad).toFixed(2)} ${a.tipo}`)
-                .join(' - ')
-            : 'Sin accesorios automaticos';
-
-        return `${index + 1}. ${item.descripcion}
-${medida}
-Instalacion: ${item.instalacion}
-Accesorios: ${accesorios}
-${item.nota ? `Nota: ${item.nota}` : ''}`;
-      }),
-      '',
-      `Logistica: ${logistica}`,
-      mostrarLogisticaExtra && km ? `KM: ${km}` : '',
-      mostrarLogisticaExtra && altura ? `Altura: ${altura}` : '',
-      mostrarLogisticaExtra ? `Complejidad: ${complejidad}` : '',
-    ];
-
-    return lineas.filter(Boolean).join('\n');
-  }, [pedidoGenerado, cliente, proyecto, items, logistica, km, altura, complejidad, mostrarLogisticaExtra]);
+  }, [items, resumen, km, costoKm, aplicaIva, cliente, proyecto, pedidoGenerado]);
 
   const copiarTexto = async (texto, mensaje) => {
     try {
       await navigator.clipboard.writeText(texto);
       alert(mensaje);
     } catch {
-      alert('No se pudo copiar automaticamente. Selecciona el texto manualmente.');
+      alert('No se pudo copiar automaticamente.');
     }
   };
 
@@ -520,9 +528,9 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
   return (
     <main className="cotizador-page">
       <section className="cotizador-hero">
-        <span>ELANVISUAL - APP MODE</span>
-        <h1>Cotizador Visual V2.2</h1>
-        <p>Cotizacion, pedido y OT de produccion desde celular.</p>
+        <span>ELANVISUAL - COTIZADOR V3</span>
+        <h1>Cotizador Visual</h1>
+        <p>Material, tinta, medidas, instalacion, transporte e IVA.</p>
       </section>
 
       <section className="app-grid">
@@ -536,11 +544,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             Buscar cliente
             <div className="search-box">
               <Search size={18} />
-              <input
-                value={busquedaCliente}
-                onChange={(e) => setBusquedaCliente(e.target.value)}
-                placeholder="Empresa, contacto o WhatsApp"
-              />
+              <input value={busquedaCliente} onChange={(e) => setBusquedaCliente(e.target.value)} placeholder="Empresa, contacto o WhatsApp" />
             </div>
           </label>
 
@@ -556,32 +560,16 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
           )}
 
           <div className="two">
-            <label>
-              Empresa
-              <input value={cliente.empresa} onChange={(e) => actualizarCliente('empresa', e.target.value)} />
-            </label>
-
-            <label>
-              Contacto
-              <input value={cliente.contacto} onChange={(e) => actualizarCliente('contacto', e.target.value)} />
-            </label>
+            <label>Empresa<input value={cliente.empresa} onChange={(e) => actualizarCliente('empresa', e.target.value)} /></label>
+            <label>Contacto<input value={cliente.contacto} onChange={(e) => actualizarCliente('contacto', e.target.value)} /></label>
           </div>
 
           <div className="two">
-            <label>
-              WhatsApp
-              <input value={cliente.whatsapp} onChange={(e) => actualizarCliente('whatsapp', e.target.value)} />
-            </label>
-
-            <label>
-              Correo
-              <input value={cliente.correo} onChange={(e) => actualizarCliente('correo', e.target.value)} />
-            </label>
+            <label>WhatsApp<input value={cliente.whatsapp} onChange={(e) => actualizarCliente('whatsapp', e.target.value)} /></label>
+            <label>Correo<input value={cliente.correo} onChange={(e) => actualizarCliente('correo', e.target.value)} /></label>
           </div>
 
-          <button className="secondary-btn" type="button" onClick={guardarCliente}>
-            Guardar cliente
-          </button>
+          <button className="secondary-btn" type="button" onClick={guardarCliente}>Guardar cliente</button>
         </section>
 
         <section className="cotizador-card">
@@ -590,32 +578,12 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             <h2>Proyecto</h2>
           </div>
 
-          <label>
-            Lugar
-            <input value={proyecto.lugar} onChange={(e) => actualizarProyecto('lugar', e.target.value)} />
-          </label>
-
-          <label>
-            Direccion
-            <textarea value={proyecto.direccion} onChange={(e) => actualizarProyecto('direccion', e.target.value)} />
-          </label>
+          <label>Lugar<input value={proyecto.lugar} onChange={(e) => actualizarProyecto('lugar', e.target.value)} /></label>
+          <label>Direccion<textarea value={proyecto.direccion} onChange={(e) => actualizarProyecto('direccion', e.target.value)} /></label>
 
           <div className="two">
-            <label>
-              Contacto en sitio
-              <input
-                value={proyecto.contactoSitio}
-                onChange={(e) => actualizarProyecto('contactoSitio', e.target.value)}
-              />
-            </label>
-
-            <label>
-              WhatsApp en sitio
-              <input
-                value={proyecto.whatsappSitio}
-                onChange={(e) => actualizarProyecto('whatsappSitio', e.target.value)}
-              />
-            </label>
+            <label>Contacto sitio<input value={proyecto.contactoSitio} onChange={(e) => actualizarProyecto('contactoSitio', e.target.value)} /></label>
+            <label>WhatsApp sitio<input value={proyecto.whatsappSitio} onChange={(e) => actualizarProyecto('whatsappSitio', e.target.value)} /></label>
           </div>
         </section>
       </section>
@@ -627,43 +595,22 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             <h2>Agregar item</h2>
           </div>
 
+          {cargandoMateriales && <div className="empty">Cargando materiales desde Supabase...</div>}
+
           <div className="two">
             <label>
               Categoria
-              <select
-                value={itemForm.categoria}
-                onChange={(e) =>
-                  setItemForm((prev) => ({
-                    ...prev,
-                    categoria: e.target.value,
-                    subcategoria: '',
-                    materialId: '',
-                  }))
-                }
-              >
+              <select value={itemForm.categoria} onChange={(e) => setItemForm((p) => ({ ...p, categoria: e.target.value, subcategoria: '', materialId: '' }))}>
                 <option value="">Todas</option>
-                {categorias.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
+                {categorias.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </label>
 
             <label>
               Subcategoria
-              <select
-                value={itemForm.subcategoria}
-                onChange={(e) =>
-                  setItemForm((prev) => ({
-                    ...prev,
-                    subcategoria: e.target.value,
-                    materialId: '',
-                  }))
-                }
-              >
+              <select value={itemForm.subcategoria} onChange={(e) => setItemForm((p) => ({ ...p, subcategoria: e.target.value, materialId: '' }))}>
                 <option value="">Todas</option>
-                {subcategorias.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
+                {subcategorias.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </label>
           </div>
@@ -672,143 +619,68 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             Buscar producto
             <div className="search-box">
               <Search size={18} />
-              <input
-                value={busquedaProducto}
-                onChange={(e) => setBusquedaProducto(e.target.value)}
-                placeholder="Lona, vinil, PVC, roll up..."
-              />
+              <input value={busquedaProducto} onChange={(e) => setBusquedaProducto(e.target.value)} placeholder="Lona, vinil, PVC, roll up..." />
             </div>
           </label>
 
           <label>
             Producto
-            <select
-              value={itemForm.materialId}
-              onChange={(e) => actualizarItem('materialId', e.target.value)}
-              required
-            >
+            <select value={itemForm.materialId} onChange={(e) => actualizarItem('materialId', e.target.value)} required>
               <option value="">Seleccionar producto</option>
               {productosFiltrados.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.descripcion}
-                </option>
+                <option key={m.id} value={m.id}>{m.descripcion || m.nombre}</option>
               ))}
             </select>
           </label>
 
           {materialSeleccionado && (
             <div className="selected-box">
-              <strong>{materialSeleccionado.descripcion || materialSeleccionado.nombre || 'Material sin nombre'}</strong>
-              <span>
-                {materialSeleccionado.categoria || 'Sin categoria'} -{' '}
-                {materialSeleccionado.subcategoria || 'Sin subcategoria'} -{' '}
-                {materialSeleccionado.tipoCalculo || 'm2'}
-              </span>
+              <strong>{materialSeleccionado.descripcion || materialSeleccionado.nombre}</strong>
+              <span>{materialSeleccionado.categoria} - {materialSeleccionado.subcategoria} - {materialSeleccionado.tipoCalculo}</span>
             </div>
           )}
 
           <div className="two">
             <label>
+              Tinta
+              <select value={itemForm.tinta} onChange={(e) => actualizarItem('tinta', e.target.value)}>
+                {tintas.map((t) => <option key={t} value={t}>{labelsTinta[t]}</option>)}
+              </select>
+            </label>
+
+            <label>
               Tarifa
               <select value={itemForm.tarifa} onChange={(e) => actualizarItem('tarifa', e.target.value)}>
-                {tarifas.map((t) => (
+                {tarifas.filter((t) => usuario?.rol === 'admin' || t !== 'D').map((t) => (
                   <option key={t} value={t}>Tarifa {t}</option>
                 ))}
               </select>
             </label>
-
-            <label>
-              Descuento item
-              <select value={itemForm.descuento} onChange={(e) => actualizarItem('descuento', e.target.value)}>
-                {descuentos.map((d) => (
-                  <option key={d} value={d}>{d}%</option>
-                ))}
-              </select>
-            </label>
           </div>
 
           <div className="two">
-            <label>
-              Ancho m
-              <input
-                type="number"
-                step="0.01"
-                value={itemForm.ancho}
-                disabled={materialSeleccionado?.tipoCalculo === 'unidad'}
-                onChange={(e) => actualizarItem('ancho', e.target.value)}
-              />
-            </label>
-
-            <label>
-              Alto m
-              <input
-                type="number"
-                step="0.01"
-                value={itemForm.alto}
-                disabled={materialSeleccionado?.tipoCalculo === 'unidad'}
-                onChange={(e) => actualizarItem('alto', e.target.value)}
-              />
-            </label>
+            <label>Ancho m<input type="number" step="0.01" value={itemForm.ancho} disabled={materialSeleccionado?.tipoCalculo === 'unidad'} onChange={(e) => actualizarItem('ancho', e.target.value)} /></label>
+            <label>Alto m<input type="number" step="0.01" value={itemForm.alto} disabled={materialSeleccionado?.tipoCalculo === 'unidad'} onChange={(e) => actualizarItem('alto', e.target.value)} /></label>
           </div>
 
           <div className="two">
-            <label>
-              Cantidad
-              <input
-                type="number"
-                min="1"
-                step="1"
-                value={itemForm.cantidad}
-                onChange={(e) => actualizarItem('cantidad', e.target.value)}
-              />
-            </label>
-
-            <label>
-              Instalacion por item
-              <select value={itemForm.instalacion} onChange={(e) => actualizarItem('instalacion', e.target.value)}>
-                <option>No</option>
-                <option>Si</option>
-              </select>
-            </label>
+            <label>Cantidad<input type="number" min="1" step="1" value={itemForm.cantidad} onChange={(e) => actualizarItem('cantidad', e.target.value)} /></label>
+            <label>Descuento<select value={itemForm.descuento} onChange={(e) => actualizarItem('descuento', e.target.value)}>{descuentos.map((d) => <option key={d} value={d}>{d}%</option>)}</select></label>
           </div>
 
-          <div className="access-box">
-            <strong>Accesorios automaticos</strong>
-
-            <div className="access-grid">
-              <button type="button" className={itemForm.accesorios.ojete ? 'active' : ''} onClick={() => actualizarAccesorio('ojete')}>Ojete</button>
-              <button type="button" className={itemForm.accesorios.tuboPvc ? 'active' : ''} onClick={() => actualizarAccesorio('tuboPvc')}>Tubo PVC</button>
-              <button type="button" className={itemForm.accesorios.tuboGalvanizado ? 'active' : ''} onClick={() => actualizarAccesorio('tuboGalvanizado')}>Tubo Galv.</button>
-              <button type="button" className={itemForm.accesorios.bridas ? 'active' : ''} onClick={() => actualizarAccesorio('bridas')}>Bridas</button>
-            </div>
-
-            <div className="two compact">
-              <label>
-                Separacion ojetes m
-                <input
-                  type="number"
-                  step="0.05"
-                  value={itemForm.separacionOjetes}
-                  onChange={(e) => actualizarItem('separacionOjetes', e.target.value)}
-                />
-              </label>
-
-              <label>
-                Separacion bridas m
-                <input
-                  type="number"
-                  step="0.05"
-                  value={itemForm.separacionBridas}
-                  onChange={(e) => actualizarItem('separacionBridas', e.target.value)}
-                />
-              </label>
-            </div>
+          <div className="two">
+            <label>Instalacion<select value={itemForm.instalacion} onChange={(e) => actualizarItem('instalacion', e.target.value)}><option>No</option><option>Si</option></select></label>
+            {itemForm.instalacion === 'Si' && (
+              <label>Costo instalacion m2<input type="number" step="0.01" value={itemForm.costoInstalacionM2} onChange={(e) => actualizarItem('costoInstalacionM2', e.target.value)} /></label>
+            )}
           </div>
 
-          <label>
-            Nota interna / comercial
-            <textarea value={itemForm.nota} onChange={(e) => actualizarItem('nota', e.target.value)} />
-          </label>
+          <div className="selected-box">
+            <strong>Total calculado</strong>
+            <span>{Number(areaItem || 0).toFixed(2)} m2</span>
+          </div>
+
+          <label>Nota interna / comercial<textarea value={itemForm.nota} onChange={(e) => actualizarItem('nota', e.target.value)} /></label>
 
           <button className="primary-btn" type="submit">
             <CheckCircle2 size={18} />
@@ -827,117 +699,62 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
               <article className="quote-item" key={item.id}>
                 <div>
                   <h3>{item.descripcion}</h3>
-                  <p>
-                    {item.tipoCalculo === 'unidad'
-                      ? `Cantidad: ${item.cantidad}`
-                      : `${item.ancho} x ${item.alto} m - Cantidad: ${item.cantidad}`}
-                  </p>
-                  <span>Instalacion: {item.instalacion} - Desc. {item.descuento}%</span>
-
-                  {item.accesoriosProduccion.length > 0 && (
-                    <small>
-                      Produccion:{' '}
-                      {item.accesoriosProduccion
-                        .map((a) => `${a.nombre}: ${Number(a.cantidad).toFixed(2)} ${a.tipo}`)
-                        .join(' - ')}
-                    </small>
-                  )}
+                  <p>{item.tipoCalculo === 'unidad' ? `Cantidad: ${item.cantidad}` : `${item.ancho} x ${item.alto} m - Cantidad: ${item.cantidad} - ${Number(item.cantidadBase).toFixed(2)} m2`}</p>
+                  <span>{item.tintaLabel ? `Tinta: ${item.tintaLabel} - ` : ''}Instalacion: {item.instalacion} - Desc. {item.descuento || 0}%</span>
                 </div>
 
                 <div className="quote-price">
                   <strong>{money(item.total)}</strong>
-                  <button type="button" onClick={() => quitarItem(item.id)}>
-                    <Trash2 size={15} />
-                  </button>
+                  <button type="button" onClick={() => quitarItem(item.id)}><Trash2 size={15} /></button>
                 </div>
               </article>
             ))}
-
             {items.length === 0 && <div className="empty">Agrega items para construir la cotizacion.</div>}
           </div>
 
           <div className="logistica-box">
             <div className="card-title small">
               <Truck size={20} />
-              <h2>Logistica global</h2>
+              <h2>Transporte</h2>
             </div>
 
-            <label>
-              Modalidad
-              <select value={logistica} onChange={(e) => setLogistica(e.target.value)}>
-                {logisticaOpciones.map((op) => (
-                  <option key={op}>{op}</option>
-                ))}
-              </select>
-            </label>
-
-            {mostrarLogisticaExtra && (
-              <div className="three">
-                <label>
-                  KM
-                  <input value={km} onChange={(e) => setKm(e.target.value)} />
-                </label>
-
-                <label>
-                  Altura
-                  <input value={altura} onChange={(e) => setAltura(e.target.value)} placeholder="Ej. 3 m" />
-                </label>
-
-                <label>
-                  Complejidad
-                  <select value={complejidad} onChange={(e) => setComplejidad(e.target.value)}>
-                    <option>Normal</option>
-                    <option>Media</option>
-                    <option>Alta</option>
-                  </select>
-                </label>
-              </div>
-            )}
+            <div className="two">
+              <label>KM<input type="number" step="0.01" value={km} onChange={(e) => setKm(e.target.value)} /></label>
+              <label>Costo por KM<input type="number" step="0.01" value={costoKm} onChange={(e) => setCostoKm(e.target.value)} /></label>
+            </div>
           </div>
 
+          <label className="iva-check">
+            <input type="checkbox" checked={aplicaIva} onChange={(e) => setAplicaIva(e.target.checked)} />
+            Aplicar IVA 15%
+          </label>
+
           <div className="totals-box">
+            <p><span>Items</span><b>{money(resumen.subtotalItems)}</b></p>
+            <p><span>M2 instalacion</span><b>{resumen.totalM2Instalacion.toFixed(2)} m2</b></p>
+            <p><span>Transporte</span><b>{money(resumen.transporte)}</b></p>
             <p><span>Subtotal</span><b>{money(resumen.subtotal)}</b></p>
-            <p><span>Descuento</span><b>{money(resumen.descuento)}</b></p>
+            <p><span>IVA</span><b>{money(resumen.iva)}</b></p>
             <p className="total"><span>Total</span><b>{money(resumen.total)}</b></p>
             <p><span>Anticipo 60%</span><b>{money(resumen.anticipo)}</b></p>
             <p><span>Saldo 40%</span><b>{money(resumen.saldo)}</b></p>
           </div>
 
           <div className="action-stack">
-            <button className="primary-btn" type="button" onClick={crearPedido}>
-              <PackageCheck size={18} />
-              Convertir a Pedido / OT
-            </button>
-
-            <button className="secondary-btn" type="button" onClick={() => copiarTexto(textoWhatsApp, 'Cotizacion copiada para WhatsApp.')}>
-              <Copy size={18} />
-              Copiar WhatsApp cliente
-            </button>
-
-            <button className="secondary-btn" type="button" onClick={() => copiarTexto(textoProduccion, 'OT copiada para produccion.')}>
-              <Copy size={18} />
-              Copiar OT produccion
-            </button>
+            <button className="primary-btn" type="button" onClick={crearPedido}><PackageCheck size={18} />Convertir a Pedido / OT</button>
+            <button className="secondary-btn" type="button" onClick={() => copiarTexto(textoWhatsApp, 'Cotizacion copiada para WhatsApp.')}><Copy size={18} />Copiar WhatsApp cliente</button>
           </div>
 
           {pedidoGenerado && (
             <div className="pedido-ok">
               <strong>{pedidoGenerado.numeroPedido}</strong>
               <span>{pedidoGenerado.numeroOT}</span>
-<small>Guardado en flujo ERP global</small>
+              <small>Guardado en flujo ERP global</small>
             </div>
           )}
 
           <textarea className="whatsapp-text" value={textoWhatsApp} readOnly />
         </section>
-      </section>
-
-      <section className="cotizador-card future-box">
-        <PackageCheck size={22} />
-        <div>
-          <strong>Flujo activo</strong>
-          <p>Lead â†’ Cotizacion â†’ Pedido â†’ OT â†’ Produccion â†’ Instalacion â†’ Entrega â†’ Cobro â†’ Comision.</p>
-        </div>
       </section>
 
       <style>{`
@@ -949,13 +766,10 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .app-grid,.cotizador-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
         .card-title{display:flex;gap:10px;align-items:center;margin-bottom:14px;color:#111827}
         .card-title h2{margin:0;font-size:19px}
-        .card-title.small{margin-top:16px}
         label{display:grid;gap:7px;font-weight:900;color:#334155;margin-bottom:12px}
         input,select,textarea{width:100%;border:1px solid #dbe3ef;border-radius:16px;padding:13px 14px;font-size:16px;background:#fff;color:#0f172a}
         textarea{min-height:84px;resize:vertical}
         .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-        .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-        .compact input{padding:11px 12px}
         .search-box{display:flex;align-items:center;gap:8px;border:1px solid #dbe3ef;border-radius:16px;padding:0 12px;background:#fff}
         .search-box input{border:0;padding-left:0}
         .client-list{display:grid;gap:8px;margin-bottom:12px}
@@ -967,18 +781,17 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .primary-btn{background:#111827;color:#fff}
         .secondary-btn{background:#f3f4f6;color:#111827;border:1px solid #dbe3ef}
         .action-stack{display:grid;gap:10px}
-        .access-box,.logistica-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:18px;padding:14px;margin-bottom:14px}
-        .access-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
-        .access-grid button{border:1px solid #dbe3ef;background:#fff;border-radius:14px;padding:12px;font-weight:950}
-        .access-grid button.active{background:#111827;color:#fff}
+        .logistica-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:18px;padding:14px;margin:14px 0}
         .items-list{display:grid;gap:12px}
         .quote-item{border:1px solid #e5e7eb;border-radius:18px;padding:14px;background:#f8fafc;display:flex;justify-content:space-between;gap:14px}
         .quote-item h3{margin:0 0 5px;color:#111827;font-size:16px}
         .quote-item p{margin:0;color:#64748b;font-weight:700}
-        .quote-item span,.quote-item small{display:block;margin-top:7px;font-size:12px;font-weight:900;color:#475569}
+        .quote-item span{display:block;margin-top:7px;font-size:12px;font-weight:900;color:#475569}
         .quote-price{text-align:right;display:grid;gap:7px;justify-items:end}
         .quote-price strong{font-size:18px;color:#111827}
         .quote-price button{border:0;background:#fee2e2;color:#991b1b;border-radius:12px;width:36px;height:36px}
+        .iva-check{display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:12px;margin:14px 0;font-weight:950}
+        .iva-check input{width:22px;height:22px}
         .totals-box{background:#0f172a;color:#fff;border-radius:20px;padding:16px;margin:16px 0;display:grid;gap:8px}
         .totals-box p{display:flex;justify-content:space-between;margin:0;color:#dbeafe}
         .totals-box .total{font-size:21px;color:#fff;border-top:1px solid rgba(255,255,255,.18);padding-top:10px}
@@ -987,14 +800,10 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .pedido-ok small{color:#047857}
         .whatsapp-text{margin-top:14px;font-family:monospace;min-height:300px}
         .empty{padding:24px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:18px;font-weight:800}
-        .future-box{display:flex;gap:12px;align-items:flex-start}
-        .future-box strong{font-size:16px;color:#111827}
-        .future-box p{margin:4px 0 0;color:#64748b;font-weight:700}
         .cotizador-lock{text-align:center;margin:40px auto;max-width:420px}
         @media(max-width:850px){
           .cotizador-page{padding:12px;gap:12px}
-          .app-grid,.cotizador-grid,.two,.three{grid-template-columns:1fr}
-          .access-grid{grid-template-columns:repeat(2,1fr)}
+          .app-grid,.cotizador-grid,.two{grid-template-columns:1fr}
           .cotizador-hero h1{font-size:27px}
           .quote-item{flex-direction:column}
           .quote-price{text-align:left;justify-items:start}
@@ -1005,7 +814,3 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
     </main>
   );
 }
-
-
-
-
