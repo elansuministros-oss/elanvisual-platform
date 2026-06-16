@@ -331,8 +331,8 @@ export default function MaterialesCostos() {
                     <span>{money(m.costo_real)}</span>
                   </div>
                   <div className="actions">
-                    <button onClick={() => editarMaterial(m)}><Edit3 size={15} /></button>
-                    <button onClick={() => eliminar('materiales_master', m.id)}><Trash2 size={15} /></button>
+                    <button className="btn-edit" onClick={() => editarMaterial(m)}>Editar</button>
+                    <button className="btn-delete" onClick={() => eliminar('materiales_master', m.id)}>Eliminar</button>
                   </div>
                 </article>
               ))}
@@ -472,8 +472,8 @@ export default function MaterialesCostos() {
         .row h3{margin:0;font-size:14px}
         .row p{margin:3px 0;color:#64748b;font-size:12px;font-weight:800}
         .row span{font-size:12px;font-weight:900}
-        .actions{display:flex;gap:6px}
-        .actions button{border:0;border-radius:12px;background:#111827;color:white;width:38px;height:36px}
+        .actions{display:flex;gap:8px}
+        .actions button{min-width:90px;height:38px;border:0;border-radius:12px;font-size:12px;font-weight:900;color:#fff;cursor:pointer}.btn-edit{background:#0f766e}.btn-delete{background:#b91c1c}
         .combo-box{margin-top:14px;border:1px solid #e5e7eb;border-radius:18px;padding:12px;background:#f8fafc}
         .combo-box h3{margin:0 0 10px}
         .mini-scroll{max-height:310px;overflow-y:auto;display:grid;gap:6px;margin-bottom:8px}
@@ -493,5 +493,6 @@ export default function MaterialesCostos() {
     </main>
   );
 }
+
 
 
