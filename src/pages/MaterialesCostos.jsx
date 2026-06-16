@@ -456,7 +456,7 @@ export default function MaterialesCostos() {
         .mm3-hero h1{margin:6px 0;font-size:28px}
         .mm3-hero p{margin:0;color:#64748b;font-weight:700}
         .mm3-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-        .mm3-tabs button{border:0;border-radius:16px;padding:13px;background:white;font-weight:900}
+        .mm3-tabs button{border:0;border-radius:16px;padding:13px;background:white;color:#111827;font-weight:900}
         .mm3-tabs .active{background:#111827;color:white}
         .mm3-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
         .title{display:flex;align-items:center;gap:8px;margin-bottom:12px}
