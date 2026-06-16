@@ -1,100 +1,54 @@
-﻿import { useMemo, useState } from 'react';
-import {
-  Calculator,
-  CheckCircle2,
-  Edit3,
-  Lock,
-  PackagePlus,
-  Search,
-  Trash2,
-} from 'lucide-react';
+﻿import { useEffect, useMemo, useState } from 'react';
+import { CheckCircle2, Edit3, Lock, PackagePlus, Search, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../lib/supabase';
 
-const STORAGE_KEY = 'elanvisual_materiales_costos_v1';
-
-const tiposRegistro = [
-  'Material Base',
-  'Producto Cotizable',
-  'Servicio Operativo',
-  'Producto Personalizado',
-];
-
+const tipos = ['Material', 'Articulo', 'Servicio'];
 const categorias = [
-  'Lonas',
-  'Viniles Adhesivos',
-  'Viniles + Laminacion',
-  'Viniles Alto Desempeno',
-  'Otros Materiales',
-  'Laminas Rigidas + Vinil',
-  'Portabanner + Impresion',
-  'Vinil de Corte',
+  'VINILES',
+  'LAMINADOS',
+  'LONAS',
   'PVC',
-  'Acrilicos',
-  'Rotulacion',
-  'Accesorios',
-  'Mano de Obra',
-  'Transporte',
-  'Instalacion',
+  'ACRILICOS',
+  'COROPLAS',
+  'BACKLIT',
+  'MICROPERFORADO',
+  'DISPLAY',
+  'ACCESORIOS',
+  'SERVICIOS',
+  'ESTRUCTURAS',
+  'ILUMINACION',
 ];
 
-const tiposCalculo = [
-  { value: 'm2', label: 'm²' },
-  { value: 'unidad', label: 'Unidad' },
-  { value: 'lineal', label: 'Metro lineal' },
-  { value: 'compuesto', label: 'Compuesto' },
-  { value: 'personalizado', label: 'Personalizado' },
-];
+const unidades = ['Rollo', 'Lamina', 'Unidad', 'Metro lineal', 'm2', 'Servicio'];
 
-const tintas = ['Sin impresion', 'Solvente', 'UV'];
-const protecciones = [
-  'Ninguna',
-  'Laminado brillante',
-  'Laminado mate',
-  'Laminante liquido UV',
-  'Grafica de piso',
-];
-
-const subcategoriasPorCategoria = {
-  'Lonas': ['Lona 13 oz', 'Lona 8 oz', 'Traslucida', 'Mesh', 'Backlit', 'Smooth banner'],
-  'Viniles Adhesivos': ['Ritrama goma blanca', 'Ritrama goma gris', 'Viniles mate', 'Transparente mate', 'Transparente brillante', 'Koreano goma gris'],
-  'Viniles + Laminacion': ['Brillante', 'Mate', 'Premium conformable', 'Premium semiconformable', 'Microperforado'],
-  'Viniles Alto Desempeno': ['100% conformable', 'Semi conformable', 'Vehiculos', 'Paredes'],
-  'Laminas Rigidas + Vinil': ['PVC', 'Acrilico', 'Coroplas', 'Vinil + PVC', 'Vinil + Acrilico'],
-  'PVC': ['1 mm', '2 mm', '3 mm', '4 mm', '5 mm', '6 mm', '10 mm'],
-  'Acrilicos': ['Transparente', 'Lechoso', 'Color', 'Espejo'],
-  'Display y Portabanner': ['Roll up', 'Pluma', 'Counter'],
-  'Accesorios': ['Chapetones', 'Ojetes', 'Bridas', 'Tubo PVC', 'Tubo galvanizado'],
-};
-const accesoriosBase = [
-  { id: 'ojete', label: 'Ojete', regla: 'perimetro_separacion' },
-  { id: 'tuboPVC', label: 'Tubo PVC', regla: 'dos_por_ancho' },
-  { id: 'tuboGalvanizado', label: 'Tubo Galvanizado', regla: 'dos_por_ancho' },
-  { id: 'bridas', label: 'Bridas', regla: 'perimetro_separacion' },
-];
-
-const inicial = {
-  descripcion: '',
-  tipoRegistro: 'Producto Cotizable',
-  categoria: 'Lonas',
-  subcategoria: '',
-  tipoCalculo: 'm2',
-  tinta: 'Solvente',
-  proteccion: 'Ninguna',
-  permiteMedidas: true,
-  instalable: false,
-  productoEstandar: true,
-  anchoFijo: '',
-  altoFijo: '',
-  precioBase: '',
+const inicialMaterial = {
+  tipo: 'Material',
+  categoria: 'VINILES',
+  nombre: '',
+  marca: '',
+  proveedor: '',
+  unidad_compra: 'Rollo',
+  ancho: '',
+  largo: '',
+  costo_compra: '',
   iva: 15,
-  tarifaA: '',
-  tarifaB: '',
-  tarifaC: '',
-  tarifaD: '',
-  descuentoMaximo: 20,
-  accesoriosPermitidos: [],
-  separacionOjetes: 0.5,
-  separacionBridas: 0.5,
+  desperdicio_recargo: 10,
+  activo: true,
+  notas: '',
+};
+
+const inicialTinta = {
+  nombre: 'Ecosolvente',
+  costo_m2: 1.5,
+  activo: true,
+  notas: '',
+};
+
+const inicialCombinacion = {
+  categoria: 'VINILES',
+  nombre: '',
+  estado: 'borrador',
   activo: true,
   notas: '',
 };
@@ -108,399 +62,434 @@ const money = (v) =>
 
 const num = (v) => Number(v || 0);
 
-function leerMateriales() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  } catch {
-    return [];
-  }
-}
+function calcularCostoReal(form) {
+  const costo = num(form.costo_compra);
+  const iva = num(form.iva);
+  const extra = num(form.desperdicio_recargo);
+  const ancho = num(form.ancho);
+  const largo = num(form.largo);
 
-function guardarMateriales(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  const costoIva = costo * (1 + iva / 100);
+  const costoFinal = costoIva * (1 + extra / 100);
+
+  if (['Rollo', 'Lamina'].includes(form.unidad_compra) && ancho > 0 && largo > 0) {
+    return costoFinal / (ancho * largo);
+  }
+
+  return costoFinal;
 }
 
 export default function MaterialesCostos() {
   const { usuario } = useApp();
-  const [materiales, setMateriales] = useState(leerMateriales);
-  const [form, setForm] = useState(inicial);
-  const [editando, setEditando] = useState(null);
-  const [busqueda, setBusqueda] = useState('');
-  const [filtro, setFiltro] = useState('Todos');
-
   const esAdmin = usuario?.rol === 'admin';
 
-  const calculo = useMemo(() => {
-    const precio = num(form.precioBase);
-    const ivaValor = precio * (num(form.iva) / 100);
-    const totalConIva = precio + ivaValor;
-    return { ivaValor, totalConIva };
-  }, [form]);
+  const [tab, setTab] = useState('materiales');
+  const [materiales, setMateriales] = useState([]);
+  const [tintas, setTintas] = useState([]);
+  const [combinaciones, setCombinaciones] = useState([]);
+  const [detalles, setDetalles] = useState([]);
 
-  const lista = useMemo(() => {
-    return materiales.filter((m) => {
-      const texto = `${m.descripcion} ${m.categoria} ${m.subcategoria} ${m.tipoRegistro}`.toLowerCase();
-      const coincideTexto = texto.includes(busqueda.toLowerCase());
-      const coincideCategoria = filtro === 'Todos' || m.categoria === filtro;
-      return coincideTexto && coincideCategoria;
-    });
-  }, [materiales, busqueda, filtro]);
+  const [materialForm, setMaterialForm] = useState(inicialMaterial);
+  const [tintaForm, setTintaForm] = useState(inicialTinta);
+  const [comboForm, setComboForm] = useState(inicialCombinacion);
 
-  const actualizar = (campo, valor) => {
-    setForm((prev) => ({ ...prev, [campo]: valor }));
+  const [editMaterial, setEditMaterial] = useState(null);
+  const [editTinta, setEditTinta] = useState(null);
+  const [editCombo, setEditCombo] = useState(null);
+
+  const [busqueda, setBusqueda] = useState('');
+  const [busquedaMaterialCombo, setBusquedaMaterialCombo] = useState('');
+  const [materialSeleccionado, setMaterialSeleccionado] = useState(null);
+  const [cantidadCombo, setCantidadCombo] = useState(1);
+
+  const costoPreview = useMemo(() => calcularCostoReal(materialForm), [materialForm]);
+
+  const cargarTodo = async () => {
+    const [mat, tin, com, det] = await Promise.all([
+      supabase.from('materiales_master').select('*').order('categoria'),
+      supabase.from('tintas_master').select('*').order('nombre'),
+      supabase.from('combinaciones_master').select('*').order('categoria'),
+      supabase.from('combinaciones_detalle').select('*'),
+    ]);
+
+    if (!mat.error) setMateriales(mat.data || []);
+    if (!tin.error) setTintas(tin.data || []);
+    if (!com.error) setCombinaciones(com.data || []);
+    if (!det.error) setDetalles(det.data || []);
   };
 
-  const toggleAccesorio = (id) => {
-    setForm((prev) => {
-      const existe = prev.accesoriosPermitidos.includes(id);
-      return {
-        ...prev,
-        accesoriosPermitidos: existe
-          ? prev.accesoriosPermitidos.filter((a) => a !== id)
-          : [...prev.accesoriosPermitidos, id],
-      };
-    });
-  };
+  useEffect(() => {
+    if (supabase) cargarTodo();
+  }, []);
 
-  const guardar = (e) => {
+  const listaMateriales = useMemo(() => {
+    const q = busqueda.toLowerCase();
+    return materiales.filter((m) =>
+      `${m.nombre} ${m.categoria} ${m.marca} ${m.proveedor}`.toLowerCase().includes(q)
+    );
+  }, [materiales, busqueda]);
+
+  const materialesParaCombo = useMemo(() => {
+    const q = busquedaMaterialCombo.toLowerCase();
+    return materiales
+      .filter((m) => m.activo)
+      .filter((m) => `${m.nombre} ${m.categoria} ${m.marca}`.toLowerCase().includes(q))
+      .slice(0, 10);
+  }, [materiales, busquedaMaterialCombo]);
+
+  const guardarMaterial = async (e) => {
     e.preventDefault();
 
-    const registro = {
-      ...form,
-      id: editando || `mat-${Date.now()}`,
-      anchoFijo: num(form.anchoFijo),
-      altoFijo: num(form.altoFijo),
-      precioBase: num(form.precioBase),
-      iva: num(form.iva),
-      tarifaA: num(form.tarifaA),
-      tarifaB: num(form.tarifaB),
-      tarifaC: num(form.tarifaC),
-      tarifaD: num(form.tarifaD),
-      descuentoMaximo: Math.min(20, num(form.descuentoMaximo)),
-      separacionOjetes: num(form.separacionOjetes) || 0.5,
-      separacionBridas: num(form.separacionBridas) || 0.5,
-      totalConIva: calculo.totalConIva,
-      actualizado: new Date().toISOString(),
+    const payload = {
+      ...materialForm,
+      ancho: num(materialForm.ancho),
+      largo: num(materialForm.largo),
+      costo_compra: num(materialForm.costo_compra),
+      iva: num(materialForm.iva),
+      desperdicio_recargo: num(materialForm.desperdicio_recargo),
+      costo_real: calcularCostoReal(materialForm),
     };
 
-    const nuevaLista = editando
-      ? materiales.map((m) => (m.id === editando ? registro : m))
-      : [registro, ...materiales];
+    const res = editMaterial
+      ? await supabase.from('materiales_master').update(payload).eq('id', editMaterial)
+      : await supabase.from('materiales_master').insert(payload);
 
-    setMateriales(nuevaLista);
-    guardarMateriales(nuevaLista);
-    setForm(inicial);
-    setEditando(null);
+    if (res.error) return alert('No se pudo guardar material.');
+    setMaterialForm(inicialMaterial);
+    setEditMaterial(null);
+    cargarTodo();
   };
 
-  const editar = (m) => {
-    setForm({ ...inicial, ...m });
-    setEditando(m.id);
+  const guardarTinta = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      ...tintaForm,
+      costo_m2: num(tintaForm.costo_m2),
+    };
+
+    const res = editTinta
+      ? await supabase.from('tintas_master').update(payload).eq('id', editTinta)
+      : await supabase.from('tintas_master').insert(payload);
+
+    if (res.error) return alert('No se pudo guardar tinta.');
+    setTintaForm(inicialTinta);
+    setEditTinta(null);
+    cargarTodo();
+  };
+
+  const guardarCombo = async (e) => {
+    e.preventDefault();
+
+    const payload = comboForm;
+
+    const res = editCombo
+      ? await supabase.from('combinaciones_master').update(payload).eq('id', editCombo)
+      : await supabase.from('combinaciones_master').insert(payload).select().single();
+
+    if (res.error) return alert('No se pudo guardar combinacion.');
+
+    if (!editCombo && res.data?.id) setEditCombo(res.data.id);
+
+    setComboForm(inicialCombinacion);
+    cargarTodo();
+  };
+
+  const agregarDetalle = async () => {
+    if (!editCombo) return alert('Primero guarda o edita una combinacion.');
+    if (!materialSeleccionado) return alert('Selecciona un material.');
+
+    const { error } = await supabase.from('combinaciones_detalle').insert({
+      combinacion_id: editCombo,
+      material_id: materialSeleccionado.id,
+      cantidad: num(cantidadCombo) || 1,
+    });
+
+    if (error) return alert('No se pudo agregar material.');
+    setMaterialSeleccionado(null);
+    setBusquedaMaterialCombo('');
+    setCantidadCombo(1);
+    cargarTodo();
+  };
+
+  const eliminar = async (tabla, id) => {
+    if (!confirm('Eliminar registro?')) return;
+    const { error } = await supabase.from(tabla).delete().eq('id', id);
+    if (error) return alert('No se pudo eliminar.');
+    cargarTodo();
+  };
+
+  const editarMaterial = (m) => {
+    setMaterialForm({ ...inicialMaterial, ...m });
+    setEditMaterial(m.id);
+    setTab('materiales');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const eliminar = (id) => {
-    const nuevaLista = materiales.filter((m) => m.id !== id);
-    setMateriales(nuevaLista);
-    guardarMateriales(nuevaLista);
+  const editarTinta = (t) => {
+    setTintaForm({ ...inicialTinta, ...t });
+    setEditTinta(t.id);
+    setTab('tintas');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const editarComboFn = (c) => {
+    setComboForm({ ...inicialCombinacion, ...c });
+    setEditCombo(c.id);
+    setTab('combinaciones');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const detallesCombo = detalles.filter((d) => d.combinacion_id === editCombo);
 
   if (!esAdmin) {
     return (
-      <main className="materiales-page">
-        <section className="materiales-lock">
+      <main className="mm3-page">
+        <section className="mm3-card center">
           <Lock size={42} />
           <h1>Acceso restringido</h1>
-          <p>Materiales y Costos es exclusivo para administracion.</p>
+          <p>Material Master V3 es solo para administracion.</p>
         </section>
       </main>
     );
   }
 
   return (
-    <main className="materiales-page">
-      <section className="materiales-hero">
-        <span>ELANVISUAL - Administracion</span>
-        <h1>Material Master V2</h1>
-        <p>
-          Catalogo maestro para productos cotizables, servicios operativos,
-          accesorios automaticos, tarifas A/B/C/D e instalacion.
-        </p>
+    <main className="mm3-page">
+      <section className="mm3-hero">
+        <span>ELANVISUAL</span>
+        <h1>Material Master V3</h1>
+        <p>Materiales, tintas y combinaciones aprobadas.</p>
       </section>
 
-      <section className="materiales-grid">
-        <form className="materiales-card" onSubmit={guardar}>
-          <div className="card-title">
-            <PackagePlus size={22} />
-            <h2>{editando ? 'Editar registro' : 'Agregar registro'}</h2>
-          </div>
+      <nav className="mm3-tabs">
+        <button onClick={() => setTab('materiales')} className={tab === 'materiales' ? 'active' : ''}>Materiales</button>
+        <button onClick={() => setTab('tintas')} className={tab === 'tintas' ? 'active' : ''}>Tintas</button>
+        <button onClick={() => setTab('combinaciones')} className={tab === 'combinaciones' ? 'active' : ''}>Combinaciones</button>
+      </nav>
 
-          <label>
-            Descripcion
-            <input
-              value={form.descripcion}
-              onChange={(e) => actualizar('descripcion', e.target.value)}
-              required
-              placeholder="Lona Banner 13 oz"
-            />
-          </label>
+      {tab === 'materiales' && (
+        <section className="mm3-grid">
+          <form className="mm3-card" onSubmit={guardarMaterial}>
+            <div className="title"><PackagePlus size={20} /><h2>{editMaterial ? 'Editar material' : 'Nuevo material'}</h2></div>
 
-          <div className="two">
-            <label>
-              Tipo registro
-              <select value={form.tipoRegistro} onChange={(e) => actualizar('tipoRegistro', e.target.value)}>
-                {tiposRegistro.map((t) => <option key={t}>{t}</option>)}
+            <input placeholder="Nombre" value={materialForm.nombre} onChange={(e) => setMaterialForm({ ...materialForm, nombre: e.target.value })} required />
+
+            <div className="two">
+              <select value={materialForm.tipo} onChange={(e) => setMaterialForm({ ...materialForm, tipo: e.target.value })}>
+                {tipos.map((x) => <option key={x}>{x}</option>)}
               </select>
-            </label>
-
-            <label>
-              Categoria
-              <select value={form.categoria} onChange={(e) => actualizar('categoria', e.target.value)}>
-                {categorias.map((c) => <option key={c}>{c}</option>)}
+              <select value={materialForm.categoria} onChange={(e) => setMaterialForm({ ...materialForm, categoria: e.target.value })}>
+                {categorias.map((x) => <option key={x}>{x}</option>)}
               </select>
-            </label>
-          </div>
+            </div>
 
-          <div className="two">
-            <label>
-              Subcategoria
-              <select value={form.subcategoria} onChange={(e) => actualizar('subcategoria', e.target.value)}>
-  <option value="">Seleccionar subcategoria</option>
-  {(subcategoriasPorCategoria[form.categoria] || ['General']).map((s) => (
-    <option key={s} value={s}>{s}</option>
-  ))}
-</select>
-            </label>
+            <div className="two">
+              <input placeholder="Marca" value={materialForm.marca || ''} onChange={(e) => setMaterialForm({ ...materialForm, marca: e.target.value })} />
+              <input placeholder="Proveedor" value={materialForm.proveedor || ''} onChange={(e) => setMaterialForm({ ...materialForm, proveedor: e.target.value })} />
+            </div>
 
-            <label>
-              Tipo calculo
-              <select value={form.tipoCalculo} onChange={(e) => actualizar('tipoCalculo', e.target.value)}>
-                {tiposCalculo.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </label>
-          </div>
+            <select value={materialForm.unidad_compra} onChange={(e) => setMaterialForm({ ...materialForm, unidad_compra: e.target.value })}>
+              {unidades.map((x) => <option key={x}>{x}</option>)}
+            </select>
 
-          <div className="two">
-            <label>
-              Tinta
-              <select value={form.tinta} onChange={(e) => actualizar('tinta', e.target.value)}>
-                {tintas.map((t) => <option key={t}>{t}</option>)}
-              </select>
-            </label>
+            <div className="two">
+              <input type="number" step="0.01" placeholder="Ancho" value={materialForm.ancho} onChange={(e) => setMaterialForm({ ...materialForm, ancho: e.target.value })} />
+              <input type="number" step="0.01" placeholder="Largo" value={materialForm.largo} onChange={(e) => setMaterialForm({ ...materialForm, largo: e.target.value })} />
+            </div>
 
-            <label>
-              Proteccion
-              <select value={form.proteccion} onChange={(e) => actualizar('proteccion', e.target.value)}>
-                {protecciones.map((p) => <option key={p}>{p}</option>)}
-              </select>
-            </label>
-          </div>
+            <div className="two">
+              <input type="number" step="0.01" placeholder="Costo compra" value={materialForm.costo_compra} onChange={(e) => setMaterialForm({ ...materialForm, costo_compra: e.target.value })} />
+              <input type="number" step="0.01" placeholder="IVA %" value={materialForm.iva} onChange={(e) => setMaterialForm({ ...materialForm, iva: e.target.value })} />
+            </div>
 
-          <div className="checks">
-            <label>
-              <input
-                type="checkbox"
-                checked={form.permiteMedidas}
-                onChange={(e) => actualizar('permiteMedidas', e.target.checked)}
-              />
-              Permite medidas
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                checked={form.instalable}
-                onChange={(e) => actualizar('instalable', e.target.checked)}
-              />
-              Instalable
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                checked={form.productoEstandar}
-                onChange={(e) => actualizar('productoEstandar', e.target.checked)}
-              />
-              Producto estandar
-            </label>
-          </div>
-
-          <div className="two">
-            <label>
-              Ancho fijo
-              <input type="number" step="0.01" value={form.anchoFijo} onChange={(e) => actualizar('anchoFijo', e.target.value)} />
-            </label>
-            <label>
-              Alto fijo
-              <input type="number" step="0.01" value={form.altoFijo} onChange={(e) => actualizar('altoFijo', e.target.value)} />
-            </label>
-          </div>
-
-          <div className="two">
-            <label>
-              Precio base interno
-              <input type="number" step="0.01" value={form.precioBase} onChange={(e) => actualizar('precioBase', e.target.value)} />
-            </label>
-            <label>
-              IVA %
-              <input type="number" step="0.01" value={form.iva} onChange={(e) => actualizar('iva', e.target.value)} />
-            </label>
-          </div>
-
-          <div className="tarifas">
-            <label>Tarifa A<input type="number" step="0.01" value={form.tarifaA} onChange={(e) => actualizar('tarifaA', e.target.value)} /></label>
-            <label>Tarifa B<input type="number" step="0.01" value={form.tarifaB} onChange={(e) => actualizar('tarifaB', e.target.value)} /></label>
-            <label>Tarifa C<input type="number" step="0.01" value={form.tarifaC} onChange={(e) => actualizar('tarifaC', e.target.value)} /></label>
-            <label>Tarifa D<input type="number" step="0.01" value={form.tarifaD} onChange={(e) => actualizar('tarifaD', e.target.value)} /></label>
-          </div>
-
-          <label>
-            Descuento maximo libre %
             <input
               type="number"
-              step="1"
-              max="20"
-              value={form.descuentoMaximo}
-              onChange={(e) => actualizar('descuentoMaximo', Math.min(20, num(e.target.value)))}
+              step="0.01"
+              placeholder={['Rollo', 'Lamina'].includes(materialForm.unidad_compra) ? 'Desperdicio %' : 'Recargo %'}
+              value={materialForm.desperdicio_recargo}
+              onChange={(e) => setMaterialForm({ ...materialForm, desperdicio_recargo: e.target.value })}
             />
-          </label>
 
-          <div className="auto-box">
-            <strong>Accesorios disponibles</strong>
-            {accesoriosBase.map((a) => (
-              <label key={a.id}>
-                <input
-                  type="checkbox"
-                  checked={form.accesoriosPermitidos.includes(a.id)}
-                  onChange={() => toggleAccesorio(a.id)}
-                />
-                {a.label}
-              </label>
-            ))}
-          </div>
+            <textarea placeholder="Notas" value={materialForm.notas || ''} onChange={(e) => setMaterialForm({ ...materialForm, notas: e.target.value })} />
 
-          <div className="two">
-            <label>
-              Separacion ojetes / m
-              <input type="number" step="0.01" value={form.separacionOjetes} onChange={(e) => actualizar('separacionOjetes', e.target.value)} />
-            </label>
-            <label>
-              Separacion bridas / m
-              <input type="number" step="0.01" value={form.separacionBridas} onChange={(e) => actualizar('separacionBridas', e.target.value)} />
-            </label>
-          </div>
+            <div className="result">Costo real: <b>{money(costoPreview)}</b></div>
 
-          <label>
-            Notas internas
-            <textarea
-              value={form.notas}
-              onChange={(e) => actualizar('notas', e.target.value)}
-              placeholder="Reglas, proveedor, observaciones de produccion..."
-            />
-          </label>
+            <button className="primary" type="submit"><CheckCircle2 size={18} /> Guardar</button>
+          </form>
 
-          <div className="cost-box">
-            <strong><Calculator size={18} /> Resumen interno</strong>
-            <p>Total con IVA: <b>{money(calculo.totalConIva)}</b></p>
-            <p>Reglas: tubo = 2 Ã— ancho / ojete y bridas por perimetro.</p>
-          </div>
+          <section className="mm3-card">
+            <div className="title"><Search size={20} /><h2>Materiales</h2></div>
+            <input placeholder="Buscar..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
 
-          <button className="primary-btn" type="submit">
-            <CheckCircle2 size={18} />
-            {editando ? 'Guardar cambios' : 'Guardar registro'}
-          </button>
-        </form>
-
-        <section className="materiales-card">
-          <div className="card-title">
-            <Search size={22} />
-            <h2>Registros</h2>
-          </div>
-
-          <div className="two">
-            <input
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar..."
-            />
-            <select value={filtro} onChange={(e) => setFiltro(e.target.value)}>
-              <option>Todos</option>
-              {categorias.map((c) => <option key={c}>{c}</option>)}
-            </select>
-          </div>
-
-          <div className="materiales-list">
-            {lista.map((m) => (
-              <article className="material-row" key={m.id}>
-                <div>
-                  <h3>{m.descripcion}</h3>
-                  <p>{m.categoria} · {m.subcategoria || 'General'}</p>
-                  
-                  <div className="price-tags compact"><span>Venta {money(m.tarifaA || m.precioBase || m.totalConIva)}</span><span>Desc max {m.descuentoMaximo || 0}%</span></div>
-                  
-                </div>
-
-                <div className="row-actions">
-                  <button type="button" onClick={() => editar(m)}>Editar</button>
-                  <button type="button" onClick={() => eliminar(m.id)}>Eliminar</button>
-                </div>
-              </article>
-            ))}
-
-            {lista.length === 0 && (
-              <div className="empty">No hay registros todavia.</div>
-            )}
-          </div>
+            <div className="list">
+              {listaMateriales.map((m) => (
+                <article className="row" key={m.id}>
+                  <div>
+                    <h3>{m.nombre}</h3>
+                    <p>{m.categoria} · {m.unidad_compra}</p>
+                    <span>{money(m.costo_real)}</span>
+                  </div>
+                  <div className="actions">
+                    <button onClick={() => editarMaterial(m)}><Edit3 size={15} /></button>
+                    <button onClick={() => eliminar('materiales_master', m.id)}><Trash2 size={15} /></button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
         </section>
-      </section>
+      )}
+
+      {tab === 'tintas' && (
+        <section className="mm3-grid">
+          <form className="mm3-card" onSubmit={guardarTinta}>
+            <div className="title"><PackagePlus size={20} /><h2>{editTinta ? 'Editar tinta' : 'Nueva tinta'}</h2></div>
+            <input placeholder="Nombre" value={tintaForm.nombre} onChange={(e) => setTintaForm({ ...tintaForm, nombre: e.target.value })} required />
+            <input type="number" step="0.01" placeholder="Costo m2" value={tintaForm.costo_m2} onChange={(e) => setTintaForm({ ...tintaForm, costo_m2: e.target.value })} />
+            <textarea placeholder="Notas" value={tintaForm.notas || ''} onChange={(e) => setTintaForm({ ...tintaForm, notas: e.target.value })} />
+            <button className="primary" type="submit"><CheckCircle2 size={18} /> Guardar</button>
+          </form>
+
+          <section className="mm3-card">
+            <div className="title"><Search size={20} /><h2>Tintas</h2></div>
+            <div className="list">
+              {tintas.map((t) => (
+                <article className="row" key={t.id}>
+                  <div>
+                    <h3>{t.nombre}</h3>
+                    <p>Costo m2</p>
+                    <span>{money(t.costo_m2)}</span>
+                  </div>
+                  <div className="actions">
+                    <button onClick={() => editarTinta(t)}><Edit3 size={15} /></button>
+                    <button onClick={() => eliminar('tintas_master', t.id)}><Trash2 size={15} /></button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </section>
+      )}
+
+      {tab === 'combinaciones' && (
+        <section className="mm3-grid">
+          <form className="mm3-card" onSubmit={guardarCombo}>
+            <div className="title"><PackagePlus size={20} /><h2>{editCombo ? 'Editar combinacion' : 'Nueva combinacion'}</h2></div>
+
+            <select value={comboForm.categoria} onChange={(e) => setComboForm({ ...comboForm, categoria: e.target.value })}>
+              {categorias.map((x) => <option key={x}>{x}</option>)}
+            </select>
+
+            <input placeholder="Nombre combinacion" value={comboForm.nombre} onChange={(e) => setComboForm({ ...comboForm, nombre: e.target.value })} required />
+
+            <select value={comboForm.estado} onChange={(e) => setComboForm({ ...comboForm, estado: e.target.value })}>
+              <option value="borrador">Borrador</option>
+              <option value="aprobado">Aprobado</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+
+            <textarea placeholder="Notas" value={comboForm.notas || ''} onChange={(e) => setComboForm({ ...comboForm, notas: e.target.value })} />
+
+            <button className="primary" type="submit"><CheckCircle2 size={18} /> Guardar combinacion</button>
+
+            {editCombo && (
+              <div className="combo-box">
+                <h3>Agregar material</h3>
+                <input placeholder="Buscar material..." value={busquedaMaterialCombo} onChange={(e) => setBusquedaMaterialCombo(e.target.value)} />
+
+                <div className="mini-scroll">
+                  {materialesParaCombo.map((m) => (
+                    <button type="button" key={m.id} onClick={() => setMaterialSeleccionado(m)}>
+                      {m.nombre}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="selected">
+                  {materialSeleccionado ? materialSeleccionado.nombre : 'Sin material seleccionado'}
+                </div>
+
+                <input type="number" step="0.01" value={cantidadCombo} onChange={(e) => setCantidadCombo(e.target.value)} />
+
+                <button type="button" className="secondary" onClick={agregarDetalle}>Agregar a combinacion</button>
+
+                <div className="added">
+                  {detallesCombo.map((d) => {
+                    const mat = materiales.find((m) => m.id === d.material_id);
+                    return (
+                      <p key={d.id}>
+                        {mat?.nombre || 'Material'} x {d.cantidad}
+                        <button type="button" onClick={() => eliminar('combinaciones_detalle', d.id)}>Eliminar</button>
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </form>
+
+          <section className="mm3-card">
+            <div className="title"><Search size={20} /><h2>Combinaciones</h2></div>
+            <div className="list">
+              {combinaciones.map((c) => (
+                <article className="row" key={c.id}>
+                  <div>
+                    <h3>{c.nombre}</h3>
+                    <p>{c.categoria} · {c.estado}</p>
+                  </div>
+                  <div className="actions">
+                    <button onClick={() => editarComboFn(c)}><Edit3 size={15} /></button>
+                    <button onClick={() => eliminar('combinaciones_master', c.id)}><Trash2 size={15} /></button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </section>
+      )}
 
       <style>{`
-        .materiales-page{padding:22px;display:grid;gap:18px;background:#f4f6fb;min-height:100vh}
-        .materiales-hero,.materiales-card,.materiales-lock{background:#fff;border-radius:24px;padding:22px;box-shadow:0 14px 35px rgba(15,23,42,.08)}
-        .materiales-hero span{font-size:12px;font-weight:900;color:#b48722;text-transform:uppercase}
-        .materiales-hero h1{margin:8px 0;font-size:32px;color:#111827}
-        .materiales-hero p{margin:0;color:#64748b;line-height:1.5}
-        .materiales-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
-        .card-title{display:flex;gap:10px;align-items:center;margin-bottom:16px}
-        .card-title h2{margin:0;font-size:20px}
-        label{display:grid;gap:7px;font-weight:800;color:#334155;margin-bottom:12px}
-        input,select,textarea{width:100%;border:1px solid #dbe3ef;border-radius:16px;padding:13px 14px;font-size:15px;background:#fff}
-        textarea{min-height:82px;resize:vertical}
-        .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-        .tarifas{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-        .checks,.auto-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:18px;padding:14px;margin-bottom:14px}
-        .checks label,.auto-box label{display:flex;align-items:center;gap:10px;margin:8px 0}
-        .checks input,.auto-box input{width:auto}
-        .auto-box strong{display:block;margin-bottom:8px}
-        .cost-box{background:#0f172a;color:#fff;border-radius:18px;padding:16px;display:grid;gap:7px;margin:14px 0}
-        .cost-box strong{display:flex;align-items:center;gap:8px}
-        .cost-box p{margin:0;color:#dbeafe}
-        .primary-btn{width:100%;border:0;border-radius:18px;padding:15px;background:#111827;color:#fff;font-weight:900;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
-        .materiales-list{display:grid;gap:8px;margin-top:14px;max-height:560px;overflow-y:auto;padding-right:6px;overscroll-behavior:contain}
-        .material-row{border:1px solid #e5e7eb;border-radius:14px;padding:9px 10px;display:grid;grid-template-columns:1fr;gap:6px;background:#fff}
-        .material-row h3{margin:0;font-size:13px;line-height:1.15;color:#111827}
-        .material-row p{margin:2px 0;color:#64748b;font-size:11px;line-height:1.15;font-weight:800}
-        .material-row small{display:block;margin-top:8px;color:#475569;font-weight:800}
-        .price-tags{display:flex;gap:4px;flex-wrap:wrap}
-        .price-tags span{font-size:10px;padding:4px 6px;border:1px solid #e5e7eb;border-radius:999px;background:#fff;font-weight:800}.price-tags.compact span{background:#f8fafc}.row-actions{display:flex;gap:8px}
-        .row-actions button{width:auto;min-width:78px;height:38px;border:0;border-radius:12px;background:#111827;color:#fff;font-size:12px;font-weight:900;padding:0 12px}
-        .empty{padding:24px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:18px}
-        .materiales-lock{text-align:center;margin:40px auto;max-width:420px}
+        .mm3-page{min-height:100vh;background:#f4f6fb;padding:14px;display:grid;gap:14px}
+        .mm3-hero,.mm3-card{background:white;border-radius:22px;padding:16px;box-shadow:0 12px 28px rgba(15,23,42,.08)}
+        .mm3-hero span{font-size:11px;font-weight:900;color:#b48722}
+        .mm3-hero h1{margin:6px 0;font-size:28px}
+        .mm3-hero p{margin:0;color:#64748b;font-weight:700}
+        .mm3-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+        .mm3-tabs button{border:0;border-radius:16px;padding:13px;background:white;font-weight:900}
+        .mm3-tabs .active{background:#111827;color:white}
+        .mm3-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+        .title{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+        .title h2{font-size:18px;margin:0}
+        input,select,textarea{width:100%;border:1px solid #dbe3ef;border-radius:15px;padding:12px;margin-bottom:10px;font-size:15px;background:white}
+        textarea{min-height:72px;resize:vertical}
+        .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .primary,.secondary{width:100%;border:0;border-radius:16px;padding:13px;background:#111827;color:white;font-weight:900;display:flex;align-items:center;justify-content:center;gap:8px}
+        .secondary{background:#334155;margin-top:8px}
+        .result{background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:12px;margin-bottom:10px;font-weight:900}
+        .list{display:grid;gap:8px;max-height:560px;overflow-y:auto;padding-right:4px}
+        .row{border:1px solid #e5e7eb;border-radius:15px;padding:10px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+        .row h3{margin:0;font-size:14px}
+        .row p{margin:3px 0;color:#64748b;font-size:12px;font-weight:800}
+        .row span{font-size:12px;font-weight:900}
+        .actions{display:flex;gap:6px}
+        .actions button{border:0;border-radius:12px;background:#111827;color:white;width:38px;height:36px}
+        .combo-box{margin-top:14px;border:1px solid #e5e7eb;border-radius:18px;padding:12px;background:#f8fafc}
+        .combo-box h3{margin:0 0 10px}
+        .mini-scroll{max-height:310px;overflow-y:auto;display:grid;gap:6px;margin-bottom:8px}
+        .mini-scroll button{text-align:left;border:1px solid #e5e7eb;background:white;border-radius:12px;padding:10px;font-weight:800}
+        .selected{background:white;border:1px dashed #cbd5e1;border-radius:12px;padding:10px;margin-bottom:8px;font-weight:900}
+        .added p{display:flex;justify-content:space-between;gap:8px;background:white;border-radius:12px;padding:8px;margin:6px 0;font-size:12px;font-weight:900}
+        .added button{border:0;background:#991b1b;color:white;border-radius:10px;padding:5px 8px;font-size:11px}
+        .center{text-align:center;max-width:420px;margin:40px auto}
         @media(max-width:850px){
-          .materiales-page{padding:14px}
-          .materiales-grid,.two,.tarifas{grid-template-columns:1fr}
-          .materiales-hero h1{font-size:27px}
-          .material-row{border:1px solid #e5e7eb;border-radius:14px;padding:9px 10px;display:grid;grid-template-columns:1fr;gap:6px;background:#fff}
-          .row-actions button{width:100%}
+          .mm3-grid,.two{grid-template-columns:1fr}
+          .mm3-page{padding:10px}
+          .mm3-hero h1{font-size:24px}
+          .mm3-card{padding:13px}
+          .list{max-height:420px}
         }
       `}</style>
     </main>
   );
 }
-
-
-
-
-
-
-
