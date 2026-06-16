@@ -467,7 +467,7 @@ export default function MaterialesCostos() {
         .primary,.secondary{width:100%;border:0;border-radius:16px;padding:13px;background:#111827;color:white;font-weight:900;display:flex;align-items:center;justify-content:center;gap:8px}
         .secondary{background:#334155;margin-top:8px}
         .result{background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:12px;margin-bottom:10px;font-weight:900}
-        .list{display:grid;gap:8px;max-height:560px;overflow-y:auto;padding-right:4px}
+        .list{display:grid;gap:8px;max-height:560px;min-height:280px;overflow-y:auto;padding-right:4px;background:#fff}
         .row{border:1px solid #e5e7eb;border-radius:15px;padding:10px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
         .row h3{margin:0;font-size:14px}
         .row p{margin:3px 0;color:#64748b;font-size:12px;font-weight:800}
@@ -493,3 +493,4 @@ export default function MaterialesCostos() {
     </main>
   );
 }
+
