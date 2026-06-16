@@ -383,6 +383,13 @@ const [tab, setTab] = useState('dashboard');
                 <div><b>{p.nombre}</b><span>{p.categoria}  {p.medidas || 'Medidas por definir'}</span></div>
                 <strong>{p.activo === false ? 'Oculto' : 'Activo'}</strong>
                 <button type="button" onClick={() => editarServicio(p)}><Pencil size={15} /> Editar</button>
+                <button type="button" onClick={() => {
+                  if (window.confirm('Eliminar este servicio permanentemente?')) {
+                    eliminarProducto(p.id);
+                  }
+                }}>
+                  <Trash2 size={15} /> Eliminar
+                </button>
                 <button type="button" onClick={() => actualizarProducto({ ...p, activo: p.activo === false })}>
                   {p.activo === false ? <Eye size={15} /> : <EyeOff size={15} />}
                   {p.activo === false ? 'Activar' : 'Ocultar'}
