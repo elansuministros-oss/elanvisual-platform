@@ -246,6 +246,28 @@ export default function CotizadorVisual() {
     return tarifaGuardada || num(material.precioVenta);
   };
 
+  const tarifasPreview = useMemo(() => {
+    if (!materialSeleccionado || areaItem <= 0) return [];
+
+    const visibles = tarifas.filter((t) => usuario?.rol === 'admin' || t !== 'D');
+
+    return visibles.map((tarifa) => {
+      const precioUnitario = precioTarifa(materialSeleccionado, tarifa, itemForm.tinta);
+      const subtotal = precioUnitario * areaItem;
+      const descuentoPermitido = Math.min(num(itemForm.descuento), num(materialSeleccionado.descuentoMaximo || 20));
+      const montoDescuento = subtotal * (descuentoPermitido / 100);
+      const total = subtotal - montoDescuento;
+
+      return {
+        tarifa,
+        precioUnitario,
+        subtotal,
+        descuentoPermitido,
+        total,
+      };
+    });
+  }, [materialSeleccionado, areaItem, itemForm.tinta, itemForm.descuento, usuario?.rol]);
+
   const resumen = useMemo(() => {
     const subtotalItems = items.reduce((acc, item) => acc + num(item.total), 0);
     const descuento = items.reduce((acc, item) => acc + num(item.montoDescuento), 0);
@@ -640,22 +662,29 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
             </div>
           )}
 
-          <div className="two">
-            <label>
-              Tinta
-              <select value={itemForm.tinta} onChange={(e) => actualizarItem('tinta', e.target.value)}>
-                {tintas.map((t) => <option key={t} value={t}>{labelsTinta[t]}</option>)}
-              </select>
-            </label>
+          <label>
+            Tinta
+            <select value={itemForm.tinta} onChange={(e) => actualizarItem('tinta', e.target.value)}>
+              {tintas.map((t) => <option key={t} value={t}>{labelsTinta[t]}</option>)}
+            </select>
+          </label>
 
-            <label>
-              Tarifa
-              <select value={itemForm.tarifa} onChange={(e) => actualizarItem('tarifa', e.target.value)}>
-                {tarifas.filter((t) => usuario?.rol === 'admin' || t !== 'D').map((t) => (
-                  <option key={t} value={t}>Tarifa {t}</option>
-                ))}
-              </select>
-            </label>
+          <div className="tarifas-preview">
+            <strong>Precios disponibles</strong>
+            <div className="tarifas-grid">
+              {tarifasPreview.map((item) => (
+                <button
+                  key={item.tarifa}
+                  type="button"
+                  className={itemForm.tarifa === item.tarifa ? 'tarifa-card active' : 'tarifa-card'}
+                  onClick={() => actualizarItem('tarifa', item.tarifa)}
+                >
+                  <span>Tarifa {item.tarifa}</span>
+                  <b>{money(item.total)}</b>
+                  <small>{money(item.precioUnitario)} / unidad calculada</small>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="two">
@@ -776,6 +805,15 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .client-list button{text-align:left;border:1px solid #e5e7eb;background:#f8fafc;border-radius:16px;padding:12px;display:grid;gap:3px}
         .client-list span{font-size:12px;color:#64748b;font-weight:800}
         .selected-box{border:1px solid #fde68a;background:#fffbeb;border-radius:18px;padding:14px;margin-bottom:14px;display:grid;gap:4px}
+        .tarifas-preview{background:#f8fafc;border:1px solid #e5e7eb;border-radius:18px;padding:14px;margin-bottom:14px;display:grid;gap:12px}
+        .tarifas-preview>strong{color:#111827;font-size:15px}
+        .tarifas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+        .tarifa-card{border:1px solid #dbe3ef;background:#fff;border-radius:18px;padding:14px;text-align:left;display:grid;gap:4px;color:#111827}
+        .tarifa-card span{font-size:12px;font-weight:950;text-transform:uppercase;color:#64748b}
+        .tarifa-card b{font-size:22px;color:#111827}
+        .tarifa-card small{font-size:11px;color:#64748b;font-weight:800}
+        .tarifa-card.active{background:#111827;color:#fff;border-color:#111827}
+        .tarifa-card.active span,.tarifa-card.active b,.tarifa-card.active small{color:#fff}
         .selected-box span{color:#92400e;font-size:13px;font-weight:800}
         .primary-btn,.secondary-btn{width:100%;border:0;border-radius:18px;padding:15px;font-weight:950;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
         .primary-btn{background:#111827;color:#fff}
@@ -803,7 +841,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .cotizador-lock{text-align:center;margin:40px auto;max-width:420px}
         @media(max-width:850px){
           .cotizador-page{padding:12px;gap:12px}
-          .app-grid,.cotizador-grid,.two{grid-template-columns:1fr}
+          .app-grid,.cotizador-grid,.two,.tarifas-grid{grid-template-columns:1fr}
           .cotizador-hero h1{font-size:27px}
           .quote-item{flex-direction:column}
           .quote-price{text-align:left;justify-items:start}
