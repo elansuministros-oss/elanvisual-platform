@@ -20,7 +20,7 @@ import MediaLibrary from '../components/MediaLibrary';
 
 const nuevoServicioBase = {
   nombre: '',
-  categoria: 'Rotulacin',
+  categoria: 'Rotulacion',
   descripcion: '',
   medidas: '',
   imagen: '',
@@ -156,7 +156,7 @@ const [tab, setTab] = useState('dashboard');
   };
 
   const guardarServicio = () => {
-    if (!servicio.nombre.trim()) return alert('Escrib el nombre del servicio.');
+    if (!servicio.nombre.trim()) return alert('Escribi el nombre del servicio.');
 
     const datos = {
       ...servicio,
@@ -174,7 +174,7 @@ const [tab, setTab] = useState('dashboard');
   };
 
   const guardarTrabajo = () => {
-    if (!trabajo.titulo.trim()) return alert('Escrib el ttulo del trabajo.');
+    if (!trabajo.titulo.trim()) return alert('Escribi el titulo del trabajo.');
 
     const datos = {
       ...trabajo,
@@ -213,7 +213,7 @@ const [tab, setTab] = useState('dashboard');
   const editarServicio = (p) => {
     setServicio({
       nombre: p.nombre || '',
-      categoria: p.categoria || 'Rotulacin',
+      categoria: p.categoria || 'Rotulacion',
       descripcion: p.descripcion || '',
       medidas: p.medidas || '',
       imagen: p.imagen || '',
@@ -267,10 +267,10 @@ const [tab, setTab] = useState('dashboard');
     <main>
       <div className="admin-head">
         <div>
-          <span className="badge">ELANVISUAL  Administracin</span>
+          <span className="badge">ELANVISUAL  Administracion</span>
           <h1>Panel Operativo ELANVISUAL </h1>
           <p className="note">
-            Administracin visual del portal: servicios, portafolio, banners y multimedia.
+            Administracion visual del portal: servicios, portafolio, banners y multimedia.
           </p>
         </div>
       </div>
@@ -325,7 +325,7 @@ const [tab, setTab] = useState('dashboard');
           </section>
 
           <section className="panel">
-            <h2><Factory size={20} /> Administracin real</h2>
+            <h2><Factory size={20} /> Administracion real</h2>
             <div className="admin-list">
               <article className="admin-row no-image">
                 <div><b>Servicios</b><span>Catlogo pblico y solicitudes comerciales.</span></div>
@@ -336,7 +336,7 @@ const [tab, setTab] = useState('dashboard');
                 <strong>{trabajos.length}</strong>
               </article>
               <article className="admin-row no-image">
-                <div><b>Banners</b><span>Portada, catlogo y promociones.</span></div>
+                <div><b>Banners</b><span>Portada, catalogo y promociones.</span></div>
                 <strong>{banners.length}</strong>
               </article>
             </div>
@@ -350,16 +350,16 @@ const [tab, setTab] = useState('dashboard');
 
           <div className="form-grid">
             <input placeholder="Nombre del servicio" value={servicio.nombre} onChange={(e) => setServicio({ ...servicio, nombre: e.target.value })} />
-            <input placeholder="Categora" value={servicio.categoria} onChange={(e) => setServicio({ ...servicio, categoria: e.target.value })} />
+            <input placeholder="Categoria" value={servicio.categoria} onChange={(e) => setServicio({ ...servicio, categoria: e.target.value })} />
             <input placeholder="Medidas / referencia" value={servicio.medidas} onChange={(e) => setServicio({ ...servicio, medidas: e.target.value })} />
-            <input placeholder="Etiqueta" value={servicio.etiqueta} onChange={(e) => setServicio({ ...servicio, etiqueta: e.target.value })} />
-            <input type="number" placeholder="Precio" value={servicio.precio} onChange={(e) => setServicio({ ...servicio, precio: e.target.value })} />
+            <input placeholder="Etiqueta de precio opcional" value={servicio.etiqueta} onChange={(e) => setServicio({ ...servicio, etiqueta: e.target.value })} />
+            <input type="number" placeholder="Precio base USD" value={servicio.precio} onChange={(e) => setServicio({ ...servicio, precio: e.target.value })} />
             <select value={servicio.activo ? 'activo' : 'oculto'} onChange={(e) => setServicio({ ...servicio, activo: e.target.value === 'activo' })}>
               <option value="activo">Activo</option>
               <option value="oculto">Oculto</option>
             </select>
             <input className="span-2" placeholder="URL o imagen seleccionada" value={servicio.imagen} onChange={(e) => setServicio({ ...servicio, imagen: e.target.value })} />
-            <textarea className="span-2" placeholder="Descripcin tcnica" value={servicio.descripcion} onChange={(e) => setServicio({ ...servicio, descripcion: e.target.value })} />
+            <textarea className="span-2" placeholder="Descripcion tecnica" value={servicio.descripcion} onChange={(e) => setServicio({ ...servicio, descripcion: e.target.value })} />
           </div>
 
           <SelectorImagen valor={servicio.imagen} categoriaPreferida="servicio" onPick={(src) => setServicio({ ...servicio, imagen: src })} />
