@@ -512,7 +512,17 @@ export default function Home({ setPage }) {
           }
           .ev-catalog-grid,
           .ev-catalog-grid.single{
-            grid-template-columns:1fr;
+            display:flex;
+            overflow-x:auto;
+            gap:16px;
+            scroll-snap-type:x mandatory;
+            padding-bottom:10px;
+            -webkit-overflow-scrolling:touch;
+          }
+          .ev-product-card{
+            min-width:86vw;
+            max-width:86vw;
+            scroll-snap-align:start;
           }
           .ev-product-img{
             height:230px;
