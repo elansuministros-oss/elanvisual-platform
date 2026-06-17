@@ -17,6 +17,8 @@ import DashboardERP from './pages/DashboardERP';
 import MiCuenta from './pages/MiCuenta';
 import ProveedoresCostos from './pages/ProveedoresCostos';
 import InventarioInteligente from './pages/InventarioInteligente';
+import BibliotecaTecnica from './pages/BibliotecaTecnica';
+import CotizadorInteligente from './pages/CotizadorInteligente';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -30,7 +32,10 @@ export default function App() {
     if (pathInicial.startsWith('/admin')) return 'admin';
     if (pathInicial.startsWith('/produccion')) return 'produccion';
     if (pathInicial.startsWith('/materiales')) return 'materiales';
-    if (pathInicial.startsWith('/cotizador')) return 'cotizador';
+    if (pathInicial.startsWith('/biblioteca-tecnica')) return 'bibliotecaTecnica';
+    if (pathInicial.startsWith('/cotizador-visual')) return 'cotizadorVisual';
+    if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizadorInteligente';
+    if (pathInicial.startsWith('/cotizador')) return 'cotizadorInteligente';
     if (pathInicial.startsWith('/pedidos')) return 'pedidos';
     if (pathInicial.startsWith('/servicios')) return 'servicios';
     if (pathInicial.startsWith('/tienda')) return 'tienda';
@@ -55,14 +60,8 @@ export default function App() {
   const { usuario, configuracion } = useApp();
 
   useEffect(() => {
-    document.documentElement.style.setProperty(
-      '--azul',
-      configuracion.colorPrincipal || '#111827'
-    );
-    document.documentElement.style.setProperty(
-      '--teal',
-      configuracion.colorSecundario || '#C9A227'
-    );
+    document.documentElement.style.setProperty('--azul', configuracion.colorPrincipal || '#111827');
+    document.documentElement.style.setProperty('--teal', configuracion.colorSecundario || '#C9A227');
   }, [configuracion]);
 
   const ir = (destino) => {
@@ -81,15 +80,18 @@ export default function App() {
       admin: '/admin',
       produccion: '/produccion',
       materiales: '/materiales',
-      cotizador: '/cotizador',
+      bibliotecaTecnica: '/biblioteca-tecnica',
+      cotizador: '/cotizador-inteligente',
+      cotizadorInteligente: '/cotizador-inteligente',
+      cotizadorVisual: '/cotizador-visual',
       pedidos: '/pedidos',
       ventas: '/ventas',
       inventario: '/inventario',
       finanzas: '/finanzas',
       reportes: '/reportes',
-        miCuenta: '/mi-cuenta',
-        proveedores: '/proveedores',
-        inventarioReal: '/inventario-real',
+      miCuenta: '/mi-cuenta',
+      proveedores: '/proveedores',
+      inventarioReal: '/inventario-real',
     };
 
     setPage(destino);
@@ -108,12 +110,12 @@ export default function App() {
     <>
       <Header page={page} setPage={ir} />
 
-        {usuario && page !== 'home' && (
-          <div className="erp-floating-actions">
-            <button type="button" onClick={() => ir('home')}>🏠 Inicio</button>
-            <button type="button" onClick={() => ir('miCuenta')}>👤 Mi cuenta</button>
-          </div>
-        )}
+      {usuario && page !== 'home' && (
+        <div className="erp-floating-actions">
+          <button type="button" onClick={() => ir('home')}>🏠 Inicio</button>
+          <button type="button" onClick={() => ir('miCuenta')}>👤 Mi cuenta</button>
+        </div>
+      )}
 
       {page === 'home' && <Home setPage={ir} />}
       {page === 'servicios' && <Catalogo />}
@@ -131,15 +133,18 @@ export default function App() {
       {page === 'proveedores' &&
         (accesoAdmin ? <ProveedoresCostos /> : <Login setPage={ir} destino="admin" />)}
 
+      {page === 'bibliotecaTecnica' &&
+        (accesoAdmin ? <BibliotecaTecnica /> : <Login setPage={ir} destino="admin" />)}
+
       {page === 'miCuenta' &&
         (usuario ? <MiCuenta setPage={ir} /> : <Login setPage={ir} destino="miCuenta" />)}
 
       {page === 'dashboard' &&
         (accesoERP ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
 
-{page === 'crm' &&
-  (accesoVentas ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="crm" />)}
-  
+      {page === 'crm' &&
+        (accesoVentas ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="crm" />)}
+
       {page === 'ventas' &&
         (accesoVentas ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="crm" />)}
 
@@ -153,11 +158,7 @@ export default function App() {
         (accesoAdmin ? <DashboardERP setPage={ir} areaInicial="reportes" /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'produccion' &&
-        (accesoProduccion ? (
-          <ProduccionPanel />
-        ) : (
-          <Login setPage={ir} destino="produccion" />
-        ))}
+        (accesoProduccion ? <ProduccionPanel /> : <Login setPage={ir} destino="produccion" />)}
 
       {page === 'admin' &&
         (accesoAdmin ? <AdminPanel /> : <Login setPage={ir} destino="admin" />)}
@@ -165,8 +166,11 @@ export default function App() {
       {page === 'materiales' &&
         (accesoAdmin ? <MaterialesCostos /> : <Login setPage={ir} destino="materiales" />)}
 
-      {page === 'cotizador' &&
-        (accesoVentas ? <CotizadorVisual /> : <Login setPage={ir} destino="cotizador" />)}
+      {page === 'cotizadorInteligente' &&
+        (accesoVentas ? <CotizadorInteligente /> : <Login setPage={ir} destino="cotizador" />)}
+
+      {page === 'cotizadorVisual' &&
+        (accesoAdmin ? <CotizadorVisual /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'pedidos' &&
         (accesoPedidos ? <PedidosProduccion /> : <Login setPage={ir} destino="pedidos" />)}
