@@ -23,51 +23,18 @@ const costoMaterial = (m) =>
       0
   );
 
-function inferirAtributos(form) {
-  const base = txt(`${form.descripcion} ${form.tipo}`);
-
-  return {
-    ...form,
-    conImpresion:
-      base.includes('impresion') ||
-      base.includes('impresión') ||
-      base.includes('lona') ||
-      base.includes('vinil') ||
-      base.includes('banner'),
-    dobleCara:
-      base.includes('doble cara') ||
-      base.includes('dos caras'),
-    iluminado:
-      base.includes('led') ||
-      base.includes('luminos') ||
-      base.includes('iluminado') ||
-      base.includes('luz'),
-    conPostes:
-      base.includes('poste') ||
-      base.includes('tubo') ||
-      base.includes('estructura') ||
-      base.includes('marco'),
-    instalacion:
-      base.includes('instalacion') ||
-      base.includes('instalación') ||
-      base.includes('instalar') ||
-      base.includes('montaje'),
-    iva: true,
-  };
-}
-
 function detectarKeywords(form) {
   const base = txt(`${form.descripcion} ${form.tipo}`);
   const keys = [];
 
   if (base.includes('lona')) keys.push('lona');
-  if (base.includes('vinil') || formInferido.conImpresion) keys.push('vinil', 'tinta');
+  if (base.includes('vinil') || form.conImpresion) keys.push('vinil', 'tinta');
   if (base.includes('pvc')) keys.push('pvc');
   if (base.includes('acril') || base.includes('acrí')) keys.push('acril');
   if (base.includes('acm') || base.includes('fachada')) keys.push('acm');
-  if (base.includes('led') || base.includes('luminos') || formInferido.iluminado) keys.push('led', 'fuente');
-  if (base.includes('tubo') || base.includes('estructura') || formInferido.conPostes) keys.push('tubo', 'metal', 'poste');
-  if (formInferido.instalacion) keys.push('instalacion', 'silicon', 'tornillo');
+  if (base.includes('led') || base.includes('luminos') || form.iluminado) keys.push('led', 'fuente');
+  if (base.includes('tubo') || base.includes('estructura') || form.conPostes) keys.push('tubo', 'metal', 'poste');
+  if (form.instalacion) keys.push('instalacion', 'silicon', 'tornillo');
 
   return [...new Set(keys)];
 }
@@ -98,8 +65,7 @@ function crearLinea({ nombre, tipo, unidad, cantidad, material }) {
 function armarLineasAutomaticas(form, materiales) {
   const area = n(form.ancho) * n(form.alto) * n(form.cantidad || 1);
   const perimetro = (n(form.ancho) + n(form.alto)) * 2 * n(form.cantidad || 1);
-  const formInferido = inferirAtributos(form);
-  const keys = detectarKeywords(formInferido);
+  const keys = detectarKeywords(form);
   const lineas = [];
 
   const lona = buscarMaterial(materiales, ['lona']);
@@ -122,7 +88,7 @@ function armarLineasAutomaticas(form, materiales) {
     lineas.push(crearLinea({ nombre: 'Vinil impreso / corte', tipo: 'Impresión', unidad: 'm2', cantidad: area, material: vinil }));
   }
 
-  if (formInferido.conImpresion && tinta) {
+  if (form.conImpresion && tinta) {
     lineas.push(crearLinea({ nombre: 'Tinta / impresión', tipo: 'Impresión', unidad: 'm2', cantidad: area, material: tinta }));
   }
 
@@ -131,23 +97,23 @@ function armarLineasAutomaticas(form, materiales) {
   }
 
   if (keys.includes('acril')) {
-    lineas.push(crearLinea({ nombre: 'Acrílico', tipo: 'Material base', unidad: 'm2', cantidad: formInferido.dobleCara ? area * 2 : area, material: acrilico }));
+    lineas.push(crearLinea({ nombre: 'Acrílico', tipo: 'Material base', unidad: 'm2', cantidad: form.dobleCara ? area * 2 : area, material: acrilico }));
   }
 
   if (keys.includes('acm')) {
     lineas.push(crearLinea({ nombre: 'ACM', tipo: 'Material base', unidad: 'm2', cantidad: area, material: acm }));
   }
 
-  if (formInferido.iluminado) {
+  if (form.iluminado) {
     lineas.push(crearLinea({ nombre: 'LED', tipo: 'Iluminación', unidad: 'servicio', cantidad: 1, material: led }));
     lineas.push(crearLinea({ nombre: 'Fuente eléctrica', tipo: 'Iluminación', unidad: 'servicio', cantidad: 1, material: fuente }));
   }
 
-  if (formInferido.conPostes || keys.includes('tubo')) {
+  if (form.conPostes || keys.includes('tubo')) {
     lineas.push(crearLinea({ nombre: 'Estructura / tubo metálico', tipo: 'Estructura', unidad: 'metro lineal', cantidad: perimetro || 1, material: tubo }));
   }
 
-  if (formInferido.instalacion) {
+  if (form.instalacion) {
     lineas.push(crearLinea({ nombre: 'Fijación / instalación', tipo: 'Instalación', unidad: 'servicio', cantidad: 1, material: instalacion || tornillo }));
   }
 
@@ -203,9 +169,7 @@ export default function CotizadorDirecto() {
   const actualizar = (campo, valor) => setForm((prev) => ({ ...prev, [campo]: valor }));
 
   const generar = () => {
-    const formInferido = inferirAtributos(form);
-    const nuevas = armarLineasAutomaticas(formInferido, materiales);
-    setForm(formInferido);
+    const nuevas = armarLineasAutomaticas(form, materiales);
     setLineas(nuevas);
   };
 
@@ -248,11 +212,11 @@ export default function CotizadorDirecto() {
   }, [lineas, form]);
 
   const alcance = [
-    formInferido.conImpresion && 'Impresión',
-    formInferido.dobleCara && 'Doble cara',
-    formInferido.iluminado && 'Iluminación',
-    formInferido.conPostes && 'Postes / estructura',
-    formInferido.instalacion && 'Instalación',
+    form.conImpresion && 'Impresión',
+    form.dobleCara && 'Doble cara',
+    form.iluminado && 'Iluminación',
+    form.conPostes && 'Postes / estructura',
+    form.instalacion && 'Instalación',
     form.iva && 'IVA',
   ].filter(Boolean);
 
@@ -299,7 +263,14 @@ export default function CotizadorDirecto() {
 
           <input type="number" step="1" placeholder="Cantidad" value={form.cantidad} onChange={(e) => actualizar('cantidad', e.target.value)} />
 
-          <p className="hint">El sistema detecta impresión, estructura, iluminación, instalación e IVA desde la descripción.</p>
+          <div className="checks">
+            <label><input type="checkbox" checked={form.conImpresion} onChange={(e) => actualizar('conImpresion', e.target.checked)} /> Con impresión</label>
+            <label><input type="checkbox" checked={form.dobleCara} onChange={(e) => actualizar('dobleCara', e.target.checked)} /> Doble cara</label>
+            <label><input type="checkbox" checked={form.iluminado} onChange={(e) => actualizar('iluminado', e.target.checked)} /> Iluminado</label>
+            <label><input type="checkbox" checked={form.conPostes} onChange={(e) => actualizar('conPostes', e.target.checked)} /> Con postes</label>
+            <label><input type="checkbox" checked={form.instalacion} onChange={(e) => actualizar('instalacion', e.target.checked)} /> Instalación</label>
+            <label><input type="checkbox" checked={form.iva} onChange={(e) => actualizar('iva', e.target.checked)} /> IVA</label>
+          </div>
 
           <button className="primary" type="submit"><Calculator size={18} /> Desmenuzar y calcular</button>
         </form>
@@ -411,7 +382,7 @@ export default function CotizadorDirecto() {
         .price-row label{font-weight:950;color:#334155}.price-row input{width:auto;margin:0 6px 0 0}.price-row b{font-size:20px;color:#111827}
         .recommended{background:#f8fafc;border-color:#111827}
         .total-box{background:#0f172a;color:#fff;border-radius:20px;padding:14px;margin-top:10px}.total-box p{display:flex;justify-content:space-between;margin:6px 0}
-        .lineas{display:grid;gap:8px;margin-top:12px}.linea{display:grid;grid-template-columns:1.4fr 1fr .8fr .7fr .8fr .8fr .8fr 42px;gap:8px;align-items:center;background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:10px}.linea input{margin:0}.linea button{border:0;background:#fee2e2;color:#991b1b;border-radius:12px;height:42px}.msg{font-weight:900;color:#0f766e}.hint{background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:12px;color:#475569;font-weight:850}
+        .lineas{display:grid;gap:8px;margin-top:12px}.linea{display:grid;grid-template-columns:1.4fr 1fr .8fr .7fr .8fr .8fr .8fr 42px;gap:8px;align-items:center;background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:10px}.linea input{margin:0}.linea button{border:0;background:#fee2e2;color:#991b1b;border-radius:12px;height:42px}.msg{font-weight:900;color:#0f766e}
         .print-area{display:none}
         @media(max-width:900px){.cd-grid,.two,.three,.checks{grid-template-columns:1fr}.linea{grid-template-columns:1fr}.cot-directo{padding-bottom:90px}}
         @media print{
