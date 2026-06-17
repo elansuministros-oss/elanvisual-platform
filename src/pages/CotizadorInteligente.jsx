@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, FileText, ImagePlus, Sparkles } from 'lucide-react';
+import { CheckCircle2, FileText, ImagePlus, Sparkles, Wrench } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const money = (v) =>
@@ -62,6 +62,8 @@ function calcularEscalas(costo) {
 function interpretarSolicitud(texto) {
   const t = String(texto || '').toLowerCase();
 
+  if (t.includes('totem') || t.includes('tótem')) return 'totem';
+  if (t.includes('poste')) return 'totem';
   if (t.includes('jala') || t.includes('bandera')) return 'jalavista';
   if (t.includes('vehicular') || t.includes('carro') || t.includes('camioneta')) return 'rotulacion_vehicular';
   if (t.includes('luminoso') && t.includes('lona')) return 'rotulo_luminoso_lona';
@@ -75,6 +77,43 @@ function interpretarSolicitud(texto) {
   return '';
 }
 
+function seleccionarReglaConstructiva(reglas, medidas, tipoTrabajo) {
+  const candidatas = reglas.filter((r) => {
+    const tipoOk = !r.tipo_trabajo || r.tipo_trabajo === tipoTrabajo;
+    const anchoOk = medidas.ancho >= num(r.ancho_min) && medidas.ancho <= num(r.ancho_max);
+    const altoOk = medidas.alto >= num(r.alto_min) && medidas.alto <= num(r.alto_max);
+    const areaOk = medidas.area >= num(r.area_min) && medidas.area <= num(r.area_max);
+    return tipoOk && anchoOk && altoOk && areaOk;
+  });
+
+  return candidatas[0] || null;
+}
+
+function calcularPostes(regla, medidas) {
+  if (!regla?.requiere_poste) return 0;
+  const base = Math.ceil(medidas.ancho / Math.max(num(regla.separacion_postes_m), 1));
+  return Math.max(base, num(regla.postes_min));
+}
+
+function construirObraCivil(postes) {
+  if (postes <= 0) return [];
+
+  return [
+    { nombre: 'Concreto', unidad: 'm3', cantidad: postes * 0.08 },
+    { nombre: 'Arena', unidad: 'm3', cantidad: postes * 0.04 },
+    { nombre: 'Piedrín', unidad: 'm3', cantidad: postes * 0.04 },
+    { nombre: 'Varilla', unidad: 'unidad', cantidad: postes * 2 },
+    { nombre: 'Excavación', unidad: 'servicio', cantidad: postes },
+  ];
+}
+
+function buscarCosto(materiales, nombre) {
+  const q = String(nombre || '').toLowerCase();
+  return materiales.find((m) =>
+    `${m.nombre} ${m.categoria} ${m.unidad_compra}`.toLowerCase().includes(q)
+  );
+}
+
 export default function CotizadorInteligente() {
   const [form, setForm] = useState(inicial);
   const [biblioteca, setBiblioteca] = useState([]);
@@ -82,16 +121,18 @@ export default function CotizadorInteligente() {
   const [materiales, setMateriales] = useState([]);
   const [tintas, setTintas] = useState([]);
   const [tecnologias, setTecnologias] = useState([]);
+  const [reglas, setReglas] = useState([]);
   const [analizado, setAnalizado] = useState(false);
   const [bibliotecaSeleccionadaId, setBibliotecaSeleccionadaId] = useState('');
 
   const cargarTodo = async () => {
-    const [bt, bc, mat, tin, tec] = await Promise.all([
+    const [bt, bc, mat, tin, tec, reg] = await Promise.all([
       supabase.from('biblioteca_tecnica').select('*').eq('estado', 'activo').order('nombre'),
       supabase.from('biblioteca_componentes').select('*').eq('estado', 'activo').order('orden'),
       supabase.from('materiales_master').select('*').eq('activo', true).order('categoria'),
       supabase.from('tintas_master').select('*').eq('activo', true).order('nombre'),
       supabase.from('tecnologias_impresion').select('*').eq('estado', 'activo').order('nombre'),
+      supabase.from('reglas_constructivas').select('*').eq('activo', true).order('area_min'),
     ]);
 
     if (!bt.error) setBiblioteca(bt.data || []);
@@ -99,6 +140,7 @@ export default function CotizadorInteligente() {
     if (!mat.error) setMateriales(mat.data || []);
     if (!tin.error) setTintas(tin.data || []);
     if (!tec.error) setTecnologias(tec.data || []);
+    if (!reg.error) setReglas(reg.data || []);
   };
 
   useEffect(() => {
@@ -106,7 +148,6 @@ export default function CotizadorInteligente() {
   }, []);
 
   const medidas = useMemo(() => calcularMedidas(form), [form]);
-
   const tipoDetectado = useMemo(() => interpretarSolicitud(form.descripcion), [form.descripcion]);
 
   const bibliotecaSugerida = useMemo(() => {
@@ -119,6 +160,20 @@ export default function CotizadorInteligente() {
       null
     );
   }, [biblioteca, bibliotecaSeleccionadaId, tipoDetectado]);
+
+  const reglaConstructiva = useMemo(
+    () => seleccionarReglaConstructiva(reglas, medidas, bibliotecaSugerida?.tipo_trabajo || tipoDetectado),
+    [reglas, medidas, bibliotecaSugerida, tipoDetectado]
+  );
+
+  const postes = useMemo(() => calcularPostes(reglaConstructiva, medidas), [reglaConstructiva, medidas]);
+
+  const refuerzos = useMemo(() => {
+    if (!reglaConstructiva?.requiere_refuerzo) return 0;
+    return Math.ceil(medidas.ancho / Math.max(num(reglaConstructiva.separacion_refuerzo_m), 0.5));
+  }, [reglaConstructiva, medidas]);
+
+  const obraCivil = useMemo(() => construirObraCivil(postes), [postes]);
 
   const componentesReceta = useMemo(() => {
     if (!bibliotecaSugerida?.id) return [];
@@ -153,9 +208,53 @@ export default function CotizadorInteligente() {
         material,
         costoUnitario,
         costo,
+        faltaCosto: c.requiere_costo !== false && costoUnitario <= 0,
       };
     });
   }, [componentesReceta, medidas, materiales]);
+
+  const estructuraCalculada = useMemo(() => {
+    if (!reglaConstructiva) return [];
+
+    const principal = buscarCosto(materiales, reglaConstructiva.tubo_principal);
+    const secundario = buscarCosto(materiales, reglaConstructiva.tubo_secundario);
+
+    const mlPrincipal = medidas.perimetro;
+    const mlSecundario = refuerzos * medidas.alto;
+
+    return [
+      {
+        nombre: reglaConstructiva.tubo_principal || 'Tubo principal',
+        unidad: 'Metro lineal',
+        cantidad: mlPrincipal,
+        material: principal,
+        costoUnitario: num(principal?.costo_real),
+        costo: mlPrincipal * num(principal?.costo_real),
+      },
+      {
+        nombre: reglaConstructiva.tubo_secundario || 'Tubo secundario',
+        unidad: 'Metro lineal',
+        cantidad: mlSecundario,
+        material: secundario,
+        costoUnitario: num(secundario?.costo_real),
+        costo: mlSecundario * num(secundario?.costo_real),
+      },
+    ].filter((x) => x.cantidad > 0);
+  }, [reglaConstructiva, materiales, medidas, refuerzos]);
+
+  const obraCivilCosteada = useMemo(() => {
+    return obraCivil.map((item) => {
+      const material = buscarCosto(materiales, item.nombre);
+      const costoUnitario = num(material?.costo_real);
+      return {
+        ...item,
+        material,
+        costoUnitario,
+        costo: item.cantidad * costoUnitario,
+        faltaCosto: costoUnitario <= 0,
+      };
+    });
+  }, [obraCivil, materiales]);
 
   const tintaSeleccionada = useMemo(() => {
     if (!form.tecnologiaId) return null;
@@ -165,31 +264,78 @@ export default function CotizadorInteligente() {
   }, [form.tecnologiaId, tecnologias, tintas]);
 
   const costoMateriales = useMemo(() => despiece.reduce((acc, item) => acc + num(item.costo), 0), [despiece]);
+  const costoEstructura = useMemo(() => estructuraCalculada.reduce((acc, item) => acc + num(item.costo), 0), [estructuraCalculada]);
+  const costoObraCivil = useMemo(() => obraCivilCosteada.reduce((acc, item) => acc + num(item.costo), 0), [obraCivilCosteada]);
   const costoTinta = useMemo(() => medidas.area * num(tintaSeleccionada?.costo_m2), [medidas.area, tintaSeleccionada]);
-  const costoProduccion = costoMateriales + costoTinta;
+
+  const costoProduccion = costoMateriales + costoEstructura + costoObraCivil + costoTinta;
   const precios = calcularEscalas(costoProduccion);
+
+  const faltantes = useMemo(() => {
+    const f = [];
+
+    despiece.forEach((i) => {
+      if (i.faltaCosto) f.push({ item_nombre: i.nombre, descripcion: 'Componente de biblioteca sin costo validado.', unidad: i.unidad });
+    });
+
+    estructuraCalculada.forEach((i) => {
+      if (num(i.costoUnitario) <= 0) f.push({ item_nombre: i.nombre, descripcion: 'Material estructural sin costo validado.', unidad: i.unidad });
+    });
+
+    obraCivilCosteada.forEach((i) => {
+      if (i.faltaCosto) f.push({ item_nombre: i.nombre, descripcion: 'Obra civil sin costo validado.', unidad: i.unidad });
+    });
+
+    if (form.tecnologiaId && !tintaSeleccionada) {
+      f.push({ item_nombre: 'Tinta tecnología seleccionada', descripcion: 'No existe tinta compatible registrada.', unidad: 'm2' });
+    }
+
+    return f;
+  }, [despiece, estructuraCalculada, obraCivilCosteada, form.tecnologiaId, tintaSeleccionada]);
 
   const estadoCotizacion = !bibliotecaSugerida
     ? 'Pendiente validación'
     : componentesReceta.length === 0
       ? 'En revisión administrativa'
-      : costoProduccion > 0
-        ? 'Cotizable'
-        : 'Bloqueado';
+      : faltantes.length > 0
+        ? 'Bloqueado'
+        : costoProduccion > 0
+          ? 'Cotizable'
+          : 'Bloqueado';
 
-  const analizar = () => {
+  const crearSolicitudesFaltantes = async () => {
+    if (faltantes.length === 0) return;
+
+    const payload = faltantes.map((f) => ({
+      origen: 'cotizador_inteligente',
+      item_nombre: f.item_nombre,
+      descripcion: f.descripcion,
+      unidad: f.unidad,
+      cantidad_referencia: medidas.area || medidas.perimetro || medidas.cantidad,
+      estado: 'pendiente_validacion',
+      prioridad: 'alta',
+      moneda: 'USD',
+    }));
+
+    await supabase.from('solicitudes_costos').insert(payload);
+  };
+
+  const analizar = async () => {
     setAnalizado(true);
+
     if (tecnologiasCompatibles.length > 0 && !form.tecnologiaId) {
       setForm((prev) => ({ ...prev, tecnologiaId: tecnologiasCompatibles[0].id }));
     }
+
+    await crearSolicitudesFaltantes();
   };
 
   return (
     <main className="mm3-page">
       <section className="mm3-hero">
-        <span>ELANVISIÓN · CI-03</span>
+        <span>ELANVISIÓN · CI-04</span>
         <h1>Cotizador Inteligente</h1>
-        <p>Descripción libre, medidas exactas, motor constructivo y precios A/B/C.</p>
+        <p>Motor comercial, constructivo, estructura, obra civil y precios A/B/C.</p>
       </section>
 
       <section className="mm3-grid">
@@ -238,68 +384,115 @@ export default function CotizadorInteligente() {
           <div className="result">Estado: <b>{estadoCotizacion}</b></div>
           <div className="result">Área: <b>{medidas.area.toFixed(2)} m²</b></div>
           <div className="result">Perímetro: <b>{medidas.perimetro.toFixed(2)} ml</b></div>
-
           <div className="result">Receta: <b>{bibliotecaSugerida?.nombre || 'No detectada'}</b></div>
+          <div className="result">Regla estructural: <b>{reglaConstructiva?.nombre || 'Sin regla'}</b></div>
           <div className="result">Costo producción: <b>{money(costoProduccion)}</b></div>
 
-          <article className="row">
-            <div>
-              <h3>A · Comercial</h3>
-              <p>Utilidad 100%</p>
-              <span>{money(precios.a)}</span>
-            </div>
-          </article>
-
-          <article className="row">
-            <div>
-              <h3>B · Recomendado</h3>
-              <p>Utilidad 150%</p>
-              <span>{money(precios.b)}</span>
-            </div>
-          </article>
-
-          <article className="row">
-            <div>
-              <h3>C · Premium</h3>
-              <p>Utilidad 200%</p>
-              <span>{money(precios.c)}</span>
-            </div>
-          </article>
+          <article className="row"><div><h3>A · Comercial</h3><p>Utilidad 100%</p><span>{money(precios.a)}</span></div></article>
+          <article className="row"><div><h3>B · Recomendado</h3><p>Utilidad 150%</p><span>{money(precios.b)}</span></div></article>
+          <article className="row"><div><h3>C · Premium</h3><p>Utilidad 200%</p><span>{money(precios.c)}</span></div></article>
         </section>
       </section>
 
       {analizado && (
-        <section className="mm3-card">
-          <div className="title"><ImagePlus size={20} /><h2>Despiece preliminar</h2></div>
+        <>
+          <section className="mm3-card">
+            <div className="title"><Wrench size={20} /><h2>Motor constructivo</h2></div>
 
-          <div className="list">
-            {despiece.length === 0 ? (
-              <p className="note">No hay componentes cargados para esta receta. Administrá la Biblioteca Técnica.</p>
-            ) : (
-              despiece.map((item) => (
-                <article className="row" key={item.id}>
-                  <div>
-                    <h3>{item.nombre}</h3>
-                    <p>{item.tipo_componente} · {item.formula_calculo} · {item.unidad}</p>
-                    <span>
-                      Cantidad: {item.cantidad.toFixed(2)} · Costo unitario: {money(item.costoUnitario)} · Total: {money(item.costo)}
-                    </span>
-                  </div>
-                </article>
-              ))
-            )}
-
-            {tintaSeleccionada && (
+            <div className="list">
               <article className="row">
                 <div>
-                  <h3>Tinta {tintaSeleccionada.nombre}</h3>
-                  <p>Área × costo m²</p>
-                  <span>{medidas.area.toFixed(2)} m² · {money(tintaSeleccionada.costo_m2)} · Total: {money(costoTinta)}</span>
+                  <h3>Estructura</h3>
+                  <p>
+                    Principal: {reglaConstructiva?.tubo_principal || 'No definido'} ·
+                    Secundario: {reglaConstructiva?.tubo_secundario || 'No definido'} ·
+                    Chapa: {reglaConstructiva?.chapa || 'No definida'}
+                  </p>
+                  <span>
+                    Profundidad: {num(reglaConstructiva?.profundidad_cm)} cm ·
+                    Refuerzos: {refuerzos} ·
+                    Postes: {postes}
+                  </span>
                 </div>
               </article>
-            )}
-          </div>
-        </section>
+
+              {estructuraCalculada.map((item) => (
+                <article className="row" key={item.nombre}>
+                  <div>
+                    <h3>{item.nombre}</h3>
+                    <p>{item.unidad}</p>
+                    <span>Cantidad: {item.cantidad.toFixed(2)} · Unitario: {money(item.costoUnitario)} · Total: {money(item.costo)}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="mm3-card">
+            <div className="title"><ImagePlus size={20} /><h2>Despiece preliminar</h2></div>
+
+            <div className="list">
+              {despiece.length === 0 ? (
+                <p className="note">No hay componentes cargados para esta receta. Administrá la Biblioteca Técnica.</p>
+              ) : (
+                despiece.map((item) => (
+                  <article className="row" key={item.id}>
+                    <div>
+                      <h3>{item.nombre}</h3>
+                      <p>{item.tipo_componente} · {item.formula_calculo} · {item.unidad}</p>
+                      <span>Cantidad: {item.cantidad.toFixed(2)} · Unitario: {money(item.costoUnitario)} · Total: {money(item.costo)}</span>
+                    </div>
+                  </article>
+                ))
+              )}
+
+              {tintaSeleccionada && (
+                <article className="row">
+                  <div>
+                    <h3>Tinta {tintaSeleccionada.nombre}</h3>
+                    <p>Área × costo m²</p>
+                    <span>{medidas.area.toFixed(2)} m² · {money(tintaSeleccionada.costo_m2)} · Total: {money(costoTinta)}</span>
+                  </div>
+                </article>
+              )}
+            </div>
+          </section>
+
+          {postes > 0 && (
+            <section className="mm3-card">
+              <div className="title"><Wrench size={20} /><h2>Obra civil</h2></div>
+              <div className="list">
+                {obraCivilCosteada.map((item) => (
+                  <article className="row" key={item.nombre}>
+                    <div>
+                      <h3>{item.nombre}</h3>
+                      <p>{item.unidad}</p>
+                      <span>Cantidad: {item.cantidad.toFixed(2)} · Unitario: {money(item.costoUnitario)} · Total: {money(item.costo)}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {faltantes.length > 0 && (
+            <section className="mm3-card">
+              <div className="title"><FileText size={20} /><h2>Costos faltantes</h2></div>
+              <p className="note">Se crearán solicitudes automáticas para administración. La cotización queda bloqueada hasta validar costos.</p>
+              <div className="list">
+                {faltantes.map((f, idx) => (
+                  <article className="row" key={`${f.item_nombre}-${idx}`}>
+                    <div>
+                      <h3>{f.item_nombre}</h3>
+                      <p>{f.descripcion}</p>
+                      <span>{f.unidad}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
     </main>
   );
