@@ -117,6 +117,7 @@ export default function App() {
         <div className="erp-floating-actions">
           <button type="button" onClick={() => ir('home')}>🏠 Inicio</button>
           <button type="button" onClick={() => ir('miCuenta')}>👤 Mi cuenta</button>
+            {accesoAdmin && <button type="button" onClick={() => ir('bibliotecaTecnica')}>📚 Biblioteca</button>}
         </div>
       )}
 
@@ -183,4 +184,5 @@ export default function App() {
     </>
   );
 }
+
 
