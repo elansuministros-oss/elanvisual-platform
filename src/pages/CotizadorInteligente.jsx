@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, FileText, ImagePlus, Sparkles, Wrench } from 'lucide-react';
+import { CheckCircle2, FileText, ImagePlus, Printer, Sparkles, Wrench } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const money = (v) =>
@@ -114,6 +114,18 @@ function buscarCosto(materiales, nombre) {
   );
 }
 
+function fechaHoraCotizacion() {
+  const ahora = new Date();
+  const vence = new Date(ahora);
+  vence.setDate(vence.getDate() + 8);
+
+  return {
+    fecha: ahora.toLocaleDateString('es-NI'),
+    hora: ahora.toLocaleTimeString('es-NI', { hour: '2-digit', minute: '2-digit' }),
+    vence: vence.toLocaleDateString('es-NI'),
+  };
+}
+
 export default function CotizadorInteligente() {
   const [form, setForm] = useState(inicial);
   const [biblioteca, setBiblioteca] = useState([]);
@@ -124,6 +136,7 @@ export default function CotizadorInteligente() {
   const [reglas, setReglas] = useState([]);
   const [analizado, setAnalizado] = useState(false);
   const [bibliotecaSeleccionadaId, setBibliotecaSeleccionadaId] = useState('');
+  const [fechaPdf, setFechaPdf] = useState(fechaHoraCotizacion());
 
   const cargarTodo = async () => {
     const [bt, bc, mat, tin, tec, reg] = await Promise.all([
@@ -320,6 +333,11 @@ export default function CotizadorInteligente() {
     await supabase.from('solicitudes_costos').insert(payload);
   };
 
+  const imprimirPDF = () => {
+    setFechaPdf(fechaHoraCotizacion());
+    setTimeout(() => window.print(), 150);
+  };
+
   const analizar = async () => {
     setAnalizado(true);
 
@@ -333,9 +351,9 @@ export default function CotizadorInteligente() {
   return (
     <main className="mm3-page">
       <section className="mm3-hero">
-        <span>ELANVISIÓN · CI-04</span>
+        <span>ELANVISIÓN · CI-05</span>
         <h1>Cotizador Inteligente</h1>
-        <p>Motor comercial, constructivo, estructura, obra civil y precios A/B/C.</p>
+        <p>Motor comercial, constructivo, estructura, obra civil, precios A/B/C y PDF profesional.</p>
       </section>
 
       <section className="mm3-grid">
@@ -376,6 +394,12 @@ export default function CotizadorInteligente() {
           </select>
 
           <button className="primary" type="submit"><CheckCircle2 size={18} /> Analizar y costear</button>
+
+          {analizado && (
+            <button className="primary" type="button" onClick={imprimirPDF}>
+              <Printer size={18} /> Generar PDF ELANVISIÓN
+            </button>
+          )}
         </form>
 
         <section className="mm3-card">
@@ -494,6 +518,223 @@ export default function CotizadorInteligente() {
           )}
         </>
       )}
+          {analizado && (
+        <section className="cotizacion-print">
+          <div className="pdf-page">
+            <header className="pdf-header">
+              <div>
+                <span>ELANVISIÓN</span>
+                <h1>Cotización Comercial</h1>
+                <p>Rótulos · Impresión · Estructuras · Producción visual</p>
+              </div>
+              <div className="pdf-meta">
+                <strong>Fecha: {fechaPdf.fecha}</strong>
+                <strong>Hora: {fechaPdf.hora}</strong>
+                <strong>Validez: 8 días</strong>
+                <strong>Vence: {fechaPdf.vence}</strong>
+              </div>
+            </header>
+
+            <section className="pdf-client">
+              <h2>Cliente</h2>
+              <p><b>Nombre:</b> {form.clienteNombre || 'Cliente no especificado'}</p>
+              <p><b>Celular:</b> {form.celular || 'No especificado'}</p>
+              <p><b>Ubicación:</b> {form.ubicacion || 'No especificada'}</p>
+            </section>
+
+            <section className="pdf-image-box">
+              <div>
+                <h2>Vista comercial preliminar</h2>
+                <p>Render / referencia / fotomontaje pendiente de integración CI-06.</p>
+              </div>
+            </section>
+
+            <section className="pdf-summary">
+              <h2>Solicitud</h2>
+              <p>{form.descripcion}</p>
+              <p><b>Medidas:</b> {medidas.ancho.toFixed(2)} m × {medidas.alto.toFixed(2)} m · Cantidad: {medidas.cantidad}</p>
+              <p><b>Área:</b> {medidas.area.toFixed(2)} m² · <b>Perímetro:</b> {medidas.perimetro.toFixed(2)} ml</p>
+              <p><b>Receta:</b> {bibliotecaSugerida?.nombre || 'Pendiente validación'}</p>
+            </section>
+
+            <section className="pdf-table">
+              <h2>Opciones comerciales</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Opción</th>
+                    <th>Descripción</th>
+                    <th>Total USD</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>A</td>
+                    <td>Comercial</td>
+                    <td>{money(precios.a)}</td>
+                  </tr>
+                  <tr>
+                    <td>B</td>
+                    <td>Recomendado</td>
+                    <td>{money(precios.b)}</td>
+                  </tr>
+                  <tr>
+                    <td>C</td>
+                    <td>Premium</td>
+                    <td>{money(precios.c)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section className="pdf-blocks">
+              <div>
+                <h3>Incluye</h3>
+                <p>Producción según receta técnica, materiales costeados, estructura calculada y revisión comercial.</p>
+              </div>
+              <div>
+                <h3>No incluye</h3>
+                <p>Cambios de diseño no aprobados, obra civil adicional no calculada, permisos municipales o trabajos fuera de alcance.</p>
+              </div>
+              <div>
+                <h3>Beneficios</h3>
+                <p>Precio calculado con costos reales, margen protegido, validación técnica y opción de producción profesional.</p>
+              </div>
+              <div>
+                <h3>Tiempo estimado</h3>
+                <p>Sujeto a validación final de diseño, materiales disponibles y aprobación de anticipo.</p>
+              </div>
+            </section>
+
+            <footer className="pdf-footer">
+              <p>Esta cotización es una propuesta comercial preliminar. Arte final, producción y montaje se confirman después de aprobación.</p>
+              <strong>ELANVISIÓN · Comunicación visual profesional</strong>
+            </footer>
+          </div>
+        </section>
+      )}
+
+      <style>{`
+        .cotizacion-print {
+          display: none;
+        }
+
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+
+          .cotizacion-print,
+          .cotizacion-print * {
+            visibility: visible !important;
+          }
+
+          .cotizacion-print {
+            display: block !important;
+            position: absolute;
+            inset: 0;
+            background: white;
+            color: #111827;
+            font-family: Arial, sans-serif;
+          }
+
+          .pdf-page {
+            width: 100%;
+            min-height: 100vh;
+            padding: 28px;
+            box-sizing: border-box;
+          }
+
+          .pdf-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            border-bottom: 3px solid #111827;
+            padding-bottom: 16px;
+            margin-bottom: 18px;
+          }
+
+          .pdf-header span {
+            font-size: 12px;
+            letter-spacing: 2px;
+            font-weight: 800;
+          }
+
+          .pdf-header h1 {
+            margin: 4px 0;
+            font-size: 30px;
+          }
+
+          .pdf-meta {
+            display: grid;
+            gap: 4px;
+            text-align: right;
+            font-size: 12px;
+          }
+
+          .pdf-client,
+          .pdf-summary,
+          .pdf-table,
+          .pdf-blocks,
+          .pdf-image-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+          }
+
+          .pdf-image-box {
+            height: 230px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: #f3f4f6;
+          }
+
+          .pdf-table table {
+            width: 100%;
+            border-collapse: collapse;
+          }
+
+          .pdf-table th,
+          .pdf-table td {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 10px;
+            text-align: left;
+          }
+
+          .pdf-table th {
+            background: #111827;
+            color: white;
+          }
+
+          .pdf-blocks {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+          }
+
+          .pdf-blocks div {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 10px;
+          }
+
+          .pdf-footer {
+            margin-top: 20px;
+            border-top: 2px solid #111827;
+            padding-top: 12px;
+            font-size: 12px;
+          }
+
+          @page {
+            size: portrait;
+            margin: 10mm;
+          }
+        }
+      `}</style>
     </main>
   );
 }
+
