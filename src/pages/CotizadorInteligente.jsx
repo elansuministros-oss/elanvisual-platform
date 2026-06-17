@@ -22,6 +22,7 @@ const inicial = {
   instalacion: true,
   iva: true,
   tecnologiaId: '',
+  tintaId: '',
   costoInstalacionManual: '',
   distanciaKm: '',
   costoKm: 1,
@@ -304,17 +305,15 @@ export default function CotizadorInteligente() {
     });
   }, [obraCivil, materiales]);
 
-  const tintaSeleccionada = useMemo(() => {
-    if (!form.tecnologiaId) return null;
-    const tecnologia = tecnologias.find((t) => t.id === form.tecnologiaId);
-    if (!tecnologia) return null;
-    return tintas.find((t) => String(t.nombre || '').toLowerCase().includes(String(tecnologia.nombre || '').toLowerCase())) || null;
-  }, [form.tecnologiaId, tecnologias, tintas]);
+    const tintaSeleccionada = useMemo(() => {
+    if (!form.tintaId) return null;
+    return tintas.find((t) => String(t.id) === String(form.tintaId)) || null;
+  }, [form.tintaId, tintas]);
 
   const costoMateriales = useMemo(() => despiece.reduce((acc, item) => acc + num(item.costo), 0), [despiece]);
   const costoEstructura = useMemo(() => estructuraCalculada.reduce((acc, item) => acc + num(item.costo), 0), [estructuraCalculada]);
   const costoObraCivil = useMemo(() => obraCivilCosteada.reduce((acc, item) => acc + num(item.costo), 0), [obraCivilCosteada]);
-  const costoTinta = useMemo(() => medidas.area * num(tintaSeleccionada?.costo_m2), [medidas.area, tintaSeleccionada]);
+  const costoTinta = useMemo(() => form.conImpresion ? medidas.area * num(tintaSeleccionada?.costo_m2) : 0, [form.conImpresion, medidas.area, tintaSeleccionada]);
 
   const costoProduccion = costoMateriales + costoEstructura + costoObraCivil + costoTinta;
   const costoInstalacion = form.instalacion ? num(form.costoInstalacionManual) : 0;
@@ -369,12 +368,12 @@ export default function CotizadorInteligente() {
       if (i.faltaCosto) f.push({ item_nombre: i.nombre, descripcion: 'Obra civil sin costo validado.', unidad: i.unidad });
     });
 
-    if (form.tecnologiaId && !tintaSeleccionada) {
-      f.push({ item_nombre: 'Tinta tecnología seleccionada', descripcion: 'No existe tinta compatible registrada.', unidad: 'm2' });
+    if (form.conImpresion && !tintaSeleccionada) {
+      f.push({ item_nombre: 'Tinta de impresión', descripcion: 'Seleccioná el tipo de tinta para calcular el precio.', unidad: 'm2' });
     }
 
     return f;
-  }, [despiece, estructuraCalculada, obraCivilCosteada, form.tecnologiaId, tintaSeleccionada]);
+  }, [despiece, estructuraCalculada, obraCivilCosteada, form.conImpresion, tintaSeleccionada]);
 
   const estadoCotizacion = !bibliotecaSugerida
     ? 'Pendiente validación'
@@ -428,6 +427,9 @@ export default function CotizadorInteligente() {
         biblioteca_id: bibliotecaSugerida?.id || null,
         biblioteca_nombre: bibliotecaSugerida?.nombre || '',
         tecnologia_id: form.tecnologiaId || null,
+        tinta_id: form.tintaId || null,
+        tinta_nombre: tintaSeleccionada?.nombre || '',
+        costo_tinta: costoTinta,
         estado: estadoCotizacion,
         costo_produccion: costoProduccion,
         costo_instalacion: costoInstalacion,
@@ -619,10 +621,21 @@ export default function CotizadorInteligente() {
             {biblioteca.map((b) => <option key={b.id} value={b.id}>{b.nombre}</option>)}
           </select>
 
-          <select value={form.tecnologiaId} onChange={(e) => setForm({ ...form, tecnologiaId: e.target.value })}>
+                    <select value={form.tecnologiaId} onChange={(e) => setForm({ ...form, tecnologiaId: e.target.value })}>
             <option value="">Tecnología compatible</option>
             {tecnologiasCompatibles.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}
           </select>
+
+          {form.conImpresion && (
+            <select value={form.tintaId} onChange={(e) => setForm({ ...form, tintaId: e.target.value })}>
+              <option value="">Seleccionar tinta / impresión</option>
+              {tintas.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.nombre} · {money(t.costo_m2)} / m²
+                </option>
+              ))}
+            </select>
+          )}
 
           <section className="mm3-card" style={{ display: "none" }}>
             <div className="title"><ImagePlus size={20} /><h2>Adjuntos comerciales</h2></div>
@@ -1278,6 +1291,7 @@ export default function CotizadorInteligente() {
     </main>
   );
 }
+
 
 
 
