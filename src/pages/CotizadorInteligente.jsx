@@ -464,9 +464,9 @@ export default function CotizadorInteligente() {
   return (
     <main className="mm3-page">
       <section className="mm3-hero">
-        <span>ELANVISIÓN · CI-05</span>
+        <span>ELANVISIÓN · CI-11</span>
         <h1>Cotizador Inteligente</h1>
-        <p>Motor comercial, constructivo, estructura, obra civil, precios A/B/C y PDF profesional.</p>
+        <p>Motor comercial, constructivo, financiero y cotización comercial profesional.</p>
       </section>
 
       <section className="mm3-grid">
@@ -758,12 +758,13 @@ export default function CotizadorInteligente() {
         <section className="cotizacion-print">
           <div className="pdf-page">
             <header className="pdf-header">
-              <div>
+              <div className="pdf-brand">
                 <span>ELANVISIÓN</span>
                 <h1>Cotización Comercial</h1>
-                <p>Rótulos · Impresión · Estructuras · Producción visual</p>
+                <p>Rotulación · Impresión · Exhibición · Producción visual</p>
               </div>
               <div className="pdf-meta">
+                <strong>Código: {codigoCotizacion || 'Sin guardar'}</strong>
                 <strong>Fecha: {fechaPdf.fecha}</strong>
                 <strong>Hora: {fechaPdf.hora}</strong>
                 <strong>Validez: 8 días</strong>
@@ -772,10 +773,18 @@ export default function CotizadorInteligente() {
             </header>
 
             <section className="pdf-client">
-              <h2>Cliente</h2>
-              <p><b>Nombre:</b> {form.clienteNombre || 'Cliente no especificado'}</p>
-              <p><b>Celular:</b> {form.celular || 'No especificado'}</p>
-              <p><b>Ubicación:</b> {form.ubicacion || 'No especificada'}</p>
+              <div>
+                <h2>Cliente</h2>
+                <p><b>Nombre:</b> {form.clienteNombre || 'Cliente no especificado'}</p>
+                <p><b>Celular:</b> {form.celular || 'No especificado'}</p>
+                <p><b>Ubicación:</b> {form.ubicacion || 'No especificada'}</p>
+              </div>
+              <div>
+                <h2>Proyecto</h2>
+                <p><b>Receta:</b> {bibliotecaSugerida?.nombre || 'Pendiente validación'}</p>
+                <p><b>Medidas:</b> {medidas.ancho.toFixed(2)} m × {medidas.alto.toFixed(2)} m</p>
+                <p><b>Cantidad:</b> {medidas.cantidad}</p>
+              </div>
             </section>
 
             <section className="pdf-image-box">
@@ -804,66 +813,95 @@ export default function CotizadorInteligente() {
             </section>
 
             <section className="pdf-summary">
-              <h2>Solicitud</h2>
+              <h2>Resumen Ejecutivo</h2>
               <p>{form.descripcion}</p>
-              <p><b>Medidas:</b> {medidas.ancho.toFixed(2)} m × {medidas.alto.toFixed(2)} m · Cantidad: {medidas.cantidad}</p>
-              <p><b>Área:</b> {medidas.area.toFixed(2)} m² · <b>Perímetro:</b> {medidas.perimetro.toFixed(2)} ml</p>
-              <p><b>Receta:</b> {bibliotecaSugerida?.nombre || 'Pendiente validación'}</p>
-              <p><b>Costo empresa:</b> {money(costoEmpresa)} · <b>Instalación:</b> {money(costoInstalacion)} · <b>Transporte:</b> {money(costoTransporte)}</p>
+              <div className="pdf-kpis">
+                <div><span>Área</span><strong>{medidas.area.toFixed(2)} m²</strong></div>
+                <div><span>Perímetro</span><strong>{medidas.perimetro.toFixed(2)} ml</strong></div>
+                <div><span>Instalación</span><strong>{form.instalacion ? 'Incluida' : 'No incluida'}</strong></div>
+                <div><span>Estado</span><strong>{estadoCotizacion}</strong></div>
+              </div>
             </section>
 
             <section className="pdf-table">
-              <h2>Opciones comerciales</h2>
+              <h2>Propuesta Comercial</h2>
               <table>
                 <thead>
                   <tr>
-                    <th>Opción</th>
-                    <th>Descripción</th>
+                    <th>Ítem</th>
+                    <th>Cantidad</th>
                     <th>Total USD</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>A</td>
-                    <td>Comercial</td>
-                    <td>{money(precios.a)}</td>
-                  </tr>
-                  <tr>
-                    <td>B</td>
-                    <td>Recomendado</td>
+                    <td>{bibliotecaSugerida?.nombre || 'Producción visual personalizada'}</td>
+                    <td>{medidas.cantidad}</td>
                     <td>{money(precios.b)}</td>
                   </tr>
-                  <tr>
-                    <td>C</td>
-                    <td>Premium</td>
-                    <td>{money(precios.c)}</td>
-                  </tr>
+                  {form.instalacion && (
+                    <tr>
+                      <td>Instalación y logística</td>
+                      <td>1</td>
+                      <td>Incluida en propuesta</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
+
+              <div className="pdf-total-box">
+                <span>TOTAL PROPUESTA RECOMENDADA</span>
+                <strong>{money(precios.b)}</strong>
+                <p>Opción B · Recomendado</p>
+              </div>
+            </section>
+
+            <section className="pdf-options">
+              <div>
+                <span>Opción A</span>
+                <strong>{money(precios.a)}</strong>
+                <p>Comercial</p>
+              </div>
+              <div className="featured">
+                <span>Opción B</span>
+                <strong>{money(precios.b)}</strong>
+                <p>Recomendado</p>
+              </div>
+              <div>
+                <span>Opción C</span>
+                <strong>{money(precios.c)}</strong>
+                <p>Premium</p>
+              </div>
             </section>
 
             <section className="pdf-blocks">
               <div>
                 <h3>Incluye</h3>
-                <p>Producción según receta técnica, materiales costeados, estructura calculada y revisión comercial.</p>
+                <p>Producción según receta técnica, materiales costeados, estructura calculada, revisión comercial e instalación cuando aplique.</p>
               </div>
               <div>
                 <h3>No incluye</h3>
-                <p>Cambios de diseño no aprobados, obra civil adicional no calculada, permisos municipales o trabajos fuera de alcance.</p>
+                <p>Permisos municipales, alimentación eléctrica externa, obras civiles adicionales o cambios fuera del alcance aprobado.</p>
               </div>
               <div>
                 <h3>Beneficios</h3>
-                <p>Precio calculado con costos reales, margen protegido, validación técnica y opción de producción profesional.</p>
+                <p>Costos reales, margen protegido, propuesta visual preliminar, seguimiento operativo y producción profesional.</p>
               </div>
               <div>
-                <h3>Tiempo estimado</h3>
-                <p>Sujeto a validación final de diseño, materiales disponibles y aprobación de anticipo.</p>
+                <h3>Condiciones</h3>
+                <p>60% anticipo para iniciar. 40% contra entrega o antes de instalación. Validez: 8 días calendario.</p>
               </div>
             </section>
 
             <footer className="pdf-footer">
-              <p>Esta cotización es una propuesta comercial preliminar. Arte final, producción y montaje se confirman después de aprobación.</p>
-              <strong>ELANVISIÓN · Comunicación visual profesional</strong>
+              <div>
+                <strong>ELANVISIÓN</strong>
+                <p>ONE VISION · MULTIPLE SOLUTIONS</p>
+              </div>
+              <div>
+                <p>Esta cotización es una propuesta comercial preliminar. Arte final, producción y montaje se confirman después de aprobación.</p>
+                <p>visual.elankav.com</p>
+              </div>
             </footer>
           </div>
         </section>
@@ -944,20 +982,28 @@ export default function CotizadorInteligente() {
             display: flex;
             justify-content: space-between;
             gap: 20px;
-            border-bottom: 3px solid #111827;
-            padding-bottom: 16px;
-            margin-bottom: 18px;
+            background: #111827;
+            color: white;
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 16px;
           }
 
-          .pdf-header span {
+          .pdf-brand span {
             font-size: 12px;
-            letter-spacing: 2px;
-            font-weight: 800;
+            letter-spacing: 3px;
+            font-weight: 900;
+            color: #C9A227;
           }
 
-          .pdf-header h1 {
-            margin: 4px 0;
+          .pdf-brand h1 {
+            margin: 6px 0;
             font-size: 30px;
+          }
+
+          .pdf-brand p {
+            margin: 0;
+            color: #e5e7eb;
           }
 
           .pdf-meta {
@@ -971,15 +1017,25 @@ export default function CotizadorInteligente() {
           .pdf-summary,
           .pdf-table,
           .pdf-blocks,
+          .pdf-options,
           .pdf-image-box {
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 14px;
-            margin-bottom: 14px;
+            min-height: 340px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: #f3f4f6;
+            overflow: hidden;
+          }
+
+          .pdf-client {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
           }
 
           .pdf-image-box {
-            min-height: 280px;
+            min-height: 340px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1005,6 +1061,29 @@ export default function CotizadorInteligente() {
             max-height: 360px;
           }
 
+          .pdf-kpis {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+          }
+
+          .pdf-kpis div {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 10px;
+          }
+
+          .pdf-kpis span {
+            display: block;
+            font-size: 11px;
+            color: #6b7280;
+          }
+
+          .pdf-kpis strong {
+            font-size: 15px;
+          }
+
           .pdf-table table {
             width: 100%;
             border-collapse: collapse;
@@ -1022,6 +1101,58 @@ export default function CotizadorInteligente() {
             color: white;
           }
 
+          .pdf-total-box {
+            margin-top: 16px;
+            background: #111827;
+            color: white;
+            border-radius: 18px;
+            padding: 18px;
+            text-align: center;
+          }
+
+          .pdf-total-box span {
+            display: block;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: #C9A227;
+            font-weight: 800;
+          }
+
+          .pdf-total-box strong {
+            display: block;
+            font-size: 38px;
+            margin: 8px 0;
+          }
+
+          .pdf-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            text-align: center;
+          }
+
+          .pdf-options div {
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 12px;
+          }
+
+          .pdf-options .featured {
+            border: 2px solid #111827;
+            background: #f9fafb;
+          }
+
+          .pdf-options span {
+            font-size: 12px;
+            color: #6b7280;
+          }
+
+          .pdf-options strong {
+            display: block;
+            font-size: 22px;
+            margin: 4px 0;
+          }
+
           .pdf-blocks {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1035,9 +1166,12 @@ export default function CotizadorInteligente() {
           }
 
           .pdf-footer {
-            margin-top: 20px;
-            border-top: 2px solid #111827;
+            margin-top: 18px;
+            border-top: 3px solid #111827;
             padding-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
             font-size: 12px;
           }
 
@@ -1050,6 +1184,7 @@ export default function CotizadorInteligente() {
     </main>
   );
 }
+
 
 
 
