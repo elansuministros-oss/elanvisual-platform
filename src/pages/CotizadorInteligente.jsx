@@ -616,11 +616,6 @@ export default function CotizadorInteligente() {
             </section>
           )}
 
-          <select value={bibliotecaSeleccionadaId} onChange={(e) => setBibliotecaSeleccionadaId(e.target.value)}>
-            <option value="">Receta sugerida por IA</option>
-            {biblioteca.map((b) => <option key={b.id} value={b.id}>{b.nombre}</option>)}
-          </select>
-
                     <select value={form.tecnologiaId} onChange={(e) => setForm({ ...form, tecnologiaId: e.target.value })}>
             <option value="">Tecnología compatible</option>
             {tecnologiasCompatibles.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}
@@ -1291,6 +1286,7 @@ export default function CotizadorInteligente() {
     </main>
   );
 }
+
 
 
 

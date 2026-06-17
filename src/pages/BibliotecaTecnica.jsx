@@ -49,6 +49,19 @@ const inicialComponente = {
 };
 
 export default function BibliotecaTecnica() {
+  const { usuario } = useApp();
+  const esAdmin = usuario?.rol === 'admin';
+
+  if (!esAdmin) {
+    return (
+      <main className="mm3-page">
+        <section className="mm3-card center">
+          <h1>Acceso restringido</h1>
+          <p>La Biblioteca Técnica es solo para administración.</p>
+        </section>
+      </main>
+    );
+  }
   const [tab, setTab] = useState('biblioteca');
 
   const [biblioteca, setBiblioteca] = useState([]);
@@ -422,3 +435,4 @@ export default function BibliotecaTecnica() {
     </main>
   );
 }
+
