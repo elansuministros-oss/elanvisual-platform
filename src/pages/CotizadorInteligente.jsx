@@ -341,6 +341,19 @@ export default function CotizadorInteligente() {
 
   const distribucionB = distribuirUtilidad(utilidadB);
 
+  const alcanceComercial = useMemo(() => {
+    const items = [];
+
+    if (form.conImpresion) items.push('Impresión');
+    if (form.dobleCara) items.push('Doble cara');
+    if (form.iluminado) items.push('Iluminación');
+    if (form.conPostes) items.push('Postes / estructura exterior');
+    if (form.instalacion) items.push('Instalación');
+    if (form.iva) items.push('IVA');
+
+    return items;
+  }, [form.conImpresion, form.dobleCara, form.iluminado, form.conPostes, form.instalacion, form.iva]);
+
   const faltantes = useMemo(() => {
     const f = [];
 
@@ -708,9 +721,15 @@ export default function CotizadorInteligente() {
           <div className="result">Viáticos / equipo: <b>{money(costoViaticos + costoEquipo)}</b></div>
           <div className="result">Costo empresa: <b>{money(costoEmpresa)}</b></div>
 
-          <article className="row"><div><h3>A · Comercial</h3><p>Utilidad: {money(utilidadA)}</p><span>{money(precios.a)}</span></div></article>
-          <article className="row"><div><h3>B · Recomendado</h3><p>Utilidad: {money(utilidadB)}</p><span>{money(precios.b)}</span></div></article>
-          <article className="row"><div><h3>C · Premium</h3><p>Utilidad: {money(utilidadC)}</p><span>{money(precios.c)}</span></div></article>
+          {alcanceComercial.length > 0 && (
+            <div className="result">
+              Alcance incluido: <b>{alcanceComercial.join(' · ')}</b>
+            </div>
+          )}
+
+          <article className="row"><div><h3>Precio mínimo viable</h3><p>Precio sugerido de venta</p><span>{money(precios.a)}</span></div></article>
+          <article className="row"><div><h3>Precio recomendado</h3><p>Precio sugerido de venta</p><span>{money(precios.b)}</span></div></article>
+          <article className="row"><div><h3>Precio objetivo</h3><p>Precio sugerido de venta</p><span>{money(precios.c)}</span></div></article>
 
           <section className="mm3-card" style={{ display: "none" }}>
             <div className="title"><FileText size={20} /><h2>Distribución estimada B</h2></div>
@@ -921,32 +940,38 @@ export default function CotizadorInteligente() {
               <div className="pdf-total-box">
                 <span>TOTAL PROPUESTA RECOMENDADA</span>
                 <strong>{money(precios.b)}</strong>
-                <p>Opción B · Recomendado</p>
+                <p>Precio recomendado</p>
               </div>
             </section>
 
             <section className="pdf-options">
               <div>
-                <span>Opción A</span>
+                <span>Precio mínimo</span>
                 <strong>{money(precios.a)}</strong>
-                <p>Comercial</p>
+                <p>Venta mínima viable</p>
               </div>
               <div className="featured">
-                <span>Opción B</span>
+                <span>Precio recomendado</span>
                 <strong>{money(precios.b)}</strong>
-                <p>Recomendado</p>
+                <p>Venta recomendada</p>
               </div>
               <div>
-                <span>Opción C</span>
+                <span>Precio objetivo</span>
                 <strong>{money(precios.c)}</strong>
-                <p>Premium</p>
+                <p>Venta objetivo</p>
               </div>
             </section>
 
             <section className="pdf-blocks">
               <div>
                 <h3>Incluye</h3>
-                <p>Producción según receta técnica, materiales costeados, estructura calculada, revisión comercial e instalación cuando aplique.</p>
+                {alcanceComercial.length > 0 ? (
+                  <ul>
+                    {alcanceComercial.map((item) => <li key={item}>{item}</li>)}
+                  </ul>
+                ) : (
+                  <p>Producción visual según alcance aprobado.</p>
+                )}
               </div>
               <div>
                 <h3>No incluye</h3>
