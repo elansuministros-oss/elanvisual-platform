@@ -51,7 +51,31 @@ export default function CotizacionesInteligentes() {
     );
   }, [cotizaciones, busqueda]);
 
+  const actualizarEstadoCotizacion = async (cotizacion, estado) => {
+    const { error } = await supabase
+      .from('cotizaciones_inteligentes')
+      .update({
+        estado,
+        actualizado_en: new Date().toISOString(),
+      })
+      .eq('id', cotizacion.id);
+
+    if (error) {
+      console.error(error);
+      alert('No se pudo actualizar el estado.');
+      return;
+    }
+
+    alert(`Cotización ${cotizacion.codigo} actualizada a: ${estado}`);
+    setCotizacionActiva((prev) => prev?.id === cotizacion.id ? { ...prev, estado } : prev);
+    cargarCotizaciones();
+  };
+
   const convertirAPedido = async (cotizacion) => {
+    if (cotizacion.estado !== 'aprobada') {
+      alert('Esta cotización debe estar aprobada antes de convertirse a pedido.');
+      return;
+    }
     if (!cotizacion) return;
     if (!confirm(`Convertir ${cotizacion.codigo} a pedido de producción?`)) return;
 
@@ -217,6 +241,14 @@ export default function CotizacionesInteligentes() {
                     <Eye size={15} /> Ver
                   </button>
 
+                  <button type="button" onClick={() => setCotizacionActiva(c)}>
+                    <Eye size={15} /> Abrir
+                  </button>
+
+                  <button type="button" onClick={() => actualizarEstadoCotizacion(c, 'aprobada')}>
+                    Aprobar
+                  </button>
+
                   <button type="button" onClick={() => convertirAPedido(c)}>
                     <ClipboardList size={15} /> Pedido
                   </button>
@@ -245,6 +277,16 @@ export default function CotizacionesInteligentes() {
 
           <p className="note">{cotizacionActiva.descripcion}</p>
 
+          <div className="two">
+            <button className="primary" type="button" onClick={() => actualizarEstadoCotizacion(cotizacionActiva, 'aprobada')}>
+              Aprobar cotización
+            </button>
+
+            <button className="primary" type="button" onClick={() => actualizarEstadoCotizacion(cotizacionActiva, 'rechazada')}>
+              Rechazar
+            </button>
+          </div>
+
           <button className="primary" type="button" onClick={() => convertirAPedido(cotizacionActiva)}>
             <ClipboardList size={18} />
             Convertir a Pedido Producción
@@ -254,3 +296,4 @@ export default function CotizacionesInteligentes() {
     </main>
   );
 }
+
