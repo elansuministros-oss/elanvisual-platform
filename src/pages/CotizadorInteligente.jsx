@@ -163,6 +163,10 @@ export default function CotizadorInteligente() {
     setAdjuntos((prev) => ({ ...prev, [tipo]: url }));
   };
 
+  const quitarAdjunto = (tipo) => {
+    setAdjuntos((prev) => ({ ...prev, [tipo]: '' }));
+  };
+
   const imagenPrincipal = adjuntos.fotoLocal || adjuntos.referencia || adjuntos.diseno || adjuntos.logo || '';
   const tieneFotomontaje = Boolean(adjuntos.fotoLocal && adjuntos.logo);
 
@@ -558,16 +562,28 @@ export default function CotizadorInteligente() {
             <div className="title"><ImagePlus size={20} /><h2>Adjuntos comerciales</h2></div>
 
             <label>Logo del cliente</label>
-            <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('logo', e.target.files?.[0])} />
+            <div className="two">
+              <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('logo', e.target.files?.[0])} />
+              <button type="button" onClick={() => quitarAdjunto('logo')}>Quitar</button>
+            </div>
 
             <label>Diseño / arte recibido</label>
-            <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('diseno', e.target.files?.[0])} />
+            <div className="two">
+              <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('diseno', e.target.files?.[0])} />
+              <button type="button" onClick={() => quitarAdjunto('diseno')}>Quitar</button>
+            </div>
 
             <label>Foto del local</label>
-            <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('fotoLocal', e.target.files?.[0])} />
+            <div className="two">
+              <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('fotoLocal', e.target.files?.[0])} />
+              <button type="button" onClick={() => quitarAdjunto('fotoLocal')}>Quitar</button>
+            </div>
 
             <label>Imagen referencia</label>
-            <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('referencia', e.target.files?.[0])} />
+            <div className="two">
+              <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('referencia', e.target.files?.[0])} />
+              <button type="button" onClick={() => quitarAdjunto('referencia')}>Quitar</button>
+            </div>
 
             {imagenPrincipal && (
               <div className="pdf-preview-box">
@@ -1184,6 +1200,7 @@ export default function CotizadorInteligente() {
     </main>
   );
 }
+
 
 
 
