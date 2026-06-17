@@ -76,7 +76,7 @@ export default function BibliotecaTecnica() {
       await cargarTodo();
     } catch (error) {
       console.error(error);
-      alert('No se pudo cargar la base técnica.');
+      alert(`No se pudo cargar la base técnica: ${error?.message || JSON.stringify(error)}`);
     } finally {
       setSembrando(false);
     }
