@@ -558,7 +558,7 @@ export default function CotizadorInteligente() {
             {tecnologiasCompatibles.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}
           </select>
 
-          <section className="mm3-card">
+          <section className="mm3-card" style={{ display: "none" }}>
             <div className="title"><ImagePlus size={20} /><h2>Adjuntos comerciales</h2></div>
 
             <label>Logo del cliente</label>
@@ -659,7 +659,7 @@ export default function CotizadorInteligente() {
           <article className="row"><div><h3>B · Recomendado</h3><p>Utilidad: {money(utilidadB)}</p><span>{money(precios.b)}</span></div></article>
           <article className="row"><div><h3>C · Premium</h3><p>Utilidad: {money(utilidadC)}</p><span>{money(precios.c)}</span></div></article>
 
-          <section className="mm3-card">
+          <section className="mm3-card" style={{ display: "none" }}>
             <div className="title"><FileText size={20} /><h2>Distribución estimada B</h2></div>
             <div className="result">Vendedor: <b>{money(distribucionB.vendedor)}</b></div>
             <div className="result">Incentivo: <b>{money(distribucionB.incentivo)}</b></div>
@@ -672,7 +672,7 @@ export default function CotizadorInteligente() {
 
       {analizado && (
         <>
-          <section className="mm3-card">
+          <section className="mm3-card" style={{ display: "none" }}>
             <div className="title"><Wrench size={20} /><h2>Motor constructivo</h2></div>
 
             <div className="list">
@@ -704,7 +704,7 @@ export default function CotizadorInteligente() {
             </div>
           </section>
 
-          <section className="mm3-card">
+          <section className="mm3-card" style={{ display: "none" }}>
             <div className="title"><ImagePlus size={20} /><h2>Despiece preliminar</h2></div>
 
             <div className="list">
