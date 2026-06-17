@@ -18,7 +18,7 @@ import MiCuenta from './pages/MiCuenta';
 import ProveedoresCostos from './pages/ProveedoresCostos';
 import InventarioInteligente from './pages/InventarioInteligente';
 import BibliotecaTecnica from './pages/BibliotecaTecnica';
-import CotizadorInteligente from './pages/CotizadorInteligente';
+import CotizadorDirecto from './pages/CotizadorDirecto';
 import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
 import { useApp } from './context/AppContext';
@@ -180,7 +180,7 @@ export default function App() {
       
 
       {page === 'cotizadorInteligente' &&
-        (accesoVentas ? <CotizadorInteligente /> : <Login setPage={ir} destino="cotizador" />)}
+        (accesoVentas ? <CotizadorDirecto /> : <Login setPage={ir} destino="cotizador" />)}
 
       {page === 'cotizacionesInteligentes' &&
         (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="cotizador" />)}
