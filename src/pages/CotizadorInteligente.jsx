@@ -144,6 +144,12 @@ export default function CotizadorInteligente() {
     referencia: '',
   });
 
+  const [montaje, setMontaje] = useState({
+    logoX: 50,
+    logoY: 35,
+    logoW: 42,
+  });
+
   const cargarAdjunto = (tipo, file) => {
     if (!file) return;
     const url = URL.createObjectURL(file);
@@ -151,6 +157,7 @@ export default function CotizadorInteligente() {
   };
 
   const imagenPrincipal = adjuntos.fotoLocal || adjuntos.referencia || adjuntos.diseno || adjuntos.logo || '';
+  const tieneFotomontaje = Boolean(adjuntos.fotoLocal && adjuntos.logo);
 
   const cargarTodo = async () => {
     const [bt, bc, mat, tin, tec, reg] = await Promise.all([
@@ -424,8 +431,39 @@ export default function CotizadorInteligente() {
 
             {imagenPrincipal && (
               <div className="pdf-preview-box">
-                <img src={imagenPrincipal} alt="Vista comercial preliminar" />
+                {tieneFotomontaje ? (
+                  <div className="montaje-box">
+                    <img className="montaje-fondo" src={adjuntos.fotoLocal} alt="Foto local" />
+                    <img
+                      className="montaje-logo"
+                      src={adjuntos.logo}
+                      alt="Logo cliente"
+                      style={{
+                        left: `${montaje.logoX}%`,
+                        top: `${montaje.logoY}%`,
+                        width: `${montaje.logoW}%`,
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <img src={imagenPrincipal} alt="Vista comercial preliminar" />
+                )}
               </div>
+            )}
+
+            {tieneFotomontaje && (
+              <section className="mm3-card">
+                <div className="title"><ImagePlus size={20} /><h2>Ajuste de fotomontaje</h2></div>
+
+                <label>Posición horizontal</label>
+                <input type="range" min="0" max="100" value={montaje.logoX} onChange={(e) => setMontaje({ ...montaje, logoX: Number(e.target.value) })} />
+
+                <label>Posición vertical</label>
+                <input type="range" min="0" max="100" value={montaje.logoY} onChange={(e) => setMontaje({ ...montaje, logoY: Number(e.target.value) })} />
+
+                <label>Tamaño del logo</label>
+                <input type="range" min="10" max="90" value={montaje.logoW} onChange={(e) => setMontaje({ ...montaje, logoW: Number(e.target.value) })} />
+              </section>
             )}
           </section>
 
@@ -579,7 +617,21 @@ export default function CotizadorInteligente() {
             </section>
 
             <section className="pdf-image-box">
-              {imagenPrincipal ? (
+              {tieneFotomontaje ? (
+                <div className="montaje-box print-montaje">
+                  <img className="montaje-fondo" src={adjuntos.fotoLocal} alt="Foto local" />
+                  <img
+                    className="montaje-logo"
+                    src={adjuntos.logo}
+                    alt="Logo cliente"
+                    style={{
+                      left: `${montaje.logoX}%`,
+                      top: `${montaje.logoY}%`,
+                      width: `${montaje.logoW}%`,
+                    }}
+                  />
+                </div>
+              ) : imagenPrincipal ? (
                 <img src={imagenPrincipal} alt="Vista comercial preliminar" />
               ) : (
                 <div>
@@ -675,6 +727,30 @@ export default function CotizadorInteligente() {
           background: #111827;
         }
 
+        .montaje-box {
+          position: relative;
+          width: 100%;
+          min-height: 260px;
+          background: #111827;
+          overflow: hidden;
+        }
+
+        .montaje-fondo {
+          width: 100%;
+          height: 100%;
+          max-height: 420px;
+          object-fit: contain;
+          display: block;
+        }
+
+        .montaje-logo {
+          position: absolute;
+          transform: translate(-50%, -50%);
+          max-height: 45%;
+          object-fit: contain;
+          filter: drop-shadow(0 8px 12px rgba(0,0,0,.35));
+        }
+
         @media print {
           body * {
             visibility: hidden !important;
@@ -756,6 +832,16 @@ export default function CotizadorInteligente() {
             display: block;
           }
 
+          .print-montaje {
+            width: 100%;
+            min-height: 320px;
+            background: #f3f4f6;
+          }
+
+          .print-montaje .montaje-fondo {
+            max-height: 360px;
+          }
+
           .pdf-table table {
             width: 100%;
             border-collapse: collapse;
@@ -801,5 +887,6 @@ export default function CotizadorInteligente() {
     </main>
   );
 }
+
 
 
