@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+﻿importconst inicial = {import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, FileText, ImagePlus, Printer, Sparkles, Wrench } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -27,6 +27,11 @@ const inicial = {
   costoKm: 1,
   viaticos: '',
   equipoAlquiler: '',
+  entorno: 'exterior',
+conImpresion: true,
+dobleCara: false,
+iluminado: false,
+conPostes: false,
 };
 
 function calcularMedidas({ ancho, alto, cantidad }) {
@@ -211,10 +216,7 @@ export default function CotizadorInteligente() {
     [reglas, medidas, bibliotecaSugerida, tipoDetectado]
   );
 
-  const postes = useMemo(() => {
-    const base = calcularPostes(reglaConstructiva, medidas);
-    return form.conPostes ? Math.max(base, 2) : base;
-  }, [reglaConstructiva, medidas, form.conPostes]);
+  const postes = useMemo(() => calcularPostes(reglaConstructiva, medidas), [reglaConstructiva, medidas]);
 
   const refuerzos = useMemo(() => {
     if (!reglaConstructiva?.requiere_refuerzo) return 0;
@@ -497,56 +499,6 @@ export default function CotizadorInteligente() {
           </div>
 
           <input type="number" step="1" placeholder="Cantidad" value={form.cantidad} onChange={(e) => setForm({ ...form, cantidad: e.target.value })} />
-
-          <section className="mm3-card">
-            <div className="title">
-              <h2>Atributos Constructivos</h2>
-            </div>
-
-            <select
-              value={form.entorno}
-              onChange={(e) => setForm({ ...form, entorno: e.target.value })}
-            >
-              <option value="interior">Interior</option>
-              <option value="exterior">Exterior</option>
-            </select>
-
-            <label>
-              <input
-                type="checkbox"
-                checked={form.conImpresion}
-                onChange={(e) => setForm({ ...form, conImpresion: e.target.checked })}
-              />
-              Con impresión
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                checked={form.dobleCara}
-                onChange={(e) => setForm({ ...form, dobleCara: e.target.checked })}
-              />
-              Doble cara
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                checked={form.iluminado}
-                onChange={(e) => setForm({ ...form, iluminado: e.target.checked })}
-              />
-              Iluminado
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                checked={form.conPostes}
-                onChange={(e) => setForm({ ...form, conPostes: e.target.checked })}
-              />
-              Con postes
-            </label>
-          </section>
 
           <div className="two">
             <label><input type="checkbox" checked={form.instalacion} onChange={(e) => setForm({ ...form, instalacion: e.target.checked })} /> Instalación</label>
@@ -1253,11 +1205,6 @@ export default function CotizadorInteligente() {
     </main>
   );
 }
-
-
-
-
-
 
 
 
