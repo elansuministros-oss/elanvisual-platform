@@ -19,6 +19,7 @@ import ProveedoresCostos from './pages/ProveedoresCostos';
 import InventarioInteligente from './pages/InventarioInteligente';
 import BibliotecaTecnica from './pages/BibliotecaTecnica';
 import CotizadorInteligente from './pages/CotizadorInteligente';
+import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -34,6 +35,7 @@ export default function App() {
     if (pathInicial.startsWith('/materiales')) return 'materiales';
     if (pathInicial.startsWith('/biblioteca-tecnica')) return 'bibliotecaTecnica';
     if (pathInicial.startsWith('/cotizador-visual')) return 'cotizadorVisual';
+    if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
     if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizadorInteligente';
     if (pathInicial.startsWith('/cotizador')) return 'cotizadorInteligente';
     if (pathInicial.startsWith('/pedidos')) return 'pedidos';
@@ -83,6 +85,7 @@ export default function App() {
       bibliotecaTecnica: '/biblioteca-tecnica',
       cotizador: '/cotizador-inteligente',
       cotizadorInteligente: '/cotizador-inteligente',
+      cotizacionesInteligentes: '/cotizaciones-inteligentes',
       cotizadorVisual: '/cotizador-visual',
       pedidos: '/pedidos',
       ventas: '/ventas',
@@ -169,6 +172,9 @@ export default function App() {
       {page === 'cotizadorInteligente' &&
         (accesoVentas ? <CotizadorInteligente /> : <Login setPage={ir} destino="cotizador" />)}
 
+      {page === 'cotizacionesInteligentes' &&
+        (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="cotizador" />)}
+
       {page === 'cotizadorVisual' &&
         (accesoAdmin ? <CotizadorVisual /> : <Login setPage={ir} destino="admin" />)}
 
@@ -177,3 +183,4 @@ export default function App() {
     </>
   );
 }
+
