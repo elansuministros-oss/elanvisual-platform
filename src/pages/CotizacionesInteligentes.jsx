@@ -1,5 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
-import { ClipboardList, Eye, FileText, RefreshCcw, Search } from 'lucide-react';
+import { ClipboardList, Eye, FileText, Printer, RefreshCcw, Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
 
@@ -10,13 +10,17 @@ const money = (v) =>
     minimumFractionDigits: 2,
   }).format(Number(v || 0));
 
+const anticipo60 = (total) => Number(total || 0) * 0.6;
+const saldo40 = (total) => Math.max(Number(total || 0) - anticipo60(total), 0);
+
 export default function CotizacionesInteligentes() {
-  const { crearPedidoOperativo } = useApp();
+  const { crearPedidoOperativo, usuario } = useApp();
 
   const [cotizaciones, setCotizaciones] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [cargando, setCargando] = useState(false);
   const [cotizacionActiva, setCotizacionActiva] = useState(null);
+  const [otActiva, setOtActiva] = useState(null);
 
   const cargarCotizaciones = async () => {
     setCargando(true);
@@ -52,36 +56,56 @@ export default function CotizacionesInteligentes() {
   }, [cotizaciones, busqueda]);
 
   const actualizarEstadoCotizacion = async (cotizacion, estado) => {
+    const payload = {
+      estado,
+      actualizado_en: new Date().toISOString(),
+    };
+
+    if (estado === 'aprobada') {
+      payload.aprobado_por = usuario?.nombre || usuario?.usuario || usuario?.email || 'Admin';
+      payload.aprobado_en = new Date().toISOString();
+      payload.anticipo_requerido = anticipo60(cotizacion.precio_b);
+      payload.saldo_pendiente = saldo40(cotizacion.precio_b);
+      payload.estado_pago = 'pendiente_anticipo';
+    }
+
     const { error } = await supabase
       .from('cotizaciones_inteligentes')
-      .update({
-        estado,
-        actualizado_en: new Date().toISOString(),
-      })
+      .update(payload)
       .eq('id', cotizacion.id);
 
     if (error) {
       console.error(error);
-      alert('No se pudo actualizar el estado.');
+      alert('No se pudo actualizar la cotización.');
       return;
     }
 
     alert(`Cotización ${cotizacion.codigo} actualizada a: ${estado}`);
-    setCotizacionActiva((prev) => prev?.id === cotizacion.id ? { ...prev, estado } : prev);
+
+    setCotizacionActiva((prev) =>
+      prev?.id === cotizacion.id ? { ...prev, ...payload } : prev
+    );
+
     cargarCotizaciones();
   };
 
   const convertirAPedido = async (cotizacion) => {
+    if (!cotizacion) return;
+
     if (cotizacion.estado !== 'aprobada') {
-      alert('Esta cotización debe estar aprobada antes de convertirse a pedido.');
+      alert('Primero debés aprobar la cotización antes de convertirla a pedido.');
       return;
     }
-    if (!cotizacion) return;
+
     if (!confirm(`Convertir ${cotizacion.codigo} a pedido de producción?`)) return;
 
     const fecha = new Date().toISOString();
     const numero = `PED-${String(Date.now()).slice(-6)}`;
     const numeroOT = `OT-${String(Date.now()).slice(-6)}`;
+
+    const total = Number(cotizacion.precio_b || 0);
+    const anticipo = anticipo60(total);
+    const saldo = saldo40(total);
 
     const itemPrincipal = {
       id: `item-${Date.now()}`,
@@ -93,7 +117,7 @@ export default function CotizacionesInteligentes() {
       tipoCalculo: 'area',
       instalacion: Number(cotizacion.costo_instalacion || 0) > 0 ? 'Si' : 'No',
       costoProduccion: Number(cotizacion.costo_produccion || 0),
-      precio: Number(cotizacion.precio_b || 0),
+      precio: total,
       accesoriosProduccion: [
         ...(Array.isArray(cotizacion.despiece) ? cotizacion.despiece : []),
         ...(Array.isArray(cotizacion.estructura) ? cotizacion.estructura : []),
@@ -106,10 +130,6 @@ export default function CotizacionesInteligentes() {
       })),
       nota: `Generado desde ${cotizacion.codigo}`,
     };
-
-    const total = Number(cotizacion.precio_b || 0);
-    const anticipo = total * 0.6;
-    const saldo = Math.max(total - anticipo, 0);
 
     const pedido = crearPedidoOperativo({
       id: `pedido-${Date.now()}`,
@@ -155,6 +175,8 @@ export default function CotizacionesInteligentes() {
       estadoProduccion: 'pendiente',
       pagoEstado: 'Pendiente anticipo',
       seguimientoEstado: 'pendiente',
+      anticipoRequerido: anticipo,
+      saldoPendiente: saldo,
       ordenTrabajo: {
         codigoOT: numeroOT,
         pedido: numero,
@@ -178,21 +200,42 @@ export default function CotizacionesInteligentes() {
       .from('cotizaciones_inteligentes')
       .update({
         estado: 'convertida_pedido',
+        pedido_numero: numero,
+        pedido_ot: numeroOT,
+        convertido_en: new Date().toISOString(),
         actualizado_en: new Date().toISOString(),
       })
       .eq('id', cotizacion.id);
 
+    setOtActiva({ cotizacion, pedido, numero, numeroOT, total, anticipo, saldo });
     alert(`Pedido creado: ${pedido.numeroPedido || pedido.numero}`);
 
     cargarCotizaciones();
   };
 
+  const imprimirOT = (cotizacion) => {
+    if (!cotizacion) return;
+
+    const total = Number(cotizacion.precio_b || 0);
+    setOtActiva({
+      cotizacion,
+      pedido: null,
+      numero: cotizacion.pedido_numero || 'PED-PENDIENTE',
+      numeroOT: cotizacion.pedido_ot || 'OT-PENDIENTE',
+      total,
+      anticipo: anticipo60(total),
+      saldo: saldo40(total),
+    });
+
+    setTimeout(() => window.print(), 150);
+  };
+
   return (
     <main className="mm3-page">
       <section className="mm3-hero">
-        <span>ELANVISIÓN · CI-08.4</span>
+        <span>ELANVISIÓN · V1 CIERRE</span>
         <h1>Cotizaciones Inteligentes</h1>
-        <p>Historial comercial, apertura de detalle y conversión a pedido de producción.</p>
+        <p>Aprobación comercial, anticipo, pedido y orden de producción.</p>
       </section>
 
       <section className="mm3-card">
@@ -231,8 +274,7 @@ export default function CotizacionesInteligentes() {
                     {c.cliente_nombre || 'Cliente no especificado'} · {c.celular || 'Sin celular'}
                   </p>
                   <span>
-                    Estado: {c.estado || 'borrador'} · Precio B: {money(c.precio_b)} · Fecha:{' '}
-                    {c.creado_en ? new Date(c.creado_en).toLocaleDateString('es-NI') : 'Sin fecha'}
+                    Estado: {c.estado || 'borrador'} · Precio B: {money(c.precio_b)} · Anticipo: {money(c.anticipo_requerido || anticipo60(c.precio_b))}
                   </span>
                 </div>
 
@@ -241,12 +283,12 @@ export default function CotizacionesInteligentes() {
                     <Eye size={15} /> Ver
                   </button>
 
-                  <button type="button" onClick={() => setCotizacionActiva(c)}>
-                    <Eye size={15} /> Abrir
-                  </button>
-
                   <button type="button" onClick={() => actualizarEstadoCotizacion(c, 'aprobada')}>
                     Aprobar
+                  </button>
+
+                  <button type="button" onClick={() => actualizarEstadoCotizacion(c, 'rechazada')}>
+                    Rechazar
                   </button>
 
                   <button type="button" onClick={() => convertirAPedido(c)}>
@@ -270,10 +312,11 @@ export default function CotizacionesInteligentes() {
           <div className="result">Celular: <b>{cotizacionActiva.celular || 'Sin celular'}</b></div>
           <div className="result">Ubicación: <b>{cotizacionActiva.ubicacion || 'Sin ubicación'}</b></div>
           <div className="result">Estado: <b>{cotizacionActiva.estado}</b></div>
-          <div className="result">Costo empresa: <b>{money(cotizacionActiva.costo_empresa)}</b></div>
-          <div className="result">Precio A: <b>{money(cotizacionActiva.precio_a)}</b></div>
-          <div className="result">Precio B: <b>{money(cotizacionActiva.precio_b)}</b></div>
-          <div className="result">Precio C: <b>{money(cotizacionActiva.precio_c)}</b></div>
+          <div className="result">Total recomendado: <b>{money(cotizacionActiva.precio_b)}</b></div>
+          <div className="result">Anticipo 60%: <b>{money(cotizacionActiva.anticipo_requerido || anticipo60(cotizacionActiva.precio_b))}</b></div>
+          <div className="result">Saldo 40%: <b>{money(cotizacionActiva.saldo_pendiente || saldo40(cotizacionActiva.precio_b))}</b></div>
+          <div className="result">Pedido: <b>{cotizacionActiva.pedido_numero || 'No generado'}</b></div>
+          <div className="result">OT: <b>{cotizacionActiva.pedido_ot || 'No generada'}</b></div>
 
           <p className="note">{cotizacionActiva.descripcion}</p>
 
@@ -291,9 +334,152 @@ export default function CotizacionesInteligentes() {
             <ClipboardList size={18} />
             Convertir a Pedido Producción
           </button>
+
+          <button className="primary" type="button" onClick={() => imprimirOT(cotizacionActiva)}>
+            <Printer size={18} />
+            Imprimir OT
+          </button>
         </section>
       )}
+
+      {otActiva && (
+        <section className="ot-print">
+          <div className="ot-page">
+            <header className="ot-header">
+              <div>
+                <span>ELANVISIÓN</span>
+                <h1>Orden de Producción</h1>
+                <p>Producción · Instalación · Control operativo</p>
+              </div>
+              <div>
+                <strong>{otActiva.numeroOT}</strong>
+                <p>{otActiva.numero}</p>
+              </div>
+            </header>
+
+            <section className="ot-grid">
+              <div>
+                <h2>Cliente</h2>
+                <p><b>Nombre:</b> {otActiva.cotizacion.cliente_nombre || 'Cliente'}</p>
+                <p><b>Celular:</b> {otActiva.cotizacion.celular || 'Sin celular'}</p>
+                <p><b>Ubicación:</b> {otActiva.cotizacion.ubicacion || 'Sin ubicación'}</p>
+              </div>
+
+              <div>
+                <h2>Proyecto</h2>
+                <p><b>Cotización:</b> {otActiva.cotizacion.codigo}</p>
+                <p><b>Producto:</b> {otActiva.cotizacion.biblioteca_nombre || 'Producción visual'}</p>
+                <p><b>Medidas:</b> {Number(otActiva.cotizacion.ancho || 0).toFixed(2)} m × {Number(otActiva.cotizacion.alto || 0).toFixed(2)} m</p>
+                <p><b>Cantidad:</b> {otActiva.cotizacion.cantidad}</p>
+              </div>
+            </section>
+
+            <section className="ot-box">
+              <h2>Descripción</h2>
+              <p>{otActiva.cotizacion.descripcion}</p>
+            </section>
+
+            <section className="ot-grid">
+              <div>
+                <h2>Finanzas</h2>
+                <p><b>Total:</b> {money(otActiva.total)}</p>
+                <p><b>Anticipo 60%:</b> {money(otActiva.anticipo)}</p>
+                <p><b>Saldo 40%:</b> {money(otActiva.saldo)}</p>
+              </div>
+
+              <div>
+                <h2>Producción</h2>
+                <p><b>Estado:</b> Pendiente</p>
+                <p><b>Instalación:</b> {Number(otActiva.cotizacion.costo_instalacion || 0) > 0 ? 'Sí' : 'No'}</p>
+                <p><b>Fecha:</b> {new Date().toLocaleDateString('es-NI')}</p>
+              </div>
+            </section>
+
+            <section className="ot-box">
+              <h2>Checklist de Producción</h2>
+              <p>☐ Arte final aprobado</p>
+              <p>☐ Materiales revisados</p>
+              <p>☐ Producción iniciada</p>
+              <p>☐ Control de calidad</p>
+              <p>☐ Instalación / entrega</p>
+            </section>
+
+            <footer className="ot-footer">
+              <strong>ELANVISIÓN · ONE VISION · MULTIPLE SOLUTIONS</strong>
+            </footer>
+          </div>
+        </section>
+      )}
+
+      <style>{`
+        .ot-print { display: none; }
+
+        @media print {
+          body * { visibility: hidden !important; }
+
+          .ot-print,
+          .ot-print * {
+            visibility: visible !important;
+          }
+
+          .ot-print {
+            display: block !important;
+            position: absolute;
+            inset: 0;
+            background: white;
+            color: #111827;
+            font-family: Arial, sans-serif;
+          }
+
+          .ot-page {
+            padding: 28px;
+          }
+
+          .ot-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            background: #111827;
+            color: white;
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 16px;
+          }
+
+          .ot-header span {
+            color: #C9A227;
+            font-size: 12px;
+            letter-spacing: 3px;
+            font-weight: 900;
+          }
+
+          .ot-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+          }
+
+          .ot-grid div,
+          .ot-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 14px;
+          }
+
+          .ot-footer {
+            border-top: 3px solid #111827;
+            margin-top: 20px;
+            padding-top: 12px;
+            font-size: 12px;
+          }
+
+          @page {
+            size: portrait;
+            margin: 10mm;
+          }
+        }
+      `}</style>
     </main>
   );
 }
-
