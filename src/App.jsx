@@ -39,8 +39,8 @@ export default function App() {
     if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
-    if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizadorInteligente';
-    if (pathInicial.startsWith('/cotizador')) return 'cotizadorInteligente';
+    if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizador';
+    if (pathInicial.startsWith('/cotizador')) return 'cotizador';
     if (pathInicial.startsWith('/pedidos')) return 'pedidos';
     if (pathInicial.startsWith('/servicios')) return 'servicios';
     if (pathInicial.startsWith('/tienda')) return 'tienda';
@@ -86,8 +86,8 @@ export default function App() {
       produccion: '/produccion',
       materiales: '/materiales',
       bibliotecaTecnica: '/biblioteca-tecnica',
-      cotizador: '/cotizador-inteligente',
-      cotizadorInteligente: '/cotizador-inteligente',
+      cotizador: '/cotizador',
+      cotizadorInteligente: '/cotizador',
       cotizacionesInteligentes: '/cotizaciones-inteligentes',
       recomendadorTecnico: '/recomendador-tecnico',
       cotizadorVisual: '/cotizador-visual',
@@ -179,7 +179,7 @@ export default function App() {
 
       
 
-      {page === 'cotizadorInteligente' &&
+      {page === 'cotizador' &&
         (accesoVentas ? <CotizadorDirecto /> : <Login setPage={ir} destino="cotizador" />)}
 
       {page === 'cotizacionesInteligentes' &&
@@ -193,5 +193,6 @@ export default function App() {
     </>
   );
 }
+
 
 
