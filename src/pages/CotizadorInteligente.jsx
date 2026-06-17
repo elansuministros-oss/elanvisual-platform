@@ -22,6 +22,11 @@ const inicial = {
   instalacion: true,
   iva: true,
   tecnologiaId: '',
+  costoInstalacionManual: '',
+  distanciaKm: '',
+  costoKm: 1,
+  viaticos: '',
+  equipoAlquiler: '',
 };
 
 function calcularMedidas({ ancho, alto, cantidad }) {
@@ -303,7 +308,29 @@ export default function CotizadorInteligente() {
   const costoTinta = useMemo(() => medidas.area * num(tintaSeleccionada?.costo_m2), [medidas.area, tintaSeleccionada]);
 
   const costoProduccion = costoMateriales + costoEstructura + costoObraCivil + costoTinta;
-  const precios = calcularEscalas(costoProduccion);
+  const costoInstalacion = form.instalacion ? num(form.costoInstalacionManual) : 0;
+  const costoTransporte = form.instalacion ? num(form.distanciaKm) * num(form.costoKm || 1) : 0;
+  const costoViaticos = form.instalacion ? num(form.viaticos) : 0;
+  const costoEquipo = form.instalacion ? num(form.equipoAlquiler) : 0;
+  const costoEmpresa = costoProduccion + costoInstalacion + costoTransporte + costoViaticos + costoEquipo;
+  const precios = calcularEscalas(costoEmpresa);
+
+  const utilidadA = precios.a - costoEmpresa;
+  const utilidadB = precios.b - costoEmpresa;
+  const utilidadC = precios.c - costoEmpresa;
+
+  const distribuirUtilidad = (utilidad) => {
+    const vendedor = utilidad * 0.4;
+    const bloqueElan = utilidad * 0.6;
+    const incentivo = bloqueElan * 0.05;
+    const comunidad = bloqueElan * 0.05;
+    const direccion = bloqueElan * 0.05;
+    const utilidadElan = bloqueElan - incentivo - comunidad - direccion;
+
+    return { vendedor, incentivo, comunidad, direccion, utilidadElan };
+  };
+
+  const distribucionB = distribuirUtilidad(utilidadB);
 
   const faltantes = useMemo(() => {
     const f = [];
@@ -404,6 +431,54 @@ export default function CotizadorInteligente() {
             <label><input type="checkbox" checked={form.iva} onChange={(e) => setForm({ ...form, iva: e.target.checked })} /> IVA</label>
           </div>
 
+          {form.instalacion && (
+            <section className="mm3-card">
+              <div className="title"><Wrench size={20} /><h2>Instalación y logística</h2></div>
+
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Costo instalación USD"
+                value={form.costoInstalacionManual}
+                onChange={(e) => setForm({ ...form, costoInstalacionManual: e.target.value })}
+              />
+
+              <div className="two">
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Distancia km"
+                  value={form.distanciaKm}
+                  onChange={(e) => setForm({ ...form, distanciaKm: e.target.value })}
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="USD por km"
+                  value={form.costoKm}
+                  onChange={(e) => setForm({ ...form, costoKm: e.target.value })}
+                />
+              </div>
+
+              <div className="two">
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Viáticos USD"
+                  value={form.viaticos}
+                  onChange={(e) => setForm({ ...form, viaticos: e.target.value })}
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Equipo alquilado USD"
+                  value={form.equipoAlquiler}
+                  onChange={(e) => setForm({ ...form, equipoAlquiler: e.target.value })}
+                />
+              </div>
+            </section>
+          )}
+
           <select value={bibliotecaSeleccionadaId} onChange={(e) => setBibliotecaSeleccionadaId(e.target.value)}>
             <option value="">Receta sugerida por IA</option>
             {biblioteca.map((b) => <option key={b.id} value={b.id}>{b.nombre}</option>)}
@@ -485,10 +560,23 @@ export default function CotizadorInteligente() {
           <div className="result">Receta: <b>{bibliotecaSugerida?.nombre || 'No detectada'}</b></div>
           <div className="result">Regla estructural: <b>{reglaConstructiva?.nombre || 'Sin regla'}</b></div>
           <div className="result">Costo producción: <b>{money(costoProduccion)}</b></div>
+          <div className="result">Instalación: <b>{money(costoInstalacion)}</b></div>
+          <div className="result">Transporte: <b>{money(costoTransporte)}</b></div>
+          <div className="result">Viáticos / equipo: <b>{money(costoViaticos + costoEquipo)}</b></div>
+          <div className="result">Costo empresa: <b>{money(costoEmpresa)}</b></div>
 
-          <article className="row"><div><h3>A · Comercial</h3><p>Utilidad 100%</p><span>{money(precios.a)}</span></div></article>
-          <article className="row"><div><h3>B · Recomendado</h3><p>Utilidad 150%</p><span>{money(precios.b)}</span></div></article>
-          <article className="row"><div><h3>C · Premium</h3><p>Utilidad 200%</p><span>{money(precios.c)}</span></div></article>
+          <article className="row"><div><h3>A · Comercial</h3><p>Utilidad: {money(utilidadA)}</p><span>{money(precios.a)}</span></div></article>
+          <article className="row"><div><h3>B · Recomendado</h3><p>Utilidad: {money(utilidadB)}</p><span>{money(precios.b)}</span></div></article>
+          <article className="row"><div><h3>C · Premium</h3><p>Utilidad: {money(utilidadC)}</p><span>{money(precios.c)}</span></div></article>
+
+          <section className="mm3-card">
+            <div className="title"><FileText size={20} /><h2>Distribución estimada B</h2></div>
+            <div className="result">Vendedor: <b>{money(distribucionB.vendedor)}</b></div>
+            <div className="result">Incentivo: <b>{money(distribucionB.incentivo)}</b></div>
+            <div className="result">Comunidad: <b>{money(distribucionB.comunidad)}</b></div>
+            <div className="result">Dirección: <b>{money(distribucionB.direccion)}</b></div>
+            <div className="result">Utilidad ELAN: <b>{money(distribucionB.utilidadElan)}</b></div>
+          </section>
         </section>
       </section>
 
@@ -647,6 +735,7 @@ export default function CotizadorInteligente() {
               <p><b>Medidas:</b> {medidas.ancho.toFixed(2)} m × {medidas.alto.toFixed(2)} m · Cantidad: {medidas.cantidad}</p>
               <p><b>Área:</b> {medidas.area.toFixed(2)} m² · <b>Perímetro:</b> {medidas.perimetro.toFixed(2)} ml</p>
               <p><b>Receta:</b> {bibliotecaSugerida?.nombre || 'Pendiente validación'}</p>
+              <p><b>Costo empresa:</b> {money(costoEmpresa)} · <b>Instalación:</b> {money(costoInstalacion)} · <b>Transporte:</b> {money(costoTransporte)}</p>
             </section>
 
             <section className="pdf-table">
@@ -887,6 +976,7 @@ export default function CotizadorInteligente() {
     </main>
   );
 }
+
 
 
 
