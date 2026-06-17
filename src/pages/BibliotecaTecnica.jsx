@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Edit3, PlusCircle, Search, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { sembrarBibliotecaTecnicaBase } from '../services/sembrarBibliotecaTecnica';
 
 const money = (v) =>
   new Intl.NumberFormat('es-NI', {
@@ -63,6 +64,23 @@ export default function BibliotecaTecnica() {
   const [editBiblioteca, setEditBiblioteca] = useState(null);
   const [editComponente, setEditComponente] = useState(null);
   const [busqueda, setBusqueda] = useState('');
+  const [sembrando, setSembrando] = useState(false);
+
+  const sembrarBaseTecnica = async () => {
+    if (!confirm('Cargar recetas constructivas base en Biblioteca Técnica?')) return;
+
+    setSembrando(true);
+    try {
+      const res = await sembrarBibliotecaTecnicaBase(supabase);
+      alert(`Base técnica cargada. Recetas: ${res.recetasCreadas}. Componentes: ${res.componentesCreados}.`);
+      await cargarTodo();
+    } catch (error) {
+      console.error(error);
+      alert('No se pudo cargar la base técnica.');
+    } finally {
+      setSembrando(false);
+    }
+  };
 
   const cargarTodo = async () => {
     const [bt, bc, mat, com, tec, sol] = await Promise.all([
@@ -196,6 +214,9 @@ export default function BibliotecaTecnica() {
         <span>ELANVISIÓN · CI-02</span>
         <h1>Biblioteca Técnica</h1>
         <p>Recetas constructivas, componentes, fórmulas y solicitudes de costos.</p>
+        <button type="button" className="primary" onClick={sembrarBaseTecnica} disabled={sembrando}>
+          {sembrando ? 'Cargando base técnica...' : 'Cargar base técnica automática'}
+        </button>
       </section>
 
       <nav className="mm3-tabs">
