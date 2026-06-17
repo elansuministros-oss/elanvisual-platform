@@ -729,7 +729,28 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
 
         if (!activo) return;
 
-        setUsuarios(users);
+                setUsuarios((prev) => {
+          const locales = Array.isArray(prev) ? prev : [];
+          const mapa = new Map();
+
+          users.forEach((u) => {
+            mapa.set(String(u.id || u.usuario || u.email), u);
+          });
+
+          locales.forEach((u) => {
+            const key = String(u.id || u.usuario || u.email);
+            const remoto = mapa.get(key);
+
+            mapa.set(key, {
+              ...(remoto || {}),
+              ...u,
+              password: u.password || remoto?.password || '',
+              actualizadoEn: u.actualizadoEn || remoto?.actualizadoEn || '',
+            });
+          });
+
+          return asegurarUsuariosBase(Array.from(mapa.values()));
+        });
         setPedidos((prev) => unirPedidos(prev, pedidosRemotos));
 
         const usuarioActual = leerStorage('elanvisual_usuario_actual', null);
@@ -2053,6 +2074,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
