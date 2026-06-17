@@ -9,6 +9,7 @@ import {
   Video,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { generarProduccionAutomatica } from '../services/motorProduccion';
 
 const ESTADOS_PRODUCCION_VISUAL = [
   'pendiente',
@@ -504,6 +505,36 @@ export default function ProduccionPanel() {
                     />
                   </label>
                 </div>
+
+                {(() => {
+                  const auto = generarProduccionAutomatica({
+                    pedido: pedidoActivo,
+                    sistemaConstructivo: pedidoActivo?.sistemaConstructivo || pedidoActivo?.cotizacion?.sistemaConstructivo,
+                    proveedores,
+                  });
+
+                  return (
+                    <section className="panel" style={{ margin: '14px 0', boxShadow: 'none', border: '1px solid #e5e7eb' }}>
+                      <h2>Producción automática CI-16D</h2>
+                      <p><b>Tecnología:</b> {auto.tecnologia}</p>
+                      <p><b>Origen:</b> {auto.origen}</p>
+
+                      <h3>Materiales y cantidades</h3>
+                      {(auto.materiales || []).map((m) => (
+                        <p key={m.id}>{m.nombre}: {Number(m.cantidad || 0).toFixed(2)} {m.unidad}</p>
+                      ))}
+
+                      <h3>Proceso fabricación</h3>
+                      {(auto.procesoFabricacion || []).map((p, i) => <p key={`fab-${i}`}>{p}</p>)}
+
+                      <h3>Proceso instalación</h3>
+                      {(auto.procesoInstalacion || []).map((p, i) => <p key={`ins-${i}`}>{p}</p>)}
+
+                      <h3>Proveedor sugerido</h3>
+                      <p>{auto.proveedorSugerido?.nombre || 'Sin proveedor sugerido todavía'}</p>
+                    </section>
+                  );
+                })()}
 
                 <div className="actions-row">
                   <button

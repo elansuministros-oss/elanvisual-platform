@@ -8,6 +8,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { generarProduccionAutomatica } from '../services/motorProduccion';
 
 const estados = [
   'Pedido creado',
@@ -101,10 +102,17 @@ export default function PedidosProduccion() {
     if (pedidoActivo?.id === id) setPedidoActivo(null);
   };
 
+  const produccionAutomatica = (pedido) => generarProduccionAutomatica({
+    pedido,
+    sistemaConstructivo: pedido?.sistemaConstructivo || pedido?.cotizacion?.sistemaConstructivo,
+    proveedores,
+  });
+
   const textoOT = (pedido) => {
     if (!pedido) return '';
 
     const items = pedido.items || [];
+    const auto = produccionAutomatica(pedido);
     const numeroOT = pedido.numeroOT || pedido.ordenTrabajo?.codigoOT || '';
     const numeroPedido = pedido.numeroPedido || pedido.numero || '';
 
