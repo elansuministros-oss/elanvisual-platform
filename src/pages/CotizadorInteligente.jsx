@@ -558,56 +558,6 @@ export default function CotizadorInteligente() {
             {tecnologiasCompatibles.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}
           </select>
 
-          <section className="mm3-card">
-            <div className="title"><ImagePlus size={20} /><h2>Adjuntos comerciales</h2></div>
-
-            <label>Logo del cliente</label>
-            <div className="two">
-              <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('logo', e.target.files?.[0])} />
-              <button type="button" onClick={() => quitarAdjunto('logo')}>Quitar</button>
-            </div>
-
-            <label>Diseño / arte recibido</label>
-            <div className="two">
-              <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('diseno', e.target.files?.[0])} />
-              <button type="button" onClick={() => quitarAdjunto('diseno')}>Quitar</button>
-            </div>
-
-            <label>Foto del local</label>
-            <div className="two">
-              <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('fotoLocal', e.target.files?.[0])} />
-              <button type="button" onClick={() => quitarAdjunto('fotoLocal')}>Quitar</button>
-            </div>
-
-            <label>Imagen referencia</label>
-            <div className="two">
-              <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('referencia', e.target.files?.[0])} />
-              <button type="button" onClick={() => quitarAdjunto('referencia')}>Quitar</button>
-            </div>
-
-            {imagenPrincipal && (
-              <div className="pdf-preview-box">
-                {tieneFotomontaje ? (
-                  <div className="montaje-box">
-                    <img className="montaje-fondo" src={adjuntos.fotoLocal} alt="Foto local" />
-                    <img
-                      className="montaje-logo"
-                      src={adjuntos.logo}
-                      alt="Logo cliente"
-                      style={{
-                        left: `${montaje.logoX}%`,
-                        top: `${montaje.logoY}%`,
-                        width: `${montaje.logoW}%`,
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <img src={imagenPrincipal} alt="Vista comercial preliminar" />
-                )}
-              </div>
-            )}
-
-            {tieneFotomontaje && (
               <section className="mm3-card">
                 <div className="title"><ImagePlus size={20} /><h2>Ajuste de fotomontaje</h2></div>
 
@@ -638,35 +588,6 @@ export default function CotizadorInteligente() {
           )}
         </form>
 
-        <section className="mm3-card">
-          <div className="title"><FileText size={20} /><h2>Resultado comercial</h2></div>
-
-          <div className="result">Estado: <b>{estadoCotizacion}</b></div>
-          {codigoCotizacion && (
-            <div className="result">Código: <b>{codigoCotizacion}</b></div>
-          )}
-          <div className="result">Área: <b>{medidas.area.toFixed(2)} m²</b></div>
-          <div className="result">Perímetro: <b>{medidas.perimetro.toFixed(2)} ml</b></div>
-          <div className="result">Receta: <b>{bibliotecaSugerida?.nombre || 'No detectada'}</b></div>
-          <div className="result">Regla estructural: <b>{reglaConstructiva?.nombre || 'Sin regla'}</b></div>
-          <div className="result">Costo producción: <b>{money(costoProduccion)}</b></div>
-          <div className="result">Instalación: <b>{money(costoInstalacion)}</b></div>
-          <div className="result">Transporte: <b>{money(costoTransporte)}</b></div>
-          <div className="result">Viáticos / equipo: <b>{money(costoViaticos + costoEquipo)}</b></div>
-          <div className="result">Costo empresa: <b>{money(costoEmpresa)}</b></div>
-
-          <article className="row"><div><h3>A · Comercial</h3><p>Utilidad: {money(utilidadA)}</p><span>{money(precios.a)}</span></div></article>
-          <article className="row"><div><h3>B · Recomendado</h3><p>Utilidad: {money(utilidadB)}</p><span>{money(precios.b)}</span></div></article>
-          <article className="row"><div><h3>C · Premium</h3><p>Utilidad: {money(utilidadC)}</p><span>{money(precios.c)}</span></div></article>
-
-          <section className="mm3-card">
-            <div className="title"><FileText size={20} /><h2>Distribución estimada B</h2></div>
-            <div className="result">Vendedor: <b>{money(distribucionB.vendedor)}</b></div>
-            <div className="result">Incentivo: <b>{money(distribucionB.incentivo)}</b></div>
-            <div className="result">Comunidad: <b>{money(distribucionB.comunidad)}</b></div>
-            <div className="result">Dirección: <b>{money(distribucionB.direccion)}</b></div>
-            <div className="result">Utilidad ELAN: <b>{money(distribucionB.utilidadElan)}</b></div>
-          </section>
         </section>
       </section>
 
