@@ -142,6 +142,8 @@ export default function CotizadorInteligente() {
   const [analizado, setAnalizado] = useState(false);
   const [bibliotecaSeleccionadaId, setBibliotecaSeleccionadaId] = useState('');
   const [fechaPdf, setFechaPdf] = useState(fechaHoraCotizacion());
+  const [guardando, setGuardando] = useState(false);
+  const [codigoCotizacion, setCodigoCotizacion] = useState('');
   const [adjuntos, setAdjuntos] = useState({
     logo: '',
     diseno: '',
@@ -381,6 +383,69 @@ export default function CotizadorInteligente() {
     await supabase.from('solicitudes_costos').insert(payload);
   };
 
+  const guardarCotizacion = async () => {
+    try {
+      setGuardando(true);
+
+      const codigo =
+        codigoCotizacion ||
+        `COT-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
+
+      const vence = new Date();
+      vence.setDate(vence.getDate() + 8);
+
+      const payload = {
+        codigo,
+        cliente_nombre: form.clienteNombre,
+        celular: form.celular,
+        ubicacion: form.ubicacion,
+        descripcion: form.descripcion,
+        ancho: medidas.ancho,
+        alto: medidas.alto,
+        cantidad: medidas.cantidad,
+        area: medidas.area,
+        perimetro: medidas.perimetro,
+        biblioteca_id: bibliotecaSugerida?.id || null,
+        biblioteca_nombre: bibliotecaSugerida?.nombre || '',
+        tecnologia_id: form.tecnologiaId || null,
+        estado: estadoCotizacion,
+        costo_produccion: costoProduccion,
+        costo_instalacion: costoInstalacion,
+        costo_transporte: costoTransporte,
+        costo_viaticos: costoViaticos,
+        costo_equipo: costoEquipo,
+        costo_empresa: costoEmpresa,
+        precio_a: precios.a,
+        precio_b: precios.b,
+        precio_c: precios.c,
+        utilidad_a: utilidadA,
+        utilidad_b: utilidadB,
+        utilidad_c: utilidadC,
+        despiece,
+        estructura: estructuraCalculada,
+        obra_civil: obraCivilCosteada,
+        faltantes,
+        adjuntos,
+        montaje,
+        vence_en: vence.toISOString(),
+        actualizado_en: new Date().toISOString(),
+      };
+
+      const { error } = await supabase.from('cotizaciones_inteligentes').insert(payload);
+
+      if (error) {
+        console.error(error);
+        alert('No se pudo guardar la cotización.');
+        return;
+      }
+
+      setCodigoCotizacion(codigo);
+      alert(`Cotización guardada: ${codigo}`);
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   const imprimirPDF = () => {
     setFechaPdf(fechaHoraCotizacion());
     setTimeout(() => window.print(), 150);
@@ -545,6 +610,12 @@ export default function CotizadorInteligente() {
           <button className="primary" type="submit"><CheckCircle2 size={18} /> Analizar y costear</button>
 
           {analizado && (
+            <button className="primary" type="button" onClick={guardarCotizacion} disabled={guardando}>
+              <FileText size={18} /> {guardando ? 'Guardando...' : 'Guardar cotización'}
+            </button>
+          )}
+
+          {analizado && (
             <button className="primary" type="button" onClick={imprimirPDF}>
               <Printer size={18} /> Generar PDF ELANVISIÓN
             </button>
@@ -555,6 +626,9 @@ export default function CotizadorInteligente() {
           <div className="title"><FileText size={20} /><h2>Resultado comercial</h2></div>
 
           <div className="result">Estado: <b>{estadoCotizacion}</b></div>
+          {codigoCotizacion && (
+            <div className="result">Código: <b>{codigoCotizacion}</b></div>
+          )}
           <div className="result">Área: <b>{medidas.area.toFixed(2)} m²</b></div>
           <div className="result">Perímetro: <b>{medidas.perimetro.toFixed(2)} ml</b></div>
           <div className="result">Receta: <b>{bibliotecaSugerida?.nombre || 'No detectada'}</b></div>
@@ -976,6 +1050,7 @@ export default function CotizadorInteligente() {
     </main>
   );
 }
+
 
 
 
