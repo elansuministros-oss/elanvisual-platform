@@ -137,6 +137,20 @@ export default function CotizadorInteligente() {
   const [analizado, setAnalizado] = useState(false);
   const [bibliotecaSeleccionadaId, setBibliotecaSeleccionadaId] = useState('');
   const [fechaPdf, setFechaPdf] = useState(fechaHoraCotizacion());
+  const [adjuntos, setAdjuntos] = useState({
+    logo: '',
+    diseno: '',
+    fotoLocal: '',
+    referencia: '',
+  });
+
+  const cargarAdjunto = (tipo, file) => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setAdjuntos((prev) => ({ ...prev, [tipo]: url }));
+  };
+
+  const imagenPrincipal = adjuntos.fotoLocal || adjuntos.referencia || adjuntos.diseno || adjuntos.logo || '';
 
   const cargarTodo = async () => {
     const [bt, bc, mat, tin, tec, reg] = await Promise.all([
@@ -393,6 +407,28 @@ export default function CotizadorInteligente() {
             {tecnologiasCompatibles.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}
           </select>
 
+          <section className="mm3-card">
+            <div className="title"><ImagePlus size={20} /><h2>Adjuntos comerciales</h2></div>
+
+            <label>Logo del cliente</label>
+            <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('logo', e.target.files?.[0])} />
+
+            <label>Diseño / arte recibido</label>
+            <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('diseno', e.target.files?.[0])} />
+
+            <label>Foto del local</label>
+            <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('fotoLocal', e.target.files?.[0])} />
+
+            <label>Imagen referencia</label>
+            <input type="file" accept="image/*" onChange={(e) => cargarAdjunto('referencia', e.target.files?.[0])} />
+
+            {imagenPrincipal && (
+              <div className="pdf-preview-box">
+                <img src={imagenPrincipal} alt="Vista comercial preliminar" />
+              </div>
+            )}
+          </section>
+
           <button className="primary" type="submit"><CheckCircle2 size={18} /> Analizar y costear</button>
 
           {analizado && (
@@ -543,10 +579,14 @@ export default function CotizadorInteligente() {
             </section>
 
             <section className="pdf-image-box">
-              <div>
-                <h2>Vista comercial preliminar</h2>
-                <p>Render / referencia / fotomontaje pendiente de integración CI-06.</p>
-              </div>
+              {imagenPrincipal ? (
+                <img src={imagenPrincipal} alt="Vista comercial preliminar" />
+              ) : (
+                <div>
+                  <h2>Vista comercial preliminar</h2>
+                  <p>Render / referencia / fotomontaje pendiente de integración CI-06.</p>
+                </div>
+              )}
             </section>
 
             <section className="pdf-summary">
@@ -619,6 +659,22 @@ export default function CotizadorInteligente() {
           display: none;
         }
 
+        .pdf-preview-box {
+          margin-top: 12px;
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid #e5e7eb;
+          background: #111827;
+        }
+
+        .pdf-preview-box img {
+          width: 100%;
+          max-height: 320px;
+          object-fit: contain;
+          display: block;
+          background: #111827;
+        }
+
         @media print {
           body * {
             visibility: hidden !important;
@@ -684,12 +740,20 @@ export default function CotizadorInteligente() {
           }
 
           .pdf-image-box {
-            height: 230px;
+            min-height: 280px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             background: #f3f4f6;
+            overflow: hidden;
+          }
+
+          .pdf-image-box img {
+            width: 100%;
+            max-height: 360px;
+            object-fit: contain;
+            display: block;
           }
 
           .pdf-table table {
@@ -737,4 +801,5 @@ export default function CotizadorInteligente() {
     </main>
   );
 }
+
 
