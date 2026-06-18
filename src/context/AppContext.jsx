@@ -516,8 +516,8 @@ export function AppProvider({ children }) {
   const [pedidos, setPedidos] = useState(() => leerStorage('elanvisual_pedidos', []));
   const [usuario, setUsuario] = useState(() => leerStorage('elanvisual_usuario_actual', null));
   const [usuarios, setUsuarios] = useState(() =>
-    asegurarUsuariosBase(leerStorage('elanvisual_usuarios', usuariosIniciales))
-  );
+  asegurarUsuariosBase(usuariosIniciales)
+);
   const [supabaseListo, setSupabaseListo] = useState(false);
   const [proveedores, setProveedores] = useState(() => leerStorage('elanvisual_proveedores_costos', []));
   const [productosProveedor, setProductosProveedor] = useState(() => leerStorage('elanvisual_productos_proveedor', []));
@@ -556,7 +556,7 @@ const [fondoDireccion, setFondoDireccion] = useState(() =>
   useEffect(() => guardarStorage('elanvisual_imagenes', imagenes), [imagenes]);
   useEffect(() => guardarStorage('elanvisual_clientes', clientes), [clientes]);
   useEffect(() => guardarStorage('elanvisual_pedidos', pedidos), [pedidos]);
-  useEffect(() => guardarStorage('elanvisual_usuarios', usuarios), [usuarios]);
+  // Usuarios migrados a Supabase
   useEffect(() => guardarStorage('elanvisual_proveedores_costos', proveedores), [proveedores]);
   useEffect(() => guardarStorage('elanvisual_productos_proveedor', productosProveedor), [productosProveedor]);
   useEffect(() => guardarStorage('elanvisual_cotizaciones_proveedor', cotizacionesProveedor), [cotizacionesProveedor]);
@@ -2074,6 +2074,8 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
+
 
 
 
