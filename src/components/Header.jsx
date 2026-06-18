@@ -62,7 +62,7 @@ export default function Header({ page, setPage }) {
   ];
 
   const ventasLinks = [
-    ['crm', 'CRM', <Users size={24} />],
+    ['ventas', 'Panel', <Users size={24} />],
     ['cotizador', 'Cotizador', <Calculator size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['seguimiento', 'Seguimiento', <ClipboardList size={24} />],
@@ -173,4 +173,6 @@ export default function Header({ page, setPage }) {
     </>
   );
 }
+
+
 
