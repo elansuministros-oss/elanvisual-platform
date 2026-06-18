@@ -10,6 +10,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useApp } from '../context/AppContext';
 
 const POLITICA = {
   minimo: 2,
@@ -257,6 +258,7 @@ function campoCompleto(valor) {
 }
 
 export default function CotizadorDirecto() {
+  const { configuracion } = useApp();
   const [materiales, setMateriales] = useState([]);
   const [tintas, setTintas] = useState([]);
   const [mensaje, setMensaje] = useState('');
@@ -939,9 +941,13 @@ export default function CotizadorDirecto() {
         <div className="print-sheet">
           <header className="print-header">
             <div className="print-brand">
-              <div className="print-logo">EV</div>
+              {configuracion?.logo ? (
+                <img src={configuracion.logo} alt={configuracion.logoTexto || 'ELANVISION'} className="print-logo-img" />
+              ) : (
+                <div className="print-logo">EV</div>
+              )}
               <div>
-                <h1>ELANVISIÓN</h1>
+                <h1>{configuracion?.logoTexto || 'ELANVISIÓN'}</h1>
                 <p>Soluciones de Rotulación e Imagen Comercial</p>
               </div>
             </div>
@@ -1521,5 +1527,7 @@ export default function CotizadorDirecto() {
 
 
   
+
+
 
 
