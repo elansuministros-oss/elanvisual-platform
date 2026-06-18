@@ -257,7 +257,7 @@ function campoCompleto(valor) {
   return String(valor || '').trim().length > 0;
 }
 
-export default function CotizadorDirecto() {
+export default function CotizadorDirecto({ setPage }) {
   const { configuracion } = useApp();
   const [materiales, setMateriales] = useState([]);
   const [tintas, setTintas] = useState([]);
@@ -1407,6 +1407,17 @@ export default function CotizadorDirecto() {
           display:none;
         }
 
+        .cd-btn-captura{
+          margin-top:14px;
+          border:0;
+          border-radius:16px;
+          padding:12px 16px;
+          font-weight:950;
+          background:#0f172a;
+          color:white;
+          cursor:pointer;
+        }
+
         @media(max-width:900px){
           .cot-directo{
             padding:14px;
@@ -1527,6 +1538,7 @@ export default function CotizadorDirecto() {
 
 
   
+
 
 
 
