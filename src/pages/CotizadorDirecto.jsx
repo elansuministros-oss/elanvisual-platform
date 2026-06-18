@@ -597,6 +597,17 @@ export default function CotizadorDirecto({ setPage }) {
         </p>
       </section>
 
+
+      <section className="cd-captura-box no-print">
+        <button
+          type="button"
+          className="cd-btn-captura"
+          onClick={() => setPage && setPage('capturaInteligente')}
+        >
+          Capturar cliente nuevo
+        </button>
+      </section>
+
       <section className="cd-grid no-print">
         <form
           className="cd-card"
