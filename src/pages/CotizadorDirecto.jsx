@@ -936,79 +936,137 @@ export default function CotizadorDirecto() {
       </section>
 
       <section className="print-area">
-        <div className="print-banner">
-          <h1>COTIZACIÓN</h1>
-          <p>ELANVISIÓN · Profesionales en fabricación de rótulos</p>
-        </div>
+        <div className="print-sheet">
+          <header className="print-header">
+            <div className="print-brand">
+              <div className="print-logo">EV</div>
+              <div>
+                <h1>ELANVISIÓN</h1>
+                <p>Soluciones de Rotulación e Imagen Comercial</p>
+              </div>
+            </div>
 
-        <div className="print-client">
-          <p>
-            <b>Cliente:</b> {form.cliente || '-'}
-          </p>
-          <p>
-            <b>Celular:</b> {form.whatsapp || '-'}
-          </p>
-          <p>
-            <b>Dirección:</b> {form.direccion || '-'}
-          </p>
-          <p>
-            <b>Fecha:</b> {new Date().toLocaleDateString('es-NI')}
-          </p>
-        </div>
+            <div className="print-doc">
+              <span>COTIZACIÓN</span>
+              <strong>{new Date().toLocaleDateString('es-NI')}</strong>
+              <small>{items.length} ítem(s)</small>
+            </div>
+          </header>
 
-        <h2>{form.empresa || form.cliente || 'Cliente'}</h2>
+          <section className="print-company">
+            <div>
+              <b>RUC</b>
+              <span>4012805831001E</span>
+            </div>
+            <div>
+              <b>Atendido por</b>
+              <span>Erick Cano</span>
+            </div>
+            <div>
+              <b>WhatsApp</b>
+              <span>+505 8838 8940</span>
+            </div>
+            <div>
+              <b>Cheque a nombre de</b>
+              <span>ERICK ANTONIO CANO JOSE</span>
+            </div>
+          </section>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Ítem</th>
-              <th>Descripción</th>
-              <th>Total USD</th>
-            </tr>
-          </thead>
-          <tbody>
+          <section className="print-parties">
+            <article>
+              <h2>Cliente</h2>
+              <p><b>Nombre:</b> {form.cliente || '-'}</p>
+              <p><b>Empresa:</b> {form.empresa || '-'}</p>
+              <p><b>WhatsApp:</b> {form.whatsapp || '-'}</p>
+              <p><b>Dirección:</b> {form.direccion || '-'}</p>
+              <p><b>Ciudad:</b> {form.ciudad || '-'}</p>
+            </article>
+
+            <article>
+              <h2>Vendedor</h2>
+              <p><b>Nombre:</b> Erick Cano</p>
+              <p><b>Unidad:</b> ELANVISIÓN</p>
+              <p><b>Contacto:</b> +505 8838 8940</p>
+              <p><b>Documento:</b> Cotización directa</p>
+              <p><b>Validez:</b> 15 días calendario</p>
+            </article>
+          </section>
+
+          <section className="print-items">
+            <h2>Detalle de la cotización</h2>
+
+            {items.length === 0 && (
+              <p className="print-empty">No hay ítems agregados.</p>
+            )}
+
             {items.map((item, idx) => (
-              <tr key={item.id}>
-                <td>{idx + 1}</td>
-                <td>{item.descripcion}</td>
-                <td>{money(item.resumen.venta)}</td>
-              </tr>
+              <article className="print-item" key={item.id}>
+                <div className="print-item-head">
+                  <span>Ítem {idx + 1}</span>
+                  <strong>{money(item.resumen.venta)}</strong>
+                </div>
+
+                <p className="print-desc">{item.descripcion}</p>
+
+                <div className="print-meta">
+                  <p><b>Ancho:</b> {item.ancho} m</p>
+                  <p><b>Alto:</b> {item.alto} m</p>
+                  <p><b>Cantidad:</b> {item.cantidad}</p>
+                </div>
+              </article>
             ))}
-          </tbody>
-        </table>
+          </section>
 
-        <div className="print-total">
-          <p>
-            <span>Subtotal</span>
-            <b>{money(total.subtotal)}</b>
-          </p>
+          <section className="print-summary">
+            <div>
+              <span>Subtotal bruto</span>
+              <b>{money(total.subtotalBruto)}</b>
+            </div>
 
-          {form.usaIVA && (
+            {Number(total.descuento || 0) > 0 && (
+              <div>
+                <span>Descuento aplicado</span>
+                <b>-{money(total.descuento)}</b>
+              </div>
+            )}
+
+            <div>
+              <span>Subtotal</span>
+              <b>{money(total.subtotal)}</b>
+            </div>
+
+            {form.usaIVA && (
+              <div>
+                <span>IVA 15%</span>
+                <b>{money(total.iva)}</b>
+              </div>
+            )}
+
+            <div className="print-grand-total">
+              <span>Total general</span>
+              <b>{money(total.totalCliente)}</b>
+            </div>
+          </section>
+
+          <section className="print-payment">
+            <h2>Forma de pago</h2>
+            {total.pagos.map((p) => (
+              <p key={p.label}>
+                <span>{p.label}</span>
+                <b>{money(p.monto)}</b>
+              </p>
+            ))}
+          </section>
+
+          <footer className="print-footer">
             <p>
-              <span>IVA</span>
-              <b>{money(total.iva)}</b>
+              Cotización válida por 15 días calendario. Sujeta a aprobación de diseño,
+              disponibilidad de materiales, condiciones de instalación y acceso libre al sitio.
             </p>
-          )}
-
-          <p>
-            <span>Total general</span>
-            <b>{money(total.totalCliente)}</b>
-          </p>
+            <strong>ELANVISIÓN · Producción visual profesional</strong>
+          </footer>
         </div>
-
-        <h3>Forma de pago</h3>
-        {total.pagos.map((p) => (
-          <p key={p.label}>
-            <b>{p.label}:</b> {money(p.monto)}
-          </p>
-        ))}
-
-        <p className="legal">
-          Cotización válida por 15 días calendario. Sujeta a aprobación de diseño,
-          disponibilidad de materiales, condiciones de instalación y acceso libre al sitio.
-        </p>
       </section>
-
       <style>{`
         .cot-directo{
           min-height:100vh;
@@ -1463,3 +1521,5 @@ export default function CotizadorDirecto() {
 
 
   
+
+
