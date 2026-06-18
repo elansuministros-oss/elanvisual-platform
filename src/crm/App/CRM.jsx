@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { useCore } from '../../core/context/CoreContext';
 
 import DashboardCRM from '../DashboardCRM';
@@ -45,7 +45,27 @@ import AuditoriaCRM from '../AuditoriaCRM';
 
 export default function CRM() {
   const { usuarioActivoCRM, rolUsuarioActivoCRM, usuarioTienePermisoCRM } = useCore();
-  const [modulo, setModulo] = useState('dashboard');
+
+  const rolTexto = String(
+    rolUsuarioActivoCRM?.nombre ||
+    usuarioActivoCRM?.rol ||
+    usuarioActivoCRM?.tipo ||
+    ''
+  ).toLowerCase();
+
+  const esVendedor =
+    rolTexto.includes('vendedor') ||
+    rolTexto.includes('ventas') ||
+    rolTexto.includes('asesor');
+
+  const rutaActual = typeof window !== 'undefined' ? window.location.pathname : '';
+
+  const [modulo, setModulo] = useState(() => {
+    if (rutaActual.includes('/clientes')) return 'clientes';
+    if (esVendedor) return 'clientes';
+    return 'dashboard';
+  });
+
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   const modulos = useMemo(
@@ -53,99 +73,123 @@ export default function CRM() {
       {
         grupo: 'General',
         items: [
-          { id: 'dashboard', label: 'Dashboard', icono: '??', componente: <DashboardCRM /> },
-          { id: 'dashboard-gerencial', label: 'Dashboard Gerencial', icono: '??', componente: <DashboardGerencial /> },
-          { id: 'notificaciones', label: 'Notificaciones', icono: '??', componente: <NotificacionesCRM /> },
-          { id: 'centro-whatsapp', label: 'Centro WhatsApp', icono: '??', componente: <CentroWhatsApp /> },
+          { id: 'dashboard', label: 'Dashboard', icono: '', componente: <DashboardCRM /> },
+          { id: 'dashboard-gerencial', label: 'Dashboard Gerencial', icono: '', componente: <DashboardGerencial /> },
+          { id: 'notificaciones', label: 'Notificaciones', icono: '', componente: <NotificacionesCRM /> },
+          { id: 'centro-whatsapp', label: 'Centro WhatsApp', icono: '', componente: <CentroWhatsApp /> },
         ],
       },
       {
         grupo: 'CRM',
         items: [
-          { id: 'empresas', label: 'Empresas', icono: '??', componente: <Empresas /> },
-          { id: 'contactos', label: 'Contactos', icono: '??', componente: <Contactos /> },
-          { id: 'clientes', label: 'Clientes', icono: '??', componente: <Clientes /> },
-          { id: 'proveedores', label: 'Proveedores', icono: '??', componente: <Proveedores /> },
-          { id: 'compras', label: 'Compras', icono: '??', componente: <Compras /> },
-          { id: 'seguimiento', label: 'Seguimiento', icono: '??', componente: <SeguimientoCRM /> },
-          { id: 'crm-comercial', label: 'CRM Comercial', icono: '??', componente: <CRMComercialAvanzado /> },
+          { id: 'empresas', label: 'Empresas', icono: '', componente: <Empresas /> },
+          { id: 'contactos', label: 'Contactos', icono: '', componente: <Contactos /> },
+          { id: 'clientes', label: 'Clientes', icono: '', componente: <Clientes /> },
+          { id: 'proveedores', label: 'Proveedores', icono: '', componente: <Proveedores /> },
+          { id: 'compras', label: 'Compras', icono: '', componente: <Compras /> },
+          { id: 'seguimiento', label: 'Seguimiento', icono: '', componente: <SeguimientoCRM /> },
+          { id: 'crm-comercial', label: 'CRM Comercial', icono: '', componente: <CRMComercialAvanzado /> },
         ],
       },
       {
         grupo: 'Ventas',
         items: [
-          { id: 'vendedores', label: 'Vendedores', icono: '?????', componente: <Vendedores /> },
-          { id: 'aliados-comerciales', label: 'Aliados Comerciales', icono: '??', componente: <AliadosComerciales /> },
-          { id: 'cotizaciones', label: 'Cotizaciones', icono: '??', componente: <Cotizaciones /> },
-          { id: 'pedidos', label: 'Pedidos', icono: '??', componente: <Pedidos /> },
+          { id: 'vendedores', label: 'Vendedores', icono: '', componente: <Vendedores /> },
+          { id: 'aliados-comerciales', label: 'Aliados Comerciales', icono: '', componente: <AliadosComerciales /> },
+          { id: 'cotizaciones', label: 'Cotizaciones', icono: '', componente: <Cotizaciones /> },
+          { id: 'pedidos', label: 'Pedidos', icono: '', componente: <Pedidos /> },
         ],
       },
       {
         grupo: 'Operación',
         items: [
-          { id: 'ordenes', label: 'Órdenes Trabajo', icono: '??', componente: <OrdenesTrabajo /> },
-          { id: 'produccion', label: 'Producción', icono: '??', componente: <Produccion /> },
-          { id: 'inventario', label: 'Inventario', icono: '??', componente: <Inventario /> },
-          { id: 'materiales', label: 'Materiales', icono: '??', componente: <Materiales /> },
-          { id: 'portal-produccion', label: 'Portal Producción', icono: '???', componente: <PortalProduccionCRM /> },
+          { id: 'ordenes', label: 'Órdenes Trabajo', icono: '', componente: <OrdenesTrabajo /> },
+          { id: 'produccion', label: 'Producción', icono: '', componente: <Produccion /> },
+          { id: 'inventario', label: 'Inventario', icono: '', componente: <Inventario /> },
+          { id: 'materiales', label: 'Materiales', icono: '', componente: <Materiales /> },
+          { id: 'portal-produccion', label: 'Portal Producción', icono: '', componente: <PortalProduccionCRM /> },
         ],
       },
       {
         grupo: 'Finanzas',
         items: [
-          { id: 'cobros', label: 'Cobros', icono: '??', componente: <Cobros /> },
-          { id: 'cuentas-cobrar', label: 'Cuentas por Cobrar', icono: '??', componente: <CuentasPorCobrar /> },
-          { id: 'cuentas-pagar', label: 'Cuentas por Pagar', icono: '??', componente: <CuentasPorPagar /> },
-          { id: 'flujo-caja', label: 'Flujo de Caja', icono: '??', componente: <FlujoCaja /> },
-          { id: 'centro-utilidades', label: 'Centro Utilidades', icono: '??', componente: <CentroUtilidades /> },
-          { id: 'estado-financiero', label: 'Estado Financiero', icono: '??', componente: <EstadoFinanciero /> },
-          { id: 'comisiones', label: 'Comisiones', icono: '??', componente: <Comisiones /> },
-          { id: 'reportes', label: 'Reportes', icono: '??', componente: <ReportesCRM /> },
-          { id: 'fiscal', label: 'Fiscal', icono: '??', componente: <FiscalCRM /> },
-          { id: 'metas-kpis', label: 'Metas y KPIs', icono: '??', componente: <MetasKPIs /> },
+          { id: 'cobros', label: 'Cobros', icono: '', componente: <Cobros /> },
+          { id: 'cuentas-cobrar', label: 'Cuentas por Cobrar', icono: '', componente: <CuentasPorCobrar /> },
+          { id: 'cuentas-pagar', label: 'Cuentas por Pagar', icono: '', componente: <CuentasPorPagar /> },
+          { id: 'flujo-caja', label: 'Flujo de Caja', icono: '', componente: <FlujoCaja /> },
+          { id: 'centro-utilidades', label: 'Centro Utilidades', icono: '', componente: <CentroUtilidades /> },
+          { id: 'estado-financiero', label: 'Estado Financiero', icono: '', componente: <EstadoFinanciero /> },
+          { id: 'comisiones', label: 'Comisiones', icono: '', componente: <Comisiones /> },
+          { id: 'reportes', label: 'Reportes', icono: '', componente: <ReportesCRM /> },
+          { id: 'fiscal', label: 'Fiscal', icono: '', componente: <FiscalCRM /> },
+          { id: 'metas-kpis', label: 'Metas y KPIs', icono: '', componente: <MetasKPIs /> },
         ],
       },
       {
         grupo: 'Portales',
         items: [
-          { id: 'portal-cliente', label: 'Portal Cliente', icono: '??', componente: <PortalClienteCRM /> },
-          { id: 'app-movil', label: 'App Móvil', icono: '??', componente: <AppMovilCRM /> },
+          { id: 'portal-cliente', label: 'Portal Cliente', icono: '', componente: <PortalClienteCRM /> },
+          { id: 'app-movil', label: 'App Móvil', icono: '', componente: <AppMovilCRM /> },
         ],
       },
       {
         grupo: 'Tecnología',
         items: [
-          { id: 'elan-ai', label: 'ELAN AI', icono: '??', componente: <ElanAI /> },
-          { id: 'exportador-crm-central', label: 'Exportador CRM Central', icono: '??', componente: <ExportadorCRMCentral /> },
+          { id: 'elan-ai', label: 'ELAN AI', icono: '', componente: <ElanAI /> },
+          { id: 'exportador-crm-central', label: 'Exportador CRM Central', icono: '', componente: <ExportadorCRMCentral /> },
         ],
       },
       {
         grupo: 'Administración',
         items: [
-          { id: 'usuarios-permisos', label: 'Usuarios y Permisos', icono: '??', componente: <UsuariosPermisos /> },
-          { id: 'auditoria', label: 'Auditoría', icono: '??', componente: <AuditoriaCRM /> },
-          { id: 'automatizaciones', label: 'Automatizaciones', icono: '??', componente: <AutomatizacionesCRM /> },
-          { id: 'calendario', label: 'Calendario', icono: '??', componente: <CalendarioCorporativo /> },
-          { id: 'documentos', label: 'Documentos', icono: '???', componente: <DocumentosCorporativos /> },
+          { id: 'usuarios-permisos', label: 'Usuarios y Permisos', icono: '', componente: <UsuariosPermisos /> },
+          { id: 'auditoria', label: 'Auditoría', icono: '', componente: <AuditoriaCRM /> },
+          { id: 'automatizaciones', label: 'Automatizaciones', icono: '', componente: <AutomatizacionesCRM /> },
+          { id: 'calendario', label: 'Calendario', icono: '', componente: <CalendarioCorporativo /> },
+          { id: 'documentos', label: 'Documentos', icono: '', componente: <DocumentosCorporativos /> },
         ],
       },
     ],
     []
   );
 
-  const modulosVisibles = useMemo(
-    () =>
-      modulos
-        .map((grupo) => ({
-          ...grupo,
-          items: grupo.items.filter((item) => item.id === 'usuarios-permisos' || usuarioTienePermisoCRM(item.id)),
-        }))
-        .filter((grupo) => grupo.items.length > 0),
-    [modulos, usuarioTienePermisoCRM]
+  const modulosVendedor = useMemo(
+    () => [
+      {
+        grupo: 'Ventas',
+        items: [
+          { id: 'clientes', label: 'Clientes', icono: '', componente: <Clientes /> },
+          { id: 'cotizaciones', label: 'Cotizaciones', icono: '', componente: <Cotizaciones /> },
+          { id: 'pedidos', label: 'Pedidos', icono: '', componente: <Pedidos /> },
+          { id: 'seguimiento', label: 'Seguimiento', icono: '', componente: <SeguimientoCRM /> },
+          { id: 'crm-comercial', label: 'CRM Comercial', icono: '', componente: <CRMComercialAvanzado /> },
+        ],
+      },
+    ],
+    []
   );
 
+  const modulosVisibles = useMemo(() => {
+    if (esVendedor) return modulosVendedor;
+
+    return modulos
+      .map((grupo) => ({
+        ...grupo,
+        items: grupo.items.filter(
+          (item) => item.id === 'usuarios-permisos' || usuarioTienePermisoCRM(item.id)
+        ),
+      }))
+      .filter((grupo) => grupo.items.length > 0);
+  }, [modulos, modulosVendedor, usuarioTienePermisoCRM, esVendedor]);
+
   const listaModulos = modulosVisibles.flatMap((grupo) => grupo.items);
-  const moduloActivo = listaModulos.find((item) => item.id === modulo) || listaModulos[0] || modulos[0].items[0];
+  const moduloActivo = listaModulos.find((item) => item.id === modulo) || listaModulos[0];
+
+  useEffect(() => {
+    if (!listaModulos.some((item) => item.id === modulo)) {
+      setModulo(listaModulos[0]?.id || 'clientes');
+    }
+  }, [listaModulos, modulo]);
 
   const abrirModulo = (id) => {
     setModulo(id);
@@ -239,9 +283,7 @@ export default function CRM() {
           }
 
           .crm-nav-icon {
-            width: 24px;
-            font-size: 18px;
-            text-align: center;
+            display: none;
           }
 
           .crm-main {
@@ -361,9 +403,9 @@ export default function CRM() {
 
       <aside className={`crm-sidebar ${menuAbierto ? 'open' : ''}`}>
         <div className="crm-brand">
-          <h1>CRM CENTRAL ELANKAV</h1>
-          <p>ERP operativo para ELANKAV</p>
-          <p>Usuario: {usuarioActivoCRM?.nombre || 'Administrador General'}</p>
+          <h1>{esVendedor ? 'Panel Vendedor' : 'CRM CENTRAL ELANKAV'}</h1>
+          <p>{esVendedor ? 'Gestión comercial limitada' : 'ERP operativo para ELANKAV'}</p>
+          <p>Usuario: {usuarioActivoCRM?.nombre || 'Usuario activo'}</p>
         </div>
 
         {modulosVisibles.map((grupo) => (
@@ -392,24 +434,27 @@ export default function CRM() {
             className="crm-mobile-button"
             onClick={() => setMenuAbierto(true)}
           >
-            ? Menú
+            Menú
           </button>
 
           <div className="crm-topbar-title">
-            <h2>{moduloActivo.label}</h2>
-            <p>CRM Central conectado a la cadena operativa completa. Rol activo: {rolUsuarioActivoCRM?.nombre || 'Administrador General'}.</p>
+            <h2>{moduloActivo?.label || 'Clientes'}</h2>
+            <p>
+              {esVendedor
+                ? 'Panel comercial para clientes, cotizaciones, pedidos y seguimiento.'
+                : `CRM Central conectado a la cadena operativa completa. Rol activo: ${rolUsuarioActivoCRM?.nombre || 'Administrador General'}.`}
+            </p>
           </div>
 
           <div className="crm-module-badge">
-            {moduloActivo.icono} {moduloActivo.label}
+            {moduloActivo?.label || 'Clientes'}
           </div>
         </div>
 
         <section className="crm-content">
-          {moduloActivo.componente}
+          {moduloActivo?.componente || <Clientes />}
         </section>
       </main>
     </div>
   );
 }
-
