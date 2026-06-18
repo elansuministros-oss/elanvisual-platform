@@ -198,9 +198,7 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     banners,
     usuarios,
     configuracion,
-    resumen,
 
-    costosReales,
     utilidadesReales,
     comisionesAutomaticas,
 
@@ -225,12 +223,33 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
       0
     );
 
-    const utilidadRealTotal = (utilidadesReales || []).reduce((acc, item) => acc + Number(item.utilidadReal || 0), 0);
-    const totalComisiones = (comisionesAutomaticas || []).reduce((acc, item) => acc + Number(item.comision || 0), 0);
-    const totalComunidad = (fondoComunidad || []).reduce((acc, item) => acc + Number(item.monto || 0), 0);
-    const totalIncentivo = (fondoIncentivo || []).reduce((acc, item) => acc + Number(item.monto || 0), 0);
-    const totalDireccion = (fondoDireccion || []).reduce((acc, item) => acc + Number(item.monto || 0), 0);
-    const utilidadElan = utilidadRealTotal - totalComisiones - totalComunidad - totalIncentivo - totalDireccion;
+    const utilidadRealTotal = (utilidadesReales || []).reduce(
+      (acc, item) => acc + Number(item.utilidadReal || 0),
+      0
+    );
+
+    const totalComisiones = (comisionesAutomaticas || []).reduce(
+      (acc, item) => acc + Number(item.comision || 0),
+      0
+    );
+
+    const totalComunidad = (fondoComunidad || []).reduce(
+      (acc, item) => acc + Number(item.monto || 0),
+      0
+    );
+
+    const totalIncentivo = (fondoIncentivo || []).reduce(
+      (acc, item) => acc + Number(item.monto || 0),
+      0
+    );
+
+    const totalDireccion = (fondoDireccion || []).reduce(
+      (acc, item) => acc + Number(item.monto || 0),
+      0
+    );
+
+    const utilidadElan =
+      utilidadRealTotal - totalComisiones - totalComunidad - totalIncentivo - totalDireccion;
 
     return {
       clientes: contador(clientes),
@@ -250,7 +269,19 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
       totalDireccion,
       utilidadElan,
     };
-  }, [clientes, productos, pedidos, trabajos, banners, usuarios, utilidadesReales, comisionesAutomaticas, fondoComunidad, fondoIncentivo, fondoDireccion]);
+  }, [
+    clientes,
+    productos,
+    pedidos,
+    trabajos,
+    banners,
+    usuarios,
+    utilidadesReales,
+    comisionesAutomaticas,
+    fondoComunidad,
+    fondoIncentivo,
+    fondoDireccion,
+  ]);
 
   const brandName = configuracion?.logoTexto || configuracion?.nombreSitio || 'ELANVISUAL';
 
@@ -267,13 +298,13 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
       key: 'ventas',
       title: 'Ventas',
       count: data.pedidos,
-      desc: 'Pedidos y cotizacion',
+      desc: 'Pedidos y cotización',
       icon: <HandCoins size={22} />,
       accent: '#059669',
     },
     {
       key: 'produccion',
-      title: 'Produccion',
+      title: 'Producción',
       count: data.produccionActiva,
       desc: 'OT en proceso',
       icon: <Factory size={22} />,
@@ -319,7 +350,7 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
         <>
           <MiniAction icon={<Users size={20} />} title="Abrir CRM" desc="Clientes, prospectos y seguimiento." onClick={() => setPage('crm')} />
           <MiniAction icon={<CalendarDays size={20} />} title="Seguimiento" desc="Consulta y control de avances." onClick={() => setPage('seguimiento')} />
-          <MiniAction icon={<PlusCircle size={20} />} title="Nuevo cliente" desc="Crear contacto desde CRM." onClick={() => setPage('crm')} />
+          <MiniAction icon={<PlusCircle size={20} />} title="Nuevo cliente" desc="Crear contacto desde CRM." onClick={() => setPage('clientes')} />
         </>
       );
     }
@@ -327,9 +358,9 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     if (area === 'ventas') {
       return (
         <>
-          <MiniAction icon={<Calculator size={20} />} title="Cotizador Visual V2" desc="Cotizacion por medidas y materiales." onClick={() => setPage('cotizador')} />
+          <MiniAction icon={<Calculator size={20} />} title="Cotizador Visual V2" desc="Cotización por medidas y materiales." onClick={() => setPage('cotizador')} />
           <MiniAction icon={<PackageCheck size={20} />} title="Pedidos / OT" desc="Control de pedidos generados." onClick={() => setPage('pedidos')} />
-          <MiniAction icon={<BriefcaseBusiness size={20} />} title="Servicios" desc="Catalogo comercial vigente." onClick={() => setPage('catalogo')} />
+          <MiniAction icon={<BriefcaseBusiness size={20} />} title="Servicios" desc="Catálogo comercial vigente." onClick={() => setPage('catalogo')} />
         </>
       );
     }
@@ -337,9 +368,9 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     if (area === 'produccion') {
       return (
         <>
-          <MiniAction icon={<Factory size={20} />} title="Panel de produccion" desc="Estados, fabricacion y entrega." onClick={() => setPage('produccion')} />
-          <MiniAction icon={<ClipboardCheck size={20} />} title="Pedidos / OT" desc="Ã“rdenes listas para taller." onClick={() => setPage('pedidos')} />
-          <MiniAction icon={<Truck size={20} />} title="Instalacion / entrega" desc="Flujo operativo de cierre." onClick={() => setPage('produccion')} />
+          <MiniAction icon={<Factory size={20} />} title="Panel de producción" desc="Estados, fabricación y entrega." onClick={() => setPage('produccion')} />
+          <MiniAction icon={<ClipboardCheck size={20} />} title="Pedidos / OT" desc="Órdenes listas para taller." onClick={() => setPage('pedidos')} />
+          <MiniAction icon={<Truck size={20} />} title="Instalación / entrega" desc="Flujo operativo de cierre." onClick={() => setPage('produccion')} />
         </>
       );
     }
@@ -348,8 +379,8 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
       return (
         <>
           <MiniAction icon={<PackageSearch size={20} />} title="Material Master V3" desc="Materiales, tintas y combinaciones." onClick={() => setPage('materiales')} />
-          <MiniAction icon={<Calculator size={20} />} title="Consumo cotizable" desc="Relacion material â†’ venta â†’ OT." onClick={() => setPage('cotizador')} />
-          <MiniAction icon={<FileText size={20} />} title="Productos" desc="Catalogo operativo actual." onClick={() => setPage('admin')} />
+          <MiniAction icon={<Calculator size={20} />} title="Consumo cotizable" desc="Relación material → venta → OT." onClick={() => setPage('cotizador')} />
+          <MiniAction icon={<FileText size={20} />} title="Productos" desc="Catálogo operativo actual." onClick={() => setPage('admin')} />
         </>
       );
     }
@@ -368,8 +399,8 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
       return (
         <>
           <MiniAction icon={<BarChart3 size={20} />} title="Reporte comercial" desc="Pedidos, clientes y trabajos." onClick={() => setPage('pedidos')} />
-          <MiniAction icon={<Factory size={20} />} title="Reporte produccion" desc="Produccion activa y entregas." onClick={() => setPage('produccion')} />
-          <MiniAction icon={<Users size={20} />} title="Reporte clientes" desc="Base CRM y seguimiento." onClick={() => setPage('crm')} />
+          <MiniAction icon={<Factory size={20} />} title="Reporte producción" desc="Producción activa y entregas." onClick={() => setPage('produccion')} />
+          <MiniAction icon={<Users size={20} />} title="Reporte clientes" desc="Base CRM y seguimiento." onClick={() => setPage('clientes')} />
         </>
       );
     }
@@ -377,8 +408,8 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     if (area === 'admin') {
       return (
         <>
-          <MiniAction icon={<ShieldCheck size={20} />} title="Administracion" desc="Usuarios, roles y configuracion." onClick={() => setPage('admin')} />
-          <MiniAction icon={<BriefcaseBusiness size={20} />} title="Catalogo publico" desc="Servicios visibles al cliente." onClick={() => setPage('catalogo')} />
+          <MiniAction icon={<ShieldCheck size={20} />} title="Administración" desc="Usuarios, roles y configuración." onClick={() => setPage('admin')} />
+          <MiniAction icon={<BriefcaseBusiness size={20} />} title="Catálogo público" desc="Servicios visibles al cliente." onClick={() => setPage('catalogo')} />
           <MiniAction icon={<LayoutDashboard size={20} />} title="Portafolio" desc="Trabajos, banners e identidad." onClick={() => setPage('trabajos')} />
         </>
       );
@@ -443,7 +474,7 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
               fontWeight: 650,
             }}
           >
-            Centro ejecutivo movil para ventas, pedidos, produccion, CRM, inventario y control administrativo.
+            Centro ejecutivo móvil para ventas, pedidos, producción, CRM, inventario y control administrativo.
           </p>
 
           <div
@@ -455,11 +486,11 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
             }}
           >
             <KPI title="Pedidos Activos" value={data.pedidosActivos} desc="No entregados" icon={<ClipboardList size={18} />} />
-            <KPI title="Produccion" value={data.produccionActiva} desc="OT activas" icon={<Factory size={18} />} />
+            <KPI title="Producción" value={data.produccionActiva} desc="OT activas" icon={<Factory size={18} />} />
             <KPI title="Clientes" value={data.clientes} desc="CRM base" icon={<Users size={18} />} />
             <KPI title="CxC" value={money(data.cxc)} desc="Saldo pendiente" icon={<WalletCards size={18} />} />
             <KPI title="Ventas" value={money(data.totalVentas)} desc="Pedidos acumulados" icon={<HandCoins size={18} />} />
-            <KPI title="Productos" value={data.productos} desc="Catalogo base" icon={<PackageSearch size={18} />} />
+            <KPI title="Productos" value={data.productos} desc="Catálogo base" icon={<PackageSearch size={18} />} />
           </div>
         </div>
 
@@ -471,10 +502,10 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
             gap: 10,
           }}
         >
-          <QuickAction primary icon={<Calculator size={22} />} title="Nueva Cotizacion" desc="Abrir cotizador" onClick={() => setPage('cotizador')} />
+          <QuickAction primary icon={<Calculator size={22} />} title="Nueva Cotización" desc="Abrir cotizador" onClick={() => setPage('cotizador')} />
           <QuickAction icon={<PackageCheck size={22} />} title="Nuevo Pedido" desc="Pedidos / OT" onClick={() => setPage('pedidos')} />
-          <QuickAction icon={<Factory size={22} />} title="Nueva OT" desc="Produccion" onClick={() => setPage('produccion')} />
-          <QuickAction icon={<Users size={22} />} title="Nuevo Cliente" desc="CRM" onClick={() => setPage('crm')} />
+          <QuickAction icon={<Factory size={22} />} title="Nueva OT" desc="Producción" onClick={() => setPage('produccion')} />
+          <QuickAction icon={<Users size={22} />} title="Nuevo Cliente" desc="CRM" onClick={() => setPage('clientes')} />
         </section>
 
         <div
@@ -511,7 +542,7 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center' }}>
               <div>
-                <small style={{ color: '#64748b', fontWeight: 900 }}>ÃREA ERP</small>
+                <small style={{ color: '#64748b', fontWeight: 900 }}>ÁREA ERP</small>
                 <h2 style={{ margin: '3px 0 0', color: '#0f172a', letterSpacing: '-.03em' }}>
                   {areas.find((x) => x.key === area)?.title}
                 </h2>
@@ -534,13 +565,10 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
               </button>
             </div>
 
-            <div style={{ display: 'grid', gap: 10, marginTop: 14 }}>
-              {renderArea()}
-            </div>
+            <div style={{ display: 'grid', gap: 10, marginTop: 14 }}>{renderArea()}</div>
           </section>
         )}
       </section>
     </main>
   );
 }
-
