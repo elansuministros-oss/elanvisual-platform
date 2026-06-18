@@ -13,22 +13,70 @@ const slug = (v) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 
-function extraerDatos(texto) {
+const normalizarNombre = (v) =>
+  limpiar(v)
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (l) => l.toUpperCase());
+
+function extraerDatos(texto, tipo = 'cliente') {
   const t = limpiar(texto);
+  const lineas = t.split('\n').map((x) => limpiar(x)).filter(Boolean);
+
   const email = t.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] || '';
+
   const telefonos = [...t.matchAll(/(?:\+?505)?[\s-]?[578]\d{3}[\s-]?\d{4}/g)].map((m) =>
     m[0].replace(/[^0-9]/g, '').replace(/^505/, '')
   );
 
-  const empresa =
-    t.match(/(?:empresa|cliente|proveedor|negocio)\s*:?\s*([^,\n]+)/i)?.[1] ||
-    t.split('\n')[0]?.trim() ||
-    t.split(',')[0]?.trim() ||
+  const cedula =
+    t.match(/(?:cedula|cédula|ced)\s*:?\s*([A-Z0-9-]+)/i)?.[1] ||
+    t.match(/\b\d{13}[A-Z]\b/i)?.[0] ||
     '';
 
-  const contacto =
-    t.match(/(?:atencion|atención|contacto|atiende|con)\s*:?\s*([A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,50})/i)?.[1] ||
+  const banco =
+    /\bbac\b/i.test(t) ? 'BAC' :
+    /\bbanpro\b/i.test(t) ? 'BANPRO' :
+    /\blafise\b/i.test(t) ? 'LAFISE' :
+    /\bbdf\b/i.test(t) ? 'BDF' :
+    /\bficohsa\b/i.test(t) ? 'FICOHSA' :
     '';
+
+  const cuenta =
+    t.match(/(?:cta|cuenta)\s*(?:bac|banpro|lafise|bdf|ficohsa)?\s*:?\s*([0-9-]{5,})/i)?.[1] ||
+    '';
+
+  const moneda =
+    /cordoba|córdoba|cordobas|córdobas|nio|c\$/i.test(t) ? 'Córdobas' :
+    /dolar|dólar|dolares|dólares|usd|\$/i.test(t) ? 'Dólares' :
+    '';
+
+  const nombreVendedor =
+    tipo === 'vendedor'
+      ? (
+          t.match(/(?:vendedor|nombre|usuario)\s*:?\s*([^,\n]+)/i)?.[1] ||
+          lineas[0] ||
+          ''
+        )
+      : '';
+
+  const empresa =
+    tipo === 'vendedor'
+      ? ''
+      : (
+          t.match(/(?:empresa|cliente|proveedor|negocio)\s*:?\s*([^,\n]+)/i)?.[1] ||
+          lineas[0] ||
+          t.split(',')[0]?.trim() ||
+          ''
+        );
+
+  const contacto =
+    tipo === 'vendedor'
+      ? ''
+      : (
+          t.match(/(?:atencion|atención|contacto|atiende|con)\s*:?\s*([A-Za-zÁÉÍÓÚáéíóúÑñ ]{3,50})/i)?.[1] ||
+          ''
+        );
 
   const direccion =
     t.match(/(?:direccion|dirección|ubicacion|ubicación|dir)\s*:?\s*([^,\n]+)/i)?.[1] || '';
@@ -45,13 +93,17 @@ function extraerDatos(texto) {
 
   return {
     empresa: limpiar(empresa),
-    nombre: limpiar(contacto || empresa),
-    contacto: limpiar(contacto),
+    nombre: normalizarNombre(nombreVendedor || contacto || empresa),
+    contacto: tipo === 'vendedor' ? '' : limpiar(contacto),
     whatsapp: telefonos[0] || '',
     telefono: telefonos[0] || '',
     correo: email,
     email,
     ruc,
+    cedula: limpiar(cedula).toUpperCase(),
+    banco,
+    cuenta_bancaria: cuenta,
+    moneda,
     direccion: limpiar(direccion),
     ciudad,
     categoria: limpiar(categoria),
@@ -72,7 +124,7 @@ export default function CapturaInteligente() {
   const [vendedores, setVendedores] = useState([]);
   const [editandoId, setEditandoId] = useState(null);
 
-  const datos = useMemo(() => extraerDatos(texto), [texto]);
+  const datos = useMemo(() => extraerDatos(texto, tipo), [texto, tipo]);
 
   useEffect(() => {
     if (!esAdmin) {
@@ -173,16 +225,22 @@ export default function CapturaInteligente() {
     }
 
     if (tipoReal === 'vendedor') {
-      const base = datos.nombre || datos.empresa || `vendedor-${Date.now()}`;
+      const base = datos.nombre || `vendedor-${Date.now()}`;
 
       const payloadVendedor = {
-        nombre: datos.nombre || datos.empresa || '',
+        nombre: datos.nombre || '',
         usuario: slug(base),
         email: datos.email || datos.correo || '',
         whatsapp: datos.whatsapp || '',
+        cedula: datos.cedula || '',
+        banco: datos.banco || '',
+        cuenta_bancaria: datos.cuenta_bancaria || '',
+        moneda: datos.moneda || '',
         codigo_vendedor: `VEN-${slug(base).toUpperCase()}`,
         rol: 'ventas',
         activo: true,
+        notas: datos.notas || texto,
+        data: datos,
       };
 
       const { error } = modoEdicion
@@ -211,13 +269,15 @@ export default function CapturaInteligente() {
         [
           registro.empresa || registro.razon_social || registro.nombre || '',
           registro.contacto || registro.nombre || '',
+          registro.cedula || '',
           registro.whatsapp || registro.telefono || '',
           registro.correo || registro.email || '',
+          registro.banco && registro.cuenta_bancaria ? `Cta ${registro.banco} ${registro.cuenta_bancaria} ${registro.moneda || ''}` : '',
           registro.ruc || '',
           registro.direccion || registro.ubicacion || '',
           registro.ciudad || registro.municipio || '',
           registro.categoria || '',
-        ].filter(Boolean).join(', ')
+        ].filter(Boolean).join('\n')
     );
   };
 
@@ -250,7 +310,7 @@ export default function CapturaInteligente() {
         <h1>{esAdmin ? 'Clientes, Proveedores y Vendedores' : 'Captura Inteligente de Clientes'}</h1>
         <p>
           {esAdmin
-            ? 'Pegá todo en una sola caja. El sistema separa empresa, contacto, teléfono, correo, dirección, ciudad y RUC.'
+            ? 'Pegá todo en una sola caja. El sistema separa datos según el tipo seleccionado.'
             : 'Pegá los datos del cliente en una sola caja. El sistema separa empresa, contacto, teléfono, correo, dirección, ciudad y RUC.'}
         </p>
       </section>
@@ -269,7 +329,11 @@ export default function CapturaInteligente() {
           <textarea
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
-            placeholder="Ejemplo: Cliente Havanas Nights, atención Carlos, celular 88889999, correo ventas@havana.com, dirección Metrocentro Managua, RUC J031..."
+            placeholder={
+              tipo === 'vendedor'
+                ? 'Ejemplo: Jose Alejandro Vargas\nCédula 0013107510023D\nCta BAC 365336536 / córdobas\n84869177\ncorreo@email.com'
+                : 'Ejemplo: Cliente Havanas Nights, atención Carlos, celular 88889999, correo ventas@havana.com, dirección Metrocentro Managua, RUC J031...'
+            }
           />
           <button type="button" onClick={guardar}>
             <Save size={18}/> {editandoId ? 'Guardar cambios' : 'Guardar'}
@@ -289,7 +353,7 @@ export default function CapturaInteligente() {
       <section className="card">
         <div className="search">
           <Search size={18}/>
-          <input value={busqueda} onChange={(e)=>setBusqueda(e.target.value)} placeholder="Buscar clientes..." />
+          <input value={busqueda} onChange={(e)=>setBusqueda(e.target.value)} placeholder={`Buscar ${tipo === 'cliente' ? 'clientes' : tipo === 'proveedor' ? 'proveedores' : 'vendedores'}...`} />
         </div>
 
         <div className="list">
@@ -297,6 +361,9 @@ export default function CapturaInteligente() {
             <article key={x.id}>
               <b>{x.empresa || x.nombre || x.contacto || x.usuario || x.email || 'Registro'}</b>
               <span>{x.whatsapp || x.telefono || x.correo || x.email || 'Sin contacto'}</span>
+              {tipo === 'vendedor' && (
+                <span>{[x.cedula, x.banco, x.cuenta_bancaria, x.moneda].filter(Boolean).join(' · ') || 'Sin datos bancarios'}</span>
+              )}
               <div className="item-actions">
                 <button type="button" onClick={() => editarRegistro(x)}>Editar</button>
                 <button type="button" onClick={() => eliminarRegistro(x)}>Eliminar</button>
@@ -330,4 +397,4 @@ export default function CapturaInteligente() {
       `}</style>
     </main>
   );
-}
+} 
