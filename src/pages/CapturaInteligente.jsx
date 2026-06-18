@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import { Save, Search, Users, Truck, UserPlus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useApp } from '../context/AppContext';
 
 const limpiar = (v) => String(v || '').trim();
 
@@ -21,6 +22,7 @@ function extraerDatos(texto) {
 
   const empresa =
     t.match(/(?:empresa|cliente|proveedor|negocio)\s*:?\s*([^,\n]+)/i)?.[1] ||
+    t.split('\n')[0]?.trim() ||
     t.split(',')[0]?.trim() ||
     '';
 
@@ -58,6 +60,9 @@ function extraerDatos(texto) {
 }
 
 export default function CapturaInteligente() {
+  const { usuario } = useApp();
+
+  const esAdmin = usuario?.rol === 'admin';
   const [tipo, setTipo] = useState('cliente');
   const [texto, setTexto] = useState('');
   const [busqueda, setBusqueda] = useState('');
@@ -68,33 +73,52 @@ export default function CapturaInteligente() {
 
   const datos = useMemo(() => extraerDatos(texto), [texto]);
 
+  useEffect(() => {
+    if (!esAdmin) {
+      setTipo('cliente');
+    }
+  }, [esAdmin]);
+
   const cargar = async () => {
     if (!supabase) return;
 
-    const [clientesRes, proveedoresRes, vendedoresRes] = await Promise.all([
+    const consultas = [
       supabase.from('clientes').select('*').order('created_at', { ascending: false }).limit(50),
-      supabase.from('proveedores').select('*').order('created_at', { ascending: false }).limit(50),
-      supabase.from('vendedores').select('*').order('created_at', { ascending: false }).limit(50),
-    ]);
+    ];
 
-    setClientes(clientesRes.data || []);
-    setProveedores(proveedoresRes.data || []);
-    setVendedores(vendedoresRes.data || []);
+    if (esAdmin) {
+      consultas.push(
+        supabase.from('proveedores').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('vendedores').select('*').order('created_at', { ascending: false }).limit(50)
+      );
+    }
+
+    const res = await Promise.all(consultas);
+
+    setClientes(res[0]?.data || []);
+
+    if (esAdmin) {
+      setProveedores(res[1]?.data || []);
+      setVendedores(res[2]?.data || []);
+    }
   };
 
   useEffect(() => {
     cargar();
-  }, []);
+  }, [esAdmin]);
 
   const guardar = async () => {
     if (!supabase) return alert('Supabase no está configurado.');
     if (!texto.trim()) return alert('Pegá primero la información.');
 
+    const tipoReal = esAdmin ? tipo : 'cliente';
+
     setMensaje('Guardando...');
 
-    if (tipo === 'cliente') {
+    if (tipoReal === 'cliente') {
       const { error } = await supabase.from('clientes').insert({
         empresa: datos.empresa,
+        nombre: datos.nombre,
         contacto: datos.contacto || datos.nombre,
         whatsapp: datos.whatsapp,
         telefono: datos.telefono,
@@ -110,14 +134,14 @@ export default function CapturaInteligente() {
 
       if (error) {
         console.error(error);
-        setMensaje('Error guardando cliente.');
+        setMensaje(`Error guardando cliente: ${error.message}`);
         return;
       }
 
       setMensaje('Cliente guardado en Supabase.');
     }
 
-    if (tipo === 'proveedor') {
+    if (tipoReal === 'proveedor') {
       const { error } = await supabase.from('proveedores').insert({
         nombre: datos.empresa || datos.nombre,
         razon_social: datos.empresa,
@@ -136,14 +160,14 @@ export default function CapturaInteligente() {
 
       if (error) {
         console.error(error);
-        setMensaje('Error guardando proveedor.');
+        setMensaje(`Error guardando proveedor: ${error.message}`);
         return;
       }
 
       setMensaje('Proveedor guardado en Supabase.');
     }
 
-    if (tipo === 'vendedor') {
+    if (tipoReal === 'vendedor') {
       const base = datos.nombre || datos.empresa || `vendedor-${Date.now()}`;
 
       const { error } = await supabase.from('vendedores').insert({
@@ -160,7 +184,7 @@ export default function CapturaInteligente() {
 
       if (error) {
         console.error(error);
-        setMensaje('Error guardando vendedor.');
+        setMensaje(`Error guardando vendedor: ${error.message}`);
         return;
       }
 
@@ -181,15 +205,21 @@ export default function CapturaInteligente() {
     <main className="captura-page">
       <section className="captura-hero">
         <span>ELANVISION · Captura Inteligente</span>
-        <h1>Clientes, Proveedores y Vendedores</h1>
-        <p>Pegá todo en una sola caja. El sistema separa empresa, contacto, teléfono, correo, dirección, ciudad y RUC.</p>
+        <h1>{esAdmin ? 'Clientes, Proveedores y Vendedores' : 'Captura Inteligente de Clientes'}</h1>
+        <p>
+          {esAdmin
+            ? 'Pegá todo en una sola caja. El sistema separa empresa, contacto, teléfono, correo, dirección, ciudad y RUC.'
+            : 'Pegá los datos del cliente en una sola caja. El sistema separa empresa, contacto, teléfono, correo, dirección, ciudad y RUC.'}
+        </p>
       </section>
 
-      <section className="tabs">
-        <button className={tipo === 'cliente' ? 'active' : ''} onClick={() => setTipo('cliente')}><Users size={18}/> Cliente</button>
-        <button className={tipo === 'proveedor' ? 'active' : ''} onClick={() => setTipo('proveedor')}><Truck size={18}/> Proveedor</button>
-        <button className={tipo === 'vendedor' ? 'active' : ''} onClick={() => setTipo('vendedor')}><UserPlus size={18}/> Vendedor</button>
-      </section>
+      {esAdmin && (
+        <section className="tabs">
+          <button className={tipo === 'cliente' ? 'active' : ''} onClick={() => setTipo('cliente')}><Users size={18}/> Cliente</button>
+          <button className={tipo === 'proveedor' ? 'active' : ''} onClick={() => setTipo('proveedor')}><Truck size={18}/> Proveedor</button>
+          <button className={tipo === 'vendedor' ? 'active' : ''} onClick={() => setTipo('vendedor')}><UserPlus size={18}/> Vendedor</button>
+        </section>
+      )}
 
       <section className="grid">
         <article className="card">
@@ -199,7 +229,7 @@ export default function CapturaInteligente() {
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Ejemplo: Cliente Havanas Nights, atención Carlos, celular 88889999, correo ventas@havana.com, dirección Metrocentro Managua, RUC J031..."
           />
-          <button type="button" onClick={guardar}><Save size={18}/> Guardar {tipo}</button>
+          <button type="button" onClick={guardar}><Save size={18}/> Guardar {esAdmin ? tipo : 'cliente'}</button>
           {mensaje && <p className="msg">{mensaje}</p>}
         </article>
 
@@ -214,7 +244,7 @@ export default function CapturaInteligente() {
       <section className="card">
         <div className="search">
           <Search size={18}/>
-          <input value={busqueda} onChange={(e)=>setBusqueda(e.target.value)} placeholder="Buscar registros..." />
+          <input value={busqueda} onChange={(e)=>setBusqueda(e.target.value)} placeholder="Buscar clientes..." />
         </div>
 
         <div className="list">
