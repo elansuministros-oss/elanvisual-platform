@@ -29,6 +29,7 @@ export default function App() {
   const pathInicial = window.location.pathname || '/';
 
   const paginaInicial = (() => {
+    if (pathInicial.startsWith('/clientes')) return 'clientes';
     if (pathInicial.startsWith('/crm')) return 'crm';
     if (pathInicial.startsWith('/seguimiento')) return 'seguimiento';
     if (pathInicial.startsWith('/login')) return 'login';
@@ -83,6 +84,7 @@ export default function App() {
       login: '/login',
       dashboard: '/dashboard',
       crm: '/crm',
+      clientes: '/clientes',
       admin: '/admin',
       produccion: '/produccion',
       materiales: '/materiales',
@@ -122,6 +124,7 @@ export default function App() {
         <div className="erp-floating-actions">
           <button type="button" onClick={() => ir('home')}>🏠 Inicio</button>
           <button type="button" onClick={() => ir('miCuenta')}>👤 Mi cuenta</button>
+          {accesoVentas && <button type="button" onClick={() => ir('clientes')}>Clientes</button>}
           {accesoVentas && <button type="button" onClick={() => ir('capturaInteligente')}>Captura Inteligente</button>}
             {accesoAdmin && <button type="button" onClick={() => ir('bibliotecaTecnica')}>📚 Biblioteca</button>}
         </div>
@@ -153,7 +156,10 @@ export default function App() {
         (accesoERP ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'crm' &&
-        (accesoVentas ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="crm" />)}
+        (accesoVentas ? <CRM /> : <Login setPage={ir} destino="crm" />)}
+
+      {page === 'clientes' &&
+        (accesoVentas ? <CRM /> : <Login setPage={ir} destino="crm" />)}
 
       {page === 'ventas' &&
         (accesoVentas ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="crm" />)}
@@ -198,6 +204,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 
