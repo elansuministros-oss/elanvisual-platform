@@ -30,7 +30,7 @@ function extraerDatos(texto, tipo = 'cliente') {
   );
 
   const cedula =
-    t.match(/(?:cedula|cédula|ced)\s*:?\s*([A-Z0-9-]+)/i)?.[1] ||
+    t.match(/(?:cedula|cédula|ced)\.?\s*:?\s*([A-Z0-9-]+)/i)?.[1] ||
     t.match(/\b\d{13}[A-Z]\b/i)?.[0] ||
     '';
 
