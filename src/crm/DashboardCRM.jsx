@@ -3,8 +3,8 @@ import { useCore } from '../core/context/CoreContext';
 
 const UNIDADES_NEGOCIO = [
   'ELANVISUAL',
-  'ELANVISUAL',
-  'ELANKAV CENTER',
+  'ELANVISIÓN',
+  'ELANCENTER',
   'ELANHOME',
   'ELAN AI',
 ];
@@ -291,7 +291,7 @@ export default function DashboardCRM() {
     {
       titulo: 'Cobrado',
       valor: moneda(metricas.cobrado),
-      descripcion: 'Dinero recuperado segun cobros',
+      descripcion: 'Dinero recuperado según cobros',
       icono: '',
       color: '#16A34A',
       fondo: '#F0FDF4',
@@ -331,7 +331,7 @@ export default function DashboardCRM() {
     {
       titulo: 'IVA neto estimado',
       valor: moneda(metricas.ivaNeto),
-      descripcion: 'Debito fiscal menos credito fiscal',
+      descripcion: 'Débito fiscal menos crédito fiscal',
       icono: '',
       color: '#9333EA',
       fondo: '#FAF5FF',
@@ -349,10 +349,10 @@ export default function DashboardCRM() {
   const kpisOperativos = [
     { titulo: 'Empresas', valor: empresas.length, icono: '', area: 'CRM' },
     { titulo: 'Contactos', valor: contactos.length, icono: '', area: 'CRM' },
-    { titulo: 'Cotizaciónes', valor: cotizaciones.length, icono: '', area: 'Ventas' },
+    { titulo: 'Cotizaciones', valor: cotizaciones.length, icono: '', area: 'Ventas' },
     { titulo: 'Pedidos', valor: pedidos.length, icono: '', area: 'Ventas' },
-    { titulo: 'Ordenes Trabajo', valor: ordenesTrabajo.length, icono: '', area: 'Operacion' },
-    { titulo: 'Producción', valor: produccion.length, icono: '', area: 'Operacion' },
+    { titulo: 'Órdenes Trabajo', valor: ordenesTrabajo.length, icono: '', area: 'Operación' },
+    { titulo: 'Producción', valor: produccion.length, icono: '', area: 'Operación' },
     { titulo: 'Cobros', valor: cobros.length, icono: '', area: 'Finanzas' },
     { titulo: 'Compras', valor: compras.length, icono: '', area: 'ERP' },
     { titulo: 'CxC', valor: cuentasPorCobrar.length, icono: '', area: 'Finanzas' },
@@ -363,7 +363,7 @@ export default function DashboardCRM() {
 
   const indicadores = [
     {
-      titulo: 'Cotizaciónes abiertas',
+      titulo: 'Cotizaciones abiertas',
       valor: cotizacionesAbiertas,
       descripcion: 'Pendientes de aprobación o revisión',
       icono: '',
@@ -405,14 +405,14 @@ export default function DashboardCRM() {
     ...compras.map((item) => ({ ...item, modulo: 'Compra', icono: '' })),
     ...cuentasPorCobrar.map((item) => ({ ...item, modulo: 'Cuenta por Cobrar', icono: '' })),
     ...cuentasPorPagar.map((item) => ({ ...item, modulo: 'Cuenta por Pagar', icono: '' })),
-    ...comisiones.map((item) => ({ ...item, modulo: 'Comision', icono: '' })),
+    ...comisiones.map((item) => ({ ...item, modulo: 'Comisión', icono: '' })),
     ...inventario.map((item) => ({ ...item, modulo: 'Inventario', icono: '' })),
     ...materiales.map((item) => ({ ...item, modulo: 'Material', icono: '' })),
   ]).slice(0, 8);
 
   const alertas = [
     totalRegistros === 0
-      ? 'El CRM esta listo, pero todavía no hay registros operativos.'
+      ? 'El CRM está listo, pero todavía no hay registros operativos.'
       : null,
     empresas.length > 0 && contactos.length === 0
       ? 'Hay empresas registradas sin contactos asociados.'
@@ -424,10 +424,10 @@ export default function DashboardCRM() {
       ? 'Hay pedidos registrados pendientes de orden de trabajo.'
       : null,
     ordenesTrabajo.length > 0 && produccion.length === 0
-      ? 'Hay ordenes de trabajo pendientes de produccion.'
+      ? 'Hay órdenes de trabajo pendientes de producción.'
       : null,
     produccion.length > 0 && cobros.length === 0
-      ? 'Hay produccion registrada sin cobros asociados.'
+      ? 'Hay producción registrada sin cobros asociados.'
       : null,
     metricas.porCobrar > 0
       ? `Hay ${moneda(metricas.porCobrar)} pendiente por cobrar.`
@@ -441,11 +441,11 @@ export default function DashboardCRM() {
   ].filter(Boolean);
 
   const unidades = [
-    { nombre: 'ELANVISUAL', estado: 'Publicado / operativo', icono: '' },
-    { nombre: 'ELANVISUAL', estado: 'Rotulacion, impresion y publicidad visual', icono: '' },
-    { nombre: 'ELANKAV CENTER', estado: 'Construccion, remodelacion y proyectos especiales', icono: '' },
-    { nombre: 'ELANHOME', estado: 'Energia solar y bombeo', icono: '' },
-    { nombre: 'ELAN AI', estado: 'CRM, ERP, IA y automatizacion', icono: '' },
+    { nombre: 'ELANKAV', estado: 'Corporativo principal', icono: '' },
+    { nombre: 'ELANVISIÓN', estado: 'Rotulación, impresión y comunicación visual', icono: '' },
+    { nombre: 'ELANCENTER', estado: 'Construcción comercial y proyectos especiales', icono: '' },
+    { nombre: 'ELANHOME', estado: 'Hogar, decoración y energía', icono: '' },
+    { nombre: 'ELAN AI', estado: 'CRM, ERP e inteligencia artificial', icono: '' },
   ];
 
   return (
@@ -455,7 +455,7 @@ export default function DashboardCRM() {
           <p style={styles.preTitulo}>FASE 5.3 - Dashboard Ejecutivo Corporativo</p>
           <h1 style={styles.titulo}>CRM CENTRAL ELANKAV</h1>
           <p style={styles.subtitulo}>
-            Control maestro de ventas, cobros, cuentas, utilidad, fiscalidad, produccion y unidades oficiales de ELANKAV GROUP.
+            Control maestro de ventas, cobros, cuentas, utilidad, fiscalidad, producción y unidades oficiales de ELANKAV GROUP.
           </p>
         </div>
 
@@ -492,20 +492,20 @@ export default function DashboardCRM() {
           <div style={styles.sectionHeader}>
             <div>
               <h2 style={styles.sectionTitle}>Cadena Operativa</h2>
-              <p style={styles.sectionText}>Flujo completo desde cliente hasta comision.</p>
+              <p style={styles.sectionText}>Flujo completo desde cliente hasta comisión.</p>
             </div>
           </div>
 
           <div style={styles.flujo}>
             {[
-              ['ðŸ¢', 'Empresa'],
-              ['ðŸ‘¤', 'Contacto'],
-              ['ðŸ“„', 'Cotización'],
-              ['ðŸ›’', 'Pedido'],
-              ['ðŸ”§', 'OT'],
-              ['ðŸ­', 'Producción'],
-              ['ðŸ’°', 'Cobro'],
-              ['ðŸ’µ', 'Comision'],
+              ['', 'Empresa'],
+              ['', 'Contacto'],
+              ['', 'Cotización'],
+              ['', 'Pedido'],
+              ['', 'OT'],
+              ['', 'Producción'],
+              ['', 'Cobro'],
+              ['', 'Comisión'],
             ].map((paso, index, lista) => (
               <React.Fragment key={paso[1]}>
                 <div style={styles.pasoFlujo}>
@@ -537,7 +537,7 @@ export default function DashboardCRM() {
 
           <div style={styles.alertasBox}>
             {alertas.length === 0 ? (
-              <div style={styles.alertaOk}>No hay alertas criticas por ahora.</div>
+              <div style={styles.alertaOk}>No hay alertas críticas por ahora.</div>
             ) : (
               alertas.map((alerta) => (
                 <div key={alerta} style={styles.alertaItem}>ALERTA: {alerta}</div>
@@ -551,7 +551,7 @@ export default function DashboardCRM() {
         <div style={styles.sectionHeader}>
           <div>
             <h2 style={styles.sectionTitle}>Ranking por Unidad de Negocio</h2>
-            <p style={styles.sectionText}>Comparativo ejecutivo por ventas, cobros, cuentas, produccion y utilidad.</p>
+            <p style={styles.sectionText}>Comparativo ejecutivo por ventas, cobros, cuentas, producción y utilidad.</p>
           </div>
         </div>
 
@@ -610,7 +610,7 @@ export default function DashboardCRM() {
 
           <div style={styles.actividadLista}>
             {metricas.topClientes.length === 0 ? (
-              <p style={styles.vacio}>Todavia no hay clientes con ventas registradas.</p>
+              <p style={styles.vacio}>Todavía no hay clientes con ventas registradas.</p>
             ) : (
               metricas.topClientes.map((cliente, index) => (
                 <div key={cliente.nombre} style={styles.actividadItem}>
@@ -626,12 +626,12 @@ export default function DashboardCRM() {
         </section>
 
         <section style={styles.panel}>
-          <h2 style={styles.sectionTitle}>Ultimas actividades</h2>
-          <p style={styles.sectionText}>Preparado para auditoria y seguimiento multiusuario.</p>
+          <h2 style={styles.sectionTitle}>Últimas actividades</h2>
+          <p style={styles.sectionText}>Preparado para auditoría y seguimiento multiusuario.</p>
 
           <div style={styles.actividadLista}>
             {actividades.length === 0 ? (
-              <p style={styles.vacio}>Todavia no hay actividad registrada.</p>
+              <p style={styles.vacio}>Todavía no hay actividad registrada.</p>
             ) : (
               actividades.map((actividad, index) => (
                 <div key={`${actividad.id || actividad.modulo}-${index}`} style={styles.actividadItem}>
@@ -964,6 +964,3 @@ const styles = {
     fontSize: '12px',
   },
 };
-
-
-
