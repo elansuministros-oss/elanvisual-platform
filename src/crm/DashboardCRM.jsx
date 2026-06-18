@@ -337,7 +337,7 @@ export default function DashboardCRM() {
       fondo: '#FAF5FF',
     },
     {
-      titulo: 'Produccion activa',
+      titulo: 'Producción activa',
       valor: formatoNumero(produccionActiva),
       descripcion: 'Trabajos en proceso o pendientes',
       icono: '',
@@ -349,10 +349,10 @@ export default function DashboardCRM() {
   const kpisOperativos = [
     { titulo: 'Empresas', valor: empresas.length, icono: '', area: 'CRM' },
     { titulo: 'Contactos', valor: contactos.length, icono: '', area: 'CRM' },
-    { titulo: 'Cotizaciones', valor: cotizaciones.length, icono: '', area: 'Ventas' },
+    { titulo: 'Cotizaciónes', valor: cotizaciones.length, icono: '', area: 'Ventas' },
     { titulo: 'Pedidos', valor: pedidos.length, icono: '', area: 'Ventas' },
     { titulo: 'Ordenes Trabajo', valor: ordenesTrabajo.length, icono: '', area: 'Operacion' },
-    { titulo: 'Produccion', valor: produccion.length, icono: '', area: 'Operacion' },
+    { titulo: 'Producción', valor: produccion.length, icono: '', area: 'Operacion' },
     { titulo: 'Cobros', valor: cobros.length, icono: '', area: 'Finanzas' },
     { titulo: 'Compras', valor: compras.length, icono: '', area: 'ERP' },
     { titulo: 'CxC', valor: cuentasPorCobrar.length, icono: '', area: 'Finanzas' },
@@ -363,9 +363,9 @@ export default function DashboardCRM() {
 
   const indicadores = [
     {
-      titulo: 'Cotizaciones abiertas',
+      titulo: 'Cotizaciónes abiertas',
       valor: cotizacionesAbiertas,
-      descripcion: 'Pendientes de aprobacion o revision',
+      descripcion: 'Pendientes de aprobación o revisión',
       icono: '',
     },
     {
@@ -377,13 +377,13 @@ export default function DashboardCRM() {
     {
       titulo: 'OT pendientes',
       valor: otPendientes,
-      descripcion: 'Ordenes listas para taller o instalacion',
+      descripcion: 'Órdenes listas para taller o instalación',
       icono: '',
     },
     {
-      titulo: 'Produccion activa',
+      titulo: 'Producción activa',
       valor: produccionActiva,
-      descripcion: 'Trabajos en proceso de fabricacion',
+      descripcion: 'Trabajos en proceso de fabricación',
       icono: '',
     },
     {
@@ -397,10 +397,10 @@ export default function DashboardCRM() {
   const actividades = ordenarRecientes([
     ...empresas.map((item) => ({ ...item, modulo: 'Empresa', icono: '' })),
     ...contactos.map((item) => ({ ...item, modulo: 'Contacto', icono: '' })),
-    ...cotizaciones.map((item) => ({ ...item, modulo: 'Cotizacion', icono: '' })),
+    ...cotizaciones.map((item) => ({ ...item, modulo: 'Cotización', icono: '' })),
     ...pedidos.map((item) => ({ ...item, modulo: 'Pedido', icono: '' })),
     ...ordenesTrabajo.map((item) => ({ ...item, modulo: 'Orden de Trabajo', icono: '' })),
-    ...produccion.map((item) => ({ ...item, modulo: 'Produccion', icono: '' })),
+    ...produccion.map((item) => ({ ...item, modulo: 'Producción', icono: '' })),
     ...cobros.map((item) => ({ ...item, modulo: 'Cobro', icono: '' })),
     ...compras.map((item) => ({ ...item, modulo: 'Compra', icono: '' })),
     ...cuentasPorCobrar.map((item) => ({ ...item, modulo: 'Cuenta por Cobrar', icono: '' })),
@@ -412,13 +412,13 @@ export default function DashboardCRM() {
 
   const alertas = [
     totalRegistros === 0
-      ? 'El CRM esta listo, pero todavia no hay registros operativos.'
+      ? 'El CRM esta listo, pero todavía no hay registros operativos.'
       : null,
     empresas.length > 0 && contactos.length === 0
       ? 'Hay empresas registradas sin contactos asociados.'
       : null,
     cotizaciones.length > 0 && pedidos.length === 0
-      ? 'Hay cotizaciones registradas, pero todavia no se han convertido en pedidos.'
+      ? 'Hay cotizaciones registradas, pero todavía no se han convertido en pedidos.'
       : null,
     pedidos.length > 0 && ordenesTrabajo.length === 0
       ? 'Hay pedidos registrados pendientes de orden de trabajo.'
@@ -500,10 +500,10 @@ export default function DashboardCRM() {
             {[
               ['ðŸ¢', 'Empresa'],
               ['ðŸ‘¤', 'Contacto'],
-              ['ðŸ“„', 'Cotizacion'],
+              ['ðŸ“„', 'Cotización'],
               ['ðŸ›’', 'Pedido'],
               ['ðŸ”§', 'OT'],
-              ['ðŸ­', 'Produccion'],
+              ['ðŸ­', 'Producción'],
               ['ðŸ’°', 'Cobro'],
               ['ðŸ’µ', 'Comision'],
             ].map((paso, index, lista) => (
@@ -533,16 +533,14 @@ export default function DashboardCRM() {
 
         <aside style={styles.panel}>
           <h2 style={styles.sectionTitle}>Alertas Ejecutivas</h2>
-          <p style={styles.sectionText}>Lectura rapida de riesgo operativo, financiero y fiscal.</p>
+          <p style={styles.sectionText}>Lectura rápida de riesgo operativo, financiero y fiscal.</p>
 
           <div style={styles.alertasBox}>
             {alertas.length === 0 ? (
               <div style={styles.alertaOk}>No hay alertas criticas por ahora.</div>
             ) : (
               alertas.map((alerta) => (
-                <div key={alerta} style={styles.alertaItem}>
-                  âš ï¸ {alerta}
-                </div>
+                <div key={alerta} style={styles.alertaItem}>ALERTA: {alerta}</div>
               ))
             )}
           </div>
@@ -567,7 +565,7 @@ export default function DashboardCRM() {
                 <th style={styles.th}>Compras</th>
                 <th style={styles.th}>Por cobrar</th>
                 <th style={styles.th}>Por pagar</th>
-                <th style={styles.th}>Produccion activa</th>
+                <th style={styles.th}>Producción activa</th>
                 <th style={styles.th}>Comisiones</th>
                 <th style={styles.th}>Utilidad estimada</th>
               </tr>
@@ -761,9 +759,7 @@ const styles = {
     alignItems: 'center',
     marginBottom: '12px',
   },
-  kpiIcono: {
-    fontSize: '25px',
-  },
+  kpiIcono: { display: 'none' },
   kpiArea: {
     fontSize: '11px',
     fontWeight: 800,
@@ -849,9 +845,7 @@ const styles = {
     fontSize: '13px',
     fontWeight: 700,
   },
-  pasoIcono: {
-    fontSize: '18px',
-  },
+  pasoIcono: { display: 'none' },
   flecha: {
     color: '#9CA3AF',
     fontWeight: 900,
@@ -869,9 +863,7 @@ const styles = {
     display: 'flex',
     gap: '12px',
   },
-  indicadorIcono: {
-    fontSize: '23px',
-  },
+  indicadorIcono: { display: 'none' },
   indicadorValor: {
     fontSize: '24px',
     color: '#111827',
@@ -946,17 +938,7 @@ const styles = {
     background: '#F9FAFB',
     border: '1px solid #E5E7EB',
   },
-  actividadIcono: {
-    fontSize: '20px',
-    minWidth: '34px',
-    fontWeight: 900,
-    color: '#123F7A',
-  },
-  actividadTexto: {
-    margin: '3px 0 0',
-    color: '#6B7280',
-    fontSize: '13px',
-  },
+  actividadIcono: { display: 'none' },
   vacio: {
     margin: 0,
     color: '#6B7280',
@@ -975,14 +957,13 @@ const styles = {
     borderRadius: '12px',
     padding: '11px',
   },
-  unidadIcono: {
-    fontSize: '20px',
-  },
+  unidadIcono: { display: 'none' },
   unidadEstado: {
     margin: '2px 0 0',
     color: '#6B7280',
     fontSize: '12px',
   },
 };
+
 
 
