@@ -470,12 +470,14 @@ export default function CotizadorDirecto() {
     return { subtotalBruto, descuento, subtotal, iva, totalCliente, pagos, sumaPagos };
   }, [items, form]);
 
-  const guardar = () => {
+  const guardar = async () => {
     guardarClienteLocal();
 
     const payload = {
       id: `cot-dir-${Date.now()}`,
       fecha: new Date().toISOString(),
+      origen: 'CotizadorDirecto',
+      unidadNegocio: 'ELANVISUAL',
       form,
       items,
       total,
@@ -483,11 +485,41 @@ export default function CotizadorDirecto() {
 
     const actual = JSON.parse(localStorage.getItem('elanvision_cotizaciones_directas') || '[]');
     localStorage.setItem('elanvision_cotizaciones_directas', JSON.stringify([payload, ...actual]));
-    setMensaje('Cotización guardada.');
+
+    if (!supabase) {
+      setMensaje('Cotización guardada localmente. Supabase no disponible.');
+      return payload;
+    }
+
+    try {
+      const { error } = await supabase.from('pedidos').insert({
+        numero: payload.id,
+        cliente_nombre: form.cliente || form.empresa || 'Cliente',
+        cliente_telefono: form.whatsapp || '',
+        estado: 'cotizacion_guardada',
+        estado_produccion: 'pendiente',
+        unidad_negocio: 'ELANVISUAL',
+        total: Number(total.totalCliente || 0),
+        data: payload,
+      });
+
+      if (error) {
+        console.error('Error guardando cotización directa en Supabase:', error);
+        setMensaje('Cotización guardada localmente. No se pudo guardar en Supabase.');
+        return payload;
+      }
+
+      setMensaje('Cotización guardada local y en Supabase.');
+      return payload;
+    } catch (error) {
+      console.error('Error inesperado guardando cotización directa:', error);
+      setMensaje('Cotización guardada localmente. Supabase no disponible.');
+      return payload;
+    }
   };
 
-  const imprimir = () => {
-    guardar();
+  const imprimir = async () => {
+    await guardar();
     setTimeout(() => window.print(), 150);
   };
 
@@ -1370,3 +1402,4 @@ export default function CotizadorDirecto() {
 }
 
 
+  
