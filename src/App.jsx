@@ -185,7 +185,7 @@ export default function App() {
         (accesoVentas ? <CapturaInteligente /> : <Login setPage={ir} destino="crm" />)}
 
       {page === 'cotizador' &&
-        (accesoVentas ? <CotizadorDirecto /> : <Login setPage={ir} destino="cotizador" />)}
+        (accesoVentas ? <CotizadorDirecto setPage={ir} /> : <Login setPage={ir} destino="cotizador" />)}
 
       {page === 'cotizacionesInteligentes' &&
         (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="cotizador" />)}
@@ -198,6 +198,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 
