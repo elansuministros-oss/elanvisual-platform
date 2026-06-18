@@ -303,8 +303,18 @@ export default function CotizadorDirecto({ setPage }) {
       setMateriales(mat.data || []);
       setTintas(tin.data || []);
 
-      const localClientes = JSON.parse(localStorage.getItem('elanvision_clientes') || '[]');
-      setClientes(localClientes);
+      const { data: clientesData, error: clientesError } = await supabase
+        .from('clientes')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(200);
+
+      if (!clientesError) {
+        setClientes(clientesData || []);
+      } else {
+        const localClientes = JSON.parse(localStorage.getItem('elanvision_clientes') || '[]');
+        setClientes(localClientes);
+      }
     };
 
     cargar();
@@ -317,17 +327,21 @@ export default function CotizadorDirecto({ setPage }) {
     if (!q) return [];
 
     return clientes
-      .filter((c) => limpiar(`${c.cliente} ${c.empresa} ${c.whatsapp}`).includes(q))
-      .slice(0, 5);
+      .filter((c) =>
+        limpiar(
+          `${c.cliente || ''} ${c.nombre || ''} ${c.contacto || ''} ${c.empresa || ''} ${c.whatsapp || ''} ${c.telefono || ''} ${c.correo || ''} ${c.email || ''} ${c.ruc || ''} ${c.ciudad || ''}`
+        ).includes(q)
+      )
+      .slice(0, 10);
   }, [clientes, form.buscarCliente]);
 
   const seleccionarCliente = (c) => {
     setForm((prev) => ({
       ...prev,
-      cliente: c.cliente || '',
+      cliente: c.cliente || c.nombre || c.contacto || '',
       empresa: c.empresa || '',
-      whatsapp: c.whatsapp || '',
-      correo: c.correo || '',
+      whatsapp: c.whatsapp || c.telefono || '',
+      correo: c.correo || c.email || '',
       direccion: c.direccion || '',
       ciudad: c.ciudad || '',
       buscarCliente: '',
@@ -631,8 +645,8 @@ export default function CotizadorDirecto({ setPage }) {
             <div className="cliente-lista">
               {clientesFiltrados.map((c, idx) => (
                 <button key={idx} type="button" onClick={() => seleccionarCliente(c)}>
-                  <b>{c.cliente || c.empresa}</b>
-                  <span>{c.whatsapp || c.correo || 'Cliente registrado'}</span>
+                  <b>{c.cliente || c.nombre || c.contacto || c.empresa}</b>
+                  <span>{c.whatsapp || c.telefono || c.correo || c.email || 'Cliente registrado'}</span>
                 </button>
               ))}
             </div>
