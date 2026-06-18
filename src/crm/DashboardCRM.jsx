@@ -284,7 +284,7 @@ export default function DashboardCRM() {
       titulo: 'Ventas totales',
       valor: moneda(metricas.ventasTotales),
       descripcion: 'Total facturado o registrado en cobros',
-      icono: 'ðŸ“ˆ',
+      icono: '',
       color: '#059669',
       fondo: '#ECFDF5',
     },
@@ -292,7 +292,7 @@ export default function DashboardCRM() {
       titulo: 'Cobrado',
       valor: moneda(metricas.cobrado),
       descripcion: 'Dinero recuperado segun cobros',
-      icono: 'ðŸ’°',
+      icono: '',
       color: '#16A34A',
       fondo: '#F0FDF4',
     },
@@ -300,7 +300,7 @@ export default function DashboardCRM() {
       titulo: 'Por cobrar',
       valor: moneda(metricas.porCobrar),
       descripcion: 'Saldo pendiente de clientes',
-      icono: 'ðŸ“Œ',
+      icono: '',
       color: '#D97706',
       fondo: '#FFFBEB',
     },
@@ -308,7 +308,7 @@ export default function DashboardCRM() {
       titulo: 'Por pagar',
       valor: moneda(metricas.porPagar),
       descripcion: 'Compromisos pendientes con proveedores',
-      icono: 'ðŸ“‰',
+      icono: '',
       color: '#DC2626',
       fondo: '#FEF2F2',
     },
@@ -316,7 +316,7 @@ export default function DashboardCRM() {
       titulo: 'Utilidad bruta',
       valor: moneda(metricas.utilidadBruta),
       descripcion: 'Ventas menos compras registradas',
-      icono: 'ðŸ—ï¸',
+      icono: '',
       color: '#2563EB',
       fondo: '#EFF6FF',
     },
@@ -324,7 +324,7 @@ export default function DashboardCRM() {
       titulo: 'Utilidad neta',
       valor: moneda(metricas.utilidadNeta),
       descripcion: 'Bruta + flujo - egresos - comisiones',
-      icono: 'âœ…',
+      icono: '',
       color: '#7C3AED',
       fondo: '#F5F3FF',
     },
@@ -332,7 +332,7 @@ export default function DashboardCRM() {
       titulo: 'IVA neto estimado',
       valor: moneda(metricas.ivaNeto),
       descripcion: 'Debito fiscal menos credito fiscal',
-      icono: 'ðŸ§¾',
+      icono: '',
       color: '#9333EA',
       fondo: '#FAF5FF',
     },
@@ -340,25 +340,25 @@ export default function DashboardCRM() {
       titulo: 'Produccion activa',
       valor: formatoNumero(produccionActiva),
       descripcion: 'Trabajos en proceso o pendientes',
-      icono: 'ðŸ­',
+      icono: '',
       color: '#EA580C',
       fondo: '#FFF7ED',
     },
   ];
 
   const kpisOperativos = [
-    { titulo: 'Empresas', valor: empresas.length, icono: 'ðŸ¢', area: 'CRM' },
-    { titulo: 'Contactos', valor: contactos.length, icono: 'ðŸ‘¤', area: 'CRM' },
-    { titulo: 'Cotizaciones', valor: cotizaciones.length, icono: 'ðŸ“„', area: 'Ventas' },
-    { titulo: 'Pedidos', valor: pedidos.length, icono: 'ðŸ›’', area: 'Ventas' },
-    { titulo: 'Ã“rdenes Trabajo', valor: ordenesTrabajo.length, icono: 'ðŸ”§', area: 'Operacion' },
-    { titulo: 'Produccion', valor: produccion.length, icono: 'ðŸ­', area: 'Operacion' },
-    { titulo: 'Cobros', valor: cobros.length, icono: 'ðŸ’°', area: 'Finanzas' },
-    { titulo: 'Compras', valor: compras.length, icono: 'ðŸ§¾', area: 'ERP' },
-    { titulo: 'CxC', valor: cuentasPorCobrar.length, icono: 'ðŸ“ˆ', area: 'Finanzas' },
-    { titulo: 'CxP', valor: cuentasPorPagar.length, icono: 'ðŸ“‰', area: 'Finanzas' },
-    { titulo: 'Inventario', valor: inventario.length, icono: 'ðŸ“¦', area: 'Inventario' },
-    { titulo: 'Materiales', valor: materiales.length, icono: 'ðŸ§±', area: 'Inventario' },
+    { titulo: 'Empresas', valor: empresas.length, icono: '', area: 'CRM' },
+    { titulo: 'Contactos', valor: contactos.length, icono: '', area: 'CRM' },
+    { titulo: 'Cotizaciones', valor: cotizaciones.length, icono: '', area: 'Ventas' },
+    { titulo: 'Pedidos', valor: pedidos.length, icono: '', area: 'Ventas' },
+    { titulo: 'Ordenes Trabajo', valor: ordenesTrabajo.length, icono: '', area: 'Operacion' },
+    { titulo: 'Produccion', valor: produccion.length, icono: '', area: 'Operacion' },
+    { titulo: 'Cobros', valor: cobros.length, icono: '', area: 'Finanzas' },
+    { titulo: 'Compras', valor: compras.length, icono: '', area: 'ERP' },
+    { titulo: 'CxC', valor: cuentasPorCobrar.length, icono: '', area: 'Finanzas' },
+    { titulo: 'CxP', valor: cuentasPorPagar.length, icono: '', area: 'Finanzas' },
+    { titulo: 'Inventario', valor: inventario.length, icono: '', area: 'Inventario' },
+    { titulo: 'Materiales', valor: materiales.length, icono: '', area: 'Inventario' },
   ];
 
   const indicadores = [
@@ -366,48 +366,48 @@ export default function DashboardCRM() {
       titulo: 'Cotizaciones abiertas',
       valor: cotizacionesAbiertas,
       descripcion: 'Pendientes de aprobacion o revision',
-      icono: 'ðŸ“Œ',
+      icono: '',
     },
     {
       titulo: 'Pedidos activos',
       valor: pedidosActivos,
       descripcion: 'Pedidos en seguimiento operativo',
-      icono: 'ðŸ§¾',
+      icono: '',
     },
     {
       titulo: 'OT pendientes',
       valor: otPendientes,
-      descripcion: 'Ã“rdenes listas para taller o instalacion',
-      icono: 'ðŸ› ï¸',
+      descripcion: 'Ordenes listas para taller o instalacion',
+      icono: '',
     },
     {
       titulo: 'Produccion activa',
       valor: produccionActiva,
       descripcion: 'Trabajos en proceso de fabricacion',
-      icono: 'ðŸ—ï¸',
+      icono: '',
     },
     {
       titulo: 'Cobros pendientes',
       valor: cobrosPendientes,
       descripcion: 'Cuentas por cobrar o pagos parciales',
-      icono: 'ðŸ’³',
+      icono: '',
     },
   ];
 
   const actividades = ordenarRecientes([
-    ...empresas.map((item) => ({ ...item, modulo: 'Empresa', icono: 'ðŸ¢' })),
-    ...contactos.map((item) => ({ ...item, modulo: 'Contacto', icono: 'ðŸ‘¤' })),
-    ...cotizaciones.map((item) => ({ ...item, modulo: 'Cotizacion', icono: 'ðŸ“„' })),
-    ...pedidos.map((item) => ({ ...item, modulo: 'Pedido', icono: 'ðŸ›’' })),
-    ...ordenesTrabajo.map((item) => ({ ...item, modulo: 'Orden de Trabajo', icono: 'ðŸ”§' })),
-    ...produccion.map((item) => ({ ...item, modulo: 'Produccion', icono: 'ðŸ­' })),
-    ...cobros.map((item) => ({ ...item, modulo: 'Cobro', icono: 'ðŸ’°' })),
-    ...compras.map((item) => ({ ...item, modulo: 'Compra', icono: 'ðŸ§¾' })),
-    ...cuentasPorCobrar.map((item) => ({ ...item, modulo: 'Cuenta por Cobrar', icono: 'ðŸ“ˆ' })),
-    ...cuentasPorPagar.map((item) => ({ ...item, modulo: 'Cuenta por Pagar', icono: 'ðŸ“‰' })),
-    ...comisiones.map((item) => ({ ...item, modulo: 'Comision', icono: 'ðŸ’µ' })),
-    ...inventario.map((item) => ({ ...item, modulo: 'Inventario', icono: 'ðŸ“¦' })),
-    ...materiales.map((item) => ({ ...item, modulo: 'Material', icono: 'ðŸ§±' })),
+    ...empresas.map((item) => ({ ...item, modulo: 'Empresa', icono: '' })),
+    ...contactos.map((item) => ({ ...item, modulo: 'Contacto', icono: '' })),
+    ...cotizaciones.map((item) => ({ ...item, modulo: 'Cotizacion', icono: '' })),
+    ...pedidos.map((item) => ({ ...item, modulo: 'Pedido', icono: '' })),
+    ...ordenesTrabajo.map((item) => ({ ...item, modulo: 'Orden de Trabajo', icono: '' })),
+    ...produccion.map((item) => ({ ...item, modulo: 'Produccion', icono: '' })),
+    ...cobros.map((item) => ({ ...item, modulo: 'Cobro', icono: '' })),
+    ...compras.map((item) => ({ ...item, modulo: 'Compra', icono: '' })),
+    ...cuentasPorCobrar.map((item) => ({ ...item, modulo: 'Cuenta por Cobrar', icono: '' })),
+    ...cuentasPorPagar.map((item) => ({ ...item, modulo: 'Cuenta por Pagar', icono: '' })),
+    ...comisiones.map((item) => ({ ...item, modulo: 'Comision', icono: '' })),
+    ...inventario.map((item) => ({ ...item, modulo: 'Inventario', icono: '' })),
+    ...materiales.map((item) => ({ ...item, modulo: 'Material', icono: '' })),
   ]).slice(0, 8);
 
   const alertas = [
@@ -441,11 +441,11 @@ export default function DashboardCRM() {
   ].filter(Boolean);
 
   const unidades = [
-    { nombre: 'ELANVISUAL', estado: 'Publicado / operativo', icono: 'ðŸ¾' },
-    { nombre: 'ELANVISUAL', estado: 'Rotulacion, impresion y publicidad visual', icono: 'ðŸŽ¨' },
-    { nombre: 'ELANKAV CENTER', estado: 'Construccion, remodelacion y proyectos especiales', icono: 'ðŸ—ï¸' },
-    { nombre: 'ELANHOME', estado: 'Energia solar y bombeo', icono: 'â˜€ï¸' },
-    { nombre: 'ELAN AI', estado: 'CRM, ERP, IA y automatizacion', icono: 'ðŸ¤–' },
+    { nombre: 'ELANVISUAL', estado: 'Publicado / operativo', icono: '' },
+    { nombre: 'ELANVISUAL', estado: 'Rotulacion, impresion y publicidad visual', icono: '' },
+    { nombre: 'ELANKAV CENTER', estado: 'Construccion, remodelacion y proyectos especiales', icono: '' },
+    { nombre: 'ELANHOME', estado: 'Energia solar y bombeo', icono: '' },
+    { nombre: 'ELAN AI', estado: 'CRM, ERP, IA y automatizacion', icono: '' },
   ];
 
   return (
@@ -512,7 +512,7 @@ export default function DashboardCRM() {
                   <span style={styles.pasoIcono}>{paso[0]}</span>
                   <span>{paso[1]}</span>
                 </div>
-                {index < lista.length - 1 && <span style={styles.flecha}>â†’</span>}
+                {index < lista.length - 1 && <span style={styles.flecha}>-</span>}
               </React.Fragment>
             ))}
           </div>
@@ -537,7 +537,7 @@ export default function DashboardCRM() {
 
           <div style={styles.alertasBox}>
             {alertas.length === 0 ? (
-              <div style={styles.alertaOk}>âœ… No hay alertas criticas por ahora.</div>
+              <div style={styles.alertaOk}>No hay alertas criticas por ahora.</div>
             ) : (
               alertas.map((alerta) => (
                 <div key={alerta} style={styles.alertaItem}>
@@ -628,7 +628,7 @@ export default function DashboardCRM() {
         </section>
 
         <section style={styles.panel}>
-          <h2 style={styles.sectionTitle}>Ãšltimas actividades</h2>
+          <h2 style={styles.sectionTitle}>Ultimas actividades</h2>
           <p style={styles.sectionText}>Preparado para auditoria y seguimiento multiusuario.</p>
 
           <div style={styles.actividadLista}>
@@ -984,4 +984,5 @@ const styles = {
     fontSize: '12px',
   },
 };
+
 
