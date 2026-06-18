@@ -119,6 +119,18 @@ export default function CapturaInteligente() {
 
     if (tipoReal === 'cliente') {
       const payloadCliente = {
+        empresa: datos.empresa || datos.nombre || '',
+        nombre: datos.nombre || datos.empresa || '',
+        contacto: datos.contacto || datos.nombre || '',
+        whatsapp: datos.whatsapp || '',
+        telefono: datos.telefono || datos.whatsapp || '',
+        correo: datos.correo || datos.email || '',
+        email: datos.email || datos.correo || '',
+        ruc: datos.ruc || '',
+        direccion: datos.direccion || '',
+        ciudad: datos.ciudad || '',
+        notas: datos.notas || texto,
+        estado: 'activo',
       };
 
       const { error } = modoEdicion
@@ -136,6 +148,15 @@ export default function CapturaInteligente() {
 
     if (tipoReal === 'proveedor') {
       const payloadProveedor = {
+        nombre: datos.nombre || datos.empresa || '',
+        razon_social: datos.empresa || datos.nombre || '',
+        contacto: datos.contacto || datos.nombre || '',
+        whatsapp: datos.whatsapp || '',
+        correo: datos.correo || datos.email || '',
+        categoria: datos.categoria || '',
+        municipio: datos.ciudad || '',
+        ubicacion: datos.direccion || '',
+        notas: datos.notas || texto,
       };
 
       const { error } = modoEdicion
@@ -155,6 +176,13 @@ export default function CapturaInteligente() {
       const base = datos.nombre || datos.empresa || `vendedor-${Date.now()}`;
 
       const payloadVendedor = {
+        nombre: datos.nombre || datos.empresa || '',
+        usuario: slug(base),
+        email: datos.email || datos.correo || '',
+        whatsapp: datos.whatsapp || '',
+        codigo_vendedor: `VEN-${slug(base).toUpperCase()}`,
+        rol: 'ventas',
+        activo: true,
       };
 
       const { error } = modoEdicion
@@ -177,16 +205,20 @@ export default function CapturaInteligente() {
 
   const editarRegistro = (registro) => {
     setEditandoId(registro.id);
-    setTexto(registro.notas || registro.data?.notas || [
-      registro.empresa || registro.razon_social || registro.nombre || '',
-      registro.contacto || registro.nombre || '',
-      registro.whatsapp || registro.telefono || '',
-      registro.correo || registro.email || '',
-      registro.ruc || '',
-      registro.direccion || registro.ubicacion || '',
-      registro.ciudad || registro.municipio || '',
-      registro.categoria || '',
-    ].filter(Boolean).join(', '));
+    setTexto(
+      registro.notas ||
+        registro.data?.notas ||
+        [
+          registro.empresa || registro.razon_social || registro.nombre || '',
+          registro.contacto || registro.nombre || '',
+          registro.whatsapp || registro.telefono || '',
+          registro.correo || registro.email || '',
+          registro.ruc || '',
+          registro.direccion || registro.ubicacion || '',
+          registro.ciudad || registro.municipio || '',
+          registro.categoria || '',
+        ].filter(Boolean).join(', ')
+    );
   };
 
   const eliminarRegistro = async (registro) => {
@@ -198,7 +230,10 @@ export default function CapturaInteligente() {
     const { error } = await supabase.from(tabla).delete().eq('id', registro.id);
     if (error) return setMensaje('Error eliminando: ' + error.message);
     setMensaje('Registro eliminado.');
-    if (editandoId === registro.id) { setEditandoId(null); setTexto(''); }
+    if (editandoId === registro.id) {
+      setEditandoId(null);
+      setTexto('');
+    }
     await cargar();
   };
 
@@ -211,7 +246,7 @@ export default function CapturaInteligente() {
   return (
     <main className="captura-page">
       <section className="captura-hero">
-        <span>ELANVISION · Captura Inteligente</span>
+        <span>ELANVISIÓN · Captura Inteligente</span>
         <h1>{esAdmin ? 'Clientes, Proveedores y Vendedores' : 'Captura Inteligente de Clientes'}</h1>
         <p>
           {esAdmin
@@ -236,7 +271,9 @@ export default function CapturaInteligente() {
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Ejemplo: Cliente Havanas Nights, atención Carlos, celular 88889999, correo ventas@havana.com, dirección Metrocentro Managua, RUC J031..."
           />
-          <button type="button" onClick={guardar}><Save size={18}/> {editandoId ? 'Guardar cambios' : Guardar }</button>
+          <button type="button" onClick={guardar}>
+            <Save size={18}/> {editandoId ? 'Guardar cambios' : 'Guardar'}
+          </button>
           {editandoId && <button type="button" className="secondary" onClick={() => { setEditandoId(null); setTexto(''); }}>Cancelar edición</button>}
           {mensaje && <p className="msg">{mensaje}</p>}
         </article>
@@ -294,4 +331,3 @@ export default function CapturaInteligente() {
     </main>
   );
 }
-
