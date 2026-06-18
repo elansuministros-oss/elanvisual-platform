@@ -61,7 +61,7 @@ function inferir(form) {
 
   return {
     impresion: /impres|lona|vinil|banner|micro|uv|solvente|ecosolvente/.test(t),
-    lona: /lona|banner|traslucida|traslÃºcida|13oz|18oz/.test(t),
+    lona: /lona|banner|traslucida|traslúcida|13oz|18oz/.test(t),
     vinil: /vinil|microperforado|adhesivo/.test(t),
     pvc: /pvc/.test(t),
     acrilico: /acril/.test(t),
@@ -97,22 +97,22 @@ function armarLineasAutomaticas(form, materiales, tintas) {
   const lona = buscar(materiales, ['lona banner', 'lona', 'banner']);
   const vinil = buscar(materiales, ['vinil', 'adhesivo', 'microperforado']);
   const pvc = buscar(materiales, ['pvc']);
-  const acrilico = buscar(materiales, ['acrilico', 'acrÃ­lico']);
+  const acrilico = buscar(materiales, ['acrilico', 'acrílico']);
   const acm = buscar(materiales, ['acm', 'alucobond']);
   const tubo = buscar(materiales, ['tubo', 'metal', 'poste']);
   const led = buscar(materiales, ['led']);
   const fuente = buscar(materiales, ['fuente']);
-  const instalacion = buscar(materiales, ['instalacion', 'instalaciÃ³n', 'mano de obra', 'montaje']);
+  const instalacion = buscar(materiales, ['instalacion', 'instalación', 'mano de obra', 'montaje']);
   const tornillo = buscar(materiales, ['tornillo', 'silicon', 'sellador', 'remache']);
-    const tintaSeleccionada = (tintas || []).find((t) => String(t.id) === String(form.tintaId));
+  const tintaSeleccionada = (tintas || []).find((t) => String(t.id) === String(form.tintaId));
   const tinta = tintaSeleccionada || null;
 
   if (ia.lona) {
     lineas.push(
       crearLinea({
         nombre: 'Lona impresa',
-        tipo: 'ImpresiÃ³n',
-        unidad: 'mÂ²',
+        tipo: 'Impresión',
+        unidad: 'm²',
         cantidad: area,
         material: lona,
       })
@@ -123,8 +123,8 @@ function armarLineasAutomaticas(form, materiales, tintas) {
     lineas.push(
       crearLinea({
         nombre: 'Vinil impreso',
-        tipo: 'ImpresiÃ³n',
-        unidad: 'mÂ²',
+        tipo: 'Impresión',
+        unidad: 'm²',
         cantidad: area,
         material: vinil,
       })
@@ -134,9 +134,9 @@ function armarLineasAutomaticas(form, materiales, tintas) {
   if (ia.impresion) {
     lineas.push(
       crearLinea({
-        nombre: 'Tinta / impresiÃ³n',
-        tipo: 'ImpresiÃ³n digital',
-        unidad: 'mÂ²',
+        nombre: 'Tinta / impresión',
+        tipo: 'Impresión digital',
+        unidad: 'm²',
         cantidad: area,
         material: tinta,
       })
@@ -148,7 +148,7 @@ function armarLineasAutomaticas(form, materiales, tintas) {
       crearLinea({
         nombre: 'PVC',
         tipo: 'Material base',
-        unidad: 'mÂ²',
+        unidad: 'm²',
         cantidad: area,
         material: pvc,
       })
@@ -158,9 +158,9 @@ function armarLineasAutomaticas(form, materiales, tintas) {
   if (ia.acrilico) {
     lineas.push(
       crearLinea({
-        nombre: 'AcrÃ­lico',
+        nombre: 'Acrílico',
         tipo: 'Material base',
-        unidad: 'mÂ²',
+        unidad: 'm²',
         cantidad: ia.dobleCara ? area * 2 : area,
         material: acrilico,
       })
@@ -172,7 +172,7 @@ function armarLineasAutomaticas(form, materiales, tintas) {
       crearLinea({
         nombre: 'ACM',
         tipo: 'Fachada',
-        unidad: 'mÂ²',
+        unidad: 'm²',
         cantidad: area,
         material: acm,
       })
@@ -182,7 +182,7 @@ function armarLineasAutomaticas(form, materiales, tintas) {
   if (ia.estructura) {
     lineas.push(
       crearLinea({
-        nombre: 'Estructura metÃ¡lica',
+        nombre: 'Estructura metálica',
         tipo: 'Estructura',
         unidad: 'metro lineal',
         cantidad: perimetro || 1,
@@ -195,21 +195,19 @@ function armarLineasAutomaticas(form, materiales, tintas) {
     lineas.push(
       crearLinea({
         nombre: 'LED',
-        tipo: 'IluminaciÃ³n',
+        tipo: 'Iluminación',
         unidad: 'servicio',
         cantidad: 1,
-    tintaId: '',
         material: led,
       })
     );
 
     lineas.push(
       crearLinea({
-        nombre: 'Fuente elÃ©ctrica',
-        tipo: 'IluminaciÃ³n',
+        nombre: 'Fuente eléctrica',
+        tipo: 'Iluminación',
         unidad: 'servicio',
         cantidad: 1,
-    tintaId: '',
         material: fuente,
       })
     );
@@ -218,24 +216,22 @@ function armarLineasAutomaticas(form, materiales, tintas) {
   if (ia.instalacion) {
     lineas.push(
       crearLinea({
-        nombre: 'InstalaciÃ³n / fijaciÃ³n',
-        tipo: 'InstalaciÃ³n',
+        nombre: 'Instalación / fijación',
+        tipo: 'Instalación',
         unidad: 'servicio',
         cantidad: 1,
-    tintaId: '',
         material: instalacion || tornillo,
       })
     );
   }
-
   if (lineas.length === 0) {
-    const principal = buscar(materiales, ['lona', 'vinil', 'pvc', 'acrilico', 'acrÃ­lico', 'acm']) || materiales[0];
+    const principal = buscar(materiales, ['lona', 'vinil', 'pvc', 'acrilico', 'acrílico', 'acm']) || materiales[0];
 
     lineas.push(
       crearLinea({
         nombre: 'Material principal detectado',
         tipo: 'Material',
-        unidad: 'mÂ²',
+        unidad: 'm²',
         cantidad: area || 1,
         material: principal,
       })
@@ -280,7 +276,7 @@ export default function CotizadorDirecto() {
     ancho: 1,
     alto: 1,
     cantidad: 1,
-    tintaId: '',
+      tintaId: '',
     precioElegido: 'recomendado',
     descuento: 0,
     usaIVA: false,
@@ -378,11 +374,11 @@ export default function CotizadorDirecto() {
 
   const calcularPreview = () => {
     if (!campoCompleto(form.descripcion)) {
-      setMensaje('EscribÃ­ la descripciÃ³n del Ã­tem para poder calcular.');
+      setMensaje('Escribí la descripción del ítem para poder calcular.');
       return;
     }
 
-        const requiereTinta = inferir(form).impresion;
+    const requiereTinta = inferir(form).impresion;
     if (requiereTinta && !form.tintaId) {
       setMensaje('Seleccioná el tipo de tinta / impresión para calcular el precio.');
       return;
@@ -394,8 +390,8 @@ export default function CotizadorDirecto() {
     const sinCosto = nuevas.filter((l) => n(l.costoUnitario) <= 0);
     setMensaje(
       sinCosto.length
-        ? `AtenciÃ³n: ${sinCosto.length} elemento(s) necesitan costo en Material Master.`
-        : 'Ãtem calculado correctamente.'
+        ? `Atención: ${sinCosto.length} elemento(s) necesitan costo en Material Master.`
+        : 'Ítem calculado correctamente.'
     );
   };
 
@@ -406,7 +402,7 @@ export default function CotizadorDirecto() {
 
   const agregarItem = () => {
     if (!lineasPreview.length) {
-      setMensaje('Primero calculÃ¡ el Ã­tem con IA.');
+      setMensaje('Primero calculá el ítem con IA.');
       return;
     }
 
@@ -430,11 +426,11 @@ export default function CotizadorDirecto() {
       ancho: 1,
       alto: 1,
       cantidad: 1,
-    tintaId: '',
+      tintaId: '',
       precioElegido: 'recomendado',
       archivos: [],
     }));
-    setMensaje('Ãtem agregado a la cotizaciÃ³n.');
+    setMensaje('Ítem agregado a la cotización.');
   };
 
   const eliminarItem = (id) => setItems((prev) => prev.filter((i) => i.id !== id));
@@ -458,7 +454,7 @@ export default function CotizadorDirecto() {
     } else if (form.formaPago === '602020') {
       pagos = [
         { label: 'Inicio 60%', porcentaje: 60, monto: totalCliente * 0.6 },
-        { label: 'ProducciÃ³n 20%', porcentaje: 20, monto: totalCliente * 0.2 },
+        { label: 'Producción 20%', porcentaje: 20, monto: totalCliente * 0.2 },
         { label: 'Entrega 20%', porcentaje: 20, monto: totalCliente * 0.2 },
       ];
     } else {
@@ -487,7 +483,7 @@ export default function CotizadorDirecto() {
 
     const actual = JSON.parse(localStorage.getItem('elanvision_cotizaciones_directas') || '[]');
     localStorage.setItem('elanvision_cotizaciones_directas', JSON.stringify([payload, ...actual]));
-    setMensaje('CotizaciÃ³n guardada.');
+    setMensaje('Cotización guardada.');
   };
 
   const imprimir = () => {
@@ -498,12 +494,12 @@ export default function CotizadorDirecto() {
   return (
     <main className="cot-directo">
       <section className="cd-hero no-print">
-        <span>ELANVISIÃ“N Â· Cotizador Directo</span>
-        <h1>CREÃ TU COTIZACIÃ“N</h1>
+        <span>ELANVISIÓN · Cotizador Directo</span>
+        <h1>CREÁ TU COTIZACIÓN</h1>
         <p>
-          TransformÃ¡ ideas en proyectos.
+          Transformá ideas en proyectos.
           <br />
-          CotizÃ¡ rÃ¡pido, vendÃ© mejor.
+          Cotizá rápido, vendé mejor.
         </p>
       </section>
 
@@ -567,7 +563,7 @@ export default function CotizadorDirecto() {
           </div>
 
           <div className="field">
-            <label>DirecciÃ³n / ubicaciÃ³n</label>
+            <label>Dirección / ubicación</label>
             <input value={form.direccion} onChange={(e) => actualizar('direccion', e.target.value)} />
           </div>
 
@@ -578,13 +574,13 @@ export default function CotizadorDirecto() {
 
           <div className="cd-title item-title">
             <Calculator size={20} />
-            <h2>Ãtem a cotizar</h2>
+            <h2>Ítem a cotizar</h2>
           </div>
 
           <div className="field">
-            <label>DescripciÃ³n del trabajo</label>
+            <label>Descripción del trabajo</label>
             <textarea
-              placeholder="Ejemplo: ImpresiÃ³n en lona banner 13oz de 1x2 mts con tubo arriba y abajo e instalaciÃ³n"
+              placeholder="Ejemplo: Impresión en lona banner 13oz de 1x2 mts con tubo arriba y abajo e instalación"
               value={form.descripcion}
               onChange={(e) => actualizar('descripcion', e.target.value)}
             />
@@ -634,7 +630,7 @@ export default function CotizadorDirecto() {
           </div>
           <label className="upload">
             <Paperclip size={18} />
-            Cargar imÃ¡genes, PDF o referencias opcionales
+            Cargar imágenes, PDF o referencias opcionales
             <input type="file" multiple accept="image/*,.pdf,.xlsx,.xls,.csv" onChange={manejarArchivos} />
           </label>
 
@@ -645,7 +641,7 @@ export default function CotizadorDirecto() {
                   {a.url ? <img src={a.url} alt={a.nombre} /> : <FileText size={22} />}
                   <span>{a.nombre}</span>
                   <button type="button" onClick={() => eliminarArchivo(a.id)}>
-                    Ã—
+                    ×
                   </button>
                 </article>
               ))}
@@ -654,11 +650,11 @@ export default function CotizadorDirecto() {
 
           <button className="primary" type="submit">
             <Calculator size={18} />
-            Calcular Ã­tem con IA
+            Calcular ítem con IA
           </button>
 
           <button className="secondary" type="button" onClick={agregarItem}>
-            Agregar Ã­tem a cotizaciÃ³n
+            Agregar ítem a cotización
           </button>
         </form>
 
@@ -669,11 +665,11 @@ export default function CotizadorDirecto() {
           </div>
 
           <div className="price-mini">
-            <span>Ãtem mÃ­nimo</span>
+            <span>Ítem mínimo</span>
             <b>{money(preview.minimo)}</b>
-            <span>Ãtem recomendado</span>
+            <span>Ítem recomendado</span>
             <b>{money(preview.recomendado)}</b>
-            <span>Ãtem objetivo</span>
+            <span>Ítem objetivo</span>
             <b>{money(preview.objetivo)}</b>
           </div>
 
@@ -684,7 +680,7 @@ export default function CotizadorDirecto() {
                 checked={form.precioElegido === 'minimo'}
                 onChange={() => actualizar('precioElegido', 'minimo')}
               />
-              Precio mÃ­nimo
+              Precio mínimo
             </label>
 
             <label>
@@ -795,7 +791,7 @@ export default function CotizadorDirecto() {
           </div>
 
           <button className="secondary" type="button" onClick={guardar}>
-            Guardar cotizaciÃ³n
+            Guardar cotización
           </button>
 
           <button className="primary" type="button" onClick={imprimir}>
@@ -810,10 +806,10 @@ export default function CotizadorDirecto() {
       <section className="cd-card no-print">
         <div className="cd-title">
           <ImagePlus size={20} />
-          <h2>Ãtems cargados en cotizaciÃ³n</h2>
+          <h2>Ítems cargados en cotización</h2>
         </div>
 
-        {items.length === 0 && <p className="empty">TodavÃ­a no hay Ã­tems agregados.</p>}
+        {items.length === 0 && <p className="empty">Todavía no hay ítems agregados.</p>}
 
         <div className="items">
           {items.map((item, idx) => (
@@ -831,11 +827,11 @@ export default function CotizadorDirecto() {
 
       <section className="cd-card no-print">
         <div className="cd-title">
-          <h2>ValidaciÃ³n interna IA</h2>
+          <h2>Validación interna IA</h2>
         </div>
 
         {lineasPreview.length === 0 ? (
-          <p className="muted">Al calcular un Ã­tem se mostrarÃ¡n aquÃ­ las categorÃ­as detectadas.</p>
+          <p className="muted">Al calcular un ítem se mostrarán aquí las categorías detectadas.</p>
         ) : (
           <div className="chips">
             {lineasPreview.map((l) => (
@@ -844,13 +840,13 @@ export default function CotizadorDirecto() {
           </div>
         )}
 
-        <p className="muted">No se muestran costos internos al vendedor. Solo categorÃ­as detectadas.</p>
+        <p className="muted">No se muestran costos internos al vendedor. Solo categorías detectadas.</p>
       </section>
 
       <section className="print-area">
         <div className="print-banner">
-          <h1>COTIZACIÃ“N</h1>
-          <p>ELANVISIÃ“N Â· Profesionales en fabricaciÃ³n de rÃ³tulos</p>
+          <h1>COTIZACIÓN</h1>
+          <p>ELANVISIÓN · Profesionales en fabricación de rótulos</p>
         </div>
 
         <div className="print-client">
@@ -861,7 +857,7 @@ export default function CotizadorDirecto() {
             <b>Celular:</b> {form.whatsapp || '-'}
           </p>
           <p>
-            <b>DirecciÃ³n:</b> {form.direccion || '-'}
+            <b>Dirección:</b> {form.direccion || '-'}
           </p>
           <p>
             <b>Fecha:</b> {new Date().toLocaleDateString('es-NI')}
@@ -873,8 +869,8 @@ export default function CotizadorDirecto() {
         <table>
           <thead>
             <tr>
-              <th>Ãtem</th>
-              <th>DescripciÃ³n</th>
+              <th>Ítem</th>
+              <th>Descripción</th>
               <th>Total USD</th>
             </tr>
           </thead>
@@ -916,8 +912,8 @@ export default function CotizadorDirecto() {
         ))}
 
         <p className="legal">
-          CotizaciÃ³n vÃ¡lida por 15 dÃ­as calendario. Sujeta a aprobaciÃ³n de diseÃ±o,
-          disponibilidad de materiales, condiciones de instalaciÃ³n y acceso libre al sitio.
+          Cotización válida por 15 días calendario. Sujeta a aprobación de diseño,
+          disponibilidad de materiales, condiciones de instalación y acceso libre al sitio.
         </p>
       </section>
 
@@ -1372,4 +1368,5 @@ export default function CotizadorDirecto() {
     </main>
   );
 }
+
 
