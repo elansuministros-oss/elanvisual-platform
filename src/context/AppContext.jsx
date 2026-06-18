@@ -1434,9 +1434,109 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
     }
   };
 
+  const proveedorDb = (p = {}) => ({
+    nombre: p.nombre || '',
+    razon_social: p.razonSocial || p.razon_social || '',
+    contacto: p.contacto || '',
+    whatsapp: p.whatsapp || '',
+    telefono_alterno: p.telefonoAlterno || p.telefono_alterno || '',
+    correo: p.correo || '',
+    categoria: p.categoria || '',
+    subcategorias: p.subcategorias || '',
+    departamento: p.departamento || '',
+    municipio: p.municipio || '',
+    ubicacion: p.ubicacion || '',
+    zona_cobertura: p.zonaCobertura || p.zona_cobertura || '',
+    banco: p.banco || '',
+    numero_cuenta: p.numeroCuenta || p.numero_cuenta || '',
+    titular_cuenta: p.titularCuenta || p.titular_cuenta || '',
+    activo: p.activo !== false,
+    preferido: p.preferido === true,
+    unidad_negocio: 'ELANVISUAL',
+    origen: 'ProveedoresCostos',
+    data: p,
+    updated_at: new Date().toISOString(),
+  });
+
+  const proveedorFromDb = (row = {}) => ({
+    ...(row.data || {}),
+    id: row.id,
+    nombre: row.nombre || row.data?.nombre || '',
+    razonSocial: row.razon_social || row.data?.razonSocial || '',
+    contacto: row.contacto || row.data?.contacto || '',
+    whatsapp: row.whatsapp || row.data?.whatsapp || '',
+    telefonoAlterno: row.telefono_alterno || row.data?.telefonoAlterno || '',
+    correo: row.correo || row.data?.correo || '',
+    categoria: row.categoria || row.data?.categoria || '',
+    subcategorias: row.subcategorias || row.data?.subcategorias || '',
+    departamento: row.departamento || row.data?.departamento || '',
+    municipio: row.municipio || row.data?.municipio || '',
+    ubicacion: row.ubicacion || row.data?.ubicacion || '',
+    zonaCobertura: row.zona_cobertura || row.data?.zonaCobertura || '',
+    banco: row.banco || row.data?.banco || '',
+    numeroCuenta: row.numero_cuenta || row.data?.numeroCuenta || '',
+    titularCuenta: row.titular_cuenta || row.data?.titularCuenta || '',
+    activo: row.activo !== false,
+    preferido: row.preferido === true,
+  });
+
+  const productoProveedorDb = (p = {}) => ({
+    proveedor_id: esUuid(p.proveedorId) ? p.proveedorId : null,
+    proveedor_nombre: p.proveedorNombre || '',
+    codigo: p.codigo || '',
+    producto: p.nombre || p.producto || '',
+    categoria: p.categoria || '',
+    unidad: p.unidad || '',
+    costo: Number(p.costo || 0),
+    moneda: p.moneda || 'USD',
+    activo: p.activo !== false,
+    unidad_negocio: 'ELANVISUAL',
+    data: p,
+    updated_at: new Date().toISOString(),
+  });
+
+  const productoProveedorFromDb = (row = {}) => ({
+    ...(row.data || {}),
+    id: row.id,
+    proveedorId: row.proveedor_id || row.data?.proveedorId || '',
+    proveedorNombre: row.proveedor_nombre || row.data?.proveedorNombre || '',
+    nombre: row.producto || row.data?.nombre || '',
+    categoria: row.categoria || row.data?.categoria || '',
+    unidad: row.unidad || row.data?.unidad || '',
+    costo: Number(row.costo || row.data?.costo || 0),
+    moneda: row.moneda || row.data?.moneda || 'USD',
+    activo: row.activo !== false,
+  });
+
   const crearProveedor = (datos) => {
-    const nuevo = { ...datos, id: datos.id || `prov-${Date.now()}`, activo: datos.activo !== false, creadoEn: new Date().toISOString() };
+    const tempId = datos.id || `prov-${Date.now()}`;
+    const nuevo = {
+      ...datos,
+      id: tempId,
+      activo: datos.activo !== false,
+      creadoEn: new Date().toISOString(),
+    };
+
     setProveedores((prev) => [nuevo, ...prev]);
+
+    if (supabase) {
+      supabase
+        .from('proveedores')
+        .insert(proveedorDb(nuevo))
+        .select('*')
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error guardando proveedor en Supabase:', error);
+            window.alert('Proveedor guardado localmente, pero no se pudo guardar en Supabase.');
+            return;
+          }
+
+          const remoto = proveedorFromDb(data);
+          setProveedores((prev) => prev.map((p) => (p.id === tempId ? remoto : p)));
+        });
+    }
+
     return nuevo;
   };
 
@@ -1457,354 +1557,90 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
       prev.map((p) => (p.id === actualizado.id ? { ...p, ...actualizado } : p))
     );
 
+    if (supabase && esUuid(actualizado.id)) {
+      supabase
+        .from('proveedores')
+        .update(proveedorDb(actualizado))
+        .eq('id', actualizado.id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error actualizando proveedor en Supabase:', error);
+            window.alert('No se pudo actualizar el proveedor en Supabase.');
+          }
+        });
+    }
+
     return actualizado;
   };
 
   const eliminarProveedor = (id) => {
     setProveedores((prev) => prev.filter((p) => p.id !== id));
     setProductosProveedor((prev) => prev.filter((p) => p.proveedorId !== id));
+
+    if (supabase && esUuid(id)) {
+      supabase
+        .from('proveedores')
+        .delete()
+        .eq('id', id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error eliminando proveedor en Supabase:', error);
+            window.alert('No se pudo eliminar el proveedor en Supabase.');
+          }
+        });
+    }
   };
 
   const crearProductoProveedor = (datos) => {
     const proveedor = proveedores.find((p) => p.id === datos.proveedorId);
+    const tempId = datos.id || `prov-prod-${Date.now()}`;
     const nuevo = {
       ...datos,
-      id: datos.id || `prov-prod-${Date.now()}`,
+      id: tempId,
       proveedorNombre: proveedor?.nombre || '',
       costo: Number(datos.costo || 0),
       creadoEn: new Date().toISOString(),
     };
+
     setProductosProveedor((prev) => [nuevo, ...prev]);
+
+    if (supabase) {
+      supabase
+        .from('productos_proveedor')
+        .insert(productoProveedorDb(nuevo))
+        .select('*')
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error guardando producto proveedor en Supabase:', error);
+            window.alert('Costo guardado localmente, pero no se pudo guardar en Supabase.');
+            return;
+          }
+
+          const remoto = productoProveedorFromDb(data);
+          setProductosProveedor((prev) => prev.map((p) => (p.id === tempId ? remoto : p)));
+        });
+    }
+
     return nuevo;
   };
 
-  const eliminarProductoProveedor = (id) => setProductosProveedor((prev) => prev.filter((p) => p.id !== id));
+  const eliminarProductoProveedor = (id) => {
+    setProductosProveedor((prev) => prev.filter((p) => p.id !== id));
 
-  const crearSolicitudProveedor = (pedido) => {
-    const codigo = `RC-${String(Date.now()).slice(-6)}`;
-    const solicitud = {
-      id: `rc-${Date.now()}`,
-      codigo,
-      pedidoId: pedido.id,
-      numeroPedido: pedido.numeroPedido || pedido.numero || '',
-      numeroOT: pedido.numeroOT || pedido.ordenTrabajo?.codigoOT || '',
-      cliente: pedido.cliente?.empresa || pedido.cliente?.nombre || pedido.cliente?.contacto || '',
-      items: pedido.items || [],
-      estado: 'pendiente_respuesta',
-      respuestas: [],
-      creadoEn: new Date().toISOString(),
-    };
-
-    setCotizacionesProveedor((prev) => [solicitud, ...prev]);
-
-    actualizarPedido({
-      ...pedido,
-      costeoReal: {
-        ...(pedido.costeoReal || {}),
-        solicitudProveedorId: solicitud.id,
-        codigoRecotizacion: codigo,
-        estado: 'recotizando',
-      },
-    });
-
-    return solicitud;
+    if (supabase && esUuid(id)) {
+      supabase
+        .from('productos_proveedor')
+        .delete()
+        .eq('id', id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error eliminando producto proveedor en Supabase:', error);
+            window.alert('No se pudo eliminar el costo proveedor en Supabase.');
+          }
+        });
+    }
   };
-
-  const registrarRespuestaProveedor = ({ solicitudId, proveedorId, monto, tiempoEntrega, nota }) => {
-    let actualizada = null;
-
-    setCotizacionesProveedor((prev) =>
-      prev.map((s) => {
-        if (s.id !== solicitudId) return s;
-        const proveedor = proveedores.find((p) => p.id === proveedorId);
-        actualizada = {
-          ...s,
-          respuestas: [
-            ...(s.respuestas || []),
-            {
-              id: `resp-${Date.now()}`,
-              proveedorId,
-              proveedorNombre: proveedor?.nombre || '',
-              monto: Number(monto || 0),
-              tiempoEntrega: tiempoEntrega || '',
-              nota: nota || '',
-              fecha: new Date().toISOString(),
-            },
-          ],
-        };
-        return actualizada;
-      })
-    );
-
-    return actualizada;
-  };
-
-  const asignarProveedorPedido = ({ pedidoId, proveedorId, costoReal, tiempoEntrega, nota }) => {
-    const pedido = pedidos.find((p) => p.id === pedidoId);
-    if (!pedido) return null;
-
-    const proveedor = proveedores.find((p) => p.id === proveedorId);
-    const total = Number(pedido.resumen?.total || pedido.total || 0);
-    const costo = Number(costoReal || 0);
-    const utilidadReal = Math.max(total - costo, 0);
-
-    const actualizado = {
-      ...pedido,
-      costos: {
-        ...(pedido.costos || {}),
-        realProveedor: costo,
-      },
-      costeoReal: {
-        ...(pedido.costeoReal || {}),
-        estado: 'proveedor_asignado',
-        proveedorId,
-        proveedorNombre: proveedor?.nombre || '',
-        costoReal: costo,
-        tiempoEntrega,
-        nota,
-        actualizadoEn: new Date().toISOString(),
-      },
-      utilidad: {
-        ...(pedido.utilidad || {}),
-        utilidadReal,
-      },
-    };
-
-    actualizarPedido(actualizado);
-    return actualizado;
-  };
-
-  const areaInventario = (item = {}) => {
-    const ancho = Number(item.ancho || 0);
-    const largo = Number(item.largo || 0);
-    const cantidad = Number(item.cantidad || 1);
-    if (ancho > 0 && largo > 0) return ancho * largo * cantidad;
-    return cantidad;
-  };
-
-  const crearInventarioReal = (datos) => {
-    const area = areaInventario(datos);
-    const nuevo = {
-      ...datos,
-      id: datos.id || `inv-${Date.now()}`,
-      ancho: Number(datos.ancho || 0),
-      largo: Number(datos.largo || 0),
-      cantidad: Number(datos.cantidad || 1),
-      costoCompra: Number(datos.costoCompra || 0),
-      costoDisponible: Number(datos.costoCompra || 0),
-      estado: datos.estado || 'Disponible',
-      creadoEn: new Date().toISOString(),
-      historial: [
-        {
-          tipo: 'entrada',
-          fecha: new Date().toISOString(),
-          area,
-          nota: datos.observaciones || 'Entrada de inventario.',
-        },
-      ],
-    };
-
-    setInventarioReal((prev) => [nuevo, ...prev]);
-    return nuevo;
-  };
-
-  const actualizarInventarioReal = (itemActualizado) => {
-    setInventarioReal((prev) =>
-      prev.map((item) =>
-        item.id === itemActualizado.id
-          ? {
-              ...item,
-              ...itemActualizado,
-              ancho: Number(itemActualizado.ancho || 0),
-              largo: Number(itemActualizado.largo || 0),
-              cantidad: Number(itemActualizado.cantidad || 1),
-              costoCompra: Number(itemActualizado.costoCompra || 0),
-              costoDisponible: Number(
-                itemActualizado.costoDisponible ?? itemActualizado.costoCompra ?? 0
-              ),
-              actualizadoEn: new Date().toISOString(),
-            }
-          : item
-      )
-    );
-  };
-
-  const eliminarInventarioReal = (id) => setInventarioReal((prev) => prev.filter((i) => i.id !== id));
-
-  const reservarInventarioReal = ({ id, ancho, largo, cantidad = 1, ot = '', nota = '' }) => {
-    setInventarioReal((prev) =>
-      prev.map((item) => {
-        if (item.id !== id) return item;
-        return {
-          ...item,
-          estado: 'Reservado',
-          otReserva: ot,
-          reserva: { ancho: Number(ancho || 0), largo: Number(largo || 0), cantidad: Number(cantidad || 1), ot, nota },
-          historial: [
-            ...(item.historial || []),
-            { tipo: 'reserva', fecha: new Date().toISOString(), nota: nota || `Reservado para ${ot || 'OT'}` },
-          ],
-        };
-      })
-    );
-  };
-
-  const liberarReservaInventarioReal = (id) => {
-    setInventarioReal((prev) =>
-      prev.map((item) => {
-        if (item.id !== id) return item;
-        return {
-          ...item,
-          estado: 'Disponible',
-          otReserva: '',
-          reserva: null,
-          historial: [
-            ...(item.historial || []),
-            { tipo: 'liberacion', fecha: new Date().toISOString(), nota: 'Reserva liberada.' },
-          ],
-        };
-      })
-    );
-  };
-
-  const consumirInventarioReal = ({ id, ancho, largo, cantidad = 1, ot = '', nota = '' }) => {
-    setInventarioReal((prev) => {
-      const item = prev.find((i) => i.id === id);
-      if (!item) return prev;
-
-      const anchoUso = Number(ancho || item.ancho || 0);
-      const largoUso = Number(largo || item.largo || 0);
-      const cantidadUso = Number(cantidad || 1);
-      const areaOriginal = areaInventario(item);
-      const areaUsada = anchoUso > 0 && largoUso > 0 ? anchoUso * largoUso * cantidadUso : cantidadUso;
-      const proporcion = areaOriginal > 0 ? Math.min(areaUsada / areaOriginal, 1) : 1;
-      const costoUsado = Number(item.costoDisponible ?? item.costoCompra ?? 0) * proporcion;
-      const areaRestante = Math.max(areaOriginal - areaUsada, 0);
-      const costoRestante = Math.max(Number(item.costoDisponible ?? item.costoCompra ?? 0) - costoUsado, 0);
-
-      const consumido = {
-        ...item,
-        estado: 'Consumido',
-        consumidoEn: new Date().toISOString(),
-        otConsumo: ot,
-        areaConsumida: areaUsada,
-        costoConsumido: costoUsado,
-        historial: [
-          ...(item.historial || []),
-          { tipo: 'consumo', fecha: new Date().toISOString(), area: areaUsada, costo: costoUsado, nota: nota || `Consumido para ${ot || 'OT'}` },
-        ],
-      };
-
-      const salida = prev.map((i) => (i.id === id ? consumido : i));
-
-      if (areaRestante > 0.05 && item.ancho > 0 && item.largo > 0) {
-        const retazo = {
-          ...item,
-          id: `ret-${Date.now()}`,
-          tipo: 'Retazo',
-          cantidad: 1,
-          ancho: Number(item.ancho || 0),
-          largo: Number((areaRestante / Math.max(Number(item.ancho || 1), 0.01)).toFixed(2)),
-          costoCompra: costoRestante,
-          costoDisponible: costoRestante,
-          estado: 'Disponible',
-          origen: `Retazo de ${item.material}`,
-          otOrigen: ot,
-          creadoEn: new Date().toISOString(),
-          historial: [
-            { tipo: 'retazo', fecha: new Date().toISOString(), area: areaRestante, costo: costoRestante, nota: `Retazo generado por consumo de ${ot || 'OT'}` },
-          ],
-        };
-        return [retazo, ...salida];
-      }
-
-      return salida;
-    });
-  };
-
-  const actualizarProducto = (producto) =>
-    setProductos((prev) => prev.map((p) => (p.id === producto.id ? { ...p, ...producto } : p)));
-
-  const crearProducto = (producto) => {
-    const id = producto.id || crearSlug(producto.nombre);
-    setProductos((prev) => [{ ...producto, id, precio: Number(producto.precio || 0), activo: true }, ...prev]);
-  };
-
-  const eliminarProducto = (id) => setProductos((prev) => prev.filter((p) => p.id !== id));
-
-  const crearBanner = (banner) =>
-    setBanners((prev) => {
-      const nuevoBanner = normalizarBanner({
-        ...banner,
-        id: `banner-${Date.now()}`,
-        activo: banner.activo ?? true,
-        createdAt: Date.now(),
-        actualizadoEn: Date.now(),
-      });
-
-      const bannersPrevios = normalizarBanners(prev, []);
-
-      if (nuevoBanner.activo && nuevoBanner.ubicacion === 'hero-principal') {
-        return [
-          nuevoBanner,
-          ...bannersPrevios.map((b) =>
-            b.ubicacion === 'hero-principal' ? { ...b, activo: false } : b
-          ),
-        ];
-      }
-
-      return [nuevoBanner, ...bannersPrevios];
-    });
-
-  const actualizarBanner = (banner) =>
-    setBanners((prev) => {
-      const bannerNormalizado = normalizarBanner({
-        ...banner,
-        actualizadoEn: Date.now(),
-      });
-
-      return normalizarBanners(prev, []).map((b) => {
-        if (
-          bannerNormalizado.activo &&
-          bannerNormalizado.ubicacion === 'hero-principal' &&
-          b.ubicacion === 'hero-principal' &&
-          b.id !== bannerNormalizado.id
-        ) {
-          return { ...b, activo: false };
-        }
-
-        if (b.id === bannerNormalizado.id) {
-          return {
-            ...b,
-            ...bannerNormalizado,
-          };
-        }
-
-        return b;
-      });
-    });
-
-  const eliminarBanner = (id) => setBanners((prev) => prev.filter((b) => b.id !== id));
-
-  const crearTrabajo = (trabajo) =>
-    setTrabajos((prev) => [{ ...trabajo, id: `trabajo-${Date.now()}`, activo: true }, ...prev]);
-
-  const actualizarTrabajo = (trabajo) =>
-    setTrabajos((prev) => prev.map((t) => (t.id === trabajo.id ? { ...t, ...trabajo } : t)));
-
-  const eliminarTrabajo = (id) => setTrabajos((prev) => prev.filter((t) => t.id !== id));
-
-  const crearCuentaBancaria = (cuenta) =>
-    setCuentasBancarias((prev) => [
-      { ...cuenta, id: `cta-${Date.now()}`, activa: true, visible: true },
-      ...prev,
-    ]);
-
-  const actualizarCuentaBancaria = (cuenta) =>
-    setCuentasBancarias((prev) => prev.map((c) => (c.id === cuenta.id ? { ...c, ...cuenta } : c)));
-
-  const eliminarCuentaBancaria = (id) =>
-    setCuentasBancarias((prev) => prev.filter((c) => c.id !== id));
 const calcularCostoReal = ({
   otId,
   costoInventario = 0,
@@ -2074,6 +1910,8 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
+
 
 
 
