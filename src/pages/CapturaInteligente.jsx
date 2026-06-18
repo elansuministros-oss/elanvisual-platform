@@ -70,6 +70,7 @@ export default function CapturaInteligente() {
   const [clientes, setClientes] = useState([]);
   const [proveedores, setProveedores] = useState([]);
   const [vendedores, setVendedores] = useState([]);
+  const [editandoId, setEditandoId] = useState(null);
 
   const datos = useMemo(() => extraerDatos(texto), [texto]);
 
@@ -112,25 +113,17 @@ export default function CapturaInteligente() {
     if (!texto.trim()) return alert('Pegá primero la información.');
 
     const tipoReal = esAdmin ? tipo : 'cliente';
+    const modoEdicion = Boolean(editandoId);
 
     setMensaje('Guardando...');
 
     if (tipoReal === 'cliente') {
-      const { error } = await supabase.from('clientes').insert({
-        empresa: datos.empresa,
-        nombre: datos.nombre,
-        contacto: datos.contacto || datos.nombre,
-        whatsapp: datos.whatsapp,
-        telefono: datos.telefono,
-        correo: datos.correo,
-        email: datos.email,
-        ruc: datos.ruc,
-        direccion: datos.direccion,
-        ciudad: datos.ciudad,
-        notas: datos.notas,
-        origen: 'captura_inteligente',
-        data: datos,
-      });
+      const payloadCliente = {
+      };
+
+      const { error } = modoEdicion
+        ? await supabase.from('clientes').update(payloadCliente).eq('id', editandoId)
+        : await supabase.from('clientes').insert(payloadCliente);
 
       if (error) {
         console.error(error);
@@ -138,25 +131,16 @@ export default function CapturaInteligente() {
         return;
       }
 
-      setMensaje('Cliente guardado en Supabase.');
+      setMensaje(modoEdicion ? 'Cliente actualizado en Supabase.' : 'Cliente guardado en Supabase.');
     }
 
     if (tipoReal === 'proveedor') {
-      const { error } = await supabase.from('proveedores').insert({
-        nombre: datos.empresa || datos.nombre,
-        razon_social: datos.empresa,
-        contacto: datos.contacto || datos.nombre,
-        whatsapp: datos.whatsapp,
-        correo: datos.correo,
-        categoria: datos.categoria || 'Proveedor general',
-        municipio: datos.ciudad,
-        ubicacion: datos.direccion,
-        notas: datos.notas,
-        activo: true,
-        unidad_negocio: 'ELANVISUAL',
-        origen: 'captura_inteligente',
-        data: datos,
-      });
+      const payloadProveedor = {
+      };
+
+      const { error } = modoEdicion
+        ? await supabase.from('proveedores').update(payloadProveedor).eq('id', editandoId)
+        : await supabase.from('proveedores').insert(payloadProveedor);
 
       if (error) {
         console.error(error);
@@ -164,23 +148,18 @@ export default function CapturaInteligente() {
         return;
       }
 
-      setMensaje('Proveedor guardado en Supabase.');
+      setMensaje(modoEdicion ? 'Proveedor actualizado en Supabase.' : 'Proveedor guardado en Supabase.');
     }
 
     if (tipoReal === 'vendedor') {
       const base = datos.nombre || datos.empresa || `vendedor-${Date.now()}`;
 
-      const { error } = await supabase.from('vendedores').insert({
-        nombre: base,
-        usuario: slug(base),
-        email: datos.email || `${slug(base)}@visual.elankav.com`,
-        whatsapp: datos.whatsapp,
-        codigo_vendedor: `VEN-${String(Date.now()).slice(-5)}`,
-        rol: 'ventas',
-        activo: true,
-        notas: datos.notas,
-        data: datos,
-      });
+      const payloadVendedor = {
+      };
+
+      const { error } = modoEdicion
+        ? await supabase.from('vendedores').update(payloadVendedor).eq('id', editandoId)
+        : await supabase.from('vendedores').insert(payloadVendedor);
 
       if (error) {
         console.error(error);
@@ -188,10 +167,38 @@ export default function CapturaInteligente() {
         return;
       }
 
-      setMensaje('Vendedor guardado en Supabase.');
+      setMensaje(modoEdicion ? 'Vendedor actualizado en Supabase.' : 'Vendedor guardado en Supabase.');
     }
 
     setTexto('');
+    setEditandoId(null);
+    await cargar();
+  };
+
+  const editarRegistro = (registro) => {
+    setEditandoId(registro.id);
+    setTexto(registro.notas || registro.data?.notas || [
+      registro.empresa || registro.razon_social || registro.nombre || '',
+      registro.contacto || registro.nombre || '',
+      registro.whatsapp || registro.telefono || '',
+      registro.correo || registro.email || '',
+      registro.ruc || '',
+      registro.direccion || registro.ubicacion || '',
+      registro.ciudad || registro.municipio || '',
+      registro.categoria || '',
+    ].filter(Boolean).join(', '));
+  };
+
+  const eliminarRegistro = async (registro) => {
+    if (!supabase) return alert('Supabase no está configurado.');
+    const tipoReal = esAdmin ? tipo : 'cliente';
+    const tabla = tipoReal === 'cliente' ? 'clientes' : tipoReal === 'proveedor' ? 'proveedores' : 'vendedores';
+    const ok = window.confirm('¿Eliminar este registro?');
+    if (!ok) return;
+    const { error } = await supabase.from(tabla).delete().eq('id', registro.id);
+    if (error) return setMensaje('Error eliminando: ' + error.message);
+    setMensaje('Registro eliminado.');
+    if (editandoId === registro.id) { setEditandoId(null); setTexto(''); }
     await cargar();
   };
 
@@ -229,7 +236,8 @@ export default function CapturaInteligente() {
             onChange={(e) => setTexto(e.target.value)}
             placeholder="Ejemplo: Cliente Havanas Nights, atención Carlos, celular 88889999, correo ventas@havana.com, dirección Metrocentro Managua, RUC J031..."
           />
-          <button type="button" onClick={guardar}><Save size={18}/> Guardar {esAdmin ? tipo : 'cliente'}</button>
+          <button type="button" onClick={guardar}><Save size={18}/> {editandoId ? 'Guardar cambios' : Guardar }</button>
+          {editandoId && <button type="button" className="secondary" onClick={() => { setEditandoId(null); setTexto(''); }}>Cancelar edición</button>}
           {mensaje && <p className="msg">{mensaje}</p>}
         </article>
 
@@ -252,6 +260,10 @@ export default function CapturaInteligente() {
             <article key={x.id}>
               <b>{x.empresa || x.nombre || x.contacto || x.usuario || x.email || 'Registro'}</b>
               <span>{x.whatsapp || x.telefono || x.correo || x.email || 'Sin contacto'}</span>
+              <div className="item-actions">
+                <button type="button" onClick={() => editarRegistro(x)}>Editar</button>
+                <button type="button" onClick={() => eliminarRegistro(x)}>Eliminar</button>
+              </div>
             </article>
           ))}
         </div>
@@ -270,14 +282,16 @@ export default function CapturaInteligente() {
         textarea{width:100%;min-height:260px;border:1px solid #cbd5e1;border-radius:18px;padding:14px;font-size:16px;box-sizing:border-box}
         .card h2{margin:0 0 12px;color:#111827}
         .card p{margin:8px 0;color:#334155}
+        .card button.secondary{margin-top:8px;background:#e5e7eb;color:#111827}
         .msg{font-weight:950;color:#047857}
         .search{display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:10px}
         .search input{border:0;background:transparent;outline:0;width:100%;font-size:16px}
         .list{display:grid;gap:8px;margin-top:12px}
         .list article{background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:12px;display:grid;gap:4px}
-        .list b{color:#111827}.list span{color:#64748b;font-weight:800}
+        .list b{color:#111827}.list span{color:#64748b;font-weight:800}.item-actions{display:flex;gap:8px;margin-top:8px}.item-actions button{border:0;border-radius:12px;padding:8px 10px;font-weight:900;background:#111827;color:#fff}
         @media(max-width:900px){.grid,.tabs{grid-template-columns:1fr}.captura-page{padding-bottom:90px}}
       `}</style>
     </main>
   );
 }
+
