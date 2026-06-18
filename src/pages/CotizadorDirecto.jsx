@@ -963,124 +963,122 @@ export default function CotizadorDirecto({ setPage }) {
       </section>
 
       <section className="print-area">
-        <div className="print-sheet">
-          <header className="print-header">
-            <div className="print-brand">
+        <div className="ev-quote-sheet">
+          <header className="ev-quote-header">
+            <div className="ev-brand-block">
               {configuracion?.logo ? (
-                <img src={configuracion.logo} alt={configuracion.logoTexto || 'ELANVISION'} className="print-logo-img" />
+                <img src={configuracion.logo} alt={configuracion.logoTexto || 'ELANVISIÓN'} className="ev-logo-img" />
               ) : (
-                <div className="print-logo">EV</div>
+                <div className="ev-logo-mark">EV</div>
               )}
+
               <div>
                 <h1>{configuracion?.logoTexto || 'ELANVISIÓN'}</h1>
                 <p>Soluciones de Rotulación e Imagen Comercial</p>
+                <strong>RUC: 4012805831001E</strong>
               </div>
             </div>
 
-            <div className="print-doc">
-              <span>COTIZACIÓN</span>
-              <strong>{new Date().toLocaleDateString('es-NI')}</strong>
-              <small>{items.length} ítem(s)</small>
+            <div className="ev-doc-box">
+              <div>
+                <span>COTIZACIÓN</span>
+                <b>{`EV-${String(Date.now()).slice(-6)}`}</b>
+              </div>
+
+              <div>
+                <span>FECHA</span>
+                <b>{new Date().toLocaleDateString('es-NI')}</b>
+              </div>
+
+              <div>
+                <span>VALIDEZ</span>
+                <b>15 DÍAS</b>
+              </div>
             </div>
           </header>
 
-          <section className="print-company">
-            <div>
-              <b>RUC</b>
-              <span>4012805831001E</span>
-            </div>
-            <div>
-              <b>Atendido por</b>
-              <span>Erick Cano</span>
-            </div>
-            <div>
-              <b>WhatsApp</b>
-              <span>+505 8838 8940</span>
-            </div>
-            <div>
-              <b>Cheque a nombre de</b>
-              <span>ERICK ANTONIO CANO JOSE</span>
-            </div>
-          </section>
-
-          <section className="print-parties">
-            <article>
-              <h2>Cliente</h2>
-              <p><b>Nombre:</b> {form.cliente || '-'}</p>
-              <p><b>Empresa:</b> {form.empresa || '-'}</p>
-              <p><b>WhatsApp:</b> {form.whatsapp || '-'}</p>
+          <section className="ev-client-row">
+            <article className="ev-client-card main">
+              <span>CLIENTE</span>
+              <h2>{form.empresa || form.cliente || '-'}</h2>
+              <p><b>RUC:</b> -</p>
+              <p><b>Atención:</b> {form.cliente || '-'}</p>
+              <p><b>Teléfono:</b> {form.whatsapp || '-'}</p>
+              <p><b>Correo:</b> {form.correo || '-'}</p>
               <p><b>Dirección:</b> {form.direccion || '-'}</p>
               <p><b>Ciudad:</b> {form.ciudad || '-'}</p>
             </article>
 
-            <article>
-              <h2>Vendedor</h2>
-              <p><b>Nombre:</b> Erick Cano</p>
+            <article className="ev-client-card seller">
+              <span>ATENDIDO POR</span>
+              <h2>Erick Cano</h2>
               <p><b>Unidad:</b> ELANVISIÓN</p>
-              <p><b>Contacto:</b> +505 8838 8940</p>
-              <p><b>Documento:</b> Cotización directa</p>
-              <p><b>Validez:</b> 15 días calendario</p>
+              <p><b>WhatsApp:</b></p>
+              <p className="ev-phone">+505 8838 8940</p>
             </article>
           </section>
 
-          <section className="print-items">
-            <h2>Detalle de la cotización</h2>
-
+          <section className="ev-items-section">
             {items.length === 0 && (
-              <p className="print-empty">No hay ítems agregados.</p>
+              <p className="ev-empty">No hay ítems agregados.</p>
             )}
 
-            {items.map((item, idx) => (
-              <article className="print-item" key={item.id}>
-                <div className="print-item-head">
-                  <span>Ítem {idx + 1}</span>
-                  <strong>{money(item.resumen.venta)}</strong>
-                </div>
+            {items.map((item, idx) => {
+              const cantidad = Math.max(n(item.cantidad), 1);
+              const subtotalItem = n(item.resumen?.venta);
+              const precioUnitario = subtotalItem / cantidad;
 
-                <p className="print-desc">{item.descripcion}</p>
+              return (
+                <article className="ev-item-card" key={item.id}>
+                  <div className="ev-item-title">
+                    <span>{`ITEM ${String(idx + 1).padStart(2, '0')}`}</span>
+                  </div>
 
-                <div className="print-meta">
-                  <p><b>Ancho:</b> {item.ancho} m</p>
-                  <p><b>Alto:</b> {item.alto} m</p>
-                  <p><b>Cantidad:</b> {item.cantidad}</p>
-                </div>
-              </article>
-            ))}
+                  <p className="ev-item-description">{item.descripcion}</p>
+
+                  <div className="ev-item-values">
+                    <p><span>Cantidad</span><b>{cantidad}</b></p>
+                    <p><span>Precio Unitario</span><b>{money(precioUnitario)}</b></p>
+                    <p><span>Subtotal</span><b>{money(subtotalItem)}</b></p>
+                  </div>
+                </article>
+              );
+            })}
           </section>
 
-          <section className="print-summary">
-            <div>
-              <span>Subtotal bruto</span>
+          <section className="ev-summary-box">
+            <h2>RESUMEN</h2>
+
+            <div className="ev-summary-line">
+              <span>Subtotal</span>
               <b>{money(total.subtotalBruto)}</b>
             </div>
 
-            {Number(total.descuento || 0) > 0 && (
-              <div>
-                <span>Descuento aplicado</span>
-                <b>-{money(total.descuento)}</b>
-              </div>
-            )}
+            <div className="ev-summary-line">
+              <span>Descuento comercial</span>
+              <b>-{money(total.descuento)}</b>
+            </div>
 
-            <div>
-              <span>Subtotal</span>
+            <div className="ev-summary-line">
+              <span>Subtotal ajustado</span>
               <b>{money(total.subtotal)}</b>
             </div>
 
             {form.usaIVA && (
-              <div>
+              <div className="ev-summary-line">
                 <span>IVA 15%</span>
                 <b>{money(total.iva)}</b>
               </div>
             )}
 
-            <div className="print-grand-total">
-              <span>Total general</span>
+            <div className="ev-total-line">
+              <span>TOTAL</span>
               <b>{money(total.totalCliente)}</b>
             </div>
           </section>
 
-          <section className="print-payment">
-            <h2>Forma de pago</h2>
+          <section className="ev-payment-box">
+            <h2>FORMA DE PAGO</h2>
             {total.pagos.map((p) => (
               <p key={p.label}>
                 <span>{p.label}</span>
@@ -1089,16 +1087,378 @@ export default function CotizadorDirecto({ setPage }) {
             ))}
           </section>
 
-          <footer className="print-footer">
-            <p>
-              Cotización válida por 15 días calendario. Sujeta a aprobación de diseño,
-              disponibilidad de materiales, condiciones de instalación y acceso libre al sitio.
-            </p>
-            <strong>ELANVISIÓN · Producción visual profesional</strong>
-          </footer>
+          <section className="ev-check-box">
+            <h2>ELABORAR CK A NOMBRE DE:</h2>
+            <strong>ERICK ANTONIO CANO JOSE</strong>
+          </section>
+
+          <section className="ev-notes-box">
+            <h2>OBSERVACIONES</h2>
+            <p>La presente cotización tiene validez de 15 días.</p>
+            <p>Producción inicia con aprobación y anticipo.</p>
+            <p>Materiales sujetos a disponibilidad.</p>
+            <p>Gracias por confiar en ELANVISIÓN.</p>
+          </section>
         </div>
       </section>
       <style>{`
+        .print-area{
+          width:100%;
+          display:flex;
+          justify-content:center;
+          padding:40px 0;
+          background:#eef2f7;
+        }
+
+        .ev-quote-sheet{
+          width:1080px;
+          min-height:1800px;
+          background:#ffffff;
+          color:#0f172a;
+          padding:64px;
+          box-sizing:border-box;
+          font-family:Arial, Helvetica, sans-serif;
+          display:grid;
+          gap:34px;
+        }
+
+        .ev-quote-header{
+          display:grid;
+          grid-template-columns:1.25fr .75fr;
+          gap:34px;
+          align-items:start;
+          border-bottom:3px solid #0f2f5f;
+          padding-bottom:34px;
+        }
+
+        .ev-brand-block{
+          display:flex;
+          align-items:flex-start;
+          gap:22px;
+        }
+
+        .ev-logo-img{
+          width:150px;
+          max-height:120px;
+          object-fit:contain;
+        }
+
+        .ev-logo-mark{
+          width:118px;
+          height:118px;
+          border-radius:28px;
+          background:#0f2f5f;
+          color:#ffffff;
+          display:grid;
+          place-items:center;
+          font-size:42px;
+          font-weight:950;
+          letter-spacing:-2px;
+        }
+
+        .ev-brand-block h1{
+          margin:0 0 8px;
+          font-size:44px;
+          line-height:1;
+          color:#0f2f5f;
+          letter-spacing:-1px;
+          font-weight:950;
+        }
+
+        .ev-brand-block p{
+          margin:0 0 12px;
+          font-size:20px;
+          color:#334155;
+          font-weight:800;
+        }
+
+        .ev-brand-block strong{
+          font-size:17px;
+          color:#111827;
+        }
+
+        .ev-doc-box{
+          display:grid;
+          grid-template-columns:1fr;
+          gap:14px;
+        }
+
+        .ev-doc-box div{
+          background:#f8fafc;
+          border:1px solid #e2e8f0;
+          border-radius:22px;
+          padding:20px;
+          display:grid;
+          gap:8px;
+        }
+
+        .ev-doc-box span,
+        .ev-client-card span,
+        .ev-item-title span{
+          font-size:14px;
+          font-weight:950;
+          letter-spacing:.08em;
+          color:#64748b;
+          text-transform:uppercase;
+        }
+
+        .ev-doc-box b{
+          font-size:25px;
+          color:#0f2f5f;
+        }
+
+        .ev-client-row{
+          display:grid;
+          grid-template-columns:1.35fr .65fr;
+          gap:24px;
+        }
+
+        .ev-client-card{
+          background:#f8fafc;
+          border:1px solid #e2e8f0;
+          border-radius:28px;
+          padding:30px;
+        }
+
+        .ev-client-card.main{
+          border-left:8px solid #0f2f5f;
+        }
+
+        .ev-client-card h2{
+          margin:12px 0 18px;
+          font-size:34px;
+          line-height:1.1;
+          color:#111827;
+          font-weight:950;
+        }
+
+        .ev-client-card p{
+          margin:8px 0;
+          font-size:18px;
+          color:#334155;
+          line-height:1.35;
+        }
+
+        .ev-client-card b{
+          color:#111827;
+        }
+
+        .ev-phone{
+          font-size:24px !important;
+          color:#0f2f5f !important;
+          font-weight:950;
+        }
+
+        .ev-items-section{
+          display:grid;
+          gap:24px;
+        }
+
+        .ev-item-card{
+          border:1px solid #e2e8f0;
+          border-radius:30px;
+          padding:34px;
+          background:#ffffff;
+          box-shadow:0 10px 26px rgba(15,23,42,.06);
+          page-break-inside:avoid;
+          break-inside:avoid;
+        }
+
+        .ev-item-title{
+          margin-bottom:18px;
+        }
+
+        .ev-item-title span{
+          color:#0f2f5f;
+          font-size:17px;
+        }
+
+        .ev-item-description{
+          margin:0 0 28px;
+          font-size:25px;
+          line-height:1.42;
+          color:#111827;
+          font-weight:850;
+          white-space:pre-wrap;
+        }
+
+        .ev-item-values{
+          display:grid;
+          grid-template-columns:repeat(3, 1fr);
+          gap:14px;
+        }
+
+        .ev-item-values p{
+          margin:0;
+          background:#f8fafc;
+          border-radius:20px;
+          padding:18px;
+          display:grid;
+          gap:8px;
+        }
+
+        .ev-item-values span{
+          font-size:14px;
+          color:#64748b;
+          font-weight:900;
+          text-transform:uppercase;
+        }
+
+        .ev-item-values b{
+          font-size:22px;
+          color:#111827;
+        }
+
+        .ev-summary-box{
+          background:#0f2f5f;
+          color:#ffffff;
+          border-radius:34px;
+          padding:38px;
+          display:grid;
+          gap:16px;
+          page-break-inside:avoid;
+          break-inside:avoid;
+        }
+
+        .ev-summary-box h2,
+        .ev-payment-box h2,
+        .ev-check-box h2,
+        .ev-notes-box h2{
+          margin:0 0 8px;
+          font-size:22px;
+          letter-spacing:.08em;
+          text-transform:uppercase;
+        }
+
+        .ev-summary-line,
+        .ev-total-line,
+        .ev-payment-box p{
+          display:flex;
+          justify-content:space-between;
+          gap:24px;
+          align-items:center;
+          margin:0;
+        }
+
+        .ev-summary-line span,
+        .ev-payment-box span{
+          font-size:20px;
+          font-weight:800;
+        }
+
+        .ev-summary-line b{
+          font-size:23px;
+        }
+
+        .ev-total-line{
+          margin-top:12px;
+          padding-top:22px;
+          border-top:2px solid rgba(255,255,255,.25);
+        }
+
+        .ev-total-line span{
+          font-size:28px;
+          font-weight:950;
+        }
+
+        .ev-total-line b{
+          font-size:42px;
+          font-weight:950;
+        }
+
+        .ev-payment-box,
+        .ev-check-box,
+        .ev-notes-box{
+          background:#f8fafc;
+          border:1px solid #e2e8f0;
+          border-radius:30px;
+          padding:32px;
+          page-break-inside:avoid;
+          break-inside:avoid;
+        }
+
+        .ev-payment-box h2,
+        .ev-check-box h2,
+        .ev-notes-box h2{
+          color:#0f2f5f;
+        }
+
+        .ev-payment-box p{
+          padding:12px 0;
+          border-bottom:1px solid #e2e8f0;
+        }
+
+        .ev-payment-box p:last-child{
+          border-bottom:0;
+        }
+
+        .ev-payment-box b{
+          font-size:21px;
+          color:#111827;
+        }
+
+        .ev-check-box strong{
+          display:block;
+          font-size:28px;
+          color:#111827;
+          margin-top:10px;
+        }
+
+        .ev-notes-box p{
+          margin:8px 0;
+          font-size:18px;
+          color:#475569;
+          line-height:1.45;
+        }
+
+        .ev-empty{
+          padding:32px;
+          text-align:center;
+          border:1px dashed #cbd5e1;
+          border-radius:24px;
+          color:#64748b;
+          font-weight:900;
+        }
+
+        @media print{
+          @page{
+            size:auto;
+            margin:0;
+          }
+
+          body{
+            margin:0 !important;
+            background:#ffffff !important;
+          }
+
+          .no-print,
+          .desktop-header,
+          .mobile-header,
+          .erp-floating-actions{
+            display:none !important;
+          }
+
+          .cot-directo{
+            background:#ffffff !important;
+            padding:0 !important;
+            display:block !important;
+          }
+
+          .print-area{
+            display:block !important;
+            padding:0 !important;
+            background:#ffffff !important;
+          }
+
+          .ev-quote-sheet{
+            width:1080px !important;
+            min-height:1800px !important;
+            margin:0 auto !important;
+            box-shadow:none !important;
+          }
+        }
+
+
         .cot-directo{
           min-height:100vh;
           background:#f4f6fb;
@@ -1563,6 +1923,8 @@ export default function CotizadorDirecto({ setPage }) {
 
 
   
+
+
 
 
 
