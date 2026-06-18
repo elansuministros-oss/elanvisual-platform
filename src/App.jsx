@@ -19,6 +19,7 @@ import ProveedoresCostos from './pages/ProveedoresCostos';
 import InventarioInteligente from './pages/InventarioInteligente';
 import BibliotecaTecnica from './pages/BibliotecaTecnica';
 import CotizadorDirecto from './pages/CotizadorDirecto';
+import CapturaInteligente from './pages/CapturaInteligente';
 import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
 import { useApp } from './context/AppContext';
@@ -121,6 +122,7 @@ export default function App() {
         <div className="erp-floating-actions">
           <button type="button" onClick={() => ir('home')}>🏠 Inicio</button>
           <button type="button" onClick={() => ir('miCuenta')}>👤 Mi cuenta</button>
+          {accesoVentas && <button type="button" onClick={() => ir('capturaInteligente')}>Captura Inteligente</button>}
             {accesoAdmin && <button type="button" onClick={() => ir('bibliotecaTecnica')}>📚 Biblioteca</button>}
         </div>
       )}
@@ -179,6 +181,9 @@ export default function App() {
 
       
 
+      {page === 'capturaInteligente' &&
+        (accesoVentas ? <CapturaInteligente /> : <Login setPage={ir} destino="crm" />)}
+
       {page === 'cotizador' &&
         (accesoVentas ? <CotizadorDirecto /> : <Login setPage={ir} destino="cotizador" />)}
 
@@ -193,6 +198,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 
