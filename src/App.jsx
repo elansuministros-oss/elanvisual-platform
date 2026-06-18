@@ -1,4 +1,6 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import ClientesCRM from './crm/Clientes';
+import PanelVentas from './pages/PanelVentas';
+import React, { useEffect, useState } from 'react';
 import CRM from './crm/App/CRM.jsx';
 import Header from './components/Header';
 import Home from './pages/Home';
@@ -155,11 +157,11 @@ export default function App() {
       {page === 'dashboard' &&
         (accesoERP ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
 
-      {page === 'crm' &&
-        (accesoVentas ? <CRM /> : <Login setPage={ir} destino="crm" />)}
-
       {page === 'clientes' &&
-        (accesoVentas ? <CRM /> : <Login setPage={ir} destino="crm" />)}
+  (accesoVentas ? <ClientesCRM /> : <Login setPage={ir} destino="clientes" />)}
+
+{page === 'ventas' &&
+  (accesoVentas ? <PanelVentas setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
 
       {page === 'ventas' &&
         (accesoVentas ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="crm" />)}
