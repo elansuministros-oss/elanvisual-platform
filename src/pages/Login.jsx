@@ -1,6 +1,7 @@
 ﻿import React, { useState } from 'react';
 import { LockKeyhole, ShieldCheck, Building2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useCore } from '../core/context/CoreContext';
 
 function destinoPorRol(rol) {
   if (rol === 'admin') return 'admin';
@@ -8,13 +9,50 @@ function destinoPorRol(rol) {
   return 'crm';
 }
 
+const normalizar = (valor = '') =>
+  String(valor || '').trim().toLowerCase();
+
 export default function Login({ setPage, destino }) {
   const { login } = useApp();
+  const { usuariosCRM = [], cambiarUsuarioActivoCRM } = useCore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [error, setError] = useState('');
+
+  const sincronizarUsuarioCRM = (res) => {
+    const entrada = normalizar(email);
+    const rolLogin = normalizar(res?.rol);
+
+    const usuarioEncontrado =
+      usuariosCRM.find((usuario) =>
+        [usuario.usuario, usuario.correo, usuario.nombre]
+          .map(normalizar)
+          .includes(entrada)
+      ) ||
+      usuariosCRM.find((usuario) => {
+        const rolId = normalizar(usuario.rolId);
+        return rolLogin === 'ventas' && rolId.includes('ventas');
+      }) ||
+      usuariosCRM.find((usuario) => {
+        const rolId = normalizar(usuario.rolId);
+        return rolLogin === 'produccion' && rolId.includes('produccion');
+      }) ||
+      usuariosCRM.find((usuario) => {
+        const rolId = normalizar(usuario.rolId);
+        return rolLogin === 'admin' && rolId.includes('admin');
+      });
+
+    if (usuarioEncontrado?.id) {
+      cambiarUsuarioActivoCRM(usuarioEncontrado.id);
+      return;
+    }
+
+    if (rolLogin === 'admin') {
+      cambiarUsuarioActivoCRM('usuario-admin-general');
+    }
+  };
 
   const entrar = (e) => {
     e.preventDefault();
@@ -35,6 +73,8 @@ export default function Login({ setPage, destino }) {
       setError('Este usuario no tiene permisos de producción.');
       return;
     }
+
+    sincronizarUsuarioCRM(res);
 
     setError('');
     setPage(destino || destinoPorRol(res.rol));
@@ -100,4 +140,3 @@ export default function Login({ setPage, destino }) {
     </main>
   );
 }
-
