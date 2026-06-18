@@ -1,5 +1,14 @@
 ﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
+import {
+  esAdminCRM,
+  esVendedorCRM,
+  filtrarRegistrosCRM,
+  obtenerFirmaVendedor,
+  puedeCrearCRM,
+  puedeEditarCRM,
+  puedeEliminarCRM,
+} from '../services/permisosCRM';
 
 const formInicial = {
   nombre: '',
@@ -17,15 +26,32 @@ export default function Clientes() {
     crearContacto,
     actualizarContacto,
     eliminarContacto,
+    usuarioActivoCRM,
+    rolUsuarioActivoCRM,
   } = useCore();
+
+  const usuarioCRM = {
+    ...(usuarioActivoCRM || {}),
+    rol:
+      usuarioActivoCRM?.rol ||
+      usuarioActivoCRM?.tipo ||
+      rolUsuarioActivoCRM?.slug ||
+      rolUsuarioActivoCRM?.nombre ||
+      '',
+    rolNombre: rolUsuarioActivoCRM?.nombre || usuarioActivoCRM?.rol || '',
+  };
 
   const [form, setForm] = useState(formInicial);
   const [busqueda, setBusqueda] = useState('');
   const [editandoId, setEditandoId] = useState(null);
 
-  const clientes = useMemo(() => {
+  const clientesBase = useMemo(() => {
     return contactos.filter((contacto) => contacto.rol === 'Cliente');
   }, [contactos]);
+
+  const clientes = useMemo(() => {
+    return filtrarRegistrosCRM(usuarioCRM, clientesBase);
+  }, [clientesBase, usuarioCRM?.id, usuarioCRM?.rol, usuarioCRM?.rolNombre]);
 
   const clientesFiltrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -41,6 +67,8 @@ export default function Clientes() {
         cliente.telefono,
         cliente.correo,
         cliente.estado,
+        cliente.vendedor_nombre,
+        cliente.codigo_vendedor,
         empresa?.nombre,
       ]
         .filter(Boolean)
@@ -68,10 +96,28 @@ export default function Clientes() {
   const guardar = (e) => {
     e.preventDefault();
 
+    if (!puedeCrearCRM(usuarioCRM)) {
+      alert('No tenés permiso para crear clientes.');
+      return;
+    }
+
     if (!form.nombre.trim()) {
       alert('Escribí el nombre del cliente.');
       return;
     }
+
+    const clienteOriginal = editandoId
+      ? clientesBase.find((cliente) => cliente.id === editandoId)
+      : null;
+
+    if (editandoId && !puedeEditarCRM(usuarioCRM, clienteOriginal)) {
+      alert('No tenés permiso para editar este cliente.');
+      return;
+    }
+
+    const firmaVendedor = esVendedorCRM(usuarioCRM)
+      ? obtenerFirmaVendedor(usuarioCRM)
+      : {};
 
     const datos = {
       nombre: form.nombre.trim(),
@@ -82,10 +128,20 @@ export default function Clientes() {
       empresaId: form.empresaId,
       rol: 'Cliente',
       estado: form.estado || 'Activo',
+      updated_at: new Date().toISOString(),
+      ...(editandoId ? {} : { created_at: new Date().toISOString() }),
+      ...(editandoId ? {} : firmaVendedor),
     };
 
     if (editandoId) {
-      actualizarContacto(editandoId, datos);
+      actualizarContacto(editandoId, {
+        ...datos,
+        vendedor_id: clienteOriginal?.vendedor_id || firmaVendedor.vendedor_id || '',
+        vendedorId: clienteOriginal?.vendedorId || firmaVendedor.vendedorId || '',
+        vendedor_nombre: clienteOriginal?.vendedor_nombre || firmaVendedor.vendedor_nombre || '',
+        codigo_vendedor: clienteOriginal?.codigo_vendedor || firmaVendedor.codigo_vendedor || '',
+        created_by: clienteOriginal?.created_by || firmaVendedor.created_by || '',
+      });
     } else {
       crearContacto(datos);
     }
@@ -94,6 +150,11 @@ export default function Clientes() {
   };
 
   const editar = (cliente) => {
+    if (!puedeEditarCRM(usuarioCRM, cliente)) {
+      alert('No tenés permiso para editar este cliente.');
+      return;
+    }
+
     setForm({
       nombre: cliente.nombre || '',
       cargo: cliente.cargo || '',
@@ -107,6 +168,11 @@ export default function Clientes() {
   };
 
   const eliminar = (cliente) => {
+    if (!puedeEliminarCRM(usuarioCRM, cliente)) {
+      alert('No tenés permiso para eliminar este cliente.');
+      return;
+    }
+
     const ok = window.confirm(`¿Eliminar cliente ${cliente.nombre || ''}?`);
     if (!ok) return;
 
@@ -117,18 +183,26 @@ export default function Clientes() {
     }
   };
 
+  const tituloResumen = esAdminCRM(usuarioCRM)
+    ? 'Base completa'
+    : 'Mis clientes';
+
   return (
     <div className="crm-page">
       <div className="crm-page-header">
         <div>
           <h2>Clientes</h2>
-          <p>Crear, editar y eliminar clientes comerciales de ELANVISUAL.</p>
+          <p>
+            {esAdminCRM(usuarioCRM)
+              ? 'Administración general de clientes comerciales de ELANVISIÓN.'
+              : 'Clientes asignados a tu usuario vendedor.'}
+          </p>
         </div>
       </div>
 
       <div className="crm-stats">
         <div className="crm-stat-card">
-          <span>Clientes</span>
+          <span>{tituloResumen}</span>
           <strong>{clientes.length}</strong>
         </div>
         <div className="crm-stat-card">
@@ -223,7 +297,7 @@ export default function Clientes() {
           <div className="crm-toolbar">
             <input
               type="text"
-              placeholder="Buscar cliente, WhatsApp, correo o empresa..."
+              placeholder="Buscar cliente, WhatsApp, correo, vendedor o empresa..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
             />
@@ -239,6 +313,7 @@ export default function Clientes() {
                   <th>Estado</th>
                   <th>WhatsApp</th>
                   <th>Correo</th>
+                  <th>Vendedor</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -253,6 +328,7 @@ export default function Clientes() {
                       <td>{cliente.estado || 'Activo'}</td>
                       <td>{cliente.whatsapp || cliente.telefono || 'N/A'}</td>
                       <td>{cliente.correo || 'N/A'}</td>
+                      <td>{cliente.vendedor_nombre || cliente.codigo_vendedor || 'Sin asignar'}</td>
                       <td>
                         <div className="crm-row-actions">
                           <button type="button" onClick={() => editar(cliente)}>
@@ -267,7 +343,7 @@ export default function Clientes() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="7">No hay clientes registrados.</td>
+                    <td colSpan="8">No hay clientes disponibles para este usuario.</td>
                   </tr>
                 )}
               </tbody>
@@ -275,11 +351,12 @@ export default function Clientes() {
           </div>
 
           <div className="crm-note">
-            Los clientes se guardan como contactos con rol Cliente dentro del CRM.
+            {esAdminCRM(usuarioCRM)
+              ? 'El administrador ve toda la base comercial.'
+              : 'El vendedor solo ve, edita y elimina clientes creados o asignados a su usuario.'}
           </div>
         </div>
       </div>
     </div>
   );
-}
-
+} 
