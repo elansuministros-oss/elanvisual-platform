@@ -354,6 +354,65 @@ export default function CotizadorDirecto() {
     setClientes(lista);
   };
 
+  const guardarClienteSupabase = async () => {
+    if (!supabase) return false;
+    if (!form.cliente && !form.empresa) return false;
+
+    const whatsapp = String(form.whatsapp || '').trim();
+
+    const dataCliente = {
+      cliente: form.cliente || '',
+      empresa: form.empresa || '',
+      whatsapp,
+      correo: form.correo || '',
+      direccion: form.direccion || '',
+      ciudad: form.ciudad || '',
+      unidad_negocio: 'ELANVISUAL',
+      origen: 'CotizadorDirecto',
+      data: {
+        cliente: form.cliente || '',
+        empresa: form.empresa || '',
+        whatsapp,
+        correo: form.correo || '',
+        direccion: form.direccion || '',
+        ciudad: form.ciudad || '',
+        actualizadoDesde: 'CotizadorDirecto',
+      },
+      updated_at: new Date().toISOString(),
+    };
+
+    try {
+      if (whatsapp) {
+        const { data: existente, error: buscarError } = await supabase
+          .from('clientes')
+          .select('id')
+          .eq('unidad_negocio', 'ELANVISUAL')
+          .eq('whatsapp', whatsapp)
+          .maybeSingle();
+
+        if (buscarError) throw buscarError;
+
+        if (existente?.id) {
+          const { error } = await supabase
+            .from('clientes')
+            .update(dataCliente)
+            .eq('id', existente.id);
+
+          if (error) throw error;
+          return true;
+        }
+      }
+
+      const { error } = await supabase.from('clientes').insert(dataCliente);
+      if (error) throw error;
+
+      return true;
+    } catch (error) {
+      console.error('Error guardando cliente en Supabase:', error);
+      return false;
+    }
+  };
+
   const manejarArchivos = (e) => {
     const files = Array.from(e.target.files || []).map((file) => ({
       id: `file-${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -472,6 +531,7 @@ export default function CotizadorDirecto() {
 
   const guardar = async () => {
     guardarClienteLocal();
+    const clienteSupabaseOk = await guardarClienteSupabase();
 
     const payload = {
       id: `cot-dir-${Date.now()}`,
@@ -509,7 +569,7 @@ export default function CotizadorDirecto() {
         return payload;
       }
 
-      setMensaje('Cotización guardada local y en Supabase.');
+      setMensaje(clienteSupabaseOk ? 'Cotización y cliente guardados en Supabase.' : 'Cotización guardada en Supabase. Cliente solo local.');
       return payload;
     } catch (error) {
       console.error('Error inesperado guardando cotización directa:', error);
