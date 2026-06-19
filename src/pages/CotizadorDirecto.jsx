@@ -595,8 +595,96 @@ export default function CotizadorDirecto({ setPage }) {
   };
 
   const imprimir = async () => {
+    const esMovil =
+      /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth <= 900;
+
+    /*
+      En móvil window.print() ejecutado sobre la misma pantalla suele fallar:
+      Android/iOS pueden bloquear el diálogo, mostrar blanco o no ofrecer guardar PDF.
+      Por eso abrimos una ventana limpia de impresión en el mismo clic del usuario.
+    */
+    const ventanaImpresion = esMovil ? window.open('', '_blank') : null;
+
     await guardar();
-    setTimeout(() => window.print(), 150);
+
+    const imprimirPaginaActual = () => {
+      setTimeout(() => {
+        window.print();
+      }, 700);
+    };
+
+    if (!esMovil) {
+      imprimirPaginaActual();
+      return;
+    }
+
+    const areaImpresion = document.querySelector('.print-area');
+
+    if (!areaImpresion || !ventanaImpresion) {
+      imprimirPaginaActual();
+      return;
+    }
+
+    const estilos = Array.from(document.querySelectorAll('style'))
+      .map((style) => style.innerHTML)
+      .join('\n');
+
+    const tituloPDF = `Cotizacion-ELANVISION-${Date.now()}`;
+
+    ventanaImpresion.document.open();
+    ventanaImpresion.document.write(`
+      <!doctype html>
+      <html lang="es">
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <title>${tituloPDF}</title>
+          <style>
+            ${estilos}
+
+            html,
+            body {
+              margin: 0 !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+
+            .print-area {
+              display: block !important;
+              width: 100% !important;
+              padding: 0 !important;
+              background: #ffffff !important;
+            }
+
+            .ev-quote-sheet {
+              width: 1080px !important;
+              min-height: 1800px !important;
+              margin: 0 auto !important;
+              box-shadow: none !important;
+            }
+
+            @page {
+              size: auto;
+              margin: 0;
+            }
+          </style>
+        </head>
+        <body>
+          ${areaImpresion.innerHTML}
+          <script>
+            window.onload = function () {
+              setTimeout(function () {
+                window.focus();
+                window.print();
+              }, 900);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    ventanaImpresion.document.close();
   };
 
   return (
@@ -1920,15 +2008,3 @@ export default function CotizadorDirecto({ setPage }) {
     </main>
   );
 }
-
-
-  
-
-
-
-
-
-
-
-
-
