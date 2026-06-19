@@ -197,12 +197,13 @@ function crearMensajeWhatsApp(pedido, estado, ot) {
 
 export default function ProduccionPanel() {
   const {
-    usuario,
-    pedidos,
-    cambiarEstadoProduccion,
-    actualizarOrdenTrabajo,
-    guardarEvidenciaProduccion,
-  } = useApp();
+  usuario,
+  pedidos,
+  proveedores,
+  cambiarEstadoProduccion,
+  actualizarOrdenTrabajo,
+  guardarEvidenciaProduccion,
+} = useApp();
 
   const [pedidoActivoId, setPedidoActivoId] = useState('');
   const [busqueda, setBusqueda] = useState('');
