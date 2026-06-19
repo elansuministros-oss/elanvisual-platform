@@ -6,7 +6,8 @@ import { useCore } from '../core/context/CoreContext';
 function destinoPorRol(rol) {
   if (rol === 'admin') return 'admin';
   if (rol === 'produccion') return 'produccion';
-  return 'crm';
+  if (rol === 'ventas') return 'ventas';
+  return 'home';
 }
 
 const normalizar = (valor = '') =>
