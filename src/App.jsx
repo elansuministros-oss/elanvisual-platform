@@ -156,6 +156,8 @@ export default function App() {
 
       {page === 'dashboard' &&
         (accesoERP ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'crm' &&
+        (accesoAdmin ? <CRM /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'clientes' &&
   (accesoVentas ? <ClientesCRM /> : <Login setPage={ir} destino="clientes" />)}
@@ -206,6 +208,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 
