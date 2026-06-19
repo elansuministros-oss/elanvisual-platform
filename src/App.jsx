@@ -18,6 +18,7 @@ import PedidosProduccion from './pages/PedidosProduccion';
 import DashboardERP from './pages/DashboardERP';
 import MiCuenta from './pages/MiCuenta';
 import ProveedoresCostos from './pages/ProveedoresCostos';
+import RedProveedoresIA from './pages/RedProveedoresIA';
 import InventarioInteligente from './pages/InventarioInteligente';
 import BibliotecaTecnica from './pages/BibliotecaTecnica';
 import CotizadorDirecto from './pages/CotizadorDirecto';
@@ -147,6 +148,8 @@ export default function App() {
 
       {page === 'proveedores' &&
         (accesoAdmin ? <ProveedoresCostos /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'redProveedoresIA' &&
+        (accesoAdmin ? <RedProveedoresIA /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'bibliotecaTecnica' &&
         (accesoAdmin ? <BibliotecaTecnica /> : <Login setPage={ir} destino="admin" />)}
@@ -208,6 +211,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 
