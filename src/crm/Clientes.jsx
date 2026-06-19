@@ -4,10 +4,10 @@ import {
   esAdminCRM,
   esVendedorCRM,
   filtrarRegistrosCRM,
-  obtenerFirmaVendedor,
   puedeCrearCRM,
   puedeEditarCRM,
   puedeEliminarCRM,
+  codigoVendedorCRM,
 } from '../services/permisosCRM';
 
 const formInicial = {
@@ -18,6 +18,14 @@ const formInicial = {
   empresaId: '',
   estado: 'Activo',
 };
+
+const obtenerFirmaVendedorLocal = (usuario) => ({
+  vendedor_id: usuario?.id || '',
+  vendedorId: usuario?.id || '',
+  vendedor_nombre: usuario?.nombre || usuario?.usuario || usuario?.email || '',
+  codigo_vendedor: usuario?.codigo_vendedor || usuario?.codigo || codigoVendedorCRM(usuario),
+  created_by: usuario?.id || '',
+});
 
 export default function Clientes() {
   const {
@@ -46,16 +54,17 @@ export default function Clientes() {
   const [editandoId, setEditandoId] = useState(null);
 
   const clientesBase = useMemo(() => {
-    return contactos.filter((contacto) => contacto.rol === 'Cliente');
+    return (Array.isArray(contactos) ? contactos : []).filter(
+      (contacto) => contacto.rol === 'Cliente'
+    );
   }, [contactos]);
 
   const clientes = useMemo(() => {
     return filtrarRegistrosCRM(usuarioCRM, clientesBase);
-  }, [clientesBase, usuarioCRM?.id, usuarioCRM?.rol, usuarioCRM?.rolNombre]);
+  }, [clientesBase, usuarioCRM.id, usuarioCRM.rol, usuarioCRM.rolNombre]);
 
   const clientesFiltrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
-
     if (!q) return clientes;
 
     return clientes.filter((cliente) => {
@@ -116,7 +125,7 @@ export default function Clientes() {
     }
 
     const firmaVendedor = esVendedorCRM(usuarioCRM)
-      ? obtenerFirmaVendedor(usuarioCRM)
+      ? obtenerFirmaVendedorLocal(usuarioCRM)
       : {};
 
     const datos = {
@@ -178,14 +187,10 @@ export default function Clientes() {
 
     eliminarContacto(cliente.id);
 
-    if (editandoId === cliente.id) {
-      limpiar();
-    }
+    if (editandoId === cliente.id) limpiar();
   };
 
-  const tituloResumen = esAdminCRM(usuarioCRM)
-    ? 'Base completa'
-    : 'Mis clientes';
+  const tituloResumen = esAdminCRM(usuarioCRM) ? 'Base completa' : 'Mis clientes';
 
   return (
     <div className="crm-page">
@@ -221,43 +226,22 @@ export default function Clientes() {
 
           <label>
             Nombre del cliente
-            <input
-              name="nombre"
-              value={form.nombre}
-              onChange={cambiar}
-              placeholder="Ej: Carlos López"
-            />
+            <input name="nombre" value={form.nombre} onChange={cambiar} placeholder="Ej: Carlos López" />
           </label>
 
           <label>
             Cargo / referencia
-            <input
-              name="cargo"
-              value={form.cargo}
-              onChange={cambiar}
-              placeholder="Ej: Gerente, dueño, compras"
-            />
+            <input name="cargo" value={form.cargo} onChange={cambiar} placeholder="Ej: Gerente, dueño, compras" />
           </label>
 
           <label>
             WhatsApp
-            <input
-              name="whatsapp"
-              value={form.whatsapp}
-              onChange={cambiar}
-              placeholder="+505 8888 8888"
-            />
+            <input name="whatsapp" value={form.whatsapp} onChange={cambiar} placeholder="+505 8888 8888" />
           </label>
 
           <label>
             Correo
-            <input
-              name="correo"
-              type="email"
-              value={form.correo}
-              onChange={cambiar}
-              placeholder="cliente@empresa.com"
-            />
+            <input name="correo" type="email" value={form.correo} onChange={cambiar} placeholder="cliente@empresa.com" />
           </label>
 
           <label>
@@ -281,15 +265,8 @@ export default function Clientes() {
           </label>
 
           <div className="crm-actions">
-            <button type="submit">
-              {editandoId ? 'Guardar cambios' : 'Guardar cliente'}
-            </button>
-
-            {editandoId && (
-              <button type="button" onClick={limpiar}>
-                Cancelar edición
-              </button>
-            )}
+            <button type="submit">{editandoId ? 'Guardar cambios' : 'Guardar cliente'}</button>
+            {editandoId && <button type="button" onClick={limpiar}>Cancelar edición</button>}
           </div>
         </form>
 
@@ -331,12 +308,8 @@ export default function Clientes() {
                       <td>{cliente.vendedor_nombre || cliente.codigo_vendedor || 'Sin asignar'}</td>
                       <td>
                         <div className="crm-row-actions">
-                          <button type="button" onClick={() => editar(cliente)}>
-                            Editar
-                          </button>
-                          <button type="button" onClick={() => eliminar(cliente)}>
-                            Eliminar
-                          </button>
+                          <button type="button" onClick={() => editar(cliente)}>Editar</button>
+                          <button type="button" onClick={() => eliminar(cliente)}>Eliminar</button>
                         </div>
                       </td>
                     </tr>
@@ -359,4 +332,4 @@ export default function Clientes() {
       </div>
     </div>
   );
-} 
+}
