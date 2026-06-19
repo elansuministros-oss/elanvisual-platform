@@ -2040,7 +2040,6 @@ const generarComisionAutomatica = ({
         actualizarProveedor,
         eliminarProveedor,
         crearProductoProveedor,
-        actualizarProductoProveedor,
         eliminarProductoProveedor,
 
         usuario,
