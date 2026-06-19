@@ -585,7 +585,7 @@ export default function CotizadorDirecto({ setPage }) {
         return payload;
       }
 
-      setMensaje(clienteSupabaseOk ? 'Cotización y cliente guardados en Supabase.' : 'Cotización guardada en Supabase. Cliente solo local.');
+      setMensaje(clienteSupabaseOk ? 'Cotización y cliente guardados en Supabase.' : 'Cotización guardada en Supabase. Cliente pendiente de sincronizar.');
       return payload;
     } catch (error) {
       console.error('Error inesperado guardando cotización directa:', error);
@@ -1923,6 +1923,7 @@ export default function CotizadorDirecto({ setPage }) {
 
 
   
+
 
 
 
