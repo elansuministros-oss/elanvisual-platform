@@ -43,7 +43,7 @@ const estadoDefault = 'pendiente';
 const seguimientoUrl = 'https://visual.elankav.com/seguimiento';
 
 function estadoPedido(pedido) {
-  return pedido.estadoProduccion || pedido.ordenTrabajo?.estadoProduccion || estadoDefault;
+  return pedido?.estadoProduccion || pedido?.ordenTrabajo?.estadoProduccion || estadoDefault;
 }
 
 function limpiarNumero(valor) {
@@ -58,54 +58,56 @@ function numeroWhatsApp(numero) {
 
 function obtenerMonto(pedido) {
   return Number(
-    pedido.total ||
-      pedido.monto ||
-      pedido.resumen?.total ||
-      pedido.cotizacion?.total ||
+    pedido?.total ||
+      pedido?.monto ||
+      pedido?.resumen?.total ||
+      pedido?.cotizacion?.total ||
       0
   );
 }
 
 function obtenerAnticipo(pedido) {
+  const monto = obtenerMonto(pedido);
+
   return Number(
-    pedido.anticipo ||
-      pedido.montoAnticipo ||
-      pedido.pago?.anticipo ||
-      pedido.resumen?.anticipo ||
-      obtenerMonto(pedido) * 0.6 ||
+    pedido?.anticipo ||
+      pedido?.montoAnticipo ||
+      pedido?.pago?.anticipo ||
+      pedido?.resumen?.anticipo ||
+      monto * 0.6 ||
       0
   );
 }
 
 function crearOTBase(pedido) {
-  const items = Array.isArray(pedido.items) ? pedido.items : [];
+  const items = Array.isArray(pedido?.items) ? pedido.items : [];
   const monto = obtenerMonto(pedido);
   const anticipo = obtenerAnticipo(pedido);
   const saldo = Math.max(monto - anticipo, 0);
 
   return {
     codigoOT:
-      pedido.ordenTrabajo?.codigoOT ||
+      pedido?.ordenTrabajo?.codigoOT ||
       `OTV-${String(
-        pedido.codigoSeguimiento || pedido.numero || pedido.id || Date.now()
+        pedido?.codigoSeguimiento || pedido?.numero || pedido?.id || Date.now()
       )
         .replace(/[^0-9]/g, '')
         .slice(-6)}`,
-    pedido: pedido.codigoSeguimiento || pedido.numero || '',
-    cliente: pedido.cliente?.nombre || pedido.clienteNombre || '',
-    vendedor: pedido.vendedor || pedido.vendedorNombre || '',
-    fecha: pedido.ordenTrabajo?.fecha || pedido.createdAt || new Date().toISOString(),
+    pedido: pedido?.codigoSeguimiento || pedido?.numero || '',
+    cliente: pedido?.cliente?.nombre || pedido?.clienteNombre || '',
+    vendedor: pedido?.vendedor || pedido?.vendedorNombre || '',
+    fecha: pedido?.ordenTrabajo?.fecha || pedido?.createdAt || new Date().toISOString(),
     servicio:
-      pedido.ordenTrabajo?.servicio ||
-      pedido.servicio ||
-      pedido.tipoServicio ||
+      pedido?.ordenTrabajo?.servicio ||
+      pedido?.servicio ||
+      pedido?.tipoServicio ||
       items.map((item) => item.nombre).join(', ') ||
       'Servicio ELANVISUAL',
-    monto: pedido.ordenTrabajo?.monto ?? monto,
-    anticipo: pedido.ordenTrabajo?.anticipo ?? anticipo,
-    saldo: pedido.ordenTrabajo?.saldo ?? saldo,
-    responsable: pedido.ordenTrabajo?.responsable || '',
-    observaciones: pedido.ordenTrabajo?.observaciones || '',
+    monto: pedido?.ordenTrabajo?.monto ?? monto,
+    anticipo: pedido?.ordenTrabajo?.anticipo ?? anticipo,
+    saldo: pedido?.ordenTrabajo?.saldo ?? saldo,
+    responsable: pedido?.ordenTrabajo?.responsable || '',
+    observaciones: pedido?.ordenTrabajo?.observaciones || '',
     estadoProduccion: estadoPedido(pedido),
     evidencias: {
       inicial: '',
@@ -113,7 +115,7 @@ function crearOTBase(pedido) {
       proceso: '',
       instalacion: '',
       entrega: '',
-      ...(pedido.ordenTrabajo?.evidencias || {}),
+      ...(pedido?.ordenTrabajo?.evidencias || {}),
     },
   };
 }
@@ -174,8 +176,8 @@ function formatearDinero(valor) {
 }
 
 function crearMensajeWhatsApp(pedido, estado, ot) {
-  const codigo = ot.codigoOT || pedido.codigoSeguimiento || pedido.numero || '';
-  const cliente = ot.cliente || pedido.cliente?.nombre || 'cliente';
+  const codigo = ot.codigoOT || pedido?.codigoSeguimiento || pedido?.numero || '';
+  const cliente = ot.cliente || pedido?.cliente?.nombre || 'cliente';
   const estadoTexto = ETIQUETAS_ESTADO_VISUAL[estado] || estado || 'Actualizado';
 
   return [
@@ -197,13 +199,13 @@ function crearMensajeWhatsApp(pedido, estado, ot) {
 
 export default function ProduccionPanel() {
   const {
-  usuario,
-  pedidos,
-  proveedores,
-  cambiarEstadoProduccion,
-  actualizarOrdenTrabajo,
-  guardarEvidenciaProduccion,
-} = useApp();
+    usuario,
+    pedidos = [],
+    proveedores = [],
+    cambiarEstadoProduccion,
+    actualizarOrdenTrabajo,
+    guardarEvidenciaProduccion,
+  } = useApp();
 
   const [pedidoActivoId, setPedidoActivoId] = useState('');
   const [busqueda, setBusqueda] = useState('');
@@ -510,26 +512,41 @@ export default function ProduccionPanel() {
                 {(() => {
                   const auto = generarProduccionAutomatica({
                     pedido: pedidoActivo,
-                    sistemaConstructivo: pedidoActivo?.sistemaConstructivo || pedidoActivo?.cotizacion?.sistemaConstructivo,
+                    sistemaConstructivo:
+                      pedidoActivo?.sistemaConstructivo ||
+                      pedidoActivo?.cotizacion?.sistemaConstructivo,
                     proveedores,
                   });
 
                   return (
-                    <section className="panel" style={{ margin: '14px 0', boxShadow: 'none', border: '1px solid #e5e7eb' }}>
+                    <section
+                      className="panel"
+                      style={{
+                        margin: '14px 0',
+                        boxShadow: 'none',
+                        border: '1px solid #e5e7eb',
+                      }}
+                    >
                       <h2>Producción automática CI-16D</h2>
                       <p><b>Tecnología:</b> {auto.tecnologia}</p>
                       <p><b>Origen:</b> {auto.origen}</p>
 
                       <h3>Materiales y cantidades</h3>
                       {(auto.materiales || []).map((m) => (
-                        <p key={m.id}>{m.nombre}: {Number(m.cantidad || 0).toFixed(2)} {m.unidad}</p>
+                        <p key={m.id}>
+                          {m.nombre}: {Number(m.cantidad || 0).toFixed(2)} {m.unidad}
+                        </p>
                       ))}
 
                       <h3>Proceso fabricación</h3>
-                      {(auto.procesoFabricacion || []).map((p, i) => <p key={`fab-${i}`}>{p}</p>)}
+                      {(auto.procesoFabricacion || []).map((p, i) => (
+                        <p key={`fab-${i}`}>{p}</p>
+                      ))}
 
                       <h3>Proceso instalación</h3>
-                      {(auto.procesoInstalacion || []).map((p, i) => <p key={`ins-${i}`}>{p}</p>)}
+                      {(auto.procesoInstalacion || []).map((p, i) => (
+                        <p key={`ins-${i}`}>{p}</p>
+                      ))}
 
                       <h3>Proveedor sugerido</h3>
                       <p>{auto.proveedorSugerido?.nombre || 'Sin proveedor sugerido todavía'}</p>
@@ -538,11 +555,7 @@ export default function ProduccionPanel() {
                 })()}
 
                 <div className="actions-row">
-                  <button
-                    type="button"
-                    className="btn-outline"
-                    onClick={notificarWhatsApp}
-                  >
+                  <button type="button" className="btn-outline" onClick={notificarWhatsApp}>
                     <Send size={17} /> Avisar por WhatsApp
                   </button>
 

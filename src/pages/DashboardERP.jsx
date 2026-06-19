@@ -190,7 +190,6 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
   const [area, setArea] = useState(areaInicial);
 
   const {
-    usuario,
     clientes,
     productos,
     pedidos,
@@ -198,10 +197,8 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     banners,
     usuarios,
     configuracion,
-
     utilidadesReales,
     comisionesAutomaticas,
-
     fondoComunidad,
     fondoIncentivo,
     fondoDireccion,
@@ -348,9 +345,24 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     if (area === 'crm') {
       return (
         <>
-          <MiniAction icon={<Users size={20} />} title="Abrir CRM" desc="Clientes, prospectos y seguimiento." onClick={() => setPage('crm')} />
-          <MiniAction icon={<CalendarDays size={20} />} title="Seguimiento" desc="Consulta y control de avances." onClick={() => setPage('seguimiento')} />
-          <MiniAction icon={<PlusCircle size={20} />} title="Nuevo cliente" desc="Crear contacto desde CRM." onClick={() => setPage('clientes')} />
+          <MiniAction
+            icon={<Users size={20} />}
+            title="Clientes CRM"
+            desc="Abrir módulo real de clientes."
+            onClick={() => setPage('clientes')}
+          />
+          <MiniAction
+            icon={<CalendarDays size={20} />}
+            title="Seguimiento"
+            desc="Consulta y control de avances."
+            onClick={() => setPage('seguimiento')}
+          />
+          <MiniAction
+            icon={<PlusCircle size={20} />}
+            title="Captura inteligente"
+            desc="Registrar cliente nuevo desde ventas."
+            onClick={() => setPage('capturaInteligente')}
+          />
         </>
       );
     }
