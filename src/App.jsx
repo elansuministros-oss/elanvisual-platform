@@ -25,6 +25,7 @@ import CotizadorDirecto from './pages/CotizadorDirecto';
 import CapturaInteligente from './pages/CapturaInteligente';
 import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
+import AIStudio from './pages/AIStudio';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -44,6 +45,7 @@ export default function App() {
     if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
+    if (pathInicial.startsWith('/ai-studio')) return 'aiStudio';
     if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizador';
     if (pathInicial.startsWith('/cotizador')) return 'cotizador';
     if (pathInicial.startsWith('/pedidos')) return 'pedidos';
@@ -96,6 +98,7 @@ export default function App() {
       cotizadorInteligente: '/cotizador',
       cotizacionesInteligentes: '/cotizaciones-inteligentes',
       recomendadorTecnico: '/recomendador-tecnico',
+      aiStudio: '/ai-studio',
       cotizadorVisual: '/cotizador-visual',
       pedidos: '/pedidos',
       ventas: '/ventas',
@@ -192,7 +195,8 @@ export default function App() {
       {page === 'recomendadorTecnico' &&
         (accesoVentas ? <RecomendadorTecnico /> : <Login setPage={ir} destino="cotizador" />)}
 
-      
+      {page === 'aiStudio' &&
+  (accesoVentas ? <AIStudio setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
 
       {page === 'capturaInteligente' &&
         (accesoVentas ? <CapturaInteligente /> : <Login setPage={ir} destino="crm" />)}

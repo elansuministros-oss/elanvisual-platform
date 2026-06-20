@@ -21,6 +21,11 @@ export default function PanelVentas({ setPage }) {
           <p>Registrar cliente nuevo rápidamente.</p>
         </button>
 
+<button className="crm-card" type="button" onClick={() => setPage('aiStudio')}>
+  <h3>AI Studio</h3>
+  <p>Conversar con IA, crear proyectos y generar borradores de cotización.</p>
+</button>
+
         <button className="crm-card" type="button" onClick={() => setPage('cotizador')}>
           <h3>Cotizador</h3>
           <p>Crear cotizaciones comerciales.</p>
