@@ -1,0 +1,35 @@
+.elan-ai-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  z-index: 9999;
+}
+
+.elan-ai-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 420px;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 10000;
+  box-shadow: -5px 0 20px rgba(0,0,0,.2);
+}
+
+.elan-ai-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+}
+
+.elan-ai-body {
+  padding: 16px;
+  overflow-y: auto;
+  height: calc(100vh - 70px);
+}
