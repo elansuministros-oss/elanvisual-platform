@@ -185,39 +185,42 @@ export default function AIStudio({ setPage }) {
     return data;
   }
 
-  async function enviarMensaje(e) {
-    e.preventDefault();
-    if (!proyectoActivo) return setError('Primero creá o seleccioná un proyecto.');
-    if (!mensaje.trim()) return;
+ async function enviarMensaje(e) {
+  e.preventDefault();
 
-    setCargando(true);
-    setError('');
-    setEstado('Consultando ELANKAV CORE...');
+  if (!proyectoActivo) return;
+  if (!mensaje.trim()) return;
 
-    try {
-      const contenidoUsuario = mensaje.trim();
-      setMensaje('');
-      const msgUser = await guardarMensaje('user', contenidoUsuario);
-      const historial = [...mensajes, msgUser].map((m) => ({ role: m.rol, content: m.contenido }));
+  const texto = mensaje;
+  setMensaje('');
 
-      const data = await llamarCore(historial, 'chat');
-      const texto = respuestaIA(data);
-      const msgIA = await guardarMensaje('assistant', texto, { core: data });
-      setMensajes((prev) => [...prev, msgUser, msgIA]);
+  setMensajes((prev) => [
+    ...prev,
+    { id: Date.now(), rol: 'user', contenido: texto },
+  ]);
 
-      await supabase
-        .from('proyectos_ai')
-        .update({ updated_at: new Date().toISOString(), resumen: texto.slice(0, 500) })
-        .eq('id', proyectoActivo.id);
+  try {
+    const data = await llamarCore(
+      [{ role: 'user', content: texto }],
+      'chat'
+    );
 
-      setEstado('Respuesta guardada en Supabase.');
-      await cargarProyectos();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setCargando(false);
-    }
+    const respuesta =
+      data?.respuesta ||
+      data?.message ||
+      'Sin respuesta de IA';
+
+    setMensajes((prev) => [
+      ...prev,
+      { id: Date.now() + 1, rol: 'assistant', contenido: respuesta },
+    ]);
+  } catch (err) {
+    setMensajes((prev) => [
+      ...prev,
+      { id: Date.now() + 1, rol: 'assistant', contenido: 'Error de conexión' },
+    ]);
   }
+}
 
   async function generarCotizacion() {
     if (!proyectoActivo) return setError('Seleccioná un proyecto.');

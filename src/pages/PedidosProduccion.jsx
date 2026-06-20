@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
+  ArrowLeft,
   ClipboardList,
   Copy,
   PackageCheck,
@@ -28,7 +29,15 @@ const money = (v) =>
   }).format(Number(v || 0));
 
 export default function PedidosProduccion() {
-  const { usuario, pedidos, actualizarPedido, proveedores = [], crearSolicitudProveedor, asignarProveedorPedido } = useApp();
+  const {
+    usuario,
+    pedidos,
+    actualizarPedido,
+    proveedores = [],
+    crearSolicitudProveedor,
+    asignarProveedorPedido,
+  } = useApp();
+
   const [busqueda, setBusqueda] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('Todos');
   const [pedidoActivo, setPedidoActivo] = useState(null);
@@ -61,6 +70,14 @@ export default function PedidosProduccion() {
       );
     });
   }, [pedidos, busqueda, estadoFiltro]);
+
+  const abrirPedido = (pedido) => {
+    setPedidoActivo(pedido);
+  };
+
+  const volverListaMobile = () => {
+    setPedidoActivo(null);
+  };
 
   const actualizarEstado = (id, estado) => {
     const pedido = pedidos.find((p) => p.id === id);
@@ -102,17 +119,18 @@ export default function PedidosProduccion() {
     if (pedidoActivo?.id === id) setPedidoActivo(null);
   };
 
-  const produccionAutomatica = (pedido) => generarProduccionAutomatica({
-    pedido,
-    sistemaConstructivo: pedido?.sistemaConstructivo || pedido?.cotizacion?.sistemaConstructivo,
-    proveedores,
-  });
+  const produccionAutomatica = (pedido) =>
+    generarProduccionAutomatica({
+      pedido,
+      sistemaConstructivo:
+        pedido?.sistemaConstructivo || pedido?.cotizacion?.sistemaConstructivo,
+      proveedores,
+    });
 
   const textoOT = (pedido) => {
     if (!pedido) return '';
 
     const items = pedido.items || [];
-    const auto = produccionAutomatica(pedido);
     const numeroOT = pedido.numeroOT || pedido.ordenTrabajo?.codigoOT || '';
     const numeroPedido = pedido.numeroPedido || pedido.numero || '';
 
@@ -178,6 +196,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
   const asignarProveedor = (pedido) => {
     if (!proveedorId) return alert('Seleccioná proveedor.');
     if (!costoReal) return alert('Indicá costo real.');
+
     const actualizado = asignarProveedorPedido?.({
       pedidoId: pedido.id,
       proveedorId,
@@ -185,6 +204,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
       tiempoEntrega,
       nota: 'Asignado desde Pedidos / OT',
     });
+
     if (actualizado) {
       setPedidoActivo(actualizado);
       setProveedorId('');
@@ -216,7 +236,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
   }
 
   return (
-    <main className="pedidos-page">
+    <main className={`pedidos-page ${pedidoActivo ? 'mobile-detail-open' : ''}`}>
       <section className="pedidos-hero">
         <span>ELANVISUAL · Producción</span>
         <h1>Pedidos y OT</h1>
@@ -251,7 +271,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
               <article
                 key={pedido.id}
                 className={`pedido-card ${pedidoActivo?.id === pedido.id ? 'active' : ''}`}
-                onClick={() => setPedidoActivo(pedido)}
+                onClick={() => abrirPedido(pedido)}
               >
                 <div>
                   <strong>{numeroPedido}</strong>
@@ -264,6 +284,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
                     pedido.cliente?.contacto ||
                     'Cliente'}
                 </h2>
+
                 <p>{pedido.proyecto?.lugar || 'Sin lugar definido'}</p>
 
                 <div className="pedido-meta">
@@ -286,6 +307,11 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
           {pedidoActivo && (
             <>
+              <button className="mobile-back-btn" type="button" onClick={volverListaMobile}>
+                <ArrowLeft size={18} />
+                Volver a pedidos
+              </button>
+
               <div className="detail-head">
                 <div>
                   <span>{pedidoActivo.numeroPedido || pedidoActivo.numero}</span>
@@ -314,9 +340,18 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
               </label>
 
               <div className="totals-box">
-                <p><span>Total</span><b>{money(pedidoActivo.resumen?.total)}</b></p>
-                <p><span>Anticipo 60%</span><b>{money(pedidoActivo.resumen?.anticipo)}</b></p>
-                <p><span>Saldo 40%</span><b>{money(pedidoActivo.resumen?.saldo)}</b></p>
+                <p>
+                  <span>Total</span>
+                  <b>{money(pedidoActivo.resumen?.total)}</b>
+                </p>
+                <p>
+                  <span>Anticipo 60%</span>
+                  <b>{money(pedidoActivo.resumen?.anticipo)}</b>
+                </p>
+                <p>
+                  <span>Saldo 40%</span>
+                  <b>{money(pedidoActivo.resumen?.saldo)}</b>
+                </p>
               </div>
 
               <div className="items-box">
@@ -349,7 +384,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
               <div className="logistica-box">
                 <Truck size={20} />
                 <div>
-                  <strong>{pedidoActivo.logistica?.modalidad}</strong>
+                  <strong>{pedidoActivo.logistica?.modalidad || 'Logística no definida'}</strong>
                   <p>
                     KM: {pedidoActivo.logistica?.km || 'N/A'} · Altura:{' '}
                     {pedidoActivo.logistica?.altura || 'N/A'} · Complejidad:{' '}
@@ -412,20 +447,33 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .item-prod p,.item-prod span,.item-prod small{margin:0;color:#64748b;font-weight:800}
         .logistica-box{background:#fffbeb;border:1px solid #fde68a;border-radius:18px;padding:14px;display:flex;gap:10px;margin:16px 0;color:#92400e}
         .logistica-box p{margin:4px 0 0;font-weight:800}
-        .action-stack{display:grid;gap:10px}.costeo-real-box{background:#f8fafc;border:1px solid #cbd5e1;border-radius:20px;padding:14px;margin:16px 0;display:grid;gap:10px}.costeo-real-box h3{margin:0;color:#111827}.costeo-real-box p{display:flex;justify-content:space-between;margin:0;color:#475569;font-weight:800}.costeo-real-box b{color:#111827}.secondary-btn{width:100%;border:0;border-radius:18px;padding:15px;font-weight:950;font-size:16px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa}
-        .primary-btn,.danger-btn{width:100%;border:0;border-radius:18px;padding:15px;font-weight:950;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+        .action-stack{display:grid;gap:10px}
+        .primary-btn,.danger-btn,.mobile-back-btn{width:100%;border:0;border-radius:18px;padding:15px;font-weight:950;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
         .primary-btn{background:#111827;color:#fff}
         .danger-btn{background:#fee2e2;color:#991b1b}
+        .mobile-back-btn{display:none;background:#e2e8f0;color:#0f172a;margin-bottom:14px}
         .ot-text{margin-top:14px;font-family:monospace;min-height:300px}
         .empty{padding:24px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:18px;font-weight:800;background:#fff}
         .detail-empty{min-height:260px;display:grid;place-items:center}
         .pedidos-lock{text-align:center;margin:40px auto;max-width:420px}
+
         @media(max-width:850px){
-          .pedidos-page{padding:12px}
+          .pedidos-page{padding:12px;display:block}
+          .pedidos-hero,.pedidos-tools{margin-bottom:12px}
           .pedidos-tools,.pedidos-grid{grid-template-columns:1fr}
+          .pedidos-grid{display:block}
+          .pedidos-list{display:grid;gap:12px}
+          .pedido-detail{display:none}
+          .mobile-detail-open .pedidos-hero,
+          .mobile-detail-open .pedidos-tools,
+          .mobile-detail-open .pedidos-list{display:none}
+          .mobile-detail-open .pedido-detail{display:block;border-radius:22px;min-height:calc(100vh - 24px)}
+          .mobile-back-btn{display:flex}
           .pedidos-hero h1{font-size:27px}
           input,select,textarea{font-size:16px;padding:15px}
-          .primary-btn,.danger-btn{min-height:54px}
+          .primary-btn,.danger-btn,.mobile-back-btn{min-height:54px}
+          .detail-head h2{font-size:24px}
+          .ot-text{min-height:220px}
         }
       `}</style>
     </main>

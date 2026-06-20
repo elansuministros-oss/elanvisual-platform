@@ -3,8 +3,7 @@ import { useCore } from '../core/context/CoreContext';
 
 const UNIDADES_NEGOCIO = [
   'ELANVISUAL',
-  'ELANVISUAL',
-  'ELANKAV CENTER',
+    'ELANKAV CENTER',
   'ELANHOME',
   'ELAN AI',
 ];

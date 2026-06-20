@@ -1,24 +1,24 @@
 ﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
 
-export default function Comisiones() {
+export default function Comisiónes() {
   const {
-    comisiones,
-    crearComision,
-    actualizarComision,
-    eliminarComision,
+    Comisiónes,
+    crearComisión,
+    actualizarComisión,
+    eliminarComisión,
   } = useCore();
   const [editandoId, setEditandoId] = useState(null);
 
   const [form, setForm] = useState({
-    codigo: '',
+    Código: '',
     vendedor: '',
     cliente: '',
     empresa: '',
     pedido: '',
     ventaTotal: '',
     porcentaje: '10',
-    comision: '',
+    Comisión: '',
     estado: 'Pendiente',
     fecha: new Date().toISOString().slice(0, 10),
     observaciones: '',
@@ -35,21 +35,21 @@ export default function Comisiones() {
 
       return {
         ...nuevo,
-        comision: ((venta * porcentaje) / 100).toFixed(2),
+        Comisión: ((venta * porcentaje) / 100).toFixed(2),
       };
     });
   };
 
   const limpiar = () => {
     setForm({
-      codigo: '',
+      Código: '',
       vendedor: '',
       cliente: '',
       empresa: '',
       pedido: '',
       ventaTotal: '',
       porcentaje: '10',
-      comision: '',
+      Comisión: '',
       estado: 'Pendiente',
       fecha: new Date().toISOString().slice(0, 10),
       observaciones: '',
@@ -66,7 +66,7 @@ export default function Comisiones() {
     const datos = {
       ...form,
       id: editandoId || `com-${Date.now()}`,
-      codigo: form.codigo.trim() || `COM-${Date.now()}`,
+      Código: form.Código.trim() || `COM-${Date.now()}`,
       vendedor: form.vendedor.trim(),
       cliente: form.cliente.trim(),
       empresa: form.empresa.trim(),
@@ -74,14 +74,14 @@ export default function Comisiones() {
       observaciones: form.observaciones.trim(),
       ventaTotal: Number(form.ventaTotal) || 0,
       porcentaje: Number(form.porcentaje) || 0,
-      comision: Number(form.comision) || 0,
+      Comisión: Number(form.Comisión) || 0,
       actualizado: new Date().toISOString(),
     };
 
     if (editandoId) {
-      actualizarComision(datos);
+      actualizarComisión(datos);
     } else {
-      crearComision(datos);
+      crearComisión(datos);
     }
 
     limpiar();
@@ -91,14 +91,14 @@ export default function Comisiones() {
     setEditandoId(item.id);
 
     setForm({
-      codigo: item.codigo || '',
+      Código: item.Código || '',
       vendedor: item.vendedor || '',
       cliente: item.cliente || '',
       empresa: item.empresa || '',
       pedido: item.pedido || '',
       ventaTotal: String(item.ventaTotal || ''),
       porcentaje: String(item.porcentaje || '10'),
-      comision: String(item.comision || ''),
+      Comisión: String(item.Comisión || ''),
       estado: item.estado || 'Pendiente',
       fecha: item.fecha || '',
       observaciones: item.observaciones || '',
@@ -106,40 +106,40 @@ export default function Comisiones() {
   };
 
   const eliminar = (id) => {
-    eliminarComision(id);
+    eliminarComisión(id);
 
     if (editandoId === id) limpiar();
   };
 
   const resumen = useMemo(() => {
-    const ventas = comisiones.reduce(
+    const ventas = Comisiónes.reduce(
       (acc, item) => acc + (Number(item.ventaTotal) || 0),
       0
     );
 
-    const totalComisiones = comisiones.reduce(
-      (acc, item) => acc + (Number(item.comision) || 0),
+    const totalComisiónes = Comisiónes.reduce(
+      (acc, item) => acc + (Number(item.Comisión) || 0),
       0
     );
 
-    const pendientes = comisiones.filter(
+    const pendientes = Comisiónes.filter(
       (item) => item.estado === 'Pendiente'
     ).length;
 
     return {
-      totalRegistros: comisiones.length,
+      totalRegistros: Comisiónes.length,
       ventas,
-      totalComisiones,
+      totalComisiónes,
       pendientes,
     };
-  }, [comisiones]);
+  }, [Comisiónes]);
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
-          <h2>Comisiones</h2>
-          <p>Control de comisiones para vendedores, afiliados y aliados.</p>
+          <h2>Comisiónes</h2>
+          <p>Control de Comisiónes para vendedores, afiliados y aliados.</p>
         </div>
       </div>
 
@@ -155,8 +155,8 @@ export default function Comisiones() {
         </div>
 
         <div className="crm-card">
-          <span>Comisiones</span>
-          <strong>C$ {resumen.totalComisiones.toFixed(2)}</strong>
+          <span>Comisiónes</span>
+          <strong>C$ {resumen.totalComisiónes.toFixed(2)}</strong>
         </div>
 
         <div className="crm-card">
@@ -166,14 +166,14 @@ export default function Comisiones() {
       </div>
 
       <form className="crm-form" onSubmit={guardar}>
-        <h3>{editandoId ? 'Editar comision' : 'Nueva comision'}</h3>
+        <h3>{editandoId ? 'Editar Comisión' : 'Nueva Comisión'}</h3>
 
         <div className="form-grid">
           <label>
-            Codigo
+            Código
             <input
-              name="codigo"
-              value={form.codigo}
+              name="Código"
+              value={form.Código}
               onChange={cambiar}
               placeholder="COM-0001"
             />
@@ -237,11 +237,11 @@ export default function Comisiones() {
           </label>
 
           <label>
-            Comision
+            Comisión
             <input
               type="number"
-              name="comision"
-              value={form.comision}
+              name="Comisión"
+              value={form.Comisión}
               readOnly
             />
           </label>
@@ -282,7 +282,7 @@ export default function Comisiones() {
 
         <div className="form-actions">
           <button type="submit">
-            {editandoId ? 'Actualizar comision' : 'Guardar comision'}
+            {editandoId ? 'Actualizar Comisión' : 'Guardar Comisión'}
           </button>
 
           {editandoId && (
@@ -301,26 +301,26 @@ export default function Comisiones() {
         <table className="crm-table">
           <thead>
             <tr>
-              <th>Codigo</th>
+              <th>Código</th>
               <th>Vendedor</th>
               <th>Cliente</th>
               <th>Venta</th>
               <th>%</th>
-              <th>Comision</th>
+              <th>Comisión</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
 
           <tbody>
-            {comisiones.length === 0 ? (
+            {Comisiónes.length === 0 ? (
               <tr>
-                <td colSpan="8">No hay comisiones registradas.</td>
+                <td colSpan="8">No hay Comisiónes registradas.</td>
               </tr>
             ) : (
-              comisiones.map((item) => (
+              Comisiónes.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.codigo}</td>
+                  <td>{item.Código}</td>
 
                   <td>{item.vendedor}</td>
 
@@ -335,7 +335,7 @@ export default function Comisiones() {
                   </td>
 
                   <td>
-                    C$ {Number(item.comision || 0).toFixed(2)}
+                    C$ {Number(item.Comisión || 0).toFixed(2)}
                   </td>
 
                   <td>{item.estado}</td>
@@ -365,3 +365,5 @@ export default function Comisiones() {
     </div>
   );
 }
+
+
