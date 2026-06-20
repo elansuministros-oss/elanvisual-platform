@@ -61,12 +61,12 @@ export default function Header({ page, setPage }) {
     ['admin', 'Administracin', <Settings size={24} />],
   ];
 
-  const ventasLinks = [
-    ['ventas', 'Panel', <Users size={24} />],
-    ['cotizador', 'Cotizador', <Calculator size={24} />],
-    ['pedidos', 'Pedidos', <ClipboardList size={24} />],
-    ['seguimiento', 'Seguimiento', <ClipboardList size={24} />],
-  ];
+ const ventasLinks = [
+  ['aiStudio', 'AI', <Calculator size={24} />],
+  ['cotizacionesInteligentes', 'Cotizaciones', <ClipboardList size={24} />],
+  ['pedidos', 'Pedidos', <ClipboardList size={24} />],
+  ['miCuenta', 'Cuenta', <Users size={24} />],
+];
 
   const produccionLinks = [
     ['pedidos', 'Pedidos / OT', <ClipboardList size={24} />],

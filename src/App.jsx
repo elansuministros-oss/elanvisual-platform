@@ -126,8 +126,8 @@ export default function App() {
     <>
       <Header page={page} setPage={ir} />
 
-      {usuario && page !== 'home' && (
-        <div className="erp-floating-actions">
+      {usuario && page !== 'home' && rol !== 'ventas' && (
+  <div className="erp-floating-actions">
           <button type="button" onClick={() => ir('home')}>🏠 Inicio</button>
           <button type="button" onClick={() => ir('miCuenta')}>👤 Mi cuenta</button>
           {accesoVentas && <button type="button" onClick={() => ir('clientes')}>Clientes</button>}
@@ -171,9 +171,7 @@ export default function App() {
 {page === 'ventas' &&
   (accesoVentas ? <PanelVentas setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
 
-      {page === 'ventas' &&
-        (accesoVentas ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="crm" />)}
-
+      
       {page === 'inventario' &&
         (accesoAdmin ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
 
