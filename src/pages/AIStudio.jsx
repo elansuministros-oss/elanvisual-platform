@@ -26,12 +26,8 @@ function respuestaIA(data) {
     data?.texto ||
     data?.output_text ||
     data?.data?.respuesta ||
-    'La IA respondió, pero no se recibió texto legible.'
+    'Sin respuesta de IA'
   );
-}
-
-function codigoCotizacion() {
-  return `AI-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${Date.now().toString().slice(-5)}`;
 }
 
 function extraerJSON(texto) {
@@ -56,6 +52,7 @@ export default function AIStudio({ setPage }) {
   const [mensajes, setMensajes] = useState([]);
   const [nuevo, setNuevo] = useState({ nombre: '', tipo_proyecto: 'Rotulación' });
   const [mensaje, setMensaje] = useState('');
+  const [archivo, setArchivo] = useState(null);
   const [cargando, setCargando] = useState(false);
   const [estado, setEstado] = useState('');
   const [error, setError] = useState('');
@@ -65,42 +62,55 @@ export default function AIStudio({ setPage }) {
     [usuario, proyectos]
   );
 
-  async function cargarProyectos() {
-    setError('');
-    if (!supabase) {
-      setError('Supabase no está configurado.');
-      return;
+  async function subirArchivo(file) {
+    if (!file) return null;
+    if (!supabase) return null;
+
+    const nombre = `${Date.now()}_${file.name}`;
+
+    const { data, error } = await supabase.storage
+      .from('ai-proyectos')
+      .upload(nombre, file);
+
+    if (error) {
+      console.log('UPLOAD ERROR:', error);
+      return null;
     }
 
-    const { data, error: err } = await supabase
+    const { data: urlData } = supabase.storage
+      .from('ai-proyectos')
+      .getPublicUrl(nombre);
+
+    return urlData?.publicUrl || null;
+  }
+
+  async function cargarProyectos() {
+    if (!supabase) return;
+
+    const { data, error } = await supabase
       .from('proyectos_ai')
       .select('*')
       .order('updated_at', { ascending: false });
 
-    if (err) {
-      setError(`Error cargando proyectos AI: ${err.message}`);
+    if (error) {
+      setError(error.message);
       return;
     }
 
-    const lista = data || [];
-    setProyectos(lista);
-    const visibles = filtrarRegistrosCRM(usuario || {}, lista);
-    if (!proyectoActivo && visibles.length) setProyectoActivo(visibles[0]);
+    setProyectos(data || []);
+    if (!proyectoActivo && data?.length) setProyectoActivo(data[0]);
   }
 
   async function cargarMensajes(proyectoId) {
     if (!supabase || !proyectoId) return;
-    const { data, error: err } = await supabase
+
+    const { data, error } = await supabase
       .from('mensajes_ai')
       .select('*')
       .eq('proyecto_id', proyectoId)
       .order('created_at', { ascending: true });
 
-    if (err) {
-      setError(`Error cargando mensajes: ${err.message}`);
-      return;
-    }
-    setMensajes(data || []);
+    if (!error) setMensajes(data || []);
   }
 
   useEffect(() => {
@@ -111,180 +121,93 @@ export default function AIStudio({ setPage }) {
     if (proyectoActivo?.id) cargarMensajes(proyectoActivo.id);
   }, [proyectoActivo?.id]);
 
-  async function crearProyecto(e) {
-    e.preventDefault();
-    setError('');
-    if (!supabase) return setError('Supabase no está configurado.');
-    if (!nuevo.nombre.trim()) return setError('Ingresá el nombre del proyecto.');
-
-    const payload = {
-      nombre: nuevo.nombre.trim(),
-      tipo_proyecto: nuevo.tipo_proyecto,
-      estado: 'activo',
-      ...firma,
-    };
-
-    const { data, error: err } = await supabase
-      .from('proyectos_ai')
-      .insert(payload)
-      .select()
-      .single();
-
-    if (err) return setError(`Error creando proyecto: ${err.message}`);
-
-    setNuevo({ nombre: '', tipo_proyecto: 'Rotulación' });
-    setProyectoActivo(data);
-    setMensajes([]);
-    await cargarProyectos();
-  }
-
   async function guardarMensaje(rol, contenido, metadata = {}) {
-    const payload = {
-      proyecto_id: proyectoActivo.id,
-      rol,
-      contenido,
-      canal: 'vendedor',
-      vendedor_id: firma.vendedor_id,
-      metadata,
-    };
-
-    const { data, error: err } = await supabase
+    const { data, error } = await supabase
       .from('mensajes_ai')
-      .insert(payload)
+      .insert({
+        proyecto_id: proyectoActivo.id,
+        rol,
+        contenido,
+        canal: 'vendedor',
+        vendedor_id: firma.vendedor_id,
+        metadata,
+      })
       .select()
       .single();
 
-    if (err) throw new Error(err.message);
+    if (error) throw error;
     return data;
   }
 
-  async function llamarCore(messages, modo = 'chat') {
-    if (!CORE_URL) throw new Error('Falta VITE_ELANKAV_CORE_URL en .env / Vercel.');
+  async function llamarCore(messages) {
+    if (!CORE_URL) return { respuesta: 'CORE no configurado' };
 
-    const res = await fetch(`${CORE_URL.replace(/\/$/, '')}/api/elan-ai`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        modo,
-        unidad: 'ELANVISUAL',
-        proyecto: proyectoActivo,
-        usuario: {
-          id: usuario?.id,
-          nombre: usuario?.nombre || usuario?.usuario || usuario?.email,
-          rol: usuario?.rol,
-          codigo_vendedor: firma.codigo_vendedor,
-        },
-        messages,
-      }),
-    });
+    try {
+      const res = await fetch(`${CORE_URL.replace(/\/$/, '')}/api/elan-ai`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          unidad: 'ELANVISUAL',
+          proyecto: proyectoActivo,
+          usuario,
+          messages,
+        }),
+      });
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || data?.ok === false) {
-      throw new Error(data?.error || data?.message || 'Error llamando ELANKAV CORE.');
+      return await res.json();
+    } catch (err) {
+      return { respuesta: 'Error de conexión con IA' };
     }
-    return data;
   }
 
- async function enviarMensaje(e) {
-  e.preventDefault();
-
-  if (!proyectoActivo) return;
-  if (!mensaje.trim()) return;
-
-  const texto = mensaje;
-  setMensaje('');
-
-  setMensajes((prev) => [
-    ...prev,
-    { id: Date.now(), rol: 'user', contenido: texto },
-  ]);
-
-  try {
-    const data = await llamarCore(
-      [{ role: 'user', content: texto }],
-      'chat'
-    );
-
-    const respuesta =
-      data?.respuesta ||
-      data?.message ||
-      'Sin respuesta de IA';
-
-    setMensajes((prev) => [
-      ...prev,
-      { id: Date.now() + 1, rol: 'assistant', contenido: respuesta },
-    ]);
-  } catch (err) {
-    setMensajes((prev) => [
-      ...prev,
-      { id: Date.now() + 1, rol: 'assistant', contenido: 'Error de conexión' },
-    ]);
-  }
-}
-
-  async function generarCotizacion() {
-    if (!proyectoActivo) return setError('Seleccioná un proyecto.');
-    if (!mensajes.length) return setError('No hay conversación suficiente para generar cotización.');
+  async function enviarMensaje(e) {
+    e.preventDefault();
+    if (!proyectoActivo || !mensaje.trim()) return;
 
     setCargando(true);
     setError('');
-    setEstado('Extrayendo datos para cotización...');
+    setEstado('Procesando...');
+
+    const texto = mensaje;
+    setMensaje('');
 
     try {
-      const prompt = `De la conversación siguiente extraé datos para crear una cotización ELANVISUAL. Respondé SOLO JSON válido con estas claves: cliente_nombre, celular, ubicacion, biblioteca_nombre, descripcion, ancho, alto, cantidad, precio_b, costo_produccion, costo_instalacion, costo_transporte, costo_viaticos, costo_equipo, costo_empresa, estado, observaciones. Si falta un dato, usá vacío o 0. Conversación:\n${mensajes.map((m) => `${m.rol}: ${m.contenido}`).join('\n')}`;
-      const data = await llamarCore([{ role: 'user', content: prompt }], 'extraer_cotizacion');
-      const texto = respuestaIA(data);
-      const datos = extraerJSON(texto) || {};
-      const codigo = codigoCotizacion();
+      let archivoUrl = null;
 
-      const payload = {
-        codigo,
-        cliente_nombre: datos.cliente_nombre || proyectoActivo.nombre || 'Cliente AI',
-        celular: datos.celular || '',
-        ubicacion: datos.ubicacion || '',
-        biblioteca_nombre: datos.biblioteca_nombre || datos.tipo_proyecto || proyectoActivo.tipo_proyecto || 'Proyecto AI',
-        descripcion: datos.descripcion || datos.observaciones || `Generado desde AI Studio: ${proyectoActivo.nombre}`,
-        ancho: Number(datos.ancho || 0),
-        alto: Number(datos.alto || 0),
-        cantidad: Number(datos.cantidad || 1),
-        precio_b: Number(datos.precio_b || 0),
-        costo_produccion: Number(datos.costo_produccion || 0),
-        costo_instalacion: Number(datos.costo_instalacion || 0),
-        costo_transporte: Number(datos.costo_transporte || 0),
-        costo_viaticos: Number(datos.costo_viaticos || 0),
-        costo_equipo: Number(datos.costo_equipo || 0),
-        costo_empresa: Number(datos.costo_empresa || 0),
-        estado: datos.estado || 'borrador_ai',
-        observaciones: datos.observaciones || 'Borrador generado desde AI Studio. Revisar antes de aprobar.',
-        ...firma,
-        origen_ai_proyecto_id: proyectoActivo.id,
-      };
+      if (archivo) {
+        archivoUrl = await subirArchivo(archivo);
+        setArchivo(null);
+      }
 
-      const { data: cotizacion, error: err } = await supabase
-        .from('cotizaciones_inteligentes')
-        .insert(payload)
-        .select()
-        .single();
+      const msgUser = await guardarMensaje('user', texto, {
+        archivo: archivoUrl,
+      });
 
-      if (err) throw new Error(err.message);
+      setMensajes((prev) => [...prev, msgUser]);
+
+      const historial = [...mensajes, msgUser].map((m) => ({
+        role: m.rol,
+        content: m.contenido,
+      }));
+
+      const data = await llamarCore(historial);
+      const respuesta = respuestaIA(data);
+
+      const msgIA = await guardarMensaje('assistant', respuesta, { core: data });
+
+      setMensajes((prev) => [...prev, msgIA]);
 
       await supabase
         .from('proyectos_ai')
         .update({
-          estado: 'cotizacion_borrador',
-          datos_cotizacion: datos,
-          cotizacion_id: cotizacion?.id || null,
-          cotizacion_codigo: codigo,
           updated_at: new Date().toISOString(),
+          resumen: respuesta.slice(0, 500),
         })
         .eq('id', proyectoActivo.id);
 
-      await guardarMensaje('assistant', `Borrador de cotización generado: ${codigo}. Revisar en Cotizaciones Inteligentes.`, { cotizacion });
-      setEstado(`Cotización borrador creada: ${codigo}`);
-      await cargarMensajes(proyectoActivo.id);
-      await cargarProyectos();
+      setEstado('Listo');
     } catch (err) {
-      setError(`No se pudo generar cotización: ${err.message}`);
+      setError(err.message);
     } finally {
       setCargando(false);
     }
@@ -292,63 +215,43 @@ export default function AIStudio({ setPage }) {
 
   return (
     <main className="ai-studio-page">
+
       <header className="ai-studio-header">
-        <div>
-          <span className="ai-badge">ELANVISUAL AI STUDIO</span>
-          <h1>Estudio de Proyectos IA</h1>
-          <p>Chat central conectado a ELANKAV CORE, Supabase y Cotizaciones Inteligentes.</p>
-        </div>
-        <div className="ai-actions">
-          <button className="ai-secondary" type="button" onClick={() => cargarProyectos()}>Actualizar</button>
-          <button className="ai-primary" type="button" onClick={() => setPage?.('cotizacionesInteligentes')}>Ver cotizaciones</button>
-        </div>
+        <h1>AI Studio</h1>
       </header>
 
-      <section className="ai-studio-shell">
-        <aside className="ai-panel">
-          <form className="ai-new-form" onSubmit={crearProyecto}>
-            <strong>Nuevo proyecto</strong>
-            <input value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} placeholder="Ej: Fachada Farmacia Central" />
-            <select value={nuevo.tipo_proyecto} onChange={(e) => setNuevo({ ...nuevo, tipo_proyecto: e.target.value })}>
-              {tiposProyecto.map((t) => <option key={t}>{t}</option>)}
-            </select>
-            <button className="ai-primary" type="submit">Crear proyecto</button>
-          </form>
+      <section className="ai-chat">
 
-          <strong>{admin ? 'Todos los proyectos' : 'Mis proyectos'}</strong>
-          {proyectosVisibles.map((p) => (
-            <button key={p.id} className={`ai-project-btn ${proyectoActivo?.id === p.id ? 'active' : ''}`} type="button" onClick={() => setProyectoActivo(p)}>
-              <strong>{p.nombre}</strong>
-              <span>{p.tipo_proyecto} · {p.estado}</span>
-              <span>{p.codigo_vendedor || p.vendedor_nombre || 'Sin vendedor'}</span>
-            </button>
+        <div className="ai-messages">
+          {mensajes.map((m) => (
+            <div key={m.id} className={`ai-msg ${m.rol}`}>
+              {m.contenido}
+            </div>
           ))}
-        </aside>
+        </div>
 
-        <section className="ai-chat">
-          <div className="ai-chat-top">
-            <div>
-              <h2>{proyectoActivo?.nombre || 'Seleccioná un proyecto'}</h2>
-              <p>{proyectoActivo?.tipo_proyecto || 'La conversación queda guardada en Supabase.'}</p>
-            </div>
-            <button className="ai-primary" type="button" onClick={generarCotizacion} disabled={!proyectoActivo || cargando}>Generar Cotización</button>
-          </div>
+        <form onSubmit={enviarMensaje} className="ai-input">
 
-          <div className="ai-messages">
-            {!mensajes.length && <div className="ai-empty">Conversá con la IA para levantar información técnica del proyecto.</div>}
-            {mensajes.map((m) => <div key={m.id} className={`ai-msg ${m.rol}`}>{m.contenido}</div>)}
-          </div>
+          {estado && <div>{estado}</div>}
+          {error && <div>{error}</div>}
 
-          <form className="ai-input" onSubmit={enviarMensaje}>
-            {estado && <div className="ai-status">{estado}</div>}
-            {error && <div className="ai-error">{error}</div>}
-            <textarea value={mensaje} onChange={(e) => setMensaje(e.target.value)} placeholder="Escribí el mensaje del cliente, medidas, idea, materiales o dudas técnicas..." />
-            <div className="ai-actions">
-              <button className="ai-primary" type="submit" disabled={cargando || !proyectoActivo}>Enviar</button>
-              <button className="ai-secondary" type="button" onClick={() => setMensaje('')}>Limpiar</button>
-            </div>
-          </form>
-        </section>
+          <textarea
+            value={mensaje}
+            onChange={(e) => setMensaje(e.target.value)}
+            placeholder="Escribí aquí..."
+          />
+
+          <input
+            type="file"
+            onChange={(e) => setArchivo(e.target.files[0])}
+          />
+
+          <button type="submit" disabled={cargando || !proyectoActivo}>
+            Enviar
+          </button>
+
+        </form>
+
       </section>
     </main>
   );
