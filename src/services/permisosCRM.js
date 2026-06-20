@@ -22,15 +22,21 @@ export const esVendedorCRM = (usuario) => {
 };
 
 export const codigoVendedorCRM = (usuario) => {
-  const base = usuario?.codigo || usuario?.codigo_vendedor || usuario?.usuario || usuario?.id || '001';
+  const base =
+    usuario?.codigo ||
+    usuario?.codigo_vendedor ||
+    usuario?.usuario ||
+    usuario?.id ||
+    '001';
+
   return `VEN-${normalizarCodigo(base).replace(/[^A-Z0-9]/g, '')}`;
 };
 
 export const obtenerFirmaVendedor = (usuario) => ({
   vendedor_id: usuario?.id || '',
-  vendedorId: usuario?.id || '',
   vendedor_nombre: usuario?.nombre || usuario?.usuario || usuario?.email || '',
-  codigo_vendedor: usuario?.codigo_vendedor || usuario?.codigo || codigoVendedorCRM(usuario),
+  codigo_vendedor:
+    usuario?.codigo_vendedor || usuario?.codigo || codigoVendedorCRM(usuario),
   created_by: usuario?.id || '',
 });
 
@@ -39,7 +45,9 @@ export const perteneceAlVendedor = (usuario, registro) => {
   if (!esVendedorCRM(usuario)) return false;
 
   const usuarioId = String(usuario?.id || '');
-  const codigo = normalizarCodigo(usuario?.codigo_vendedor || usuario?.codigo || codigoVendedorCRM(usuario));
+  const codigo = normalizarCodigo(
+    usuario?.codigo_vendedor || usuario?.codigo || codigoVendedorCRM(usuario)
+  );
   const nombre = normalizarTexto(usuario?.nombre || usuario?.usuario || usuario?.email);
 
   return (
@@ -60,6 +68,8 @@ export const filtrarRegistrosCRM = (usuario, registros = []) => {
 
 export const puedeCrearCRM = (usuario) => esAdminCRM(usuario) || esVendedorCRM(usuario);
 
-export const puedeEditarCRM = (usuario, registro) => perteneceAlVendedor(usuario, registro);
+export const puedeEditarCRM = (usuario, registro) =>
+  perteneceAlVendedor(usuario, registro);
 
-export const puedeEliminarCRM = (usuario, registro) => perteneceAlVendedor(usuario, registro);
+export const puedeEliminarCRM = (usuario, registro) =>
+  perteneceAlVendedor(usuario, registro);
