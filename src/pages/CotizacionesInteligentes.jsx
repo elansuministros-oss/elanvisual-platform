@@ -31,11 +31,11 @@ export default function CotizacionesInteligentes() {
       .order('creado_en', { ascending: false });
 
     if (error) {
-      console.error(error);
-      alert('No se pudieron cargar las cotizaciones.');
-      setCargando(false);
-      return;
-    }
+  console.error('Error cargando cotizaciones inteligentes:', error);
+  alert(`No se pudieron cargar las cotizaciones: ${error.message}`);
+  setCargando(false);
+  return;
+}
 
     setCotizaciones(data || []);
     setCargando(false);
