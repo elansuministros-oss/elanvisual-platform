@@ -106,11 +106,11 @@ export default function CotizacionesInteligentes() {
 
     if (error) {
       console.error(error);
-      alert('No se pudo actualizar la cotización.');
+      alert('No se pudo actualizar la cotizaciï¿½n.');
       return;
     }
 
-    alert(`Cotización ${cotizacion.codigo} actualizada a: ${estado}`);
+    alert(`Cotizaciï¿½n ${cotizacion.codigo} actualizada a: ${estado}`);
 
     setCotizacionActiva((prev) =>
       prev?.id === cotizacion.id ? { ...prev, ...payload } : prev
@@ -123,11 +123,11 @@ export default function CotizacionesInteligentes() {
     if (!cotizacion) return;
 
     if (cotizacion.estado !== 'aprobada') {
-      alert('Primero debés aprobar la cotización antes de convertirla a pedido.');
+      alert('Primero debï¿½s aprobar la cotizaciï¿½n antes de convertirla a pedido.');
       return;
     }
 
-    if (!confirm(`Convertir ${cotizacion.codigo} a pedido de producción?`)) return;
+    if (!confirm(`Convertir ${cotizacion.codigo} a pedido de producciï¿½n?`)) return;
 
     const fecha = new Date().toISOString();
     const numero = `PED-${String(Date.now()).slice(-6)}`;
@@ -139,7 +139,7 @@ export default function CotizacionesInteligentes() {
 
     const itemPrincipal = {
       id: `item-${Date.now()}`,
-      nombre: cotizacion.biblioteca_nombre || 'Cotización inteligente',
+      nombre: cotizacion.biblioteca_nombre || 'Cotizaciï¿½n inteligente',
       descripcion: cotizacion.descripcion || cotizacion.biblioteca_nombre || 'Trabajo cotizado',
       ancho: Number(cotizacion.ancho || 0),
       alto: Number(cotizacion.alto || 0),
@@ -211,9 +211,9 @@ export default function CotizacionesInteligentes() {
         codigoOT: numeroOT,
         pedido: numero,
         cliente: cotizacion.cliente_nombre || 'Cliente',
-        producto: cotizacion.biblioteca_nombre || cotizacion.descripcion || 'Cotización inteligente',
+        producto: cotizacion.biblioteca_nombre || cotizacion.descripcion || 'Cotizaciï¿½n inteligente',
         cantidad: Number(cotizacion.cantidad || 1),
-        observaciones: `Convertido desde cotización ${cotizacion.codigo}. ${cotizacion.descripcion || ''}`,
+        observaciones: `Convertido desde cotizaciï¿½n ${cotizacion.codigo}. ${cotizacion.descripcion || ''}`,
         fecha,
         estadoProduccion: 'pendiente',
       },
@@ -221,7 +221,7 @@ export default function CotizacionesInteligentes() {
         {
           estado: 'Pedido creado',
           fecha,
-          nota: `Pedido convertido desde cotización inteligente ${cotizacion.codigo}.`,
+          nota: `Pedido convertido desde cotizaciï¿½n inteligente ${cotizacion.codigo}.`,
         },
       ],
     });
@@ -263,19 +263,19 @@ export default function CotizacionesInteligentes() {
   return (
     <main className="mm3-page">
       <section className="mm3-hero">
-        <span>ELANVISIÓN · V1 CIERRE</span>
+        <span>ELANVISIï¿½N ï¿½ V1 CIERRE</span>
         <h1>Cotizaciones Inteligentes</h1>
-        <p>Aprobación comercial, anticipo, pedido y orden de producción.</p>
+        <p>Aprobaciï¿½n comercial, anticipo, pedido y orden de producciï¿½n.</p>
       </section>
 
       <section className="mm3-card">
         <div className="title">
           <Search size={20} />
-          <h2>Buscar cotización</h2>
+          <h2>Buscar cotizaciï¿½n</h2>
         </div>
 
         <input
-          placeholder="Buscar por código, cliente, celular, ubicación o estado..."
+          placeholder="Buscar por cï¿½digo, cliente, celular, ubicaciï¿½n o estado..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
@@ -294,17 +294,17 @@ export default function CotizacionesInteligentes() {
 
         <div className="list">
           {listaFiltrada.length === 0 ? (
-            <p className="note">No hay cotizaciones guardadas todavía.</p>
+            <p className="note">No hay cotizaciones guardadas todavï¿½a.</p>
           ) : (
             listaFiltrada.map((c) => (
               <article className="row" key={c.id}>
                 <div>
-                  <h3>{c.codigo || 'Sin código'}</h3>
+                  <h3>{c.codigo || 'Sin cï¿½digo'}</h3>
                   <p>
-                    {c.cliente_nombre || 'Cliente no especificado'} · {c.celular || 'Sin celular'}
+                    {c.cliente_nombre || 'Cliente no especificado'} ï¿½ {c.celular || 'Sin celular'}
                   </p>
                   <span>
-                    Estado: {c.estado || 'borrador'} · Precio B: {money(c.precio_b)} · Anticipo: {money(c.anticipo_requerido || anticipo60(c.precio_b))}
+                    Estado: {c.estado || 'borrador'} ï¿½ Precio B: {money(c.precio_b)} ï¿½ Anticipo: {money(c.anticipo_requerido || anticipo60(c.precio_b))}
                   </span>
                 </div>
 
@@ -340,7 +340,7 @@ export default function CotizacionesInteligentes() {
 
           <div className="result">Cliente: <b>{cotizacionActiva.cliente_nombre || 'Sin cliente'}</b></div>
           <div className="result">Celular: <b>{cotizacionActiva.celular || 'Sin celular'}</b></div>
-          <div className="result">Ubicación: <b>{cotizacionActiva.ubicacion || 'Sin ubicación'}</b></div>
+          <div className="result">Ubicaciï¿½n: <b>{cotizacionActiva.ubicacion || 'Sin ubicaciï¿½n'}</b></div>
           <div className="result">Estado: <b>{cotizacionActiva.estado}</b></div>
           <div className="result">Total recomendado: <b>{money(cotizacionActiva.precio_b)}</b></div>
           <div className="result">Anticipo 60%: <b>{money(cotizacionActiva.anticipo_requerido || anticipo60(cotizacionActiva.precio_b))}</b></div>
@@ -352,7 +352,7 @@ export default function CotizacionesInteligentes() {
 
           <div className="two">
             <button className="primary" type="button" onClick={() => actualizarEstadoCotizacion(cotizacionActiva, 'aprobada')}>
-              Aprobar cotización
+              Aprobar cotizaciï¿½n
             </button>
 
             <button className="primary" type="button" onClick={() => actualizarEstadoCotizacion(cotizacionActiva, 'rechazada')}>
@@ -362,7 +362,7 @@ export default function CotizacionesInteligentes() {
 
           <button className="primary" type="button" onClick={() => convertirAPedido(cotizacionActiva)}>
             <ClipboardList size={18} />
-            Convertir a Pedido Producción
+            Convertir a Pedido Producciï¿½n
           </button>
 
           <button className="primary" type="button" onClick={() => imprimirOT(cotizacionActiva)}>
@@ -377,9 +377,9 @@ export default function CotizacionesInteligentes() {
           <div className="ot-page">
             <header className="ot-header">
               <div>
-                <span>ELANVISIÓN</span>
-                <h1>Orden de Producción</h1>
-                <p>Producción · Instalación · Control operativo</p>
+                <span>ELANVISIï¿½N</span>
+                <h1>Orden de Producciï¿½n</h1>
+                <p>Producciï¿½n ï¿½ Instalaciï¿½n ï¿½ Control operativo</p>
               </div>
               <div>
                 <strong>{otActiva.numeroOT}</strong>
@@ -392,20 +392,20 @@ export default function CotizacionesInteligentes() {
                 <h2>Cliente</h2>
                 <p><b>Nombre:</b> {otActiva.cotizacion.cliente_nombre || 'Cliente'}</p>
                 <p><b>Celular:</b> {otActiva.cotizacion.celular || 'Sin celular'}</p>
-                <p><b>Ubicación:</b> {otActiva.cotizacion.ubicacion || 'Sin ubicación'}</p>
+                <p><b>Ubicaciï¿½n:</b> {otActiva.cotizacion.ubicacion || 'Sin ubicaciï¿½n'}</p>
               </div>
 
               <div>
                 <h2>Proyecto</h2>
-                <p><b>Cotización:</b> {otActiva.cotizacion.codigo}</p>
-                <p><b>Producto:</b> {otActiva.cotizacion.biblioteca_nombre || 'Producción visual'}</p>
-                <p><b>Medidas:</b> {Number(otActiva.cotizacion.ancho || 0).toFixed(2)} m × {Number(otActiva.cotizacion.alto || 0).toFixed(2)} m</p>
+                <p><b>Cotizaciï¿½n:</b> {otActiva.cotizacion.codigo}</p>
+                <p><b>Producto:</b> {otActiva.cotizacion.biblioteca_nombre || 'Producciï¿½n visual'}</p>
+                <p><b>Medidas:</b> {Number(otActiva.cotizacion.ancho || 0).toFixed(2)} m ï¿½ {Number(otActiva.cotizacion.alto || 0).toFixed(2)} m</p>
                 <p><b>Cantidad:</b> {otActiva.cotizacion.cantidad}</p>
               </div>
             </section>
 
             <section className="ot-box">
-              <h2>Descripción</h2>
+              <h2>Descripciï¿½n</h2>
               <p>{otActiva.cotizacion.descripcion}</p>
             </section>
 
@@ -418,24 +418,24 @@ export default function CotizacionesInteligentes() {
               </div>
 
               <div>
-                <h2>Producción</h2>
+                <h2>Producciï¿½n</h2>
                 <p><b>Estado:</b> Pendiente</p>
-                <p><b>Instalación:</b> {Number(otActiva.cotizacion.costo_instalacion || 0) > 0 ? 'Sí' : 'No'}</p>
+                <p><b>Instalaciï¿½n:</b> {Number(otActiva.cotizacion.costo_instalacion || 0) > 0 ? 'Sï¿½' : 'No'}</p>
                 <p><b>Fecha:</b> {new Date().toLocaleDateString('es-NI')}</p>
               </div>
             </section>
 
             <section className="ot-box">
-              <h2>Checklist de Producción</h2>
+              <h2>Checklist de Producciï¿½n</h2>
               <p>? Arte final aprobado</p>
               <p>? Materiales revisados</p>
-              <p>? Producción iniciada</p>
+              <p>? Producciï¿½n iniciada</p>
               <p>? Control de calidad</p>
-              <p>? Instalación / entrega</p>
+              <p>? Instalaciï¿½n / entrega</p>
             </section>
 
             <footer className="ot-footer">
-              <strong>ELANVISIÓN · ONE VISION · MULTIPLE SOLUTIONS</strong>
+              <strong>ELANVISIï¿½N ï¿½ ONE VISION ï¿½ MULTIPLE SOLUTIONS</strong>
             </footer>
           </div>
         </section>
