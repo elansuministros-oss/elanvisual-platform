@@ -258,6 +258,59 @@ async function leerTabla(tabla, orden = 'created_at', limite = 30) {
   }
 }
 
+
+function detectarCostosFaltantesAI06D(mensaje = '', memoria = {}) {
+  const consulta = normalizarAI06(mensaje);
+  const ai06c = memoria.ai06c_items_cotizables || {};
+  const relevantes = memoria.ai06_consulta_tecnica?.relevantes || {};
+  const reglas = memoria.ai06b_reglas_comerciales || {};
+
+  const faltantes = [];
+
+  const sinMateriales =
+    Array.isArray(relevantes.materiales_master) &&
+    relevantes.materiales_master.length === 0;
+
+  const sinTintas =
+    reglas.precio?.requiere_preguntar_tinta === true &&
+    Array.isArray(relevantes.tintas_master) &&
+    relevantes.tintas_master.length === 0;
+
+  const sinProveedores =
+    Array.isArray(relevantes.proveedores) &&
+    relevantes.proveedores.length === 0 &&
+    consulta.length > 5;
+
+  if (sinMateriales && ai06c.items?.length) {
+    faltantes.push({
+      tipo: 'material',
+      descripcion: ai06c.items.map((i) => i.tipo || i.descripcion).join(', '),
+      motivo: 'No se encontraron materiales relevantes en materiales_master.',
+      prioridad: 'alta',
+    });
+  }
+
+  if (sinTintas) {
+    faltantes.push({
+      tipo: 'tinta',
+      descripcion: mensaje,
+      motivo: 'Producto configurable sin tinta disponible en tintas_master.',
+      prioridad: 'alta',
+    });
+  }
+
+  if (sinProveedores) {
+    faltantes.push({
+      tipo: 'proveedor',
+      descripcion: mensaje,
+      motivo: 'No se encontró proveedor relevante para la solicitud.',
+      prioridad: 'media',
+    });
+  }
+
+  return faltantes;
+}
+
 export async function cargarMemoriaOperativaElan({
   mensaje = '',
   proyectoActivo = null,
@@ -343,6 +396,20 @@ export async function cargarMemoriaOperativaElan({
       'El despiece generado es preliminar hasta validación técnica.',
       'No guardar archivos temporales automáticamente.',
     ],
+    ai06d_costos_faltantes: detectarCostosFaltantesAI06D(mensaje, {
+      ai06c_items_cotizables: extraerItemsCotizablesAI06C(mensaje),
+      ai06b_reglas_comerciales: {
+        precio: clasificarModoPrecioAI06B(mensaje),
+        accion: detectarAccionComercialAI06B(mensaje),
+      },
+      ai06_consulta_tecnica: {
+        relevantes: {
+          materiales_master: filtrarRelevantesAI06(materiales.data, mensaje, 15),
+          tintas_master: filtrarRelevantesAI06(tintas.data, mensaje, 10),
+          proveedores: filtrarRelevantesAI06(proveedores.data, mensaje, 10),
+        },
+      },
+    }),
     estado_fuentes: {
       materiales_master: materiales.ok,
       tintas_master: tintas.ok,
@@ -355,6 +422,7 @@ export async function cargarMemoriaOperativaElan({
     },
   };
 }
+
 
 
 

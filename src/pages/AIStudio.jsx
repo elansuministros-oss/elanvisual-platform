@@ -288,6 +288,24 @@ export default function AIStudio({ setPage }) {
         firma,
       });
 
+      const solicitudesCostosAI06D = await crearSolicitudesCostosFaltantes({
+        faltantes: memoriaOperativa.ai06d_costos_faltantes || [],
+        mensajeOriginal: contenidoUsuario,
+        proyectoActivo,
+        usuario,
+        firma,
+      });
+
+      if (solicitudesCostosAI06D.length > 0) {
+        memoriaOperativa.ai06d_solicitudes_creadas = solicitudesCostosAI06D.map((s) => ({
+          id: s.id,
+          codigo: s.codigo,
+          tipo: s.tipo,
+          estado: s.estado,
+          descripcion: s.descripcion_solicitada,
+        }));
+      }
+
       setEstado('Consultando ELANKAV CORE...');
 
       const data = await llamarCore(historial, 'chat', memoriaOperativa);
@@ -542,6 +560,9 @@ setPage?.('CotizacionesInteligentes');
     </main>
   );
 }
+
+
+
 
 
 
