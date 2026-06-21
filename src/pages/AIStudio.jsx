@@ -35,6 +35,26 @@ function codigoCotización() {
   return `AI-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${Date.now().toString().slice(-5)}`;
 }
 
+
+function guardarBorradorCotizadorAI06C(memoriaOperativa = null, proyectoActivo = null) {
+  const paquete = memoriaOperativa?.ai06c_items_cotizables;
+  if (!paquete?.puede_enviar_cotizador) return false;
+
+  const payload = {
+    version: 'AI-06C',
+    creado_en: new Date().toISOString(),
+    origen: 'AI Studio',
+    proyecto_ai: proyectoActivo,
+    items: paquete.items,
+    estado: 'borrador_ai_cotizador',
+  };
+
+  localStorage.setItem('elanvisual_cotizacion_ai_borrador', JSON.stringify(payload));
+  localStorage.setItem('elanvisual_cotizacion_item_activo', JSON.stringify(payload.items?.[0] || null));
+
+  return true;
+}
+
 function extraerJSON(texto) {
   try {
     const limpio = String(texto || '').replace(/```json|```/g, '').trim();
@@ -522,5 +542,6 @@ setPage?.('CotizacionesInteligentes');
     </main>
   );
 }
+
 
 
