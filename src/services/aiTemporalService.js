@@ -1,5 +1,4 @@
-@'
-export const TIPOS_TEMPORALES_AI = [
+﻿export const TIPOS_TEMPORALES_AI = [
   'image/jpeg',
   'image/png',
   'image/svg+xml',
@@ -22,7 +21,7 @@ export function validarArchivoTemporalAI(file) {
   }
 
   if (file.size > MAX_MB_ARCHIVO * 1024 * 1024) {
-    return { ok: false, error: `Archivo muy pesado. Máximo ${MAX_MB_ARCHIVO} MB.` };
+    return { ok: false, error: `Archivo muy pesado. MÃ¡ximo ${MAX_MB_ARCHIVO} MB.` };
   }
 
   return { ok: true };
@@ -41,7 +40,7 @@ function cargarImagen(dataUrl) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('No se pudo cargar la imagen para compresión.'));
+    img.onerror = () => reject(new Error('No se pudo cargar la imagen para compresiÃ³n.'));
     img.src = dataUrl;
   });
 }
@@ -89,7 +88,7 @@ export async function leerArchivoComoDataUrl(file) {
       extension,
       dataUrl: null,
       contenido_temporal: null,
-      aviso: 'PDF recibido temporalmente. Para evitar payload pesado, se envía metadata; extracción PDF avanzada queda para AI-04C/AI-05.',
+      aviso: 'PDF recibido temporalmente. Para evitar payload pesado, se envÃ­a metadata; extracciÃ³n PDF avanzada queda para AI-04C/AI-05.',
     };
   }
 
@@ -127,7 +126,7 @@ export async function prepararArchivosTemporalesAI(files = []) {
       resultado.push({
         ok: false,
         nombre: file.name,
-        error: `Archivo temporal demasiado grande para enviar al CORE después de compresión. Máximo ${MAX_MB_ENVIO} MB.`,
+        error: `Archivo temporal demasiado grande para enviar al CORE despuÃ©s de compresiÃ³n. MÃ¡ximo ${MAX_MB_ENVIO} MB.`,
       });
       continue;
     }
@@ -157,20 +156,19 @@ export function construirResumenArchivosTemporales(archivos = []) {
   return archivos
     .map((a, index) => {
       if (!a.ok) {
-        return `Archivo ${index + 1}: ${a.nombre} — ERROR: ${a.error}`;
+        return `Archivo ${index + 1}: ${a.nombre} â€” ERROR: ${a.error}`;
       }
 
       return [
         `Archivo ${index + 1}: ${a.nombre}`,
         `Tipo: ${a.tipo || 'sin mime'}`,
-        `Extensión: ${a.extension}`,
-        `Tamaño original: ${a.tamano} bytes`,
-        a.metadata?.tamano_envio_bytes ? `Tamaño envío: ${a.metadata.tamano_envio_bytes} bytes` : null,
-        a.comprimido ? 'Imagen comprimida para análisis temporal' : null,
+        `ExtensiÃ³n: ${a.extension}`,
+        `TamaÃ±o original: ${a.tamano} bytes`,
+        a.metadata?.tamano_envio_bytes ? `TamaÃ±o envÃ­o: ${a.metadata.tamano_envio_bytes} bytes` : null,
+        a.comprimido ? 'Imagen comprimida para anÃ¡lisis temporal' : null,
         a.aviso || null,
-        `Modo: análisis temporal, no guardar en Storage`,
+        `Modo: anÃ¡lisis temporal, no guardar en Storage`,
       ].filter(Boolean).join('\n');
     })
     .join('\n\n');
 }
-'@ | Set-Content src\services\aiTemporalService.js -Encoding UTF8
