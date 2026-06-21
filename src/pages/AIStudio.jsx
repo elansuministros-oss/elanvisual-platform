@@ -160,7 +160,7 @@ export default function AIStudio({ setPage }) {
     return data;
   }
 
-  async function llamarCore(messages, modo = 'chat') {
+  async function llamarCore(messages, modo = 'chat', memoriaOperativa = null) {
     if (!CORE_URL) throw new Error('Falta VITE_ELANKAV_CORE_URL en .env / Vercel.');
 
     const res = await fetch(`${CORE_URL.replace(/\/$/, '')}/api/elan-ai`, {
@@ -177,6 +177,7 @@ export default function AIStudio({ setPage }) {
           codigo_vendedor: firma.codigo_vendedor,
         },
         messages,
+        memoria_operativa: memoriaOperativa,
         archivos_temporales: archivosTemporales
           .filter((a) => a.ok)
           .map((a) => ({
@@ -258,7 +259,18 @@ export default function AIStudio({ setPage }) {
         content: m.contenido,
       }));
 
-      const data = await llamarCore(historial, 'chat');
+      setEstado('Consultando memoria operativa ELAN...');
+
+      const memoriaOperativa = await cargarMemoriaOperativaElan({
+        mensaje: contenidoUsuario,
+        proyectoActivo,
+        usuario,
+        firma,
+      });
+
+      setEstado('Consultando ELANKAV CORE...');
+
+      const data = await llamarCore(historial, 'chat', memoriaOperativa);
       const texto = respuestaIA(data);
       const msgIA = await guardarMensaje('assistant', texto, { core: data });
 
@@ -297,7 +309,18 @@ export default function AIStudio({ setPage }) {
 
     try {
       const prompt = `De la conversaciÃ³n siguiente extraÃ© datos para crear una Cotización ELANVISUAL. RespondÃ© SOLO JSON vÃ¡lido con estas claves: cliente_nombre, celular, ubicacion, biblioteca_nombre, descripcion, ancho, alto, cantidad, precio_b, costo_produccion, costo_instalacion, costo_transporte, costo_viaticos, costo_equipo, costo_empresa, estado, observaciones. Si falta un dato, usÃ¡ vacÃ­o o 0. ConversaciÃ³n:\n${mensajes.map((m) => `${m.rol}: ${m.contenido}`).join('\n')}`;
-      const data = await llamarCore([{ role: 'user', content: prompt }], 'extraer_Cotización');
+      const memoriaOperativa = await cargarMemoriaOperativaElan({
+        mensaje: prompt,
+        proyectoActivo,
+        usuario,
+        firma,
+      });
+
+      const data = await llamarCore(
+        [{ role: 'user', content: prompt }],
+        'extraer_Cotización',
+        memoriaOperativa
+      );
       const texto = respuestaIA(data);
       const datos = extraerJSON(texto) || {};
       const codigo = codigoCotización();
@@ -326,7 +349,7 @@ export default function AIStudio({ setPage }) {
       };
 
       const { data: Cotización, error: err } = await supabase
-        .from('Cotizacióntes')
+        .from('cotizaciones_inteligentes')
         .insert(payload)
         .select()
         .single();
@@ -356,7 +379,7 @@ localStorage.setItem(
   })
 );
 
-setPage?.('Cotizacióntes');
+setPage?.('CotizacionesInteligentes');
       await cargarMensajes(proyectoActivo.id);
       await cargarProyectos();
     } catch (err) {
@@ -499,4 +522,5 @@ setPage?.('Cotizacióntes');
     </main>
   );
 }
+
 
