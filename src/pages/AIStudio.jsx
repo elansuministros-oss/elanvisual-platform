@@ -8,13 +8,13 @@ import '../styles/AIStudio.css';
 const CORE_URL = import.meta.env.VITE_ELANKAV_CORE_URL || '';
 
 const tiposProyecto = [
-  'RotulaciÃ³n',
+  'Rotulación',
   'Fachada ACM',
   'Letras 3D',
-  'BotÃ³n luminoso',
-  'PVC / AcrÃ­lico',
-  'ImpresiÃ³n digital',
-  'BTL / ExhibiciÃ³n',
+  'Botón luminoso',
+  'PVC / Acrílico',
+  'Impresión digital',
+  'BTL / Exhibición',
   'Interiorismo',
   'Otro',
 ];
@@ -31,7 +31,7 @@ function respuestaIA(data) {
   );
 }
 
-function codigoCotizacion() {
+function codigoCotización() {
   return `AI-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${Date.now().toString().slice(-5)}`;
 }
 
@@ -55,7 +55,7 @@ export default function AIStudio({ setPage }) {
   const [proyectos, setProyectos] = useState([]);
   const [proyectoActivo, setProyectoActivo] = useState(null);
   const [mensajes, setMensajes] = useState([]);
-  const [nuevo, setNuevo] = useState({ nombre: '', tipo_proyecto: 'RotulaciÃ³n' });
+  const [nuevo, setNuevo] = useState({ nombre: '', tipo_proyecto: 'Rotulación' });
   const [mensaje, setMensaje] = useState('');
   const [cargando, setCargando] = useState(false);
   const [estado, setEstado] = useState('');
@@ -134,7 +134,7 @@ export default function AIStudio({ setPage }) {
 
     if (err) return setError(`Error creando proyecto: ${err.message}`);
 
-    setNuevo({ nombre: '', tipo_proyecto: 'RotulaciÃ³n' });
+    setNuevo({ nombre: '', tipo_proyecto: 'Rotulación' });
     setProyectoActivo(data);
     setMensajes([]);
     await cargarProyectos();
@@ -223,7 +223,7 @@ export default function AIStudio({ setPage }) {
 
   async function enviarMensaje(e) {
     e.preventDefault();
-    if (!proyectoActivo) return setError('Primero creá o seleccioná un proyecto.');
+    if (!proyectoActivo) return setError('Primero creá o Seleccioná un proyecto.');
     if (!mensaje.trim() && archivosTemporales.length === 0) return;
 
     const resumenArchivosTemporales = construirResumenArchivosTemporales(archivosTemporales);
@@ -279,9 +279,9 @@ export default function AIStudio({ setPage }) {
       setCargando(false);
     }
   }
-  async function generarCotizacion() {
-    if (!proyectoActivo) return setError('SeleccionÃ¡ un proyecto.');
-    if (!mensajes.length) return setError('No hay conversaciÃ³n suficiente para generar cotizaciÃ³n.');
+  async function generarCotización() {
+    if (!proyectoActivo) return setError('Seleccioná un proyecto.');
+    if (!mensajes.length) return setError('No hay conversaciÃ³n suficiente para generar Cotización.');
 
     const resumenArchivosTemporales = construirResumenArchivosTemporales(archivosTemporales);
     const contenidoUsuario = [
@@ -293,14 +293,14 @@ export default function AIStudio({ setPage }) {
 
     setCargando(true);
     setError('');
-    setEstado('Extrayendo datos para cotizaciÃ³n...');
+    setEstado('Extrayendo datos para Cotización...');
 
     try {
-      const prompt = `De la conversaciÃ³n siguiente extraÃ© datos para crear una cotizaciÃ³n ELANVISUAL. RespondÃ© SOLO JSON vÃ¡lido con estas claves: cliente_nombre, celular, ubicacion, biblioteca_nombre, descripcion, ancho, alto, cantidad, precio_b, costo_produccion, costo_instalacion, costo_transporte, costo_viaticos, costo_equipo, costo_empresa, estado, observaciones. Si falta un dato, usÃ¡ vacÃ­o o 0. ConversaciÃ³n:\n${mensajes.map((m) => `${m.rol}: ${m.contenido}`).join('\n')}`;
-      const data = await llamarCore([{ role: 'user', content: prompt }], 'extraer_cotizacion');
+      const prompt = `De la conversaciÃ³n siguiente extraÃ© datos para crear una Cotización ELANVISUAL. RespondÃ© SOLO JSON vÃ¡lido con estas claves: cliente_nombre, celular, ubicacion, biblioteca_nombre, descripcion, ancho, alto, cantidad, precio_b, costo_produccion, costo_instalacion, costo_transporte, costo_viaticos, costo_equipo, costo_empresa, estado, observaciones. Si falta un dato, usÃ¡ vacÃ­o o 0. ConversaciÃ³n:\n${mensajes.map((m) => `${m.rol}: ${m.contenido}`).join('\n')}`;
+      const data = await llamarCore([{ role: 'user', content: prompt }], 'extraer_Cotización');
       const texto = respuestaIA(data);
       const datos = extraerJSON(texto) || {};
-      const codigo = codigoCotizacion();
+      const codigo = codigoCotización();
 
       const payload = {
         codigo,
@@ -325,8 +325,8 @@ export default function AIStudio({ setPage }) {
         origen_ai_proyecto_id: proyectoActivo.id,
       };
 
-      const { data: cotizacion, error: err } = await supabase
-        .from('cotizaciones_inteligentes')
+      const { data: Cotización, error: err } = await supabase
+        .from('Cotizacióntes')
         .insert(payload)
         .select()
         .single();
@@ -336,31 +336,31 @@ export default function AIStudio({ setPage }) {
       await supabase
         .from('proyectos_ai')
         .update({
-          estado: 'cotizacion_borrador',
-          datos_cotizacion: datos,
-          cotizacion_id: cotizacion?.id || null,
-          cotizacion_codigo: codigo,
+          estado: 'Cotización_borrador',
+          datos_Cotización: datos,
+          Cotización_id: Cotización?.id || null,
+          Cotización_codigo: codigo,
           updated_at: new Date().toISOString(),
         })
         .eq('id', proyectoActivo.id);
 
-      await guardarMensaje('assistant', `Borrador de cotizaciÃ³n generado: ${codigo}. Revisar en Cotizaciones Inteligentes.`, { cotizacion });
-      setEstado(`CotizaciÃ³n borrador creada: ${codigo}`);
+      await guardarMensaje('assistant', `Borrador de Cotización generado: ${codigo}. Revisar en Cotizaciónes Inteligentes.`, { Cotización });
+      setEstado(`Cotización borrador creada: ${codigo}`);
 
 localStorage.setItem(
-  'elanvisual_cotizacion_ai_activa',
+  'elanvisual_Cotización_ai_activa',
   JSON.stringify({
-    id: cotizacion?.id || null,
+    id: Cotización?.id || null,
     codigo,
     proyectoId: proyectoActivo.id,
   })
 );
 
-setPage?.('cotizacionesInteligentes');
+setPage?.('Cotizacióntes');
       await cargarMensajes(proyectoActivo.id);
       await cargarProyectos();
     } catch (err) {
-      setError(`No se pudo generar cotizaciÃ³n: ${err.message}`);
+      setError(`No se pudo generar Cotización: ${err.message}`);
     } finally {
       setCargando(false);
     }
@@ -424,10 +424,10 @@ setPage?.('cotizacionesInteligentes');
             <button
               className="ai-primary"
               type="button"
-              onClick={generarCotizacion}
+              onClick={generarCotización}
               disabled={!proyectoActivo || cargando}
             >
-              Generar cotización
+              Generar Cotización
             </button>
           </div>
         </header>
@@ -437,7 +437,7 @@ setPage?.('cotizacionesInteligentes');
             <div className="ai-row assistant">
               <div className="ai-avatar">✦</div>
               <div className="ai-msg assistant">
-                Hola. Soy ELAN AI. Puedo ayudarte a levantar información técnica, analizar imágenes, preparar propuestas y convertir esta conversación en una cotización.
+                Hola. Soy ELAN AI. Puedo ayudarte a levantar información técnica, analizar imágenes, preparar propuestas y convertir esta conversación en una Cotización.
               </div>
             </div>
           )}
@@ -499,3 +499,4 @@ setPage?.('cotizacionesInteligentes');
     </main>
   );
 }
+
