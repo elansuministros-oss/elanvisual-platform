@@ -458,6 +458,14 @@ export default function CotizacionesInteligentes() {
             <button
               className="primary"
               type="button"
+              onClick={() => editarEnCotizador(cotizacionActiva)}
+            >
+              <FileText size={18} />
+              Editar en Cotizador
+            </button>
+            <button
+              className="primary"
+              type="button"
               onClick={() =>
                 actualizarEstadoCotizacion(cotizacionActiva, 'aprobada')
               }
