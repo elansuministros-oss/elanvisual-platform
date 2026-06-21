@@ -13,7 +13,13 @@ export default function AIAssistantPanel() {
 
   const [mensaje, setMensaje] = useState("");
   const [archivos, setArchivos] = useState([]);
-  const [respuesta, setRespuesta] = useState("");
+  const [mensajesChat, setMensajesChat] = useState([
+    {
+      rol: "assistant",
+      texto:
+        "Hola. Soy ELAN AI. Puedo ayudarte con señalización, impresión, materiales, proveedores, cotización preliminar y análisis de imágenes.",
+    },
+  ]);
   const [estado, setEstado] = useState("");
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
@@ -25,12 +31,12 @@ export default function AIAssistantPanel() {
     if (!lista.length) return;
 
     setError("");
-    setEstado("Leyendo archivos temporalmente...");
+    setEstado("Leyendo archivos...");
 
     try {
       const preparados = await prepararArchivosTemporalesAI(lista);
       setArchivos((prev) => [...prev, ...preparados]);
-      setEstado("Archivos listos para análisis temporal. No se guardaron en Storage.");
+      setEstado("");
     } catch (err) {
       setError(err.message || "No se pudieron preparar los archivos.");
     }
@@ -50,20 +56,31 @@ export default function AIAssistantPanel() {
       return;
     }
 
+    const resumenArchivos = construirResumenArchivosTemporales(archivos);
+    const contenidoUsuario = [
+      mensaje.trim(),
+      resumenArchivos
+        ? "\n\nARCHIVOS TEMPORALES ADJUNTOS:\n" + resumenArchivos
+        : "",
+    ].join("");
+
+    const textoVisibleUsuario =
+      mensaje.trim() ||
+      `Archivo adjunto: ${archivos.map((a) => a.nombre).join(", ")}`;
+
+    setMensajesChat((prev) => [
+      ...prev,
+      {
+        rol: "user",
+        texto: textoVisibleUsuario,
+      },
+    ]);
+
     setCargando(true);
     setError("");
-    setEstado("Consultando ELANKAV CORE...");
+    setEstado("Consultando...");
 
     try {
-      const resumenArchivos = construirResumenArchivosTemporales(archivos);
-
-      const contenidoUsuario = [
-        mensaje.trim(),
-        resumenArchivos
-          ? "\n\nARCHIVOS TEMPORALES ADJUNTOS:\n" + resumenArchivos
-          : "",
-      ].join("");
-
       const res = await fetch(`${CORE_URL.replace(/\/$/, "")}/api/elan-ai`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,15 +121,38 @@ export default function AIAssistantPanel() {
         data?.content ||
         "Respuesta recibida sin texto.";
 
-      setRespuesta(texto);
+      setMensajesChat((prev) => [
+        ...prev,
+        {
+          rol: "assistant",
+          texto,
+        },
+      ]);
+
       setMensaje("");
       setArchivos([]);
-      setEstado("Respuesta recibida.");
+      setEstado("");
     } catch (err) {
-      setError(err.message || "No se pudo consultar ELANKAV CORE.");
+      const textoError = err.message || "No se pudo consultar ELANKAV CORE.";
+      setError(textoError);
+      setMensajesChat((prev) => [
+        ...prev,
+        {
+          rol: "assistant",
+          texto: `No pude conectar con ELANKAV CORE. ${textoError}`,
+          error: true,
+        },
+      ]);
       setEstado("");
     } finally {
       setCargando(false);
+    }
+  }
+
+  function enviarConEnter(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      enviarMensaje();
     }
   }
 
@@ -120,67 +160,64 @@ export default function AIAssistantPanel() {
     <div className="elan-ai-panel">
       <div className="elan-ai-header">
         <h3>ELAN AI</h3>
-        <button onClick={cerrarAI}>×</button>
+        <button className="elan-ai-close" onClick={cerrarAI}>×</button>
       </div>
 
-      <div className="elan-ai-body">
-        <div className="elan-ai-section">
-          <strong>Asistente Operativo Global</strong>
-        </div>
+      <div className="elan-ai-chat">
+        {mensajesChat.map((m, index) => (
+          <div key={index} className={`elan-ai-row ${m.rol}`}>
+            {m.rol === "assistant" && <div className="elan-ai-avatar">✦</div>}
+            <div className={`elan-ai-bubble ${m.rol} ${m.error ? "error" : ""}`}>
+              {m.texto}
+            </div>
+          </div>
+        ))}
 
-        {respuesta && (
-          <div className="elan-ai-section">
-            <strong>Respuesta</strong>
-            <div className="elan-ai-respuesta">{respuesta}</div>
+        {cargando && (
+          <div className="elan-ai-row assistant">
+            <div className="elan-ai-avatar">✦</div>
+            <div className="elan-ai-bubble assistant">Analizando...</div>
+          </div>
+        )}
+      </div>
+
+      <div className="elan-ai-composer">
+        {archivos.length > 0 && (
+          <div className="elan-ai-files">
+            {archivos.map((archivo, i) => (
+              <span key={`${archivo.nombre}-${i}`} className="elan-ai-file-chip">
+                {archivo.ok ? "📎" : "⚠"} {archivo.nombre}
+                <button type="button" onClick={() => quitarArchivo(i)}>×</button>
+              </span>
+            ))}
           </div>
         )}
 
-        <div className="elan-ai-section">
-          <label>Adjuntar JPG, PNG, SVG o PDF para análisis temporal</label>
+        {error && <div className="elan-ai-error">{error}</div>}
+        {estado && <div className="elan-ai-status">{estado}</div>}
 
-          <input
-            type="file"
-            multiple
-            accept=".jpg,.jpeg,.png,.svg,.pdf"
-            onChange={manejarArchivos}
-          />
+        <div className="elan-ai-inputbar">
+          <label className="elan-ai-attach">
+            📎
+            <input
+              type="file"
+              multiple
+              accept=".jpg,.jpeg,.png,.svg,.pdf"
+              onChange={manejarArchivos}
+            />
+          </label>
 
-          {archivos.length > 0 && (
-            <ul>
-              {archivos.map((archivo, i) => (
-                <li key={`${archivo.nombre}-${i}`}>
-                  {archivo.ok ? "Temporal" : "Error"} — {archivo.nombre}
-                  <button type="button" onClick={() => quitarArchivo(i)}>
-                    Quitar
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="elan-ai-section">
           <textarea
             value={mensaje}
             onChange={(e) => setMensaje(e.target.value)}
+            onKeyDown={enviarConEnter}
             placeholder="Escriba una consulta..."
-            rows={4}
-            style={{ width: "100%" }}
+            rows={1}
           />
-        </div>
 
-        {estado && <div className="elan-ai-section">{estado}</div>}
-        {error && <div className="elan-ai-section" style={{ color: "red" }}>{error}</div>}
-
-        <div className="elan-ai-section">
-          <button type="button" onClick={enviarMensaje} disabled={cargando}>
-            {cargando ? "Consultando..." : "Enviar"}
+          <button type="button" className="elan-ai-send" onClick={enviarMensaje} disabled={cargando}>
+            ➤
           </button>
-        </div>
-
-        <div className="elan-ai-section">
-          <strong>Contexto actual</strong>
-          <pre>{JSON.stringify(contextoAI, null, 2)}</pre>
         </div>
       </div>
     </div>

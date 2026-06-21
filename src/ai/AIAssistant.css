@@ -1,35 +1,249 @@
-.elan-ai-fab {
+﻿.elan-ai-fab {
   position: fixed;
   right: 20px;
   bottom: 20px;
   width: 64px;
   height: 64px;
-  border-radius: 50%;
+  border-radius: 999px;
   border: none;
   cursor: pointer;
   z-index: 9999;
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.28);
 }
 
 .elan-ai-panel {
   position: fixed;
   top: 0;
   right: 0;
-  width: 420px;
+  width: 460px;
+  max-width: 100vw;
   height: 100vh;
   background: #ffffff;
   z-index: 10000;
-  box-shadow: -5px 0 20px rgba(0,0,0,.2);
+  box-shadow: -8px 0 30px rgba(15, 23, 42, 0.18);
+  display: flex;
+  flex-direction: column;
+  color: #0f172a;
 }
 
 .elan-ai-header {
+  min-height: 84px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  background: #ffffff;
 }
 
-.elan-ai-body {
-  padding: 16px;
+.elan-ai-header h3 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: -0.04em;
+  font-weight: 900;
+}
+
+.elan-ai-close {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  border: none;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.elan-ai-chat {
+  flex: 1;
   overflow-y: auto;
-  height: calc(100vh - 70px);
+  padding: 22px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: #ffffff;
+}
+
+.elan-ai-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.elan-ai-row.user {
+  justify-content: flex-end;
+}
+
+.elan-ai-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background: #0f172a;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.elan-ai-bubble {
+  max-width: 78%;
+  padding: 15px 17px;
+  border-radius: 22px;
+  font-size: 15px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.elan-ai-bubble.assistant {
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  color: #0f172a;
+  border-top-left-radius: 8px;
+}
+
+.elan-ai-bubble.user {
+  background: #dbeafe;
+  color: #0f172a;
+  border-top-right-radius: 8px;
+}
+
+.elan-ai-bubble.error {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #be123c;
+}
+
+.elan-ai-composer {
+  padding: 14px 16px 18px;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.elan-ai-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.elan-ai-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.elan-ai-file-chip button {
+  border: none;
+  background: #0f172a;
+  color: #ffffff;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.elan-ai-error {
+  color: #dc2626;
+  font-size: 13px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.elan-ai-status {
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.elan-ai-inputbar {
+  min-height: 66px;
+  border: 1px solid #cbd5e1;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.elan-ai-attach {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  border: 1px solid #cbd5e1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 20px;
+  flex: 0 0 auto;
+}
+
+.elan-ai-attach input {
+  display: none;
+}
+
+.elan-ai-inputbar textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  min-height: 34px;
+  max-height: 120px;
+  font: inherit;
+  color: #0f172a;
+}
+
+.elan-ai-inputbar textarea::placeholder {
+  color: #94a3b8;
+}
+
+.elan-ai-send {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  border: none;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 900;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.elan-ai-send:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px) {
+  .elan-ai-panel {
+    width: 100vw;
+  }
+
+  .elan-ai-header {
+    min-height: 76px;
+    padding: 16px;
+  }
+
+  .elan-ai-header h3 {
+    font-size: 24px;
+  }
+
+  .elan-ai-bubble {
+    max-width: 82%;
+    font-size: 14px;
+  }
 }
