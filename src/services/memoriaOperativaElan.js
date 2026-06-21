@@ -4,6 +4,68 @@ import { generarProduccionAutomatica } from './motorProduccion';
 const limpiar = (arr = [], limite = 20) =>
   Array.isArray(arr) ? arr.slice(0, limite) : [];
 
+function normalizarAI06(valor = '') {
+  return String(valor || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function palabrasClaveAI06(texto = '') {
+  const base = normalizarAI06(texto);
+  return base
+    .split(/[^a-z0-9]+/i)
+    .filter((p) => p.length >= 3)
+    .slice(0, 30);
+}
+
+function puntuarItemAI06(item = {}, claves = []) {
+  const textoItem = normalizarAI06(JSON.stringify(item));
+  return claves.reduce((total, clave) => total + (textoItem.includes(clave) ? 1 : 0), 0);
+}
+
+function filtrarRelevantesAI06(lista = [], mensaje = '', limite = 12) {
+  const claves = palabrasClaveAI06(mensaje);
+  if (!Array.isArray(lista) || !lista.length || !claves.length) return [];
+
+  return lista
+    .map((item) => ({ item, puntos: puntuarItemAI06(item, claves) }))
+    .filter((x) => x.puntos > 0)
+    .sort((a, b) => b.puntos - a.puntos)
+    .slice(0, limite)
+    .map((x) => x.item);
+}
+
+function detectarIntencionTecnicaAI06(mensaje = '') {
+  const t = normalizarAI06(mensaje);
+
+  const tipo =
+    t.includes('acm') || t.includes('fachada') ? 'Fachada ACM' :
+    t.includes('lona') || t.includes('fascia') ? 'Fascia / lona' :
+    t.includes('letra') || t.includes('3d') ? 'Letras 3D' :
+    t.includes('boton') || t.includes('luminos') || t.includes('led') ? 'Rotulo luminoso' :
+    t.includes('pvc') || t.includes('acrilico') ? 'PVC / Acrilico' :
+    t.includes('vinil') || t.includes('impresion') ? 'Impresion digital' :
+    'Consulta tecnica general';
+
+  const medidas = [...t.matchAll(/(\d+(?:[.,]\d+)?)\s*(?:x|por|\*)\s*(\d+(?:[.,]\d+)?)/g)]
+    .map((m) => ({
+      ancho: Number(String(m[1]).replace(',', '.')),
+      alto: Number(String(m[2]).replace(',', '.')),
+      area: Number(String((Number(String(m[1]).replace(',', '.')) * Number(String(m[2]).replace(',', '.'))).toFixed(2))),
+    }));
+
+  return {
+    tipo,
+    requiere_materiales: true,
+    requiere_tecnologia: true,
+    requiere_proveedor: true,
+    requiere_despiece: true,
+    medidas_detectadas: medidas,
+  };
+}
+
+
 async function leerTabla(tabla, orden = 'created_at', limite = 30) {
   if (!supabase) return { ok: false, tabla, data: [], error: 'Supabase no disponible' };
 
@@ -81,6 +143,19 @@ export async function cargarMemoriaOperativaElan({
       pedidos: limpiar(pedidos.data, 20),
     },
     produccion_preliminar: produccionPreliminar,
+    ai06_consulta_tecnica: {
+      intencion: detectarIntencionTecnicaAI06(mensaje),
+      relevantes: {
+        materiales_master: filtrarRelevantesAI06(materiales.data, mensaje, 15),
+        tintas_master: filtrarRelevantesAI06(tintas.data, mensaje, 10),
+        biblioteca_tecnica: filtrarRelevantesAI06(biblioteca.data, mensaje, 12),
+        biblioteca_componentes: filtrarRelevantesAI06(componentes.data, mensaje, 15),
+        tecnologias_impresion: filtrarRelevantesAI06(tecnologias.data, mensaje, 10),
+        proveedores: filtrarRelevantesAI06(proveedores.data, mensaje, 10),
+        cotizaciones_inteligentes: filtrarRelevantesAI06(cotizaciones.data, mensaje, 5),
+        pedidos: filtrarRelevantesAI06(pedidos.data, mensaje, 5),
+      },
+    },
     reglas: [
       'No inventar materiales, precios, proveedores ni tecnologías.',
       'Si un dato no existe en memoria operativa, indicar pendiente de validación.',
@@ -100,3 +175,4 @@ export async function cargarMemoriaOperativaElan({
     },
   };
 }
+
