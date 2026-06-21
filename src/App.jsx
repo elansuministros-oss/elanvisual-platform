@@ -293,7 +293,7 @@ export default function App() {
 
       {page === 'cotizador' &&
         (accesoVentas ? (
-          <CotizadorVisual />
+          <CotizadorDirecto setPage={ir} />
         ) : (
           <Login setPage={ir} destino="cotizador" />
         ))}
@@ -307,7 +307,7 @@ export default function App() {
 
       {page === 'cotizadorVisual' &&
         (accesoAdmin ? (
-          <CotizadorVisual />
+          <CotizadorDirecto setPage={ir} />
         ) : (
           <Login setPage={ir} destino="admin" />
         ))}
