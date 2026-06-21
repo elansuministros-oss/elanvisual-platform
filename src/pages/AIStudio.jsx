@@ -177,6 +177,18 @@ export default function AIStudio({ setPage }) {
           codigo_vendedor: firma.codigo_vendedor,
         },
         messages,
+        archivos_temporales: archivosTemporales
+          .filter((a) => a.ok)
+          .map((a) => ({
+            nombre: a.nombre,
+            tipo: a.tipo,
+            extension: a.extension,
+            tamano: a.tamano,
+            dataUrl: a.dataUrl,
+            metadata: a.metadata,
+            temporal: true,
+            guardar_permanente: false,
+          })),
       }),
     });
 
@@ -423,6 +435,8 @@ setPage?.('cotizacionesInteligentes');
     </main>
   );
 }
+
+
 
 
 
