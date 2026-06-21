@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
 import { esAdminCRM, filtrarRegistrosCRM, obtenerFirmaVendedor } from '../services/permisosCRM';
 import { prepararArchivosTemporalesAI, construirResumenArchivosTemporales } from '../services/aiTemporalService';
+import { cargarMemoriaOperativaElan } from '../services/memoriaOperativaElan';
 import '../styles/AIStudio.css';
 
 const CORE_URL = import.meta.env.VITE_ELANKAV_CORE_URL || '';
@@ -560,6 +561,7 @@ setPage?.('CotizacionesInteligentes');
     </main>
   );
 }
+
 
 
 
