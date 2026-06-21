@@ -293,7 +293,7 @@ export default function App() {
 
       {page === 'cotizador' &&
         (accesoVentas ? (
-          <CotizadorDirecto setPage={ir} />
+          <CotizadorVisual />
         ) : (
           <Login setPage={ir} destino="cotizador" />
         ))}
