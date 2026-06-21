@@ -1,19 +1,20 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
 import { esAdminCRM, filtrarRegistrosCRM, obtenerFirmaVendedor } from '../services/permisosCRM';
+import { prepararArchivosTemporalesAI, construirResumenArchivosTemporales } from '../services/aiTemporalService';
 import '../styles/AIStudio.css';
 
 const CORE_URL = import.meta.env.VITE_ELANKAV_CORE_URL || '';
 
 const tiposProyecto = [
-  'Rotulación',
+  'RotulaciÃ³n',
   'Fachada ACM',
   'Letras 3D',
-  'Botón luminoso',
-  'PVC / Acrílico',
-  'Impresión digital',
-  'BTL / Exhibición',
+  'BotÃ³n luminoso',
+  'PVC / AcrÃ­lico',
+  'ImpresiÃ³n digital',
+  'BTL / ExhibiciÃ³n',
   'Interiorismo',
   'Otro',
 ];
@@ -26,7 +27,7 @@ function respuestaIA(data) {
     data?.texto ||
     data?.output_text ||
     data?.data?.respuesta ||
-    'La IA respondió, pero no se recibió texto legible.'
+    'La IA respondiÃ³, pero no se recibiÃ³ texto legible.'
   );
 }
 
@@ -54,11 +55,12 @@ export default function AIStudio({ setPage }) {
   const [proyectos, setProyectos] = useState([]);
   const [proyectoActivo, setProyectoActivo] = useState(null);
   const [mensajes, setMensajes] = useState([]);
-  const [nuevo, setNuevo] = useState({ nombre: '', tipo_proyecto: 'Rotulación' });
+  const [nuevo, setNuevo] = useState({ nombre: '', tipo_proyecto: 'RotulaciÃ³n' });
   const [mensaje, setMensaje] = useState('');
   const [cargando, setCargando] = useState(false);
   const [estado, setEstado] = useState('');
   const [error, setError] = useState('');
+  const [archivosTemporales, setArchivosTemporales] = useState([]);
 
   const proyectosVisibles = useMemo(
     () => filtrarRegistrosCRM(usuario || {}, proyectos),
@@ -68,7 +70,7 @@ export default function AIStudio({ setPage }) {
   async function cargarProyectos() {
     setError('');
     if (!supabase) {
-      setError('Supabase no está configurado.');
+      setError('Supabase no estÃ¡ configurado.');
       return;
     }
 
@@ -114,8 +116,8 @@ export default function AIStudio({ setPage }) {
   async function crearProyecto(e) {
     e.preventDefault();
     setError('');
-    if (!supabase) return setError('Supabase no está configurado.');
-    if (!nuevo.nombre.trim()) return setError('Ingresá el nombre del proyecto.');
+    if (!supabase) return setError('Supabase no estÃ¡ configurado.');
+    if (!nuevo.nombre.trim()) return setError('IngresÃ¡ el nombre del proyecto.');
 
     const payload = {
       nombre: nuevo.nombre.trim(),
@@ -132,7 +134,7 @@ export default function AIStudio({ setPage }) {
 
     if (err) return setError(`Error creando proyecto: ${err.message}`);
 
-    setNuevo({ nombre: '', tipo_proyecto: 'Rotulación' });
+    setNuevo({ nombre: '', tipo_proyecto: 'RotulaciÃ³n' });
     setProyectoActivo(data);
     setMensajes([]);
     await cargarProyectos();
@@ -185,10 +187,40 @@ export default function AIStudio({ setPage }) {
     return data;
   }
 
+  async function manejarArchivosTemporales(e) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    setError('');
+    setEstado('Leyendo archivos temporalmente...');
+
+    try {
+      const preparados = await prepararArchivosTemporalesAI(files);
+      setArchivosTemporales((prev) => [...prev, ...preparados]);
+      setEstado('Archivos listos para análisis temporal. No se guardaron en Storage.');
+    } catch (err) {
+      setError(err.message || 'No se pudieron leer los archivos.');
+    }
+
+    e.target.value = '';
+  }
+
+  function eliminarArchivoTemporal(index) {
+    setArchivosTemporales((prev) => prev.filter((_, i) => i !== index));
+  }
+
   async function enviarMensaje(e) {
     e.preventDefault();
-    if (!proyectoActivo) return setError('Primero creá o seleccioná un proyecto.');
-    if (!mensaje.trim()) return;
+    if (!proyectoActivo) return setError('Primero creÃ¡ o seleccionÃ¡ un proyecto.');
+    if (!mensaje.trim() && archivosTemporales.length === 0) return;
+
+    const resumenArchivosTemporales = construirResumenArchivosTemporales(archivosTemporales);
+    const contenidoUsuario = [
+      mensaje.trim(),
+      resumenArchivosTemporales
+        ? "\n\nARCHIVOS TEMPORALES ADJUNTOS:\n" + resumenArchivosTemporales
+        : "",
+    ].join("");
 
     setCargando(true);
     setError('');
@@ -197,6 +229,7 @@ export default function AIStudio({ setPage }) {
     try {
       const contenidoUsuario = mensaje.trim();
       setMensaje('');
+        setArchivosTemporales([]);
       const msgUser = await guardarMensaje('user', contenidoUsuario);
       const historial = [...mensajes, msgUser].map((m) => ({ role: m.rol, content: m.contenido }));
 
@@ -220,15 +253,23 @@ export default function AIStudio({ setPage }) {
   }
 
   async function generarCotizacion() {
-    if (!proyectoActivo) return setError('Seleccioná un proyecto.');
-    if (!mensajes.length) return setError('No hay conversación suficiente para generar cotización.');
+    if (!proyectoActivo) return setError('SeleccionÃ¡ un proyecto.');
+    if (!mensajes.length) return setError('No hay conversaciÃ³n suficiente para generar cotizaciÃ³n.');
+
+    const resumenArchivosTemporales = construirResumenArchivosTemporales(archivosTemporales);
+    const contenidoUsuario = [
+      mensaje.trim(),
+      resumenArchivosTemporales
+        ? "\n\nARCHIVOS TEMPORALES ADJUNTOS:\n" + resumenArchivosTemporales
+        : "",
+    ].join("");
 
     setCargando(true);
     setError('');
-    setEstado('Extrayendo datos para cotización...');
+    setEstado('Extrayendo datos para cotizaciÃ³n...');
 
     try {
-      const prompt = `De la conversación siguiente extraé datos para crear una cotización ELANVISUAL. Respondé SOLO JSON válido con estas claves: cliente_nombre, celular, ubicacion, biblioteca_nombre, descripcion, ancho, alto, cantidad, precio_b, costo_produccion, costo_instalacion, costo_transporte, costo_viaticos, costo_equipo, costo_empresa, estado, observaciones. Si falta un dato, usá vacío o 0. Conversación:\n${mensajes.map((m) => `${m.rol}: ${m.contenido}`).join('\n')}`;
+      const prompt = `De la conversaciÃ³n siguiente extraÃ© datos para crear una cotizaciÃ³n ELANVISUAL. RespondÃ© SOLO JSON vÃ¡lido con estas claves: cliente_nombre, celular, ubicacion, biblioteca_nombre, descripcion, ancho, alto, cantidad, precio_b, costo_produccion, costo_instalacion, costo_transporte, costo_viaticos, costo_equipo, costo_empresa, estado, observaciones. Si falta un dato, usÃ¡ vacÃ­o o 0. ConversaciÃ³n:\n${mensajes.map((m) => `${m.rol}: ${m.contenido}`).join('\n')}`;
       const data = await llamarCore([{ role: 'user', content: prompt }], 'extraer_cotizacion');
       const texto = respuestaIA(data);
       const datos = extraerJSON(texto) || {};
@@ -276,8 +317,8 @@ export default function AIStudio({ setPage }) {
         })
         .eq('id', proyectoActivo.id);
 
-      await guardarMensaje('assistant', `Borrador de cotización generado: ${codigo}. Revisar en Cotizaciones Inteligentes.`, { cotizacion });
-      setEstado(`Cotización borrador creada: ${codigo}`);
+      await guardarMensaje('assistant', `Borrador de cotizaciÃ³n generado: ${codigo}. Revisar en Cotizaciones Inteligentes.`, { cotizacion });
+      setEstado(`CotizaciÃ³n borrador creada: ${codigo}`);
 
 localStorage.setItem(
   'elanvisual_cotizacion_ai_activa',
@@ -292,7 +333,7 @@ setPage?.('cotizacionesInteligentes');
       await cargarMensajes(proyectoActivo.id);
       await cargarProyectos();
     } catch (err) {
-      setError(`No se pudo generar cotización: ${err.message}`);
+      setError(`No se pudo generar cotizaciÃ³n: ${err.message}`);
     } finally {
       setCargando(false);
     }
@@ -327,7 +368,7 @@ setPage?.('cotizacionesInteligentes');
           {proyectosVisibles.map((p) => (
             <button key={p.id} className={`ai-project-btn ${proyectoActivo?.id === p.id ? 'active' : ''}`} type="button" onClick={() => setProyectoActivo(p)}>
               <strong>{p.nombre}</strong>
-              <span>{p.tipo_proyecto} · {p.estado}</span>
+              <span>{p.tipo_proyecto} Â· {p.estado}</span>
               <span>{p.codigo_vendedor || p.vendedor_nombre || 'Sin vendedor'}</span>
             </button>
           ))}
@@ -336,21 +377,42 @@ setPage?.('cotizacionesInteligentes');
         <section className="ai-chat">
           <div className="ai-chat-top">
             <div>
-              <h2>{proyectoActivo?.nombre || 'Seleccioná un proyecto'}</h2>
-              <p>{proyectoActivo?.tipo_proyecto || 'La conversación queda guardada en Supabase.'}</p>
+              <h2>{proyectoActivo?.nombre || 'SeleccionÃ¡ un proyecto'}</h2>
+              <p>{proyectoActivo?.tipo_proyecto || 'La conversaciÃ³n queda guardada en Supabase.'}</p>
             </div>
-            <button className="ai-primary" type="button" onClick={generarCotizacion} disabled={!proyectoActivo || cargando}>Generar Cotización</button>
+            <button className="ai-primary" type="button" onClick={generarCotizacion} disabled={!proyectoActivo || cargando}>Generar CotizaciÃ³n</button>
           </div>
 
           <div className="ai-messages">
-            {!mensajes.length && <div className="ai-empty">Conversá con la IA para levantar información técnica del proyecto.</div>}
+            {!mensajes.length && <div className="ai-empty">ConversÃ¡ con la IA para levantar informaciÃ³n tÃ©cnica del proyecto.</div>}
             {mensajes.map((m) => <div key={m.id} className={`ai-msg ${m.rol}`}>{m.contenido}</div>)}
           </div>
 
           <form className="ai-input" onSubmit={enviarMensaje}>
             {estado && <div className="ai-status">{estado}</div>}
             {error && <div className="ai-error">{error}</div>}
-            <textarea value={mensaje} onChange={(e) => setMensaje(e.target.value)} placeholder="Escribí el mensaje del cliente, medidas, idea, materiales o dudas técnicas..." />
+            <textarea value={mensaje} onChange={(e) => setMensaje(e.target.value)} placeholder="EscribÃ­ el mensaje del cliente, medidas, idea, materiales o dudas tÃ©cnicas..." />
+
+              <label className="ai-upload-temporal">
+                Adjuntar JPG, PNG, SVG o PDF para análisis temporal
+                <input
+                  type="file"
+                  multiple
+                  accept=".jpg,.jpeg,.png,.svg,.pdf"
+                  onChange={manejarArchivosTemporales}
+                />
+              </label>
+
+              {archivosTemporales.length > 0 && (
+                <div className="ai-archivos-temporales">
+                  {archivosTemporales.map((archivo, index) => (
+                    <div key={`${archivo.nombre}-${index}`} className="ai-archivo-temporal">
+                      <span>{archivo.ok ? 'Temporal' : 'Error'} — {archivo.nombre}</span>
+                      <button type="button" onClick={() => eliminarArchivoTemporal(index)}>Quitar</button>
+                    </div>
+                  ))}
+                </div>
+              )}
             <div className="ai-actions">
               <button className="ai-primary" type="submit" disabled={cargando || !proyectoActivo}>Enviar</button>
               <button className="ai-secondary" type="button" onClick={() => setMensaje('')}>Limpiar</button>
@@ -361,3 +423,7 @@ setPage?.('cotizacionesInteligentes');
     </main>
   );
 }
+
+
+
+
