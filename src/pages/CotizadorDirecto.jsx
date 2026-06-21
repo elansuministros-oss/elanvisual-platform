@@ -369,13 +369,27 @@ export default function CotizadorDirecto({ setPage }) {
         Number(data.costo_empresa || 0);
 
       const lineaEdicion = {
-        id: `ci17-${data.id}`,
+        id: `ci17-linea-${data.id}`,
         nombre: data.biblioteca_nombre || descripcion,
         tipo: 'Cotización inteligente',
         unidad: 'servicio',
         cantidad: Number(data.cantidad || 1),
         costoUnitario: costoBase > 0 ? costoBase : precioBase,
         origen: 'cotizaciones_inteligentes',
+      };
+
+      const resumenEdicion = resumenItem([lineaEdicion], 'recomendado');
+
+      const itemEdicion = {
+        id: `ci17-item-${data.id}`,
+        descripcion,
+        ancho: Number(data.ancho || 1),
+        alto: Number(data.alto || 1),
+        cantidad: Number(data.cantidad || 1),
+        precioElegido: 'recomendado',
+        lineas: [lineaEdicion],
+        resumen: resumenEdicion,
+        archivos: [],
       };
 
       setForm((prev) => ({
@@ -400,7 +414,8 @@ export default function CotizadorDirecto({ setPage }) {
         p3: 0,
       }));
 
-      setItems([lineaEdicion]);
+      setLineasPreview([lineaEdicion]);
+      setItems([itemEdicion]);
       setMensaje(`Modo edición activo: ${data.codigo || data.id}`);
       setCargandoEdicion(false);
     };
