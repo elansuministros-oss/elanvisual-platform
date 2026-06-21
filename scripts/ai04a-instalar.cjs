@@ -1,5 +1,382 @@
+const fs = require("fs");
+const path = require("path");
+
+const root = process.cwd();
+const aiStudioPath = path.join(root, "src", "pages", "AIStudio.jsx");
+const servicePath = path.join(root, "src", "services", "aiArchivosService.js");
+const sqlPath = path.join(root, "sql", "AI-04A_archivos_ai_storage.sql");
+
+if (!fs.existsSync(aiStudioPath)) {
+  throw new Error("No existe src/pages/AIStudio.jsx");
+}
+
+const currentAIStudio = fs.readFileSync(aiStudioPath, "utf8");
+
+const supabaseImport =
+  currentAIStudio.match(/import\s+\{\s*supabase\s*\}\s+from\s+["'][^"']+["'];?/) ||
+  currentAIStudio.match(/import\s+supabase\s+from\s+["'][^"']+["'];?/);
+
+if (!supabaseImport) {
+  throw new Error("No encontré el import de supabase en AIStudio.jsx. Revisar archivo actual.");
+}
+
+const supabaseImportLine = supabaseImport[0];
+
+const sql = `
+-- AI-04A — RECEPCIÓN COMPLETA DE ARCHIVOS ELANVISUAL
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'ai-archivos',
+  'ai-archivos',
+  true,
+  52428800,
+  array[
+    'image/jpeg',
+    'image/png',
+    'image/svg+xml',
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/acad',
+    'application/x-acad',
+    'application/autocad_dwg',
+    'application/dwg',
+    'application/x-dwg',
+    'application/dxf',
+    'application/x-dxf',
+    'image/vnd.dwg',
+    'image/vnd.dxf'
+  ]
+)
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+create table if not exists public.archivos_ai (
+  id uuid primary key default gen_random_uuid(),
+  proyecto_id uuid null references public.proyectos_ai(id) on delete cascade,
+  mensaje_id uuid null references public.mensajes_ai(id) on delete set null,
+  usuario_id uuid null,
+  nombre_original text not null,
+  nombre_storage text not null,
+  bucket text not null default 'ai-archivos',
+  ruta_storage text not null,
+  url_publica text null,
+  mime_type text null,
+  extension text null,
+  tamano_bytes bigint null,
+  tipo_archivo text not null default 'referencias',
+  estado_procesamiento text not null default 'subido',
+  contenido_extraido text null,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint archivos_ai_estado_chk check (
+    estado_procesamiento in (
+      'subido',
+      'procesando',
+      'procesado',
+      'error',
+      'no_soportado_directo'
+    )
+  ),
+  constraint archivos_ai_tipo_chk check (
+    tipo_archivo in (
+      'imagenes',
+      'pdf',
+      'documentos',
+      'excel',
+      'planos',
+      'referencias'
+    )
+  )
+);
+
+create index if not exists idx_archivos_ai_proyecto_id on public.archivos_ai(proyecto_id);
+create index if not exists idx_archivos_ai_mensaje_id on public.archivos_ai(mensaje_id);
+create index if not exists idx_archivos_ai_usuario_id on public.archivos_ai(usuario_id);
+create index if not exists idx_archivos_ai_tipo_archivo on public.archivos_ai(tipo_archivo);
+create index if not exists idx_archivos_ai_estado on public.archivos_ai(estado_procesamiento);
+create index if not exists idx_archivos_ai_created_at on public.archivos_ai(created_at desc);
+
+create or replace function public.set_updated_at_archivos_ai()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_archivos_ai_updated_at on public.archivos_ai;
+
+create trigger trg_archivos_ai_updated_at
+before update on public.archivos_ai
+for each row
+execute function public.set_updated_at_archivos_ai();
+
+alter table public.archivos_ai enable row level security;
+
+drop policy if exists "archivos_ai_select_authenticated" on public.archivos_ai;
+drop policy if exists "archivos_ai_insert_authenticated" on public.archivos_ai;
+drop policy if exists "archivos_ai_update_authenticated" on public.archivos_ai;
+drop policy if exists "archivos_ai_delete_authenticated" on public.archivos_ai;
+
+create policy "archivos_ai_select_authenticated"
+on public.archivos_ai
+for select
+to authenticated
+using (true);
+
+create policy "archivos_ai_insert_authenticated"
+on public.archivos_ai
+for insert
+to authenticated
+with check (true);
+
+create policy "archivos_ai_update_authenticated"
+on public.archivos_ai
+for update
+to authenticated
+using (true)
+with check (true);
+
+create policy "archivos_ai_delete_authenticated"
+on public.archivos_ai
+for delete
+to authenticated
+using (true);
+
+drop policy if exists "ai_archivos_storage_select_authenticated" on storage.objects;
+drop policy if exists "ai_archivos_storage_insert_authenticated" on storage.objects;
+drop policy if exists "ai_archivos_storage_update_authenticated" on storage.objects;
+drop policy if exists "ai_archivos_storage_delete_authenticated" on storage.objects;
+
+create policy "ai_archivos_storage_select_authenticated"
+on storage.objects
+for select
+to authenticated
+using (bucket_id = 'ai-archivos');
+
+create policy "ai_archivos_storage_insert_authenticated"
+on storage.objects
+for insert
+to authenticated
+with check (bucket_id = 'ai-archivos');
+
+create policy "ai_archivos_storage_update_authenticated"
+on storage.objects
+for update
+to authenticated
+using (bucket_id = 'ai-archivos')
+with check (bucket_id = 'ai-archivos');
+
+create policy "ai_archivos_storage_delete_authenticated"
+on storage.objects
+for delete
+to authenticated
+using (bucket_id = 'ai-archivos');
+`;
+
+const service = `
+export const AI_ARCHIVOS_BUCKET = "ai-archivos";
+
+export const EXTENSIONES_AI_SOPORTADAS = [
+  "jpg",
+  "jpeg",
+  "png",
+  "svg",
+  "pdf",
+  "docx",
+  "xlsx",
+  "dwg",
+  "dxf",
+];
+
+export function obtenerExtensionArchivo(nombre) {
+  if (!nombre || !nombre.includes(".")) return "";
+  return nombre.split(".").pop().toLowerCase().trim();
+}
+
+export function clasificarArchivoAI(file) {
+  const extension = obtenerExtensionArchivo(file.name);
+  const mime = file.type || "";
+
+  if (["jpg", "jpeg", "png", "svg"].includes(extension)) return "imagenes";
+  if (extension === "pdf") return "pdf";
+  if (extension === "docx") return "documentos";
+  if (extension === "xlsx") return "excel";
+  if (["dwg", "dxf"].includes(extension)) return "planos";
+
+  if (mime.startsWith("image/")) return "imagenes";
+
+  return "referencias";
+}
+
+export function estadoInicialArchivoAI(file) {
+  const extension = obtenerExtensionArchivo(file.name);
+
+  if (!EXTENSIONES_AI_SOPORTADAS.includes(extension)) {
+    return "no_soportado_directo";
+  }
+
+  if (["dwg", "dxf"].includes(extension)) {
+    return "no_soportado_directo";
+  }
+
+  return "subido";
+}
+
+export function limpiarNombreArchivo(nombre) {
+  const extension = obtenerExtensionArchivo(nombre);
+  const base = nombre
+    .replace(/\\.[^/.]+$/, "")
+    .normalize("NFD")
+    .replace(/[\\u0300-\\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9-_]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+
+  return extension ? base + "." + extension : base;
+}
+
+export function construirRutaStorageAI({ proyectoId, file }) {
+  const tipoArchivo = clasificarArchivoAI(file);
+  const extension = obtenerExtensionArchivo(file.name);
+  const nombreLimpio = limpiarNombreArchivo(file.name);
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).slice(2, 10);
+  const nombreStorage = timestamp + "-" + random + "-" + nombreLimpio;
+
+  return {
+    tipoArchivo,
+    extension,
+    nombreStorage,
+    rutaStorage:
+      "proyectos/" +
+      proyectoId +
+      "/" +
+      tipoArchivo +
+      "/" +
+      nombreStorage,
+  };
+}
+
+export async function subirArchivoAI({
+  supabase,
+  proyectoId,
+  mensajeId,
+  usuarioId,
+  file,
+}) {
+  if (!supabase) throw new Error("Supabase no disponible.");
+  if (!proyectoId) throw new Error("proyectoId requerido.");
+  if (!file) throw new Error("Archivo requerido.");
+
+  const datosRuta = construirRutaStorageAI({ proyectoId, file });
+  const estadoProcesamiento = estadoInicialArchivoAI(file);
+
+  const upload = await supabase.storage
+    .from(AI_ARCHIVOS_BUCKET)
+    .upload(datosRuta.rutaStorage, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type || undefined,
+    });
+
+  if (upload.error) {
+    throw upload.error;
+  }
+
+  const publicUrlData = supabase.storage
+    .from(AI_ARCHIVOS_BUCKET)
+    .getPublicUrl(datosRuta.rutaStorage);
+
+  const urlPublica =
+    publicUrlData && publicUrlData.data
+      ? publicUrlData.data.publicUrl
+      : null;
+
+  const registro = {
+    proyecto_id: proyectoId,
+    mensaje_id: mensajeId || null,
+    usuario_id: usuarioId || null,
+    nombre_original: file.name,
+    nombre_storage: datosRuta.nombreStorage,
+    bucket: AI_ARCHIVOS_BUCKET,
+    ruta_storage: datosRuta.rutaStorage,
+    url_publica: urlPublica,
+    mime_type: file.type || null,
+    extension: datosRuta.extension || null,
+    tamano_bytes: file.size || null,
+    tipo_archivo: datosRuta.tipoArchivo,
+    estado_procesamiento: estadoProcesamiento,
+    contenido_extraido: null,
+    metadata: {
+      origen: "AIStudio",
+      fase: "AI-04A",
+      soporte_directo: estadoProcesamiento !== "no_soportado_directo",
+    },
+  };
+
+  const insert = await supabase
+    .from("archivos_ai")
+    .insert(registro)
+    .select("*")
+    .single();
+
+  if (insert.error) {
+    throw insert.error;
+  }
+
+  return insert.data;
+}
+
+export async function subirArchivosAI({
+  supabase,
+  proyectoId,
+  mensajeId,
+  usuarioId,
+  files,
+}) {
+  const archivos = Array.from(files || []);
+  const resultados = [];
+
+  for (const file of archivos) {
+    const resultado = await subirArchivoAI({
+      supabase,
+      proyectoId,
+      mensajeId,
+      usuarioId,
+      file,
+    });
+
+    resultados.push(resultado);
+  }
+
+  return resultados;
+}
+
+export async function listarArchivosProyectoAI({ supabase, proyectoId }) {
+  if (!proyectoId) return [];
+
+  const { data, error } = await supabase
+    .from("archivos_ai")
+    .select("*")
+    .eq("proyecto_id", proyectoId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+
+  return data || [];
+}
+`;
+
+const aiStudio = `
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { supabase } from '../lib/supabase';
+${supabaseImportLine}
 import {
   subirArchivosAI,
   listarArchivosProyectoAI,
@@ -577,3 +954,13 @@ export default function AIStudio() {
     </main>
   );
 }
+`;
+
+fs.writeFileSync(sqlPath, sql.trim() + "\n", "utf8");
+fs.writeFileSync(servicePath, service.trim() + "\n", "utf8");
+fs.writeFileSync(aiStudioPath, aiStudio.trim() + "\n", "utf8");
+
+console.log("AI-04A instalado.");
+console.log("SQL:", sqlPath);
+console.log("Servicio:", servicePath);
+console.log("AIStudio:", aiStudioPath);
