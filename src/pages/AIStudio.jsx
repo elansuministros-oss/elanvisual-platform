@@ -1,577 +1,361 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import {
-  subirArchivosAI,
-  listarArchivosProyectoAI,
-  clasificarArchivoAI,
-  obtenerExtensionArchivo,
-} from "../services/aiArchivosService";
+import { useApp } from '../context/AppContext';
+import { esAdminCRM, filtrarRegistrosCRM, obtenerFirmaVendedor } from '../services/permisosCRM';
+import '../styles/AIStudio.css';
 
-const ESTADOS_ARCHIVO = {
-  subido: "Subido",
-  procesando: "Procesando",
-  procesado: "Procesado",
-  error: "Error",
-  no_soportado_directo: "Subido / pendiente de conversión",
-};
+const CORE_URL = import.meta.env.VITE_ELANKAV_CORE_URL || '';
 
-const TIPOS_ARCHIVO = {
-  imagenes: "Imagen",
-  pdf: "PDF",
-  documentos: "Documento",
-  excel: "Excel",
-  planos: "Plano",
-  referencias: "Referencia",
-};
+const tiposProyecto = [
+  'Rotulación',
+  'Fachada ACM',
+  'Letras 3D',
+  'Botón luminoso',
+  'PVC / Acrílico',
+  'Impresión digital',
+  'BTL / Exhibición',
+  'Interiorismo',
+  'Otro',
+];
 
-function normalizarProyecto(proyecto) {
-  return {
-    ...proyecto,
-    titulo:
-      proyecto.titulo ||
-      proyecto.nombre ||
-      proyecto.nombre_proyecto ||
-      "Proyecto AI",
-  };
+function respuestaIA(data) {
+  return (
+    data?.respuesta ||
+    data?.message ||
+    data?.content ||
+    data?.texto ||
+    data?.output_text ||
+    data?.data?.respuesta ||
+    'La IA respondió, pero no se recibió texto legible.'
+  );
 }
 
-function normalizarMensaje(mensaje) {
-  return {
-    ...mensaje,
-    rol: mensaje.rol || mensaje.role || mensaje.tipo || "assistant",
-    contenido:
-      mensaje.contenido ||
-      mensaje.content ||
-      mensaje.mensaje ||
-      mensaje.texto ||
-      "",
-  };
+function codigoCotizacion() {
+  return `AI-${new Date().toISOString().slice(0, 10).replaceAll('-', '')}-${Date.now().toString().slice(-5)}`;
 }
 
-async function obtenerUsuarioActual() {
+function extraerJSON(texto) {
   try {
-    const { data } = await supabase.auth.getUser();
-    return data && data.user ? data.user : null;
+    const limpio = String(texto || '').replace(/```json|```/g, '').trim();
+    const inicio = limpio.indexOf('{');
+    const fin = limpio.lastIndexOf('}');
+    if (inicio >= 0 && fin > inicio) return JSON.parse(limpio.slice(inicio, fin + 1));
+    return JSON.parse(limpio);
   } catch {
     return null;
   }
 }
 
-async function insertarMensajeAI({ proyectoId, usuarioId, rol, contenido, metadata }) {
-  const payloadCompleto = {
-    proyecto_id: proyectoId,
-    usuario_id: usuarioId || null,
-    rol,
-    contenido,
-    metadata: metadata || {},
-  };
+export default function AIStudio({ setPage }) {
+  const { usuario } = useApp();
+  const firma = useMemo(() => obtenerFirmaVendedor(usuario || {}), [usuario]);
+  const admin = esAdminCRM(usuario || {});
 
-  const intentoCompleto = await supabase
-    .from("mensajes_ai")
-    .insert(payloadCompleto)
-    .select("*")
-    .single();
-
-  if (!intentoCompleto.error) return intentoCompleto.data;
-
-  const payloadMinimo = {
-    proyecto_id: proyectoId,
-    rol,
-    contenido,
-  };
-
-  const intentoMinimo = await supabase
-    .from("mensajes_ai")
-    .insert(payloadMinimo)
-    .select("*")
-    .single();
-
-  if (intentoMinimo.error) throw intentoMinimo.error;
-
-  return intentoMinimo.data;
-}
-
-async function crearProyectoAI({ usuarioId }) {
-  const titulo = "Proyecto AI " + new Date().toLocaleString("es-NI");
-
-  const payloadCompleto = {
-    titulo,
-    nombre: titulo,
-    usuario_id: usuarioId || null,
-    estado: "activo",
-    metadata: {
-      fase: "AI-04A",
-      origen: "AIStudio",
-    },
-  };
-
-  const intentoCompleto = await supabase
-    .from("proyectos_ai")
-    .insert(payloadCompleto)
-    .select("*")
-    .single();
-
-  if (!intentoCompleto.error) return normalizarProyecto(intentoCompleto.data);
-
-  const payloadMinimo = {
-    titulo,
-  };
-
-  const intentoMinimo = await supabase
-    .from("proyectos_ai")
-    .insert(payloadMinimo)
-    .select("*")
-    .single();
-
-  if (intentoMinimo.error) throw intentoMinimo.error;
-
-  return normalizarProyecto(intentoMinimo.data);
-}
-
-async function cargarRespuestaCore({ proyecto, mensaje, archivos }) {
-  const endpoint =
-    import.meta.env.VITE_AI_STUDIO_ENDPOINT ||
-    import.meta.env.VITE_ELANKAV_CORE_ENDPOINT ||
-    "/api/ai-studio";
-
-  const respuesta = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      proyecto_id: proyecto.id,
-      mensaje,
-      archivos,
-      fase: "AI-04A",
-    }),
-  });
-
-  if (!respuesta.ok) {
-    throw new Error("ELANKAV CORE no respondió correctamente.");
-  }
-
-  const data = await respuesta.json();
-
-  return (
-    data.respuesta ||
-    data.message ||
-    data.content ||
-    data.texto ||
-    "Archivo recibido. La capa documental AI-04A quedó registrada para procesamiento posterior."
-  );
-}
-
-export default function AIStudio() {
-  const inputArchivoRef = useRef(null);
-
-  const [usuario, setUsuario] = useState(null);
   const [proyectos, setProyectos] = useState([]);
   const [proyectoActivo, setProyectoActivo] = useState(null);
   const [mensajes, setMensajes] = useState([]);
-  const [archivosProyecto, setArchivosProyecto] = useState([]);
-  const [archivosSeleccionados, setArchivosSeleccionados] = useState([]);
-  const [mensaje, setMensaje] = useState("");
-  const [cargando, setCargando] = useState(true);
-  const [enviando, setEnviando] = useState(false);
-  const [error, setError] = useState("");
+  const [nuevo, setNuevo] = useState({ nombre: '', tipo_proyecto: 'Rotulación' });
+  const [mensaje, setMensaje] = useState('');
+  const [cargando, setCargando] = useState(false);
+  const [estado, setEstado] = useState('');
+  const [error, setError] = useState('');
 
-  const archivosPorMensaje = useMemo(() => {
-    const mapa = {};
+  const proyectosVisibles = useMemo(
+    () => filtrarRegistrosCRM(usuario || {}, proyectos),
+    [usuario, proyectos]
+  );
 
-    for (const archivo of archivosProyecto) {
-      const key = archivo.mensaje_id || "sin_mensaje";
-      if (!mapa[key]) mapa[key] = [];
-      mapa[key].push(archivo);
+  async function cargarProyectos() {
+    setError('');
+    if (!supabase) {
+      setError('Supabase no está configurado.');
+      return;
     }
 
-    return mapa;
-  }, [archivosProyecto]);
+    const { data, error: err } = await supabase
+      .from('proyectos_ai')
+      .select('*')
+      .order('updated_at', { ascending: false });
+
+    if (err) {
+      setError(`Error cargando proyectos AI: ${err.message}`);
+      return;
+    }
+
+    const lista = data || [];
+    setProyectos(lista);
+    const visibles = filtrarRegistrosCRM(usuario || {}, lista);
+    if (!proyectoActivo && visibles.length) setProyectoActivo(visibles[0]);
+  }
+
+  async function cargarMensajes(proyectoId) {
+    if (!supabase || !proyectoId) return;
+    const { data, error: err } = await supabase
+      .from('mensajes_ai')
+      .select('*')
+      .eq('proyecto_id', proyectoId)
+      .order('created_at', { ascending: true });
+
+    if (err) {
+      setError(`Error cargando mensajes: ${err.message}`);
+      return;
+    }
+    setMensajes(data || []);
+  }
 
   useEffect(() => {
-    iniciarAIStudio();
+    cargarProyectos();
   }, []);
 
   useEffect(() => {
-    if (proyectoActivo) {
-      cargarMensajes(proyectoActivo.id);
-      cargarArchivos(proyectoActivo.id);
-    }
-  }, [proyectoActivo]);
+    if (proyectoActivo?.id) cargarMensajes(proyectoActivo.id);
+  }, [proyectoActivo?.id]);
 
-  async function iniciarAIStudio() {
+  async function crearProyecto(e) {
+    e.preventDefault();
+    setError('');
+    if (!supabase) return setError('Supabase no está configurado.');
+    if (!nuevo.nombre.trim()) return setError('Ingresá el nombre del proyecto.');
+
+    const payload = {
+      nombre: nuevo.nombre.trim(),
+      tipo_proyecto: nuevo.tipo_proyecto,
+      estado: 'activo',
+      ...firma,
+    };
+
+    const { data, error: err } = await supabase
+      .from('proyectos_ai')
+      .insert(payload)
+      .select()
+      .single();
+
+    if (err) return setError(`Error creando proyecto: ${err.message}`);
+
+    setNuevo({ nombre: '', tipo_proyecto: 'Rotulación' });
+    setProyectoActivo(data);
+    setMensajes([]);
+    await cargarProyectos();
+  }
+
+  async function guardarMensaje(rol, contenido, metadata = {}) {
+    const payload = {
+      proyecto_id: proyectoActivo.id,
+      rol,
+      contenido,
+      canal: 'vendedor',
+      vendedor_id: firma.vendedor_id,
+      metadata,
+    };
+
+    const { data, error: err } = await supabase
+      .from('mensajes_ai')
+      .insert(payload)
+      .select()
+      .single();
+
+    if (err) throw new Error(err.message);
+    return data;
+  }
+
+  async function llamarCore(messages, modo = 'chat') {
+    if (!CORE_URL) throw new Error('Falta VITE_ELANKAV_CORE_URL en .env / Vercel.');
+
+    const res = await fetch(`${CORE_URL.replace(/\/$/, '')}/api/elan-ai`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        modo,
+        unidad: 'ELANVISUAL',
+        proyecto: proyectoActivo,
+        usuario: {
+          id: usuario?.id,
+          nombre: usuario?.nombre || usuario?.usuario || usuario?.email,
+          rol: usuario?.rol,
+          codigo_vendedor: firma.codigo_vendedor,
+        },
+        messages,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data?.ok === false) {
+      throw new Error(data?.error || data?.message || 'Error llamando ELANKAV CORE.');
+    }
+    return data;
+  }
+
+  async function enviarMensaje(e) {
+    e.preventDefault();
+    if (!proyectoActivo) return setError('Primero creá o seleccioná un proyecto.');
+    if (!mensaje.trim()) return;
+
     setCargando(true);
-    setError("");
+    setError('');
+    setEstado('Consultando ELANKAV CORE...');
 
     try {
-      const user = await obtenerUsuarioActual();
-      setUsuario(user);
+      const contenidoUsuario = mensaje.trim();
+      setMensaje('');
+      const msgUser = await guardarMensaje('user', contenidoUsuario);
+      const historial = [...mensajes, msgUser].map((m) => ({ role: m.rol, content: m.contenido }));
 
-      const { data, error: errorProyectos } = await supabase
-        .from("proyectos_ai")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const data = await llamarCore(historial, 'chat');
+      const texto = respuestaIA(data);
+      const msgIA = await guardarMensaje('assistant', texto, { core: data });
+      setMensajes((prev) => [...prev, msgUser, msgIA]);
 
-      if (errorProyectos) throw errorProyectos;
+      await supabase
+        .from('proyectos_ai')
+        .update({ updated_at: new Date().toISOString(), resumen: texto.slice(0, 500) })
+        .eq('id', proyectoActivo.id);
 
-      const lista = (data || []).map(normalizarProyecto);
-      setProyectos(lista);
-
-      if (lista.length > 0) {
-        setProyectoActivo(lista[0]);
-      } else {
-        const nuevo = await crearProyectoAI({ usuarioId: user ? user.id : null });
-        setProyectos([nuevo]);
-        setProyectoActivo(nuevo);
-      }
+      setEstado('Respuesta guardada en Supabase.');
+      await cargarProyectos();
     } catch (err) {
-      setError(err.message || "Error cargando AI Studio.");
+      setError(err.message);
     } finally {
       setCargando(false);
     }
   }
 
-  async function cargarMensajes(proyectoId) {
-    try {
-      const { data, error: errorMensajes } = await supabase
-        .from("mensajes_ai")
-        .select("*")
-        .eq("proyecto_id", proyectoId)
-        .order("created_at", { ascending: true });
+  async function generarCotizacion() {
+    if (!proyectoActivo) return setError('Seleccioná un proyecto.');
+    if (!mensajes.length) return setError('No hay conversación suficiente para generar cotización.');
 
-      if (errorMensajes) throw errorMensajes;
-
-      setMensajes((data || []).map(normalizarMensaje));
-    } catch (err) {
-      setError(err.message || "Error cargando mensajes.");
-    }
-  }
-
-  async function cargarArchivos(proyectoId) {
-    try {
-      const data = await listarArchivosProyectoAI({
-        supabase,
-        proyectoId,
-      });
-
-      setArchivosProyecto(data);
-    } catch (err) {
-      setError(err.message || "Error cargando archivos.");
-    }
-  }
-
-  async function crearNuevoProyecto() {
-    setError("");
+    setCargando(true);
+    setError('');
+    setEstado('Extrayendo datos para cotización...');
 
     try {
-      const nuevo = await crearProyectoAI({
-        usuarioId: usuario ? usuario.id : null,
-      });
+      const prompt = `De la conversación siguiente extraé datos para crear una cotización ELANVISUAL. Respondé SOLO JSON válido con estas claves: cliente_nombre, celular, ubicacion, biblioteca_nombre, descripcion, ancho, alto, cantidad, precio_b, costo_produccion, costo_instalacion, costo_transporte, costo_viaticos, costo_equipo, costo_empresa, estado, observaciones. Si falta un dato, usá vacío o 0. Conversación:\n${mensajes.map((m) => `${m.rol}: ${m.contenido}`).join('\n')}`;
+      const data = await llamarCore([{ role: 'user', content: prompt }], 'extraer_cotizacion');
+      const texto = respuestaIA(data);
+      const datos = extraerJSON(texto) || {};
+      const codigo = codigoCotizacion();
 
-      setProyectos((prev) => [nuevo, ...prev]);
-      setProyectoActivo(nuevo);
-      setMensajes([]);
-      setArchivosProyecto([]);
-      setArchivosSeleccionados([]);
-      setMensaje("");
+      const payload = {
+        codigo,
+        cliente_nombre: datos.cliente_nombre || proyectoActivo.nombre || 'Cliente AI',
+        celular: datos.celular || '',
+        ubicacion: datos.ubicacion || '',
+        biblioteca_nombre: datos.biblioteca_nombre || datos.tipo_proyecto || proyectoActivo.tipo_proyecto || 'Proyecto AI',
+        descripcion: datos.descripcion || datos.observaciones || `Generado desde AI Studio: ${proyectoActivo.nombre}`,
+        ancho: Number(datos.ancho || 0),
+        alto: Number(datos.alto || 0),
+        cantidad: Number(datos.cantidad || 1),
+        precio_b: Number(datos.precio_b || 0),
+        costo_produccion: Number(datos.costo_produccion || 0),
+        costo_instalacion: Number(datos.costo_instalacion || 0),
+        costo_transporte: Number(datos.costo_transporte || 0),
+        costo_viaticos: Number(datos.costo_viaticos || 0),
+        costo_equipo: Number(datos.costo_equipo || 0),
+        costo_empresa: Number(datos.costo_empresa || 0),
+        estado: datos.estado || 'borrador_ai',
+        observaciones: datos.observaciones || 'Borrador generado desde AI Studio. Revisar antes de aprobar.',
+        ...firma,
+        origen_ai_proyecto_id: proyectoActivo.id,
+      };
+
+      const { data: cotizacion, error: err } = await supabase
+        .from('cotizaciones_inteligentes')
+        .insert(payload)
+        .select()
+        .single();
+
+      if (err) throw new Error(err.message);
+
+      await supabase
+        .from('proyectos_ai')
+        .update({
+          estado: 'cotizacion_borrador',
+          datos_cotizacion: datos,
+          cotizacion_id: cotizacion?.id || null,
+          cotizacion_codigo: codigo,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', proyectoActivo.id);
+
+      await guardarMensaje('assistant', `Borrador de cotización generado: ${codigo}. Revisar en Cotizaciones Inteligentes.`, { cotizacion });
+      setEstado(`Cotización borrador creada: ${codigo}`);
+
+localStorage.setItem(
+  'elanvisual_cotizacion_ai_activa',
+  JSON.stringify({
+    id: cotizacion?.id || null,
+    codigo,
+    proyectoId: proyectoActivo.id,
+  })
+);
+
+setPage?.('cotizacionesInteligentes');
+      await cargarMensajes(proyectoActivo.id);
+      await cargarProyectos();
     } catch (err) {
-      setError(err.message || "No se pudo crear el proyecto.");
-    }
-  }
-
-  function seleccionarArchivos(event) {
-    const files = Array.from(event.target.files || []);
-    setArchivosSeleccionados((prev) => [...prev, ...files]);
-
-    if (inputArchivoRef.current) {
-      inputArchivoRef.current.value = "";
-    }
-  }
-
-  function quitarArchivoSeleccionado(index) {
-    setArchivosSeleccionados((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  async function enviarMensaje() {
-    if (!proyectoActivo || enviando) return;
-
-    const texto = mensaje.trim();
-    const tieneArchivos = archivosSeleccionados.length > 0;
-
-    if (!texto && !tieneArchivos) return;
-
-    setEnviando(true);
-    setError("");
-
-    try {
-      const contenidoUsuario =
-        texto ||
-        "Archivo recibido para análisis posterior en ELAN AI.";
-
-      const mensajeUsuario = await insertarMensajeAI({
-        proyectoId: proyectoActivo.id,
-        usuarioId: usuario ? usuario.id : null,
-        rol: "user",
-        contenido: contenidoUsuario,
-        metadata: {
-          fase: "AI-04A",
-          tiene_archivos: tieneArchivos,
-          cantidad_archivos: archivosSeleccionados.length,
-        },
-      });
-
-      let archivosSubidos = [];
-
-      if (tieneArchivos) {
-        archivosSubidos = await subirArchivosAI({
-          supabase,
-          proyectoId: proyectoActivo.id,
-          mensajeId: mensajeUsuario.id,
-          usuarioId: usuario ? usuario.id : null,
-          files: archivosSeleccionados,
-        });
-      }
-
-      setMensajes((prev) => [
-        ...prev,
-        normalizarMensaje(mensajeUsuario),
-      ]);
-
-      setArchivosProyecto((prev) => [...prev, ...archivosSubidos]);
-      setMensaje("");
-      setArchivosSeleccionados([]);
-
-      let respuestaCore =
-        "Recibido. Los archivos quedaron guardados en Supabase Storage, registrados en archivos_ai y vinculados al proyecto y mensaje. El análisis queda preparado para AI-04B / AI-04C.";
-
-      try {
-        respuestaCore = await cargarRespuestaCore({
-          proyecto: proyectoActivo,
-          mensaje: contenidoUsuario,
-          archivos: archivosSubidos,
-        });
-      } catch {
-        respuestaCore =
-          "Archivo recibido y trazabilidad AI-04A completada. ELANKAV CORE no respondió en este envío, pero el registro documental quedó guardado.";
-      }
-
-      const mensajeAsistente = await insertarMensajeAI({
-        proyectoId: proyectoActivo.id,
-        usuarioId: usuario ? usuario.id : null,
-        rol: "assistant",
-        contenido: respuestaCore,
-        metadata: {
-          fase: "AI-04A",
-          respuesta_sistema: true,
-        },
-      });
-
-      setMensajes((prev) => [
-        ...prev,
-        normalizarMensaje(mensajeAsistente),
-      ]);
-    } catch (err) {
-      setError(err.message || "Error enviando mensaje.");
+      setError(`No se pudo generar cotización: ${err.message}`);
     } finally {
-      setEnviando(false);
+      setCargando(false);
     }
-  }
-
-  function renderArchivo(archivo) {
-    const tipo = archivo.tipo_archivo || "referencias";
-    const estado = archivo.estado_procesamiento || "subido";
-    const esImagen = tipo === "imagenes" && archivo.url_publica;
-
-    return (
-      <div className="ai-file-card" key={archivo.id}>
-        {esImagen ? (
-          <img
-            src={archivo.url_publica}
-            alt={archivo.nombre_original}
-            className="ai-file-preview"
-          />
-        ) : (
-          <div className="ai-file-icon">
-            {(archivo.extension || "file").toUpperCase()}
-          </div>
-        )}
-
-        <div className="ai-file-info">
-          <strong>{archivo.nombre_original}</strong>
-          <span>
-            {TIPOS_ARCHIVO[tipo] || "Archivo"} ·{" "}
-            {ESTADOS_ARCHIVO[estado] || estado}
-          </span>
-          {archivo.url_publica && (
-            <a href={archivo.url_publica} target="_blank" rel="noreferrer">
-              Abrir archivo
-            </a>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  if (cargando) {
-    return (
-      <main className="ai-studio-page">
-        <section className="ai-studio-shell">
-          <p>Cargando AI Studio...</p>
-        </section>
-      </main>
-    );
   }
 
   return (
     <main className="ai-studio-page">
+      <header className="ai-studio-header">
+        <div>
+          <span className="ai-badge">ELANVISUAL AI STUDIO</span>
+          <h1>Estudio de Proyectos IA</h1>
+          <p>Chat central conectado a ELANKAV CORE, Supabase y Cotizaciones Inteligentes.</p>
+        </div>
+        <div className="ai-actions">
+          <button className="ai-secondary" type="button" onClick={() => cargarProyectos()}>Actualizar</button>
+          <button className="ai-primary" type="button" onClick={() => setPage?.('cotizacionesInteligentes')}>Ver cotizaciones</button>
+        </div>
+      </header>
+
       <section className="ai-studio-shell">
-        <aside className="ai-studio-sidebar">
-          <div className="ai-studio-brand">
-            <h1>ELAN AI Studio</h1>
-            <p>Base documental AI-04A</p>
-          </div>
+        <aside className="ai-panel">
+          <form className="ai-new-form" onSubmit={crearProyecto}>
+            <strong>Nuevo proyecto</strong>
+            <input value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} placeholder="Ej: Fachada Farmacia Central" />
+            <select value={nuevo.tipo_proyecto} onChange={(e) => setNuevo({ ...nuevo, tipo_proyecto: e.target.value })}>
+              {tiposProyecto.map((t) => <option key={t}>{t}</option>)}
+            </select>
+            <button className="ai-primary" type="submit">Crear proyecto</button>
+          </form>
 
-          <button
-            type="button"
-            className="ai-primary-button"
-            onClick={crearNuevoProyecto}
-          >
-            Nuevo proyecto AI
-          </button>
-
-          <div className="ai-project-list">
-            {proyectos.map((proyecto) => (
-              <button
-                type="button"
-                key={proyecto.id}
-                className={
-                  proyectoActivo && proyectoActivo.id === proyecto.id
-                    ? "ai-project-item active"
-                    : "ai-project-item"
-                }
-                onClick={() => setProyectoActivo(proyecto)}
-              >
-                {proyecto.titulo}
-              </button>
-            ))}
-          </div>
+          <strong>{admin ? 'Todos los proyectos' : 'Mis proyectos'}</strong>
+          {proyectosVisibles.map((p) => (
+            <button key={p.id} className={`ai-project-btn ${proyectoActivo?.id === p.id ? 'active' : ''}`} type="button" onClick={() => setProyectoActivo(p)}>
+              <strong>{p.nombre}</strong>
+              <span>{p.tipo_proyecto} · {p.estado}</span>
+              <span>{p.codigo_vendedor || p.vendedor_nombre || 'Sin vendedor'}</span>
+            </button>
+          ))}
         </aside>
 
-        <section className="ai-chat-panel">
-          <header className="ai-chat-header">
+        <section className="ai-chat">
+          <div className="ai-chat-top">
             <div>
-              <h2>
-                {proyectoActivo
-                  ? proyectoActivo.titulo
-                  : "Proyecto AI"}
-              </h2>
-              <p>
-                Usuario → Archivo → Storage → archivos_ai → mensajes_ai → proyectos_ai
-              </p>
+              <h2>{proyectoActivo?.nombre || 'Seleccioná un proyecto'}</h2>
+              <p>{proyectoActivo?.tipo_proyecto || 'La conversación queda guardada en Supabase.'}</p>
             </div>
-          </header>
-
-          {error && <div className="ai-error-box">{error}</div>}
-
-          <div className="ai-messages">
-            {mensajes.length === 0 && (
-              <div className="ai-empty-state">
-                <h3>Recepción documental lista</h3>
-                <p>
-                  Subí imágenes, PDFs, documentos, Excel, DWG o DXF para dejarlos
-                  registrados y vinculados al proyecto.
-                </p>
-              </div>
-            )}
-
-            {mensajes.map((item) => {
-              const archivosMensaje = archivosPorMensaje[item.id] || [];
-
-              return (
-                <article
-                  key={item.id}
-                  className={
-                    item.rol === "user"
-                      ? "ai-message user"
-                      : "ai-message assistant"
-                  }
-                >
-                  <div className="ai-message-role">
-                    {item.rol === "user" ? "Usuario" : "ELANKAV CORE"}
-                  </div>
-
-                  <div className="ai-message-content">
-                    {item.contenido}
-                  </div>
-
-                  {archivosMensaje.length > 0 && (
-                    <div className="ai-message-files">
-                      {archivosMensaje.map(renderArchivo)}
-                    </div>
-                  )}
-                </article>
-              );
-            })}
+            <button className="ai-primary" type="button" onClick={generarCotizacion} disabled={!proyectoActivo || cargando}>Generar Cotización</button>
           </div>
 
-          {archivosSeleccionados.length > 0 && (
-            <div className="ai-selected-files">
-              {archivosSeleccionados.map((file, index) => (
-                <div className="ai-selected-file" key={file.name + index}>
-                  <div>
-                    <strong>{file.name}</strong>
-                    <span>
-                      {clasificarArchivoAI(file)} ·{" "}
-                      {obtenerExtensionArchivo(file).toUpperCase()} ·{" "}
-                      {Math.round(file.size / 1024)} KB
-                    </span>
-                  </div>
+          <div className="ai-messages">
+            {!mensajes.length && <div className="ai-empty">Conversá con la IA para levantar información técnica del proyecto.</div>}
+            {mensajes.map((m) => <div key={m.id} className={`ai-msg ${m.rol}`}>{m.contenido}</div>)}
+          </div>
 
-                  <button
-                    type="button"
-                    onClick={() => quitarArchivoSeleccionado(index)}
-                  >
-                    Quitar
-                  </button>
-                </div>
-              ))}
+          <form className="ai-input" onSubmit={enviarMensaje}>
+            {estado && <div className="ai-status">{estado}</div>}
+            {error && <div className="ai-error">{error}</div>}
+            <textarea value={mensaje} onChange={(e) => setMensaje(e.target.value)} placeholder="Escribí el mensaje del cliente, medidas, idea, materiales o dudas técnicas..." />
+            <div className="ai-actions">
+              <button className="ai-primary" type="submit" disabled={cargando || !proyectoActivo}>Enviar</button>
+              <button className="ai-secondary" type="button" onClick={() => setMensaje('')}>Limpiar</button>
             </div>
-          )}
-
-          <footer className="ai-composer">
-            <input
-              ref={inputArchivoRef}
-              type="file"
-              multiple
-              accept=".jpg,.jpeg,.png,.svg,.pdf,.docx,.xlsx,.dwg,.dxf"
-              onChange={seleccionarArchivos}
-              className="ai-file-input"
-            />
-
-            <button
-              type="button"
-              className="ai-secondary-button"
-              onClick={() => inputArchivoRef.current?.click()}
-            >
-              Adjuntar archivo
-            </button>
-
-            <textarea
-              value={mensaje}
-              onChange={(event) => setMensaje(event.target.value)}
-              placeholder="Escribí una instrucción o subí archivos para el proyecto..."
-              rows={2}
-            />
-
-            <button
-              type="button"
-              className="ai-primary-button"
-              onClick={enviarMensaje}
-              disabled={enviando}
-            >
-              {enviando ? "Enviando..." : "Enviar"}
-            </button>
-          </footer>
+          </form>
         </section>
       </section>
     </main>
