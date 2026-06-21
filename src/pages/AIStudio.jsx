@@ -278,6 +278,17 @@ export default function AIStudio({ setPage }) {
 
       await guardarMensaje('assistant', `Borrador de cotización generado: ${codigo}. Revisar en Cotizaciones Inteligentes.`, { cotizacion });
       setEstado(`Cotización borrador creada: ${codigo}`);
+
+localStorage.setItem(
+  'elanvisual_cotizacion_ai_activa',
+  JSON.stringify({
+    id: cotizacion?.id || null,
+    codigo,
+    proyectoId: proyectoActivo.id,
+  })
+);
+
+setPage?.('cotizacionesInteligentes');
       await cargarMensajes(proyectoActivo.id);
       await cargarProyectos();
     } catch (err) {
