@@ -113,6 +113,74 @@ function clasificarModoPrecioAI06B(mensaje = '') {
   };
 }
 
+
+function extraerItemsCotizablesAI06C(mensaje = '') {
+  const textoOriginal = String(mensaje || '');
+  const t = normalizarAI06(textoOriginal);
+
+  const medidas = [...t.matchAll(/(\d+(?:[.,]\d+)?)\s*(?:x|por|\*)\s*(\d+(?:[.,]\d+)?)/g)]
+    .map((m) => ({
+      ancho: Number(String(m[1]).replace(',', '.')),
+      alto: Number(String(m[2]).replace(',', '.')),
+      area: Number((Number(String(m[1]).replace(',', '.')) * Number(String(m[2]).replace(',', '.'))).toFixed(2)),
+    }));
+
+  const cantidadMatch = t.match(/(\d+)\s*(?:unidades|unidad|und|uds|lonas|viniles|rotulos|botones|letras)/);
+  const cantidad = cantidadMatch ? Number(cantidadMatch[1]) : 1;
+
+  const intencion = detectarIntencionTecnicaAI06(mensaje);
+  const precio = clasificarModoPrecioAI06B(mensaje);
+  const accion = detectarAccionComercialAI06B(mensaje);
+
+  const items = medidas.length
+    ? medidas.map((medida, index) => ({
+        id: `AI06C-${Date.now()}-${index + 1}`,
+        tipo: intencion.tipo,
+        descripcion: textoOriginal,
+        ancho: medida.ancho,
+        alto: medida.alto,
+        area: medida.area,
+        cantidad,
+        modo_precio: precio.modo_precio,
+        requiere_preguntar_tinta: precio.requiere_preguntar_tinta,
+        estado_cotizable: precio.requiere_preguntar_tinta ? 'pendiente_tinta' : 'cotizable',
+        observaciones: precio.motivo,
+      }))
+    : [{
+        id: `AI06C-${Date.now()}-1`,
+        tipo: intencion.tipo,
+        descripcion: textoOriginal,
+        ancho: 0,
+        alto: 0,
+        area: 0,
+        cantidad,
+        modo_precio: precio.modo_precio,
+        requiere_preguntar_tinta: precio.requiere_preguntar_tinta,
+        estado_cotizable: 'pendiente_medidas',
+        observaciones: 'No se detectaron medidas claras.',
+      }];
+
+  return {
+    version: 'AI-06C',
+    accion,
+    items,
+    puede_enviar_cotizador:
+      accion.manda_cotizador &&
+      items.length > 0 &&
+      items.every((item) => item.estado_cotizable === 'cotizable'),
+    bloqueos: items
+      .filter((item) => item.estado_cotizable !== 'cotizable')
+      .map((item) => ({
+        id: item.id,
+        estado: item.estado_cotizable,
+        motivo:
+          item.estado_cotizable === 'pendiente_tinta'
+            ? 'Falta definir tinta/tecnología.'
+            : 'Faltan medidas claras.',
+      })),
+  };
+}
+
 function detectarAccionComercialAI06B(mensaje = '') {
   const t = normalizarAI06(mensaje);
 
@@ -250,6 +318,7 @@ export async function cargarMemoriaOperativaElan({
       pedidos: limpiar(pedidos.data, 20),
     },
     produccion_preliminar: produccionPreliminar,
+    ai06c_items_cotizables: extraerItemsCotizablesAI06C(mensaje),
     ai06b_reglas_comerciales: {
       precio: clasificarModoPrecioAI06B(mensaje),
       accion: detectarAccionComercialAI06B(mensaje),
@@ -286,5 +355,6 @@ export async function cargarMemoriaOperativaElan({
     },
   };
 }
+
 
 
