@@ -282,6 +282,17 @@ export default function CotizacionesInteligentes() {
     alert(`Pedido creado: ${pedido.numeroPedido || pedido.numero}`);
   };
 
+  const editarEnCotizador = (cotizacion) => {
+    if (!cotizacion) return;
+
+    localStorage.setItem(
+      'elanvisual_cotizacion_item_activo',
+      JSON.stringify(cotizacion)
+    );
+
+    window.location.href = '/cotizador';
+  };
+
   const imprimirOT = (cotizacion) => {
     if (!cotizacion) return;
 
