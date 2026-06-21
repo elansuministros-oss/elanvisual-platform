@@ -265,12 +265,6 @@ export default function CotizadorDirecto({ setPage }) {
   const [lineasPreview, setLineasPreview] = useState([]);
   const [items, setItems] = useState([]);
   const [clientes, setClientes] = useState([]);
-  const [cotizacionEdicion, setCotizacionEdicion] = useState(null);
-  const [cargandoEdicion, setCargandoEdicion] = useState(false);
-
-  const params = new URLSearchParams(window.location.search);
-  const cotizacionIdEdicion = params.get('id');
-  const modoEdicion = Boolean(cotizacionIdEdicion);
 
   const [form, setForm] = useState({
     buscarCliente: '',
@@ -325,88 +319,6 @@ export default function CotizadorDirecto({ setPage }) {
 
     cargar();
   }, []);
-
-  useEffect(() => {
-    const cargarCotizacionEdicion = async () => {
-      if (!cotizacionIdEdicion || !supabase) return;
-
-      setCargandoEdicion(true);
-
-      const { data, error } = await supabase
-        .from('cotizaciones_inteligentes')
-        .select('*')
-        .eq('id', cotizacionIdEdicion)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error cargando cotización inteligente para edición:', error);
-        setMensaje('No se pudo cargar la cotización inteligente para edición.');
-        setCargandoEdicion(false);
-        return;
-      }
-
-      if (!data) {
-        setMensaje('No se encontró la cotización inteligente indicada.');
-        setCargandoEdicion(false);
-        return;
-      }
-
-      setCotizacionEdicion(data);
-
-      const descripcion =
-        data.descripcion ||
-        data.biblioteca_nombre ||
-        data.codigo ||
-        'Cotización inteligente';
-
-      const precioBase = Number(data.precio_b || 0);
-      const costoBase =
-        Number(data.costo_produccion || 0) +
-        Number(data.costo_instalacion || 0) +
-        Number(data.costo_transporte || 0) +
-        Number(data.costo_viaticos || 0) +
-        Number(data.costo_equipo || 0) +
-        Number(data.costo_empresa || 0);
-
-      const lineaEdicion = {
-        id: `ci17-${data.id}`,
-        nombre: data.biblioteca_nombre || descripcion,
-        tipo: 'Cotización inteligente',
-        unidad: 'servicio',
-        cantidad: Number(data.cantidad || 1),
-        costoUnitario: costoBase > 0 ? costoBase : precioBase,
-        origen: 'cotizaciones_inteligentes',
-      };
-
-      setForm((prev) => ({
-        ...prev,
-        buscarCliente: '',
-        cliente: data.cliente_nombre || '',
-        empresa: data.cliente_nombre || '',
-        whatsapp: data.celular || '',
-        correo: '',
-        direccion: data.ubicacion || '',
-        ciudad: data.ubicacion || '',
-        descripcion,
-        ancho: Number(data.ancho || 1),
-        alto: Number(data.alto || 1),
-        cantidad: Number(data.cantidad || 1),
-        precioElegido: 'recomendado',
-        descuento: 0,
-        usaIVA: false,
-        formaPago: '6040',
-        p1: 60,
-        p2: 40,
-        p3: 0,
-      }));
-
-      setItems([lineaEdicion]);
-      setMensaje(`Modo edición activo: ${data.codigo || data.id}`);
-      setCargandoEdicion(false);
-    };
-
-    cargarCotizacionEdicion();
-  }, [cotizacionIdEdicion]);
 
   const actualizar = (campo, valor) => setForm((prev) => ({ ...prev, [campo]: valor }));
 

@@ -283,12 +283,14 @@ export default function CotizacionesInteligentes() {
   };
 
   const editarEnCotizador = (cotizacion) => {
-    if (!cotizacion?.id) {
-      alert('No se puede editar esta cotización porque no tiene ID.');
-      return;
-    }
+    if (!cotizacion) return;
 
-    window.location.href = `/cotizador?id=${cotizacion.id}`;
+    localStorage.setItem(
+      'elanvisual_cotizacion_item_activo',
+      JSON.stringify(cotizacion)
+    );
+
+    window.location.href = '/cotizador';
   };
 
   const imprimirOT = (cotizacion) => {
