@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { esAdminCRM, filtrarRegistrosCRM, obtenerFirmaVendedor } from '../services/permisosCRM';
 import { prepararArchivosTemporalesAI, construirResumenArchivosTemporales } from '../services/aiTemporalService';
 import { cargarMemoriaOperativaElan } from '../services/memoriaOperativaElan';
+import { crearSolicitudesCostosFaltantes } from '../services/solicitudesCostosService';
 import '../styles/AIStudio.css';
 
 const CORE_URL = import.meta.env.VITE_ELANKAV_CORE_URL || '';
@@ -561,6 +562,7 @@ setPage?.('CotizacionesInteligentes');
     </main>
   );
 }
+
 
 
 
