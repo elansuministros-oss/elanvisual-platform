@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { ClipboardList, Eye, FileText, Printer, RefreshCcw, Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useApp } from '../context/AppContext';
@@ -21,6 +21,7 @@ export default function CotizacionesInteligentes() {
   const [cargando, setCargando] = useState(false);
   const [cotizacionActiva, setCotizacionActiva] = useState(null);
   const [otActiva, setOtActiva] = useState(null);
+  const detalleRef = useRef(null);
 
   const cargarCotizaciones = async () => {
     setCargando(true);
@@ -54,6 +55,35 @@ export default function CotizacionesInteligentes() {
         .includes(q)
     );
   }, [cotizaciones, busqueda]);
+
+  const abrirDetalleCotizacion = (cotizacion) => {
+    setCotizacionActiva(cotizacion);
+    setTimeout(() => {
+      detalleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  useEffect(() => {
+    if (!cotizaciones.length) return;
+
+    const raw = localStorage.getItem('elanvisual_cotizacion_ai_activa');
+    if (!raw) return;
+
+    try {
+      const activa = JSON.parse(raw);
+      const encontrada = cotizaciones.find(
+        (c) => c.id === activa?.id || c.codigo === activa?.codigo
+      );
+
+      if (encontrada) {
+        setBusqueda(encontrada.codigo || '');
+        abrirDetalleCotizacion(encontrada);
+        localStorage.removeItem('elanvisual_cotizacion_ai_activa');
+      }
+    } catch {
+      localStorage.removeItem('elanvisual_cotizacion_ai_activa');
+    }
+  }, [cotizaciones]);
 
   const actualizarEstadoCotizacion = async (cotizacion, estado) => {
     const payload = {
@@ -279,7 +309,7 @@ export default function CotizacionesInteligentes() {
                 </div>
 
                 <div className="actions">
-                  <button type="button" onClick={() => setCotizacionActiva(c)}>
+                  <button type="button" onClick={() => abrirDetalleCotizacion(c)}>
                     <Eye size={15} /> Ver
                   </button>
 
