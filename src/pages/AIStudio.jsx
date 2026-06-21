@@ -223,7 +223,7 @@ export default function AIStudio({ setPage }) {
 
   async function enviarMensaje(e) {
     e.preventDefault();
-    if (!proyectoActivo) return setError('Primero creÃ¡ o seleccionÃ¡ un proyecto.');
+    if (!proyectoActivo) return setError('Primero creá o seleccioná un proyecto.');
     if (!mensaje.trim() && archivosTemporales.length === 0) return;
 
     const resumenArchivosTemporales = construirResumenArchivosTemporales(archivosTemporales);
@@ -239,31 +239,46 @@ export default function AIStudio({ setPage }) {
     setEstado('Consultando ELANKAV CORE...');
 
     try {
-      const contenidoUsuario = mensaje.trim();
+      const msgUser = await guardarMensaje('user', contenidoUsuario, {
+        archivos_temporales: archivosTemporales.map((a) => ({
+          ok: a.ok,
+          nombre: a.nombre,
+          tipo: a.tipo,
+          extension: a.extension,
+          tamano: a.tamano,
+          temporal: true,
+          guardado_storage: false,
+        })),
+      });
+
       setMensaje('');
-        setArchivosTemporales([]);
-      const msgUser = await guardarMensaje('user', contenidoUsuario);
-      const historial = [...mensajes, msgUser].map((m) => ({ role: m.rol, content: m.contenido }));
+
+      const historial = [...mensajes, msgUser].map((m) => ({
+        role: m.rol,
+        content: m.contenido,
+      }));
 
       const data = await llamarCore(historial, 'chat');
       const texto = respuestaIA(data);
       const msgIA = await guardarMensaje('assistant', texto, { core: data });
+
       setMensajes((prev) => [...prev, msgUser, msgIA]);
+      setArchivosTemporales([]);
 
       await supabase
         .from('proyectos_ai')
         .update({ updated_at: new Date().toISOString(), resumen: texto.slice(0, 500) })
         .eq('id', proyectoActivo.id);
 
-      setEstado('Respuesta guardada en Supabase.');
+      setEstado('');
       await cargarProyectos();
     } catch (err) {
       setError(err.message);
+      setEstado('');
     } finally {
       setCargando(false);
     }
   }
-
   async function generarCotizacion() {
     if (!proyectoActivo) return setError('SeleccionÃ¡ un proyecto.');
     if (!mensajes.length) return setError('No hay conversaciÃ³n suficiente para generar cotizaciÃ³n.');
@@ -352,92 +367,135 @@ setPage?.('cotizacionesInteligentes');
   }
 
   return (
-    <main className="ai-studio-page">
-      <header className="ai-studio-header">
-        <div>
-          <span className="ai-badge">ELANVISUAL AI STUDIO</span>
-          <h1>Estudio de Proyectos IA</h1>
-          <p>Chat central conectado a ELANKAV CORE, Supabase y Cotizaciones Inteligentes.</p>
+    <main className="ai-studio-page ai-studio-v2">
+      <aside className="ai-studio-sidebar">
+        <div className="ai-studio-brand">
+          <span>ELAN AI</span>
+          <small>Estudio de proyectos</small>
         </div>
-        <div className="ai-actions">
-          <button className="ai-secondary" type="button" onClick={() => cargarProyectos()}>Actualizar</button>
-          <button className="ai-primary" type="button" onClick={() => setPage?.('cotizacionesInteligentes')}>Ver cotizaciones</button>
+
+        <form className="ai-new-form" onSubmit={crearProyecto}>
+          <input
+            value={nuevo.nombre}
+            onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })}
+            placeholder="Nuevo proyecto..."
+          />
+
+          <select
+            value={nuevo.tipo_proyecto}
+            onChange={(e) => setNuevo({ ...nuevo, tipo_proyecto: e.target.value })}
+          >
+            {tiposProyecto.map((t) => <option key={t}>{t}</option>)}
+          </select>
+
+          <button className="ai-primary" type="submit">Crear</button>
+        </form>
+
+        <div className="ai-project-list-title">
+          {admin ? 'Todos los proyectos' : 'Mis proyectos'}
         </div>
-      </header>
 
-      <section className="ai-studio-shell">
-        <aside className="ai-panel">
-          <form className="ai-new-form" onSubmit={crearProyecto}>
-            <strong>Nuevo proyecto</strong>
-            <input value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} placeholder="Ej: Fachada Farmacia Central" />
-            <select value={nuevo.tipo_proyecto} onChange={(e) => setNuevo({ ...nuevo, tipo_proyecto: e.target.value })}>
-              {tiposProyecto.map((t) => <option key={t}>{t}</option>)}
-            </select>
-            <button className="ai-primary" type="submit">Crear proyecto</button>
-          </form>
-
-          <strong>{admin ? 'Todos los proyectos' : 'Mis proyectos'}</strong>
+        <div className="ai-project-list">
           {proyectosVisibles.map((p) => (
-            <button key={p.id} className={`ai-project-btn ${proyectoActivo?.id === p.id ? 'active' : ''}`} type="button" onClick={() => setProyectoActivo(p)}>
+            <button
+              key={p.id}
+              className={`ai-project-btn ${proyectoActivo?.id === p.id ? 'active' : ''}`}
+              type="button"
+              onClick={() => setProyectoActivo(p)}
+            >
               <strong>{p.nombre}</strong>
-              <span>{p.tipo_proyecto} Â· {p.estado}</span>
-              <span>{p.codigo_vendedor || p.vendedor_nombre || 'Sin vendedor'}</span>
+              <span>{p.tipo_proyecto}</span>
             </button>
           ))}
-        </aside>
+        </div>
+      </aside>
 
-        <section className="ai-chat">
-          <div className="ai-chat-top">
-            <div>
-              <h2>{proyectoActivo?.nombre || 'SeleccionÃ¡ un proyecto'}</h2>
-              <p>{proyectoActivo?.tipo_proyecto || 'La conversaciÃ³n queda guardada en Supabase.'}</p>
-            </div>
-            <button className="ai-primary" type="button" onClick={generarCotizacion} disabled={!proyectoActivo || cargando}>Generar CotizaciÃ³n</button>
+      <section className="ai-chat-panel">
+        <header className="ai-chat-header">
+          <div>
+            <h1>{proyectoActivo?.nombre || 'Seleccioná un proyecto'}</h1>
+            <p>{proyectoActivo?.tipo_proyecto || 'Conversación guardada en Supabase'}</p>
           </div>
 
-          <div className="ai-messages">
-            {!mensajes.length && <div className="ai-empty">ConversÃ¡ con la IA para levantar informaciÃ³n tÃ©cnica del proyecto.</div>}
-            {mensajes.map((m) => <div key={m.id} className={`ai-msg ${m.rol}`}>{m.contenido}</div>)}
+          <div className="ai-chat-header-actions">
+            <button className="ai-secondary" type="button" onClick={() => cargarProyectos()}>
+              Actualizar
+            </button>
+            <button
+              className="ai-primary"
+              type="button"
+              onClick={generarCotizacion}
+              disabled={!proyectoActivo || cargando}
+            >
+              Generar cotización
+            </button>
           </div>
+        </header>
 
-          <form className="ai-input" onSubmit={enviarMensaje}>
-            {estado && <div className="ai-status">{estado}</div>}
-            {error && <div className="ai-error">{error}</div>}
-            <textarea value={mensaje} onChange={(e) => setMensaje(e.target.value)} placeholder="EscribÃ­ el mensaje del cliente, medidas, idea, materiales o dudas tÃ©cnicas..." />
-
-              <label className="ai-upload-temporal">
-                Adjuntar JPG, PNG, SVG o PDF para análisis temporal
-                <input
-                  type="file"
-                  multiple
-                  accept=".jpg,.jpeg,.png,.svg,.pdf"
-                  onChange={manejarArchivosTemporales}
-                />
-              </label>
-
-              {archivosTemporales.length > 0 && (
-                <div className="ai-archivos-temporales">
-                  {archivosTemporales.map((archivo, index) => (
-                    <div key={`${archivo.nombre}-${index}`} className="ai-archivo-temporal">
-                      <span>{archivo.ok ? 'Temporal' : 'Error'} — {archivo.nombre}</span>
-                      <button type="button" onClick={() => eliminarArchivoTemporal(index)}>Quitar</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            <div className="ai-actions">
-              <button className="ai-primary" type="submit" disabled={cargando || !proyectoActivo}>Enviar</button>
-              <button className="ai-secondary" type="button" onClick={() => setMensaje('')}>Limpiar</button>
+        <div className="ai-messages">
+          {!mensajes.length && (
+            <div className="ai-row assistant">
+              <div className="ai-avatar">✦</div>
+              <div className="ai-msg assistant">
+                Hola. Soy ELAN AI. Puedo ayudarte a levantar información técnica, analizar imágenes, preparar propuestas y convertir esta conversación en una cotización.
+              </div>
             </div>
-          </form>
-        </section>
+          )}
+
+          {mensajes.map((m) => (
+            <div key={m.id} className={`ai-row ${m.rol}`}>
+              {m.rol === 'assistant' && <div className="ai-avatar">✦</div>}
+              <div className={`ai-msg ${m.rol}`}>{m.contenido}</div>
+            </div>
+          ))}
+
+          {cargando && (
+            <div className="ai-row assistant">
+              <div className="ai-avatar">✦</div>
+              <div className="ai-msg assistant">Analizando...</div>
+            </div>
+          )}
+        </div>
+
+        <form className="ai-composer" onSubmit={enviarMensaje}>
+          {archivosTemporales.length > 0 && (
+            <div className="ai-file-chips">
+              {archivosTemporales.map((archivo, index) => (
+                <span key={`${archivo.nombre}-${index}`} className="ai-file-chip">
+                  {archivo.ok ? '📎' : '⚠'} {archivo.nombre}
+                  <button type="button" onClick={() => eliminarArchivoTemporal(index)}>×</button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {estado && <div className="ai-status">{estado}</div>}
+          {error && <div className="ai-error">{error}</div>}
+
+          <div className="ai-inputbar">
+            <label className="ai-attach">
+              📎
+              <input
+                type="file"
+                multiple
+                accept=".jpg,.jpeg,.png,.svg,.pdf"
+                onChange={manejarArchivosTemporales}
+              />
+            </label>
+
+            <textarea
+              value={mensaje}
+              onChange={(e) => setMensaje(e.target.value)}
+              placeholder="Escribí una consulta..."
+              rows={1}
+            />
+
+            <button className="ai-send" type="submit" disabled={cargando || !proyectoActivo}>
+              ➤
+            </button>
+          </div>
+        </form>
       </section>
     </main>
   );
 }
-
-
-
-
-
-
