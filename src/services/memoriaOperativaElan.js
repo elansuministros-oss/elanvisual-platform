@@ -36,6 +36,113 @@ function filtrarRelevantesAI06(lista = [], mensaje = '', limite = 12) {
     .map((x) => x.item);
 }
 
+
+function clasificarModoPrecioAI06B(mensaje = '') {
+  const t = normalizarAI06(mensaje);
+
+  const productosPrecioFijo = [
+    'boton',
+    'jalavista',
+    'letra recepcion',
+    'rotulo catalogo',
+    'producto catalogo'
+  ];
+
+  const productosConfigurables = [
+    'lona',
+    'vinil',
+    'microperforado',
+    'backlight',
+    'traslucido',
+    'sticker',
+    'canvas',
+    'impresion'
+  ];
+
+  const productosTecnicos = [
+    'acm',
+    'fachada',
+    'letras 3d',
+    'estructura',
+    'cajillo',
+    'totem',
+    'rotulo luminoso'
+  ];
+
+  if (productosPrecioFijo.some((p) => t.includes(p))) {
+    return {
+      modo_precio: 'fijo',
+      requiere_preguntar_tinta: false,
+      motivo: 'Producto con precio o receta predefinida.',
+    };
+  }
+
+  if (productosConfigurables.some((p) => t.includes(p))) {
+    const tintaDefinida =
+      t.includes('eco') ||
+      t.includes('ecosolvente') ||
+      t.includes('uv') ||
+      t.includes('laminado') ||
+      t.includes('traslucida') ||
+      t.includes('traslucido') ||
+      t.includes('backlight') ||
+      t.includes('estandar') ||
+      t.includes('premium');
+
+    return {
+      modo_precio: 'configurable',
+      requiere_preguntar_tinta: !tintaDefinida,
+      motivo: tintaDefinida
+        ? 'Producto configurable con tinta/tecnologia definida.'
+        : 'Producto configurable sin tinta/tecnologia definida.',
+    };
+  }
+
+  if (productosTecnicos.some((p) => t.includes(p))) {
+    return {
+      modo_precio: 'tecnico',
+      requiere_preguntar_tinta: false,
+      motivo: 'Proyecto tecnico; preguntar solo datos indispensables de fabricacion.',
+    };
+  }
+
+  return {
+    modo_precio: 'general',
+    requiere_preguntar_tinta: false,
+    motivo: 'Consulta tecnica general.',
+  };
+}
+
+function detectarAccionComercialAI06B(mensaje = '') {
+  const t = normalizarAI06(mensaje);
+
+  const mandaCotizador =
+    t.includes('mandalo al cotizador') ||
+    t.includes('pasalo al cotizador') ||
+    t.includes('generar cotizacion') ||
+    t.includes('genera cotizacion') ||
+    t.includes('cotiza esto') ||
+    t.includes('hacer cotizacion');
+
+  const modificaExistente =
+    t.includes('agrega') && t.includes('cotizacion') ||
+    t.includes('sumale') && t.includes('cotizacion') ||
+    t.includes('modifica') && t.includes('cotizacion');
+
+  const numeroCotizacion = (mensaje.match(/(?:AI|COT|EV)[-\w\d]+/i) || [null])[0];
+
+  return {
+    estado_comercial:
+      modificaExistente && numeroCotizacion ? 'modificacion_cotizacion_existente' :
+      mandaCotizador ? 'cotizacion_en_preparacion' :
+      'consulta_rapida',
+    manda_cotizador: mandaCotizador,
+    modifica_existente: modificaExistente,
+    numero_cotizacion: numeroCotizacion,
+    cierre_contexto_al_enviar: mandaCotizador,
+  };
+}
+
 function detectarIntencionTecnicaAI06(mensaje = '') {
   const t = normalizarAI06(mensaje);
 
@@ -143,6 +250,10 @@ export async function cargarMemoriaOperativaElan({
       pedidos: limpiar(pedidos.data, 20),
     },
     produccion_preliminar: produccionPreliminar,
+    ai06b_reglas_comerciales: {
+      precio: clasificarModoPrecioAI06B(mensaje),
+      accion: detectarAccionComercialAI06B(mensaje),
+    },
     ai06_consulta_tecnica: {
       intencion: detectarIntencionTecnicaAI06(mensaje),
       relevantes: {
@@ -175,4 +286,5 @@ export async function cargarMemoriaOperativaElan({
     },
   };
 }
+
 
