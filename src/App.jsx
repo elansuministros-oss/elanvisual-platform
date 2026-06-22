@@ -25,6 +25,7 @@ import RedProveedoresIA from './pages/RedProveedoresIA';
 import InventarioInteligente from './pages/InventarioInteligente';
 import BibliotecaTecnica from './pages/BibliotecaTecnica';
 import CotizadorDirecto from './pages/CotizadorDirecto';
+import CotizadorDirectoAI from './pages/CotizadorDirectoAI';
 import CapturaInteligente from './pages/CapturaInteligente';
 import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
@@ -44,6 +45,7 @@ export default function App() {
     if (pathInicial.startsWith('/produccion')) return 'produccion';
     if (pathInicial.startsWith('/materiales')) return 'materiales';
     if (pathInicial.startsWith('/biblioteca-tecnica')) return 'bibliotecaTecnica';
+    if (pathInicial.startsWith('/cotizador-ai')) return 'cotizadorAI';
     if (pathInicial.startsWith('/cotizador-visual')) return 'cotizadorVisual';
     if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
@@ -103,6 +105,7 @@ export default function App() {
       materiales: '/materiales',
       bibliotecaTecnica: '/biblioteca-tecnica',
       cotizador: '/cotizador',
+      cotizadorAI: '/cotizador-ai',
       cotizadorInteligente: '/cotizador',
       cotizacionesInteligentes: '/cotizaciones-inteligentes',
       recomendadorTecnico: '/recomendador-tecnico',
@@ -131,37 +134,18 @@ export default function App() {
   const accesoERP = rol === 'admin';
 
   return (
-    <AIAssistantProvider>
-      <AIFloatingButton />
-      <AIAssistantPanel />
+  <AIAssistantProvider>
 
-      <Header page={page} setPage={ir} />
+    {usuario && (rol === 'admin' || rol === 'ventas') && (
+      <>
+        <AIFloatingButton />
+        <AIAssistantPanel />
+      </>
+    )}
 
-      {usuario && page !== 'home' && rol !== 'ventas' && (
-        <div className="erp-floating-actions">
-          <button type="button" onClick={() => ir('home')}>
-            🏠 Inicio
-          </button>
-          <button type="button" onClick={() => ir('miCuenta')}>
-            👤 Mi cuenta
-          </button>
-          {accesoVentas && (
-            <button type="button" onClick={() => ir('clientes')}>
-              Clientes
-            </button>
-          )}
-          {accesoVentas && (
-            <button type="button" onClick={() => ir('capturaInteligente')}>
-              Captura Inteligente
-            </button>
-          )}
-          {accesoAdmin && (
-            <button type="button" onClick={() => ir('bibliotecaTecnica')}>
-              📚 Biblioteca
-            </button>
-          )}
-        </div>
-      )}
+    <Header page={page} setPage={ir} />
+
+      
 
       {page === 'home' && <Home setPage={ir} />}
       {page === 'servicios' && <Catalogo />}
@@ -291,11 +275,18 @@ export default function App() {
           <Login setPage={ir} destino="crm" />
         ))}
 
-      {page === 'cotizador' &&
+     {page === 'cotizador' &&
+  (accesoVentas ? (
+    <CotizadorDirectoAI setPage={ir} />
+  ) : (
+    <Login setPage={ir} destino="cotizador" />
+  ))}
+
+      {page === 'cotizadorAI' &&
         (accesoVentas ? (
-          <CotizadorDirecto setPage={ir} />
+          <CotizadorDirectoAI setPage={ir} />
         ) : (
-          <Login setPage={ir} destino="cotizador" />
+          <Login setPage={ir} destino="cotizadorAI" />
         ))}
 
       {page === 'cotizacionesInteligentes' &&
@@ -307,7 +298,7 @@ export default function App() {
 
       {page === 'cotizadorVisual' &&
         (accesoAdmin ? (
-          <CotizadorDirecto setPage={ir} />
+          <CotizadorDirectoAI setPage={ir} />
         ) : (
           <Login setPage={ir} destino="admin" />
         ))}
@@ -321,3 +312,5 @@ export default function App() {
     </AIAssistantProvider>
   );
 }
+
+

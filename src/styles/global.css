@@ -1775,3 +1775,79 @@ th,td{
 @media (min-width:1100px){
   .mobile-logout-fixed{display:none}
 }
+
+/* Cotizador AI - Buscador de productos registrados */
+.producto-registrado-box {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.producto-registrado-box label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.producto-registrado-box input {
+  width: 100%;
+}
+
+.producto-resultados {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.producto-card {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 130px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 12px;
+  background: #f8fafc;
+  cursor: pointer;
+  text-align: left;
+}
+
+.producto-card:hover {
+  background: #eef6ff;
+  border-color: rgba(37, 99, 235, 0.35);
+}
+
+.producto-card strong {
+  font-size: 13px;
+  color: #1d4ed8;
+}
+
+.producto-card span {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.producto-card small {
+  font-weight: 700;
+  color: #166534;
+}
+
+.producto-seleccionado {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  color: #065f46;
+  font-size: 14px;
+}
+
+@media (max-width: 720px) {
+  .producto-card {
+    grid-template-columns: 1fr;
+  }
+}
+
