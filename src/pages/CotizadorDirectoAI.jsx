@@ -260,6 +260,7 @@ function campoCompleto(valor) {
 export default function CotizadorDirectoAI({ setPage }) {
   const { configuracion } = useApp();
   const [materiales, setMateriales] = useState([]);
+  const [productosRegistrados, setProductosRegistrados] = useState([]);
   const [tintas, setTintas] = useState([]);
   const [mensaje, setMensaje] = useState('');
   const [lineasPreview, setLineasPreview] = useState([]);
@@ -273,13 +274,13 @@ export default function CotizadorDirectoAI({ setPage }) {
   const productosFiltrados = useMemo(() => {
     const q = limpiar(busquedaProducto);
     if (!q) return [];
-    return materiales
+    return productosRegistrados
       .filter((p) => {
         const texto = limpiar((p.codigo || '') + ' ' + (p.nombre || '') + ' ' + (p.categoria || ''));
         return texto.includes(q);
       })
       .slice(0, 8);
-  }, [materiales, busquedaProducto]);
+  }, [productosRegistrados, busquedaProducto]);
 
   const params = new URLSearchParams(window.location.search);
   const cotizacionIdEdicion = params.get('id');
@@ -310,9 +311,10 @@ export default function CotizadorDirectoAI({ setPage }) {
 
   useEffect(() => {
     const cargar = async () => {
-      const [mat, tin] = await Promise.all([
+      const [mat, tin, prod] = await Promise.all([
         supabase.from('materiales_master_v2').select('*').order('categoria'),
         supabase.from('tintas_master').select('*').order('nombre'),
+        supabase.from('productos_registrados').select('*').eq('activo', true).order('nombre'),
       ]);
 
       if (mat.error) {
@@ -321,6 +323,7 @@ export default function CotizadorDirectoAI({ setPage }) {
 
       setMateriales(mat.data || []);
       setTintas(tin.data || []);
+      setProductosRegistrados(prod.data || []);
 
       const { data: clientesData, error: clientesError } = await supabase
         .from('clientes')
@@ -467,14 +470,27 @@ export default function CotizadorDirectoAI({ setPage }) {
   const guardarClienteLocal = () => {
     if (!form.cliente && !form.empresa) return;
 
-    const nuevo = {
-      cliente: form.cliente,
-      empresa: form.empresa,
-      whatsapp: form.whatsapp,
-      correo: form.correo,
-      direccion: form.direccion,
-      ciudad: form.ciudad,
-    };
+    const resumenFinal = productoSeleccionado && !lineasPreview.length
+  ? {
+      costo: Number(productoSeleccionado.precio_total_usd || 0) / POLITICA.recomendado,
+      minimo: Number(productoSeleccionado.precio_total_usd || 0),
+      recomendado: Number(productoSeleccionado.precio_total_usd || 0),
+      objetivo: Number(productoSeleccionado.precio_total_usd || 0),
+      venta: Number(productoSeleccionado.precio_total_usd || 0),
+    }
+  : preview;
+
+const nuevo = {
+  id: `item-${Date.now()}`,
+  descripcion: form.descripcion,
+  ancho: form.ancho,
+  alto: form.alto,
+  cantidad: form.cantidad,
+  precioElegido: productoSeleccionado ? 'producto_registrado' : form.precioElegido,
+  lineas: lineasPreview,
+  resumen: resumenFinal,
+  archivos: form.archivos,
+};
 
     const actual = JSON.parse(localStorage.getItem('elanvision_clientes') || '[]');
     const filtrado = actual.filter(
@@ -592,10 +608,22 @@ export default function CotizadorDirectoAI({ setPage }) {
   );
 
   const agregarItem = () => {
-    if (!lineasPreview.length) {
-      setMensaje('Primero calcula el item con IA.');
+    if (!lineasPreview.length && !productoSeleccionado) {
+      setMensaje('Primero calcula el item con IA o selecciona un producto registrado.');
       return;
     }
+
+    const precioProducto = Number(productoSeleccionado?.precio_total_usd || 0);
+
+    const resumenFinal = productoSeleccionado && !lineasPreview.length
+      ? {
+          costo: precioProducto / POLITICA.recomendado,
+          minimo: precioProducto,
+          recomendado: precioProducto,
+          objetivo: precioProducto,
+          venta: precioProducto,
+        }
+      : preview;
 
     const nuevo = {
       id: `item-${Date.now()}`,
@@ -603,14 +631,16 @@ export default function CotizadorDirectoAI({ setPage }) {
       ancho: form.ancho,
       alto: form.alto,
       cantidad: form.cantidad,
-      precioElegido: form.precioElegido,
+      precioElegido: productoSeleccionado ? 'producto_registrado' : form.precioElegido,
       lineas: lineasPreview,
-      resumen: preview,
+      resumen: resumenFinal,
       archivos: form.archivos,
     };
 
     setItems((prev) => [...prev, nuevo]);
     setLineasPreview([]);
+    setProductoSeleccionado(null);
+    setBusquedaProducto('');
     setForm((prev) => ({
       ...prev,
       descripcion: '',
@@ -623,7 +653,6 @@ export default function CotizadorDirectoAI({ setPage }) {
     }));
     setMensaje('item agregado a la cotizacion.');
   };
-
   const eliminarItem = (id) => setItems((prev) => prev.filter((i) => i.id !== id));
 
   const total = useMemo(() => {
@@ -897,7 +926,7 @@ export default function CotizadorDirectoAI({ setPage }) {
 
           <div className="cd-title item-title">
             <Calculator size={20} />
-            <h2>Ãtem a cotizar</h2>
+            <h2>Item a cotizar</h2>
           </div>
 
           <div className="field producto-registrado-box">
@@ -2176,6 +2205,8 @@ export default function CotizadorDirectoAI({ setPage }) {
     </main>
   );
 }
+
+
 
 
 
