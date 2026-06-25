@@ -15,11 +15,12 @@ const categoriasOC = [
   'Otro',
 ];
 
-export default function OTCompras({ pedido, actualizarPedido }) {
+export default function OTCompras({ pedido, proveedores = [], actualizarPedido }) {
   const {
     estadosOC,
     formOC,
     ordenesCompra,
+    proveedoresDisponibles,
     resumenCompras,
     actualizarCampoOC,
     crearOC,
@@ -27,7 +28,7 @@ export default function OTCompras({ pedido, actualizarPedido }) {
     registrarRecepcion,
     registrarFactura,
     registrarPago,
-  } = useComprasOT({ pedido, actualizarPedido });
+  } = useComprasOT({ pedido, proveedores, actualizarPedido });
 
   const guardarOC = () => {
     const resultado = crearOC();
@@ -98,11 +99,26 @@ export default function OTCompras({ pedido, actualizarPedido }) {
         </label>
 
         <label>
-          Proveedor
+          Proveedor registrado
+          <select
+            value={formOC.proveedorId}
+            onChange={(e) => actualizarCampoOC('proveedorId', e.target.value)}
+          >
+            <option value="">Seleccionar proveedor</option>
+            {proveedoresDisponibles.map((proveedor) => (
+              <option key={proveedor.id} value={proveedor.id}>
+                {proveedor.nombre}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Proveedor manual
           <input
             value={formOC.proveedor}
             onChange={(e) => actualizarCampoOC('proveedor', e.target.value)}
-            placeholder="Nombre del proveedor"
+            placeholder="Usar solo si no está registrado"
           />
         </label>
 
@@ -155,6 +171,12 @@ export default function OTCompras({ pedido, actualizarPedido }) {
         </label>
       </div>
 
+      {proveedoresDisponibles.length === 0 && (
+        <div className="ot-warning">
+          No hay proveedores cargados en la Red de Proveedores. Podés usar proveedor manual temporalmente.
+        </div>
+      )}
+
       <div className="ot-actions">
         <button className="primary-btn" type="button" onClick={guardarOC}>
           Crear Orden de Compra
@@ -169,6 +191,7 @@ export default function OTCompras({ pedido, actualizarPedido }) {
                 <p className="eyebrow">{oc.codigo}</p>
                 <h3>{oc.concepto}</h3>
                 <p>{oc.proveedor || 'Proveedor pendiente'}</p>
+                {oc.proveedorContacto && <small>{oc.proveedorContacto}</small>}
               </div>
 
               <select

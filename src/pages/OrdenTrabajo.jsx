@@ -52,7 +52,7 @@ const tabs = [
 ];
 
 export default function OrdenTrabajo() {
-  const { usuario, pedidos = [], actualizarPedido } = useApp();
+  const { usuario, pedidos = [], proveedores = [], actualizarPedido } = useApp();
 
   const [busqueda, setBusqueda] = useState('');
   const [pedidoActivoId, setPedidoActivoId] = useState('');
@@ -152,7 +152,7 @@ export default function OrdenTrabajo() {
 
           {tab === 'resumen' && <OTResumen pedido={pedidoActivo} />}
           {tab === 'comercial' && <OTComercial pedido={pedidoActivo} actualizarPedido={actualizarPedido} />}
-          {tab === 'compras' && <OTCompras pedido={pedidoActivo} actualizarPedido={actualizarPedido} />}
+          {tab === 'compras' && <OTCompras pedido={pedidoActivo} proveedores={proveedores} actualizarPedido={actualizarPedido} />}
           {tab === 'produccion' && <OTProduccion pedido={pedidoActivo} />}
           {tab === 'costos' && <OTCostos pedido={pedidoActivo} />}
           {tab === 'rentabilidad' && <OTRentabilidad pedido={pedidoActivo} />}
@@ -163,5 +163,7 @@ export default function OrdenTrabajo() {
     </main>
   );
 }
+
+
 
 

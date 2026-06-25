@@ -2152,3 +2152,19 @@ th,td{
     width: 100%;
   }
 }
+
+/* AI-10F.1 Proveedor real en OC */
+.ot-warning {
+  margin-top: 1rem;
+  border: 1px solid rgba(201, 162, 39, 0.45);
+  background: rgba(201, 162, 39, 0.12);
+  color: #111827;
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+}
+
+.ot-oc-card small {
+  color: #6b7280;
+  font-weight: 700;
+}
