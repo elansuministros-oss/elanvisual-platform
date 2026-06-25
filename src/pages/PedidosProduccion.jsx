@@ -44,6 +44,7 @@ export default function PedidosProduccion() {
     usuario,
     pedidos,
     actualizarPedido,
+    eliminarPedido: eliminarPedidoDefinitivo,
     proveedores = [],
     cotizacionesProveedor = [],
     crearSolicitudProveedor,
@@ -336,7 +337,23 @@ export default function PedidosProduccion() {
     alert('OT liquidada correctamente.');
   };
 
-  const eliminarPedido = (id) => {
+  const borrarPedidoDefinitivo = () => {
+    if (!esAdmin) return alert('Solo administración puede eliminar pedidos definitivamente.');
+    if (!pedidoActivo) return;
+
+    const codigo = pedidoActivo.numeroPedido || pedidoActivo.numero || getOT(pedidoActivo);
+    const confirmacion = window.prompt(
+      `Para eliminar definitivamente el pedido ${codigo}, escribí ELIMINAR`
+    );
+
+    if (confirmacion !== 'ELIMINAR') return;
+
+    eliminarPedidoDefinitivo?.(pedidoActivo.id);
+    setPedidoActivo(null);
+    alert('Pedido eliminado definitivamente.');
+  };
+
+  const cancelarPedido = (id) => {
     if (!confirm('¿Cancelar este pedido?')) return;
 
     const pedido = pedidos.find((p) => p.id === id);
@@ -671,7 +688,14 @@ Nota: ${item.nota || ''}`;
               )}
 
               <div className="action-stack">
-                <button className="danger-btn" type="button" onClick={() => eliminarPedido(pedidoActivo.id)}>
+                {esAdmin && (
+                  <button className="danger-btn hard-danger" type="button" onClick={borrarPedidoDefinitivo}>
+                    <Trash2 size={18} />
+                    Eliminar definitivamente
+                  </button>
+                )}
+
+                <button className="danger-btn" type="button" onClick={() => cancelarPedido(pedidoActivo.id)}>
                   <Trash2 size={18} />
                   Cancelar pedido
                 </button>
@@ -693,7 +717,8 @@ Nota: ${item.nota || ''}`;
         input,select,textarea{width:100%;border:1px solid #dbe3ef;border-radius:16px;padding:14px;font-size:16px;background:#fff;color:#0f172a}
         label{display:grid;gap:7px;font-weight:900;color:#334155;margin-bottom:12px}
         .pedidos-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:14px;align-items:start}
-        .pedidos-list{display:grid;gap:12px}
+        .pedido-detail{max-height:calc(100vh - 245px);overflow-y:auto}
+        .pedidos-list{display:grid;gap:12px;max-height:calc(100vh - 245px);overflow-y:auto;padding-right:6px}
         .pedido-card{cursor:pointer;border:2px solid transparent;display:grid;gap:8px}
         .pedido-card.active{border-color:#111827}
         .pedido-card div:first-child{display:flex;justify-content:space-between;gap:10px}
@@ -728,6 +753,7 @@ Nota: ${item.nota || ''}`;
         .primary-btn{background:#111827;color:#fff}
         .secondary-btn{background:#e2e8f0;color:#0f172a}
         .danger-btn{background:#fee2e2;color:#991b1b}
+        .hard-danger{background:#7f1d1d;color:#fff}
         .mobile-back-btn{display:none;background:#e2e8f0;color:#0f172a;margin-bottom:14px}
         .ot-text{margin-top:14px;font-family:monospace;min-height:260px}
         .empty{padding:24px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:18px;font-weight:800;background:#fff}
@@ -741,7 +767,7 @@ Nota: ${item.nota || ''}`;
           .pedidos-hero,.pedidos-tools{margin-bottom:12px}
           .pedidos-tools,.pedidos-grid,.form-grid{grid-template-columns:1fr}
           .pedidos-grid{display:block}
-          .pedidos-list{display:grid;gap:12px}
+          .pedidos-list{display:grid;gap:12px;max-height:calc(100vh - 245px);overflow-y:auto;padding-right:6px}
           .pedido-detail{display:none}
           .mobile-detail-open .pedidos-hero,
           .mobile-detail-open .pedidos-tools,

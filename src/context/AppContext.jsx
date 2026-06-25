@@ -1187,6 +1187,31 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
     }
   };
 
+  const eliminarPedido = (id) => {
+    const pedidoEliminar = pedidos.find((p) => p.id === id);
+
+    setPedidos((prev) => prev.filter((p) => p.id !== id));
+    setCotizacionesProveedor((prev) => prev.filter((s) => s.pedidoId !== id));
+
+    if (supabase && esUuid(id)) {
+      supabase
+        .from('pedidos_elanvisual')
+        .delete()
+        .eq('id', id)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error eliminando pedido en Supabase:', error);
+
+            if (pedidoEliminar) {
+              setPedidos((prev) => [pedidoEliminar, ...prev]);
+            }
+
+            window.alert('No se pudo eliminar el pedido en Supabase.');
+          }
+        });
+    }
+  };
+
   const crearOrdenTrabajoBase = (pedido) => ({
     codigoOT:
       pedido?.ordenTrabajo?.codigoOT ||
@@ -2065,6 +2090,7 @@ const generarComisionAutomatica = ({
         crearPedidoTransferencia,
         crearPedidoOperativo,
         actualizarPedido,
+        eliminarPedido,
         confirmarAnticipo,
         cambiarEstadoProduccion,
         actualizarOrdenTrabajo,
