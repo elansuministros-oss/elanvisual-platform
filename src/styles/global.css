@@ -2004,3 +2004,78 @@ th,td{
     padding: 1rem;
   }
 }
+
+/* AI-10C OT Comercial */
+.ot-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.ot-form-grid label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.ot-form-grid input,
+.ot-form-grid select {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 0.8rem 0.9rem;
+  background: #ffffff;
+  color: #111827;
+}
+
+.ot-form-grid input:disabled {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.ot-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.ot-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.ot-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.ot-table th,
+.ot-table td {
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  padding: 0.85rem;
+  font-size: 0.95rem;
+}
+
+.ot-table th {
+  background: #f9fafb;
+  color: #374151;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .ot-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .ot-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
