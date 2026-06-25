@@ -731,6 +731,25 @@ Nota: ${item.nota || ''}`;
                       <label>Observaciones<input value={pagoObservaciones} onChange={(e) => setPagoObservaciones(e.target.value)} placeholder="Detalle libre del pago..." /></label>
                       <button className="primary-btn" type="button" onClick={registrarPagoCliente}>Registrar pago cliente</button>
                       <button className="secondary-btn" type="button" onClick={imprimirReciboCaja}>Generar recibo PDF</button>
+                      <div className="ot-panel" style={{ gridColumn: '1 / -1', marginTop: 12 }}>
+                        <h4>Historial de pagos</h4>
+                        {Array.isArray(pedidoActivo.pagos?.historial) && pedidoActivo.pagos.historial.length > 0 ? (
+                          <div className="ot-list">
+                            {pedidoActivo.pagos.historial.map((pago, index) => (
+                              <div className="ot-list-item" key={pago.id || pago.recibo || index}>
+                                <strong>{pago.recibo || `Pago ${index + 1}`}</strong>
+                                <span>{pago.fechaDeposito || pago.fechaRegistro || ''}</span>
+                                <span>{pago.forma || pago.formaPago || 'Pago cliente'}</span>
+                                <span>{pago.banco || 'Sin banco'}</span>
+                                <b>USD {n(pago.montoUSD || pago.monto || 0).toFixed(2)}</b>
+                                <button className="secondary-btn" type="button" onClick={imprimirReciboCaja}>Ver último recibo PDF</button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="muted">No hay pagos registrados todavía.</p>
+                        )}
+                      </div>
                     </div>
                   )}
                 </section>
@@ -951,3 +970,4 @@ Nota: ${item.nota || ''}`;
     </main>
   );
 }
+
