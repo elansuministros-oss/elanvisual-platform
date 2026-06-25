@@ -152,7 +152,7 @@ export default function OrdenTrabajo() {
 
           {tab === 'resumen' && <OTResumen pedido={pedidoActivo} />}
           {tab === 'comercial' && <OTComercial pedido={pedidoActivo} actualizarPedido={actualizarPedido} />}
-          {tab === 'compras' && <OTCompras pedido={pedidoActivo} />}
+          {tab === 'compras' && <OTCompras pedido={pedidoActivo} actualizarPedido={actualizarPedido} />}
           {tab === 'produccion' && <OTProduccion pedido={pedidoActivo} />}
           {tab === 'costos' && <OTCostos pedido={pedidoActivo} />}
           {tab === 'rentabilidad' && <OTRentabilidad pedido={pedidoActivo} />}
@@ -163,4 +163,5 @@ export default function OrdenTrabajo() {
     </main>
   );
 }
+
 
