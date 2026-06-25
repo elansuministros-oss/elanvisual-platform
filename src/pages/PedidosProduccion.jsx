@@ -738,11 +738,11 @@ Nota: ${item.nota || ''}`;
                             {pedidoActivo.pagos.historial.map((pago, index) => (
                               <div className="ot-list-item" key={pago.id || pago.recibo || index} style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr 1fr 1fr auto', gap: 12, alignItems: 'center' }}>
                                 <div style={{ display: 'grid', gap: 4 }}><small>Recibo</small><strong>{pago.recibo || `Pago ${index + 1}`}</strong></div>
-                                <div style={{ display: 'grid', gap: 4 }}><small>Fecha</small><span>{pago.fechaDeposito || pago.fechaRegistro || ''}</span></div>
+                                <div style={{ display: 'grid', gap: 4 }}><small>Fecha</small><span>{new Date(pago.fechaDeposito || pago.fechaRegistro).toLocaleDateString('es-NI')}</span></div>
                                 <div style={{ display: 'grid', gap: 4 }}><small>Forma</small><span>{pago.forma || pago.formaPago || 'Pago cliente'}</span></div>
                                 <div style={{ display: 'grid', gap: 4 }}><small>Banco</small><span>{pago.banco || 'Sin banco'}</span></div>
-                                <div style={{ display: 'grid', gap: 4, textAlign: 'right' }}><small>Monto</small><b>USD {n(pago.montoUSD || pago.monto || 0).toFixed(2)}</b></div>
-                                <button className="secondary-btn" type="button" onClick={imprimirReciboCaja}>Ver PDF</button>
+                                <div style={{ display: 'grid', gap: 4, textAlign: 'right', whiteSpace: 'nowrap' }}><small>Monto</small><b>USD {n(pago.montoUSD || pago.monto || 0).toFixed(2)}</b></div>
+                                <button className="secondary-btn" type="button" onClick={imprimirReciboCaja}>📄 PDF</button>
                               </div>
                             ))}
                           </div>
@@ -970,6 +970,7 @@ Nota: ${item.nota || ''}`;
     </main>
   );
 }
+
 
 
 
