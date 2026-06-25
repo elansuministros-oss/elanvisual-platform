@@ -243,10 +243,10 @@ export default function PedidosProduccion() {
         <meta charset="utf-8" />
         <title>${pago.recibo || 'Recibo'} - ${marca}</title>
         <style>
-          @page{size:8.5in 5.5in;margin:0.22in}
+          @page{size:5.5in 8.5in;margin:0.18in}
           *{box-sizing:border-box}
           body{font-family:Arial,Helvetica,sans-serif;margin:0;color:#111827;background:#fff}
-          .receipt{width:100%;height:5.02in;border:2px solid #111827;padding:12px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+          .receipt{width:100%;max-width:5.15in;margin:0 auto;border:2px solid #111827;padding:12px;display:flex;flex-direction:column;gap:8px;background:#fff}
           .head{display:flex;justify-content:space-between;gap:14px;border-bottom:3px solid #b48722;padding-bottom:12px}
           .brand{display:flex;gap:12px;align-items:center}
           .logo-img{width:118px;max-height:88px;object-fit:contain}
@@ -272,6 +272,32 @@ export default function PedidosProduccion() {
           .foot{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:24px;padding-top:28px}
           .sign{border-top:1px solid #111827;text-align:center;padding-top:7px;font-size:11px;font-weight:900;color:#334155}
           .legal{font-size:10px;color:#64748b;text-align:center;line-height:1.35;margin-top:8px}
+          @media print{
+            html,body{width:5.5in;height:8.5in;overflow:hidden}
+            body{margin:0}
+            .receipt{width:100%;max-width:none;height:8.14in;margin:0;border:2px solid #111827;padding:9px;gap:5px;overflow:hidden}
+            .head{padding-bottom:7px;gap:8px}
+            .logo-img{width:92px;max-height:58px}
+            .logo-mark{width:48px;height:48px;border-radius:12px;font-size:18px}
+            h1{font-size:18px}
+            .brand p{font-size:9px}
+            .meta strong{font-size:13px}
+            .meta span{font-size:9px}
+            .title{font-size:12px;padding:7px 9px;border-radius:10px}
+            .grid{gap:6px}
+            .box{padding:6px;border-radius:8px}
+            .box small{font-size:7px;margin-bottom:2px}
+            .box b{font-size:10px}
+            .amount{padding:8px;border-radius:10px}
+            .amount small{font-size:8px}
+            .amount h2{font-size:20px;margin-top:2px}
+            .summary{gap:4px;padding:6px 0}
+            .summary p{font-size:10px}
+            .obs{min-height:38px;padding:6px;font-size:9px;border-radius:8px}
+            .foot{padding-top:16px;gap:18px}
+            .sign{font-size:9px;padding-top:5px}
+            .legal{font-size:7px;line-height:1.2;margin-top:4px}
+          }
         </style>
       </head>
       <body>
@@ -970,6 +996,7 @@ Nota: ${item.nota || ''}`;
     </main>
   );
 }
+
 
 
 
