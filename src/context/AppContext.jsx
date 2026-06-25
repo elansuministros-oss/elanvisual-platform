@@ -574,7 +574,7 @@ export function AppProvider({ children }) {
     leerStorage('elanvisual_cliente_actual', null)
   );
   const [carrito, setCarrito] = useState([]);
-  const [pedidos, setPedidos] = useState(() => leerStorage('elanvisual_pedidos', []));
+  const [pedidos, setPedidos] = useState([]);
   const [usuario, setUsuario] = useState(() => leerStorage('elanvisual_usuario_actual', null));
   const [usuarios, setUsuarios] = useState(() =>
   asegurarUsuariosBase(usuariosIniciales)
@@ -2172,6 +2172,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
