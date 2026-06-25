@@ -41,6 +41,7 @@ const getOT = (pedido) => pedido?.numeroOT || pedido?.ordenTrabajo?.codigoOT || 
 
 export default function PedidosProduccion() {
   const {
+    configuracion,
     usuario,
     pedidos,
     actualizarPedido,
@@ -60,9 +61,14 @@ export default function PedidosProduccion() {
   const [pedidoActivo, setPedidoActivo] = useState(null);
   const [tab, setTab] = useState('comercial');
 
+  const [pagoMoneda, setPagoMoneda] = useState('NIO');
   const [pagoMonto, setPagoMonto] = useState('');
   const [tipoCambio, setTipoCambio] = useState('36.80');
+  const [pagoFecha, setPagoFecha] = useState(new Date().toISOString().slice(0, 10));
+  const [pagoForma, setPagoForma] = useState('Transferencia');
+  const [pagoBanco, setPagoBanco] = useState('');
   const [referenciaPago, setReferenciaPago] = useState('');
+  const [pagoObservaciones, setPagoObservaciones] = useState('');
 
   const [proveedorId, setProveedorId] = useState('');
   const [costoRealProveedor, setCostoRealProveedor] = useState('');
@@ -144,35 +150,51 @@ export default function PedidosProduccion() {
     if (!esAdmin) return alert('Solo administración puede registrar pagos.');
     if (!pedidoActivo) return;
 
-    const monto = n(pagoMonto);
-    if (monto <= 0) return alert('Indicá un monto válido.');
+    const montoRecibido = n(pagoMonto);
+    const tc = n(pedidoActivo.tipoCambioCongelado || tipoCambio);
+
+    if (montoRecibido <= 0) return alert('Indicá un monto válido.');
+    if (pagoMoneda === 'NIO' && tc <= 0) return alert('Indicá un tipo de cambio válido.');
+
+    const montoUSD = pagoMoneda === 'NIO' ? montoRecibido / tc : montoRecibido;
+    const montoNIO = pagoMoneda === 'NIO' ? montoRecibido : montoRecibido * tc;
 
     const total = getTotal(pedidoActivo);
     const anticipoAnterior = getAnticipo(pedidoActivo);
-    const anticipoNuevo = Math.min(total, anticipoAnterior + monto);
+    const anticipoNuevo = Math.min(total, anticipoAnterior + montoUSD);
     const saldoNuevo = Math.max(total - anticipoNuevo, 0);
-    const primerPago = anticipoAnterior <= 0;
+
+    const numeroRecibo = `RC-${String(Date.now()).slice(-6)}`;
 
     const pago = {
       id: `pago-${Date.now()}`,
-      monto,
+      recibo: numeroRecibo,
+      fechaDeposito: pagoFecha,
+      fechaRegistro: new Date().toISOString(),
+      moneda: pagoMoneda,
+      montoRecibido,
+      montoUSD,
+      montoNIO,
+      tipoCambio: tc,
+      formaPago: pagoForma,
+      banco: pagoBanco,
       referencia: referenciaPago,
-      fecha: new Date().toISOString(),
-      tipoCambio: pedidoActivo.tipoCambioCongelado || n(tipoCambio),
+      observaciones: pagoObservaciones,
     };
 
     actualizarActivo({
       ...pedidoActivo,
       anticipoRecibido: anticipoNuevo,
       saldoPendiente: saldoNuevo,
-      tipoCambioCongelado: pedidoActivo.tipoCambioCongelado || n(tipoCambio),
+      tipoCambioCongelado: pedidoActivo.tipoCambioCongelado || tc,
+      ultimoPago: pago,
       pagoEstado: saldoNuevo <= 0 ? 'Pagado' : 'Pago parcial',
       pagos: {
         ...(pedidoActivo.pagos || {}),
         estadoPago: saldoNuevo <= 0 ? 'Pagado' : 'Pago parcial',
         anticipoRecibido: anticipoNuevo,
         saldoPendiente: saldoNuevo,
-        tipoCambioCongelado: pedidoActivo.tipoCambioCongelado || n(tipoCambio),
+        tipoCambioCongelado: pedidoActivo.tipoCambioCongelado || tc,
         historial: [...(pedidoActivo.pagos?.historial || []), pago],
       },
       historial: [
@@ -180,13 +202,146 @@ export default function PedidosProduccion() {
         {
           estado: 'pago_cliente',
           fecha: new Date().toISOString(),
-          nota: `Pago cliente registrado por ${money(monto)}.`,
+          nota: `Pago cliente registrado. Recibo ${numeroRecibo}. USD ${montoUSD.toFixed(2)}.`,
         },
       ],
     });
 
     setPagoMonto('');
     setReferenciaPago('');
+    setPagoBanco('');
+    setPagoObservaciones('');
+    alert(`Pago registrado. Recibo ${numeroRecibo}.`);
+  };
+
+  const imprimirReciboCaja = () => {
+    if (!pedidoActivo) return;
+
+    const pago =
+      pedidoActivo.ultimoPago ||
+      pedidoActivo.pagos?.historial?.[pedidoActivo.pagos.historial.length - 1];
+
+    if (!pago) return alert('Primero registrá un pago.');
+
+    const marca = configuracion?.logoTexto || 'ELANVISIÓN';
+    const logo = configuracion?.logo || '';
+    const total = getTotal(pedidoActivo);
+    const pagado = getAnticipo(pedidoActivo);
+    const saldo = getSaldo(pedidoActivo);
+    const cliente =
+      pedidoActivo.cliente?.empresa ||
+      pedidoActivo.cliente?.nombre ||
+      pedidoActivo.cliente?.contacto ||
+      'Cliente';
+    const pedidoNumero = pedidoActivo.numeroPedido || pedidoActivo.numero || '';
+    const ot = getOT(pedidoActivo);
+
+    const html = `
+      <!doctype html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>${pago.recibo || 'Recibo'} - ${marca}</title>
+        <style>
+          @page{size:5.5in 8.5in;margin:0.28in}
+          *{box-sizing:border-box}
+          body{font-family:Arial,Helvetica,sans-serif;margin:0;color:#111827;background:#fff}
+          .receipt{width:100%;min-height:7.9in;border:2px solid #111827;padding:18px;display:flex;flex-direction:column;gap:14px}
+          .head{display:flex;justify-content:space-between;gap:14px;border-bottom:3px solid #b48722;padding-bottom:12px}
+          .brand{display:flex;gap:12px;align-items:center}
+          .logo-img{width:118px;max-height:88px;object-fit:contain}
+          .logo-mark{width:72px;height:72px;border-radius:18px;background:#111827;color:#fff;display:grid;place-items:center;font-weight:900;font-size:24px}
+          h1{margin:0;font-size:24px;color:#111827;letter-spacing:.02em}
+          .brand p{margin:3px 0 0;font-size:11px;color:#475569;font-weight:700}
+          .meta{text-align:right}
+          .meta strong{display:block;color:#b48722;font-size:18px}
+          .meta span{display:block;font-size:12px;color:#475569;font-weight:800;margin-top:4px}
+          .title{background:#111827;color:#fff;border-radius:14px;padding:10px 12px;text-align:center;font-size:16px;font-weight:900;letter-spacing:.08em}
+          .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+          .box{border:1px solid #dbe3ef;border-radius:12px;padding:10px;background:#f8fafc}
+          .box small{display:block;text-transform:uppercase;font-size:9px;font-weight:900;color:#64748b;margin-bottom:4px}
+          .box b{font-size:13px;color:#111827}
+          .amount{border:2px solid #111827;border-radius:16px;padding:14px;text-align:center;background:#fffbeb}
+          .amount small{display:block;font-size:10px;font-weight:900;color:#92400e;text-transform:uppercase}
+          .amount h2{margin:5px 0 0;font-size:28px;color:#111827}
+          .summary{display:grid;gap:7px;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;padding:10px 0}
+          .summary p{display:flex;justify-content:space-between;margin:0;font-size:13px}
+          .summary span{color:#475569;font-weight:800}
+          .summary b{color:#111827}
+          .obs{min-height:70px;border:1px dashed #cbd5e1;border-radius:12px;padding:10px;font-size:12px;color:#334155;white-space:pre-wrap}
+          .foot{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:24px;padding-top:28px}
+          .sign{border-top:1px solid #111827;text-align:center;padding-top:7px;font-size:11px;font-weight:900;color:#334155}
+          .legal{font-size:10px;color:#64748b;text-align:center;line-height:1.35;margin-top:8px}
+        </style>
+      </head>
+      <body>
+        <section class="receipt">
+          <header class="head">
+            <div class="brand">
+              ${
+                logo
+                  ? `<img src="${logo}" class="logo-img" />`
+                  : `<div class="logo-mark">EV</div>`
+              }
+              <div>
+                <h1>${marca}</h1>
+                <p>Soluciones de Rotulación e Imagen Comercial</p>
+                <p><strong>RUC: 4012805831001E</strong></p>
+              </div>
+            </div>
+            <div class="meta">
+              <strong>${pago.recibo || 'RC'}</strong>
+              <span>${new Date().toLocaleDateString('es-NI')}</span>
+            </div>
+          </header>
+
+          <div class="title">RECIBO OFICIAL DE CAJA</div>
+
+          <div class="grid">
+            <div class="box"><small>Cliente</small><b>${cliente}</b></div>
+            <div class="box"><small>Pedido / OT</small><b>${pedidoNumero} · ${ot}</b></div>
+            <div class="box"><small>Fecha depósito</small><b>${pago.fechaDeposito || ''}</b></div>
+            <div class="box"><small>Forma de pago</small><b>${pago.formaPago || ''}</b></div>
+            <div class="box"><small>Banco</small><b>${pago.banco || 'No especificado'}</b></div>
+            <div class="box"><small>Referencia</small><b>${pago.referencia || 'No especificada'}</b></div>
+          </div>
+
+          <div class="amount">
+            <small>Monto recibido</small>
+            <h2>${pago.moneda === 'NIO' ? `C$ ${Number(pago.montoRecibido || 0).toFixed(2)}` : money(pago.montoRecibido)}</h2>
+            <small>Equivalente USD ${Number(pago.montoUSD || 0).toFixed(2)} · TC ${Number(pago.tipoCambio || 0).toFixed(2)}</small>
+          </div>
+
+          <div class="summary">
+            <p><span>Total pedido</span><b>${money(total)}</b></p>
+            <p><span>Pagado acumulado</span><b>${money(pagado)}</b></p>
+            <p><span>Saldo pendiente</span><b>${money(saldo)}</b></p>
+          </div>
+
+          <div class="obs">${pago.observaciones || 'Pago recibido conforme a condiciones de cotización y orden de trabajo.'}</div>
+
+          <div class="foot">
+            <div class="sign">Recibido por ELANVISUAL</div>
+            <div class="sign">Firma cliente</div>
+          </div>
+
+          <div class="legal">Este recibo soporta el pago registrado para la orden indicada. Producción inicia según validación administrativa y disponibilidad de materiales.</div>
+        </section>
+        <script>
+          window.onload = () => {
+            window.focus();
+            window.print();
+          };
+        </script>
+      </body>
+      </html>
+    `;
+
+    const win = window.open('', '_blank', 'width=650,height=900');
+    if (!win) return alert('El navegador bloqueó la ventana de impresión.');
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
   };
 
   const solicitarRecotizacion = () => {
@@ -560,10 +715,22 @@ Nota: ${item.nota || ''}`;
 
                   {esAdmin && (
                     <div className="form-grid">
-                      <label>Monto pago USD<input value={pagoMonto} onChange={(e) => setPagoMonto(e.target.value)} placeholder="0.00" /></label>
+                      <label>
+                        Moneda
+                        <select value={pagoMoneda} onChange={(e) => setPagoMoneda(e.target.value)}>
+                          <option value="NIO">Córdobas C$</option>
+                          <option value="USD">Dólares USD</option>
+                        </select>
+                      </label>
+                      <label>Fecha depósito<input type="date" value={pagoFecha} onChange={(e) => setPagoFecha(e.target.value)} /></label>
+                      <label>Monto recibido<input value={pagoMonto} onChange={(e) => setPagoMonto(e.target.value)} placeholder="0.00" /></label>
                       <label>Tipo cambio<input value={tipoCambio} onChange={(e) => setTipoCambio(e.target.value)} disabled={!!pedidoActivo.tipoCambioCongelado} /></label>
-                      <label>Referencia<input value={referenciaPago} onChange={(e) => setReferenciaPago(e.target.value)} placeholder="Transferencia, recibo, banco..." /></label>
+                      <label>Forma de pago<input value={pagoForma} onChange={(e) => setPagoForma(e.target.value)} placeholder="Transferencia, efectivo, depósito..." /></label>
+                      <label>Banco<input value={pagoBanco} onChange={(e) => setPagoBanco(e.target.value)} placeholder="Banco o medio de pago..." /></label>
+                      <label>Referencia<input value={referenciaPago} onChange={(e) => setReferenciaPago(e.target.value)} placeholder="Número de transferencia, voucher o recibo..." /></label>
+                      <label>Observaciones<input value={pagoObservaciones} onChange={(e) => setPagoObservaciones(e.target.value)} placeholder="Detalle libre del pago..." /></label>
                       <button className="primary-btn" type="button" onClick={registrarPagoCliente}>Registrar pago cliente</button>
+                      <button className="secondary-btn" type="button" onClick={imprimirReciboCaja}>Generar recibo PDF</button>
                     </div>
                   )}
                 </section>
