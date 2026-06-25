@@ -736,13 +736,13 @@ Nota: ${item.nota || ''}`;
                         {Array.isArray(pedidoActivo.pagos?.historial) && pedidoActivo.pagos.historial.length > 0 ? (
                           <div className="ot-list">
                             {pedidoActivo.pagos.historial.map((pago, index) => (
-                              <div className="ot-list-item" key={pago.id || pago.recibo || index}>
-                                <strong>{pago.recibo || `Pago ${index + 1}`}</strong>
-                                <span>{pago.fechaDeposito || pago.fechaRegistro || ''}</span>
-                                <span>{pago.forma || pago.formaPago || 'Pago cliente'}</span>
-                                <span>{pago.banco || 'Sin banco'}</span>
-                                <b>USD {n(pago.montoUSD || pago.monto || 0).toFixed(2)}</b>
-                                <button className="secondary-btn" type="button" onClick={imprimirReciboCaja}>Ver último recibo PDF</button>
+                              <div className="ot-list-item" key={pago.id || pago.recibo || index} style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 1fr 1fr 1fr', gap: 10, alignItems: 'end' }}>
+                                <div><small>Recibo</small><strong>{pago.recibo || `Pago ${index + 1}`}</strong></div>
+                                <div><small>Fecha</small><span>{pago.fechaDeposito || pago.fechaRegistro || ''}</span></div>
+                                <div><small>Forma</small><span>{pago.forma || pago.formaPago || 'Pago cliente'}</span></div>
+                                <div><small>Banco</small><span>{pago.banco || 'Sin banco'}</span></div>
+                                <div><small>Monto</small><b>USD {n(pago.montoUSD || pago.monto || 0).toFixed(2)}</b></div>
+                                <button className="secondary-btn" type="button" onClick={imprimirReciboCaja} style={{ gridColumn: '1 / -1' }}>Ver recibo PDF</button>
                               </div>
                             ))}
                           </div>
@@ -970,4 +970,5 @@ Nota: ${item.nota || ''}`;
     </main>
   );
 }
+
 
