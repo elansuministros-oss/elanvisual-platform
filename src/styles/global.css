@@ -1851,3 +1851,156 @@ th,td{
   }
 }
 
+
+/* AI-10B Orden de Trabajo modular */
+.ot-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.ot-list button {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1rem;
+  text-align: left;
+  display: grid;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.ot-list button.active {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.18);
+}
+
+.ot-list span,
+.ot-list small {
+  color: #6b7280;
+}
+
+.ot-tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 1rem 0;
+}
+
+.ot-tabs button {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ot-tabs button.active {
+  background: var(--azul);
+  color: #ffffff;
+  border-color: var(--azul);
+}
+
+.ot-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  margin-bottom: 1rem;
+}
+
+.ot-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.status-pill {
+  background: #f3f4f6;
+  color: #111827;
+  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.ot-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.ot-kpi-grid article,
+.ot-detail-grid p {
+  background: #f9fafb;
+  border-radius: 16px;
+  padding: 1rem;
+  margin: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.ot-kpi-grid span,
+.ot-detail-grid span,
+.ot-progress span {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.ot-kpi-grid strong,
+.ot-detail-grid strong {
+  color: #111827;
+  font-size: 1rem;
+}
+
+.ot-progress {
+  margin: 1rem 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.ot-progress > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ot-progress-bar {
+  height: 12px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.ot-progress-bar span {
+  display: block;
+  height: 100%;
+  background: var(--teal);
+  border-radius: 999px;
+}
+
+.ot-detail-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 760px) {
+  .ot-section-header {
+    flex-direction: column;
+  }
+
+  .ot-kpi-grid,
+  .ot-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ot-card {
+    border-radius: 18px;
+    padding: 1rem;
+  }
+}
