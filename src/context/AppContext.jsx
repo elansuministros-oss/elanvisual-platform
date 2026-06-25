@@ -437,10 +437,27 @@ function mapPedidoFromDb(row) {
     },
     pagoTipo: 'anticipo',
     anticipoPorcentaje: Number(row.anticipo_porcentaje || form.p1 || 60),
-    montoSolicitado: Number(row.anticipo_monto || 0),
-    anticipoRequerido: Number(row.anticipo_monto || 0),
-    anticipoRecibido: 0,
-    saldoPendiente: Number(row.saldo_monto || 0),
+    montoSolicitado: Number(
+      dataOriginal.anticipoSolicitado ??
+        dataOriginal.pedido?.montoSolicitado ??
+        (((Number(row.total || resumenOriginal.totalCliente || 0)) *
+          Number(row.anticipo_porcentaje || form.p1 || 60)) /
+          100)
+    ),
+    anticipoRequerido: Number(
+      dataOriginal.anticipoSolicitado ??
+        dataOriginal.pedido?.anticipoRequerido ??
+        dataOriginal.pedido?.montoSolicitado ??
+        (((Number(row.total || resumenOriginal.totalCliente || 0)) *
+          Number(row.anticipo_porcentaje || form.p1 || 60)) /
+          100)
+    ),
+    anticipoRecibido: Number(dataOriginal.anticipoPagado ?? row.anticipo_monto ?? 0),
+    saldoPendiente: Math.max(
+      Number(row.total || resumenOriginal.totalCliente || 0) -
+        Number(dataOriginal.anticipoPagado ?? row.anticipo_monto ?? 0),
+      0
+    ),
     estado: row.estado || 'cotizacion_guardada',
     estadoProduccion: row.estado_produccion || 'pendiente',
     pagoEstado: row.estado_pago || 'pendiente',
@@ -460,19 +477,22 @@ function mapPedidoToDb(pedido) {
   const items = Array.isArray(pedido.items) ? pedido.items : [];
   const total = Number(resumen.total || pedido.total || 0);
   const anticipoPorcentaje = Number(pedido.anticipoPorcentaje || 60);
-  const anticipoMonto = Number(
-    pedido.anticipoRecibido ??
-      pedido.pagos?.anticipoRecibido ??
-      pedido.anticipoMonto ??
-      0
-  );
-  const saldoMonto = Number(
-    pedido.saldoPendiente ??
-      pedido.pagos?.saldoPendiente ??
-      pedido.saldoMonto ??
-      Math.max(total - anticipoMonto, 0)
+
+  const anticipoSolicitado = Number(
+    pedido.anticipoRequerido ??
+      pedido.montoSolicitado ??
+      resumen.anticipo ??
+      ((total * anticipoPorcentaje) / 100)
   );
 
+  const anticipoPagado = Number(
+    pedido.anticipoRecibido ??
+      pedido.pagos?.anticipoRecibido ??
+      pedido.pagos?.totalPagado ??
+      0
+  );
+
+  const saldoMonto = Math.max(total - anticipoPagado, 0);
   return {
     numero: pedido.numero || pedido.numeroPedido || '',
     cliente_nombre: cliente.nombre || cliente.empresa || pedido.clienteNombre || '',
@@ -491,7 +511,7 @@ function mapPedidoToDb(pedido) {
     iva: Number(resumen.iva || pedido.iva || 0),
     total,
     anticipo_porcentaje: anticipoPorcentaje,
-    anticipo_monto: anticipoMonto,
+    anticipo_monto: anticipoPagado,
     saldo_monto: saldoMonto,
     items,
     orden_trabajo: pedido.ordenTrabajo || {},
@@ -502,6 +522,9 @@ function mapPedidoToDb(pedido) {
       pagos: pedido.pagos || {},
       ultimoPago: pedido.ultimoPago || null,
       tipoCambioCongelado: pedido.tipoCambioCongelado || pedido.pagos?.tipoCambioCongelado || null,
+      anticipoSolicitado,
+      anticipoPagado,
+      saldoReal: saldoMonto,
       actualizado_en: new Date().toISOString(),
     },
     actualizado_en: new Date().toISOString(),
@@ -2149,3 +2172,10 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
+
+
+
+
+
+
