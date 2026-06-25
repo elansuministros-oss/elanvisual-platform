@@ -43,6 +43,9 @@ const costoMaterial = (m) =>
       m?.precio_unitario ??
       m?.costo_unitario ??
       m?.costo_m2 ??
+      m?.precio_total_usd ??
+      m?.precio_base_usd ??
+      m?.precio_venta_1x ??
       0
   );
 
@@ -2205,6 +2208,8 @@ const nuevo = {
     </main>
   );
 }
+
+
 
 
 
