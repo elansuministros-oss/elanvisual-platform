@@ -580,7 +580,51 @@ export function AppProvider({ children }) {
   asegurarUsuariosBase(usuariosIniciales)
 );
   const [supabaseListo, setSupabaseListo] = useState(false);
-  const [proveedores, setProveedores] = useState(() => leerStorage('elanvisual_proveedores_costos', []));
+  const proveedorImpresionesVida = {
+  id: 'prov-impresiones-vida',
+  codigo: 'PROV-000001',
+  nombre: 'IMPRESIONES VIDA',
+  razonSocial: 'GRUPO VIDA',
+  ruc: 'Pendiente',
+  estado: 'Activo',
+  activo: true,
+  tipo: 'Proveedor Técnico Estratégico',
+  categoria: 'Impresión | Corte CNC | Producción Digital',
+  contacto: 'Marvin',
+  cargoContacto: 'Propietario',
+  whatsapp: '+505 8196-0104',
+  telefonoAlterno: '+505 8253-4525',
+  correo: '',
+  sitioWeb: 'https://www.facebook.com/ImpresionesVidaNic',
+  pais: 'Nicaragua',
+  departamento: 'Managua',
+  municipio: 'Managua',
+  direccion: 'Pali La Fuente, 3 cuadras al sur, Ferretería Blanca en la esquina, Rótulo Rapibac, 1 cuadra y media arriba, Managua, Nicaragua.',
+  zonaCobertura: 'Managua',
+  ubicacion: 'Managua, Nicaragua',
+  especialidad: 'Impresión Digital Gran Formato, Impresión Digital Láser, Corte CNC, Corte PVC, Corte Acrílico, Corte MDF, Corte ACM, Lonas, Vinil Adhesivo, Vinil Microperforado, Roll Up, Material POP, Señalización, Producción Publicitaria, Fabricación de piezas para rotulación',
+  observaciones: 'Proveedor estratégico para procesos de impresión y manufactura. RUC pendiente. La IA no debe usar precios de este proveedor para cotizaciones comerciales; solo para Compras cuando exista OT aprobada.',
+  evaluacion: {
+    calidad: null,
+    tiempoEntrega: null,
+    cumplimiento: null,
+    precio: null,
+    atencion: null,
+    trabajosRealizados: 0,
+    ordenesCompra: 0,
+    montoComprado: 0,
+    ultimaCompra: '',
+    estadoConfianza: 'En evaluación'
+  },
+  creadoEn: new Date().toISOString()
+};
+
+const proveedoresBase = (lista = []) => {
+  const existe = lista.some((p) => p.id === proveedorImpresionesVida.id || String(p.nombre || '').toLowerCase() === 'impresiones vida');
+  return existe ? lista : [proveedorImpresionesVida, ...lista];
+};
+
+const [proveedores, setProveedores] = useState(() => proveedoresBase(leerStorage('elanvisual_proveedores_costos', [])));
   const [productosProveedor, setProductosProveedor] = useState(() => leerStorage('elanvisual_productos_proveedor', []));
   const [cotizacionesProveedor, setCotizacionesProveedor] = useState(() => leerStorage('elanvisual_cotizaciones_proveedor', []));
   const [inventarioReal, setInventarioReal] = useState(() => leerStorage('elanvisual_inventario_real', []));
@@ -2172,6 +2216,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
