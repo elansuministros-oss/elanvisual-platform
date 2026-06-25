@@ -243,10 +243,10 @@ export default function PedidosProduccion() {
         <meta charset="utf-8" />
         <title>${pago.recibo || 'Recibo'} - ${marca}</title>
         <style>
-          @page{size:5.5in 8.5in;margin:0.28in}
+          @page{size:8.5in 5.5in;margin:0.22in}
           *{box-sizing:border-box}
           body{font-family:Arial,Helvetica,sans-serif;margin:0;color:#111827;background:#fff}
-          .receipt{width:100%;min-height:7.9in;border:2px solid #111827;padding:18px;display:flex;flex-direction:column;gap:14px}
+          .receipt{width:100%;height:5.02in;border:2px solid #111827;padding:12px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
           .head{display:flex;justify-content:space-between;gap:14px;border-bottom:3px solid #b48722;padding-bottom:12px}
           .brand{display:flex;gap:12px;align-items:center}
           .logo-img{width:118px;max-height:88px;object-fit:contain}
@@ -970,6 +970,7 @@ Nota: ${item.nota || ''}`;
     </main>
   );
 }
+
 
 
 
