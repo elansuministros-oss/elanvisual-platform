@@ -68,7 +68,32 @@ function extraerDatos(texto, tipo = 'cliente') {
           ''
         );
 
-  const primeraLinea = lineas[0] || t.split(',')[0]?.trim() || '';
+  const esTelefono = (valor) =>
+    /^(?:\+?505)?[\s-]?[578]\d{3}[\s-]?\d{4}$/.test(limpiar(valor));
+
+  const esCorreo = (valor) =>
+    /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(limpiar(valor));
+
+  const esCedula = (valor) =>
+    /^(?:\d{13}[A-Z]|\d{3}[-\s]?\d{6}[-\s]?\d{4}[A-Z])$/i.test(
+      limpiar(valor).replace(/\s+/g, '')
+    );
+
+  const esCiudad = (valor) =>
+    ['Managua', 'Granada', 'Masaya', 'Leon', 'León', 'Chinandega', 'Esteli', 'Estelí', 'Matagalpa', 'Jinotega', 'Juigalpa', 'Rivas', 'Carazo', 'Boaco']
+      .some((c) => limpiar(valor).toLowerCase() === c.toLowerCase());
+
+  const primeraLinea =
+    lineas.find((linea) =>
+      !esTelefono(linea) &&
+      !esCorreo(linea) &&
+      !esCedula(linea) &&
+      !esCiudad(linea) &&
+      /[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(linea)
+    ) ||
+    lineas[0] ||
+    t.split(',')[0]?.trim() ||
+    '';
 
   const empresa =
     tipo === 'cliente'
@@ -405,4 +430,5 @@ export default function CapturaInteligente() {
     </main>
   );
 } 
+
 
