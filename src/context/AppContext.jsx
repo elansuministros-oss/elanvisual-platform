@@ -399,74 +399,111 @@ function mapUsuarioToDb(usuario) {
 }
 
 function mapPedidoFromDb(row) {
-  const resumen = row.resumen || {};
-  const origenComercial = row.origen_comercial || row.origenComercial || null;
-  const cliente = row.cliente || {};
+  const dataOriginal = row.data_original || {};
+  const form = dataOriginal.form || {};
+  const resumenOriginal = dataOriginal.total || {};
+
+  const cliente = {
+    nombre: row.cliente_nombre || form.cliente || '',
+    empresa: row.cliente_empresa || form.empresa || '',
+    telefono: row.cliente_telefono || form.whatsapp || '',
+    whatsapp: row.cliente_telefono || form.whatsapp || '',
+    correo: row.cliente_correo || form.correo || '',
+    direccion: row.cliente_direccion || form.direccion || '',
+    ciudad: row.ciudad || form.ciudad || '',
+  };
 
   return {
     id: row.id || row.numero || `pedido-${Date.now()}`,
     numero: row.numero || '',
-    codigoSeguimiento: row.codigo_seguimiento || row.codigoSeguimiento || '',
+    codigoSeguimiento: row.numero || '',
     cliente,
-    origenComercial,
-    vendedor: origenComercial,
+    origenComercial: null,
+    vendedor: null,
     veterinaria: null,
     items: Array.isArray(row.items) ? row.items : [],
-    origenComercialId: row.origen_comercial_id || row.origenComercialId || '',
-    vendedorId: row.vendedor_id || row.origen_comercial_id || row.origenComercialId || '',
+    origenComercialId: '',
+    vendedorId: '',
     veterinariaId: '',
-    origenComercialCodigo: row.origen_comercial_codigo || row.origenComercialCodigo || '',
-    vendedorCodigo: row.vendedor_codigo || row.origen_comercial_codigo || row.origenComercialCodigo || '',
+    origenComercialCodigo: '',
+    vendedorCodigo: '',
     veterinariaCodigo: '',
     resumen: {
-      subtotal: Number(resumen.subtotal || 0),
-      descuentoPorcentaje: Number(resumen.descuentoPorcentaje || resumen.descuento_porcentaje || 0),
-      descuentoMonto: Number(resumen.descuentoMonto || resumen.descuento_monto || 0),
-      total: Number(resumen.total || row.total || 0),
-      comision: Number(resumen.comision || row.comision || 0),
+      subtotal: Number(row.subtotal || resumenOriginal.subtotal || 0),
+      descuentoPorcentaje: 0,
+      descuentoMonto: Number(row.descuento || resumenOriginal.descuento || 0),
+      total: Number(row.total || resumenOriginal.totalCliente || 0),
+      comision: 0,
     },
-    pagoTipo: row.pago_tipo || row.pagoTipo || 'anticipo',
-    anticipoPorcentaje: Number(row.anticipo_porcentaje ?? row.anticipoPorcentaje ?? 60),
-    montoSolicitado: Number(row.monto_solicitado ?? row.montoSolicitado ?? 0),
-    anticipoRequerido: Number(row.anticipo_requerido ?? row.anticipoRequerido ?? 0),
-    anticipoRecibido: Number(row.anticipo_recibido ?? row.anticipoRecibido ?? 0),
-    saldoPendiente: Number(row.saldo_pendiente ?? row.saldoPendiente ?? 0),
-    estado: row.estado || 'pendiente_pago',
-    estadoProduccion: row.estado_produccion || row.estadoProduccion || 'pendiente',
-    pagoEstado: row.pago_estado || row.pagoEstado || 'pendiente_transferencia',
-    seguimientoEstado: row.seguimiento_estado || row.seguimientoEstado || row.estado || 'pendiente_pago',
-    comisionEstado: row.comision_estado || row.comisionEstado || 'no_generada',
-    ordenTrabajo: row.orden_trabajo || row.ordenTrabajo || {},
+    pagoTipo: 'anticipo',
+    anticipoPorcentaje: Number(row.anticipo_porcentaje || form.p1 || 60),
+    montoSolicitado: Number(row.anticipo_monto || 0),
+    anticipoRequerido: Number(row.anticipo_monto || 0),
+    anticipoRecibido: 0,
+    saldoPendiente: Number(row.saldo_monto || 0),
+    estado: row.estado || 'cotizacion_guardada',
+    estadoProduccion: row.estado_produccion || 'pendiente',
+    pagoEstado: row.estado_pago || 'pendiente',
+    seguimientoEstado: row.seguimiento_estado || row.estado || 'cotizacion_guardada',
+    comisionEstado: 'no_generada',
+    ordenTrabajo: row.orden_trabajo || {},
     historial: Array.isArray(row.historial) ? row.historial : [],
-    createdAt: row.created_at || row.createdAt || new Date().toISOString(),
-    fechaEstimada: row.fecha_estimada || row.fechaEstimada || '',
+    createdAt: row.creado_en || row.created_at || new Date().toISOString(),
+    fechaEstimada: '',
+    dataOriginal,
   };
 }
 
 function mapPedidoToDb(pedido) {
+  const cliente = pedido.cliente || {};
+  const resumen = pedido.resumen || {};
+  const items = Array.isArray(pedido.items) ? pedido.items : [];
+  const total = Number(resumen.total || pedido.total || 0);
+  const anticipoPorcentaje = Number(pedido.anticipoPorcentaje || 60);
+  const anticipoMonto = Number(
+    pedido.anticipoRecibido ||
+      pedido.anticipoMonto ||
+      pedido.anticipoRequerido ||
+      resumen.anticipo ||
+      total * (anticipoPorcentaje / 100) ||
+      0
+  );
+  const saldoMonto = Number(
+    pedido.saldoPendiente ||
+      pedido.saldoMonto ||
+      resumen.saldo ||
+      Math.max(total - anticipoMonto, 0)
+  );
+
   return {
-    numero: pedido.numero || '',
-    codigo_seguimiento: pedido.codigoSeguimiento || '',
-    cliente: pedido.cliente || {},
-    veterinaria: null,
-    items: pedido.items || [],
-    veterinaria_id: null,
-    veterinaria_codigo: '',
-    resumen: pedido.resumen || {},
-    pago_tipo: pedido.pagoTipo || 'anticipo',
-    anticipo_porcentaje: Number(pedido.anticipoPorcentaje || 60),
-    monto_solicitado: Number(pedido.montoSolicitado || 0),
-    anticipo_requerido: Number(pedido.anticipoRequerido || 0),
-    anticipo_recibido: Number(pedido.anticipoRecibido || 0),
-    saldo_pendiente: Number(pedido.saldoPendiente || 0),
-    estado: pedido.estado || 'pendiente_pago',
+    numero: pedido.numero || pedido.numeroPedido || '',
+    cliente_nombre: cliente.nombre || cliente.empresa || pedido.clienteNombre || '',
+    cliente_telefono: cliente.telefono || cliente.whatsapp || pedido.clienteTelefono || '',
+    cliente_empresa: cliente.empresa || pedido.clienteEmpresa || '',
+    cliente_correo: cliente.correo || cliente.email || pedido.clienteCorreo || '',
+    cliente_direccion: cliente.direccion || pedido.clienteDireccion || '',
+    ciudad: cliente.ciudad || pedido.ciudad || '',
+    estado: pedido.estado || 'cotizacion_guardada',
+    estado_pago: pedido.pagoEstado || pedido.estadoPago || 'pendiente',
     estado_produccion: pedido.estadoProduccion || 'pendiente',
-    pago_estado: pedido.pagoEstado || 'pendiente_transferencia',
-    seguimiento_estado: pedido.seguimientoEstado || pedido.estado || 'pendiente_pago',
-    comision_estado: pedido.comisionEstado || 'no_generada',
+    seguimiento_estado: pedido.seguimientoEstado || pedido.estado || 'cotizacion_guardada',
+    unidad_negocio: pedido.unidadNegocio || pedido.unidad_negocio || 'ELANVISUAL',
+    subtotal: Number(resumen.subtotal || pedido.subtotal || total || 0),
+    descuento: Number(resumen.descuento || resumen.descuentoMonto || pedido.descuento || 0),
+    iva: Number(resumen.iva || pedido.iva || 0),
+    total,
+    anticipo_porcentaje: anticipoPorcentaje,
+    anticipo_monto: anticipoMonto,
+    saldo_monto: saldoMonto,
+    items,
     orden_trabajo: pedido.ordenTrabajo || {},
     historial: pedido.historial || [],
-    fecha_estimada: pedido.fechaEstimada || null,
+    data_original: {
+      ...(pedido.dataOriginal || pedido.data_original || {}),
+      pedido,
+      actualizado_en: new Date().toISOString(),
+    },
+    actualizado_en: new Date().toISOString(),
   };
 }
 
@@ -718,10 +755,10 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
         const users = asegurarUsuariosBase((usersData || []).map(mapUsuarioFromDb));
 
         const { data: pedidosData, error: pedidosError } = await supabase
-          .from('pedidos')
+          .from('pedidos_elanvisual')
           .select('*')
           .eq('unidad_negocio', 'ELANVISUAL')
-          .order('created_at', { ascending: false });
+          .order('creado_en', { ascending: false });
 
         if (pedidosError) throw pedidosError;
 
@@ -978,7 +1015,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
 
     if (supabase) {
       supabase
-        .from('pedidos')
+        .from('pedidos_elanvisual')
         .insert(mapPedidoToDb(pedido))
         .select('*')
         .single()
@@ -1138,7 +1175,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
 
     if (supabase && esUuid(pedidoActualizado.id)) {
       supabase
-        .from('pedidos')
+        .from('pedidos_elanvisual')
         .update(mapPedidoToDb(pedidoActualizado))
         .eq('id', pedidoActualizado.id)
         .then(({ error }) => {
@@ -2041,6 +2078,9 @@ const generarComisionAutomatica = ({
         eliminarProveedor,
         crearProductoProveedor,
         eliminarProductoProveedor,
+        crearSolicitudProveedor,
+        registrarRespuestaProveedor,
+        asignarProveedorPedido,
 
         usuario,
         login,
@@ -2082,16 +2122,3 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
-
-
-
-
-
-
-
-
-
-
-
-
-

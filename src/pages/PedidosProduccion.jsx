@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import {
   ArrowLeft,
   ClipboardList,
   Copy,
+  DollarSign,
+  Factory,
   PackageCheck,
   Search,
+  ShieldCheck,
   Trash2,
   Truck,
 } from 'lucide-react';
@@ -19,6 +22,7 @@ const estados = [
   'Instalado',
   'Entregado',
   'Cobrado',
+  'Cerrado',
 ];
 
 const money = (v) =>
@@ -28,27 +32,59 @@ const money = (v) =>
     minimumFractionDigits: 2,
   }).format(Number(v || 0));
 
+const n = (v) => Number(v || 0);
+
+const getTotal = (pedido) => n(pedido?.resumen?.total || pedido?.total);
+const getAnticipo = (pedido) => n(pedido?.anticipoRecibido || pedido?.pagos?.anticipoRecibido);
+const getSaldo = (pedido) => Math.max(getTotal(pedido) - getAnticipo(pedido), 0);
+const getOT = (pedido) => pedido?.numeroOT || pedido?.ordenTrabajo?.codigoOT || `OT-${String(pedido?.id || '').slice(-6)}`;
+
 export default function PedidosProduccion() {
   const {
     usuario,
     pedidos,
     actualizarPedido,
     proveedores = [],
+    cotizacionesProveedor = [],
     crearSolicitudProveedor,
+    registrarRespuestaProveedor,
     asignarProveedorPedido,
+    calcularCostoReal,
+    calcularUtilidadReal,
+    generarComisionAutomatica,
   } = useApp();
 
   const [busqueda, setBusqueda] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('Todos');
   const [pedidoActivo, setPedidoActivo] = useState(null);
+  const [tab, setTab] = useState('comercial');
+
+  const [pagoMonto, setPagoMonto] = useState('');
+  const [tipoCambio, setTipoCambio] = useState('36.80');
+  const [referenciaPago, setReferenciaPago] = useState('');
+
   const [proveedorId, setProveedorId] = useState('');
-  const [costoReal, setCostoReal] = useState('');
+  const [costoRealProveedor, setCostoRealProveedor] = useState('');
   const [tiempoEntrega, setTiempoEntrega] = useState('');
+  const [notaProveedor, setNotaProveedor] = useState('');
+
+  const [costos, setCostos] = useState({
+    costoInventario: '',
+    costoProveedor: '',
+    costoImpresion: '',
+    costoEstructura: '',
+    costoTransporte: '',
+    costoInstalacion: '',
+    costoAdministracion: '',
+  });
 
   const tieneAcceso =
     usuario?.rol === 'admin' ||
     usuario?.rol === 'ventas' ||
     usuario?.rol === 'produccion';
+
+  const esAdmin = usuario?.rol === 'admin';
+  const puedeVerCostos = esAdmin;
 
   const pedidosFiltrados = useMemo(() => {
     const lista = Array.isArray(pedidos) ? pedidos : [];
@@ -56,7 +92,7 @@ export default function PedidosProduccion() {
     return lista.filter((p) => {
       const texto = `
         ${p.numeroPedido || p.numero || ''}
-        ${p.numeroOT || p.ordenTrabajo?.codigoOT || ''}
+        ${getOT(p)}
         ${p.cliente?.empresa || ''}
         ${p.cliente?.nombre || ''}
         ${p.cliente?.contacto || ''}
@@ -71,32 +107,233 @@ export default function PedidosProduccion() {
     });
   }, [pedidos, busqueda, estadoFiltro]);
 
-  const abrirPedido = (pedido) => {
-    setPedidoActivo(pedido);
-  };
+  const solicitudActiva = useMemo(() => {
+    if (!pedidoActivo) return null;
+    return cotizacionesProveedor.find((s) => s.pedidoId === pedidoActivo.id);
+  }, [cotizacionesProveedor, pedidoActivo]);
 
-  const volverListaMobile = () => {
-    setPedidoActivo(null);
+  const actualizarActivo = (pedidoActualizado) => {
+    actualizarPedido(pedidoActualizado);
+    setPedidoActivo(pedidoActualizado);
   };
 
   const actualizarEstado = (id, estado) => {
     const pedido = pedidos.find((p) => p.id === id);
     if (!pedido) return;
 
-    const pedidoActualizado = {
+    actualizarActivo({
       ...pedido,
       estado,
       produccion: {
         ...(pedido.produccion || {}),
         estado,
       },
+      historial: [
+        ...(pedido.historial || []),
+        {
+          estado,
+          fecha: new Date().toISOString(),
+          nota: `Estado actualizado a ${estado}.`,
+        },
+      ],
+    });
+  };
+
+  const registrarPagoCliente = () => {
+    if (!esAdmin) return alert('Solo administración puede registrar pagos.');
+    if (!pedidoActivo) return;
+
+    const monto = n(pagoMonto);
+    if (monto <= 0) return alert('Indicá un monto válido.');
+
+    const total = getTotal(pedidoActivo);
+    const anticipoAnterior = getAnticipo(pedidoActivo);
+    const anticipoNuevo = Math.min(total, anticipoAnterior + monto);
+    const saldoNuevo = Math.max(total - anticipoNuevo, 0);
+    const primerPago = anticipoAnterior <= 0;
+
+    const pago = {
+      id: `pago-${Date.now()}`,
+      monto,
+      referencia: referenciaPago,
+      fecha: new Date().toISOString(),
+      tipoCambio: pedidoActivo.tipoCambioCongelado || n(tipoCambio),
     };
 
-    actualizarPedido(pedidoActualizado);
+    actualizarActivo({
+      ...pedidoActivo,
+      anticipoRecibido: anticipoNuevo,
+      saldoPendiente: saldoNuevo,
+      tipoCambioCongelado: pedidoActivo.tipoCambioCongelado || n(tipoCambio),
+      pagoEstado: saldoNuevo <= 0 ? 'Pagado' : 'Pago parcial',
+      pagos: {
+        ...(pedidoActivo.pagos || {}),
+        estadoPago: saldoNuevo <= 0 ? 'Pagado' : 'Pago parcial',
+        anticipoRecibido: anticipoNuevo,
+        saldoPendiente: saldoNuevo,
+        tipoCambioCongelado: pedidoActivo.tipoCambioCongelado || n(tipoCambio),
+        historial: [...(pedidoActivo.pagos?.historial || []), pago],
+      },
+      historial: [
+        ...(pedidoActivo.historial || []),
+        {
+          estado: 'pago_cliente',
+          fecha: new Date().toISOString(),
+          nota: `Pago cliente registrado por ${money(monto)}.`,
+        },
+      ],
+    });
 
-    if (pedidoActivo?.id === id) {
-      setPedidoActivo(pedidoActualizado);
+    setPagoMonto('');
+    setReferenciaPago('');
+  };
+
+  const solicitarRecotizacion = () => {
+    if (!pedidoActivo) return;
+    const solicitud = crearSolicitudProveedor?.(pedidoActivo);
+    alert(`Solicitud generada: ${solicitud?.codigo || ''}`);
+  };
+
+  const registrarRespuesta = () => {
+    if (!solicitudActiva) return alert('Primero generá una solicitud de recotización.');
+    if (!proveedorId) return alert('Seleccioná proveedor.');
+    if (n(costoRealProveedor) <= 0) return alert('Indicá costo real.');
+
+    registrarRespuestaProveedor?.({
+      solicitudId: solicitudActiva.id,
+      proveedorId,
+      monto: costoRealProveedor,
+      tiempoEntrega,
+      nota: notaProveedor,
+    });
+
+    alert('Respuesta de proveedor registrada.');
+  };
+
+  const asignarProveedor = () => {
+    if (!pedidoActivo) return;
+    if (!proveedorId) return alert('Seleccioná proveedor.');
+    if (n(costoRealProveedor) <= 0) return alert('Indicá costo real.');
+
+    const actualizado = asignarProveedorPedido?.({
+      pedidoId: pedidoActivo.id,
+      proveedorId,
+      costoReal: costoRealProveedor,
+      tiempoEntrega,
+      nota: notaProveedor || 'Asignado desde Pedidos / OT',
+    });
+
+    if (actualizado) {
+      setPedidoActivo(actualizado);
+      setCostos((prev) => ({ ...prev, costoProveedor: costoRealProveedor }));
+      setProveedorId('');
+      setCostoRealProveedor('');
+      setTiempoEntrega('');
+      setNotaProveedor('');
+      alert('Proveedor asignado y costo real actualizado.');
     }
+  };
+
+  const registrarCostosReales = () => {
+    if (!esAdmin) return alert('Solo administración puede registrar costos reales.');
+    if (!pedidoActivo) return;
+
+    const costoTotal =
+      n(costos.costoInventario) +
+      n(costos.costoProveedor) +
+      n(costos.costoImpresion) +
+      n(costos.costoEstructura) +
+      n(costos.costoTransporte) +
+      n(costos.costoInstalacion) +
+      n(costos.costoAdministracion);
+
+    const otId = getOT(pedidoActivo);
+    const ventaCliente = getTotal(pedidoActivo);
+
+    const costoRegistro = calcularCostoReal?.({
+      otId,
+      ...costos,
+    });
+
+    const utilidadRegistro = calcularUtilidadReal?.({
+      otId,
+      ventaCliente,
+      costoReal: costoTotal,
+    });
+
+    actualizarActivo({
+      ...pedidoActivo,
+      costos: {
+        ...(pedidoActivo.costos || {}),
+        ...costos,
+        costoTotalReal: costoTotal,
+        actualizadoEn: new Date().toISOString(),
+      },
+      utilidad: {
+        ...(pedidoActivo.utilidad || {}),
+        ventaCliente,
+        costoReal: costoTotal,
+        utilidadReal: ventaCliente - costoTotal,
+        porcentajeUtilidad: ventaCliente > 0 ? ((ventaCliente - costoTotal) / ventaCliente) * 100 : 0,
+        costoRegistroId: costoRegistro?.id,
+        utilidadRegistroId: utilidadRegistro?.id,
+      },
+      historial: [
+        ...(pedidoActivo.historial || []),
+        {
+          estado: 'costos_reales',
+          fecha: new Date().toISOString(),
+          nota: `Costos reales registrados por ${money(costoTotal)}.`,
+        },
+      ],
+    });
+
+    alert('Costos reales registrados.');
+  };
+
+  const liquidarOT = () => {
+    if (!esAdmin) return alert('Solo administración puede liquidar la OT.');
+    if (!pedidoActivo) return;
+
+    const ventaCliente = getTotal(pedidoActivo);
+    const costoReal = n(pedidoActivo.costos?.costoTotalReal);
+    const utilidadReal = ventaCliente - costoReal;
+    const entregado = ['Entregado', 'Cobrado', 'Cerrado'].includes(pedidoActivo.estado);
+
+    if (!entregado) return alert('La OT debe estar entregada antes de liquidar.');
+    if (costoReal <= 0) return alert('Faltan costos reales completos.');
+    if (utilidadReal <= 0) return alert('La utilidad real no permite liquidación positiva.');
+
+    const comision = generarComisionAutomatica?.({
+      otId: getOT(pedidoActivo),
+      utilidadReal,
+      vendedorId: pedidoActivo.vendedor?.id || '',
+      vendedorNombre: pedidoActivo.vendedor?.nombre || '',
+    });
+
+    actualizarActivo({
+      ...pedidoActivo,
+      estado: 'Cerrado',
+      liquidacion: {
+        estado: 'Liquidada',
+        fecha: new Date().toISOString(),
+        ventaCliente,
+        costoReal,
+        utilidadReal,
+        comisionId: comision?.id,
+      },
+      comisionEstado: 'generada',
+      historial: [
+        ...(pedidoActivo.historial || []),
+        {
+          estado: 'liquidada',
+          fecha: new Date().toISOString(),
+          nota: 'OT liquidada con utilidad real.',
+        },
+      ],
+    });
+
+    alert('OT liquidada correctamente.');
   };
 
   const eliminarPedido = (id) => {
@@ -131,12 +368,11 @@ export default function PedidosProduccion() {
     if (!pedido) return '';
 
     const items = pedido.items || [];
-    const numeroOT = pedido.numeroOT || pedido.ordenTrabajo?.codigoOT || '';
-    const numeroPedido = pedido.numeroPedido || pedido.numero || '';
+    const auto = produccionAutomatica(pedido);
 
     return [
-      `*ORDEN DE PRODUCCIÓN ${numeroOT}*`,
-      `Pedido: ${numeroPedido}`,
+      `*ORDEN DE PRODUCCIÓN ${getOT(pedido)}*`,
+      `Pedido: ${pedido.numeroPedido || pedido.numero || ''}`,
       `Estado: ${pedido.estado || ''}`,
       '',
       '*Cliente*',
@@ -148,12 +384,6 @@ export default function PedidosProduccion() {
       '*Proyecto*',
       pedido.proyecto?.lugar ? `Lugar: ${pedido.proyecto.lugar}` : '',
       pedido.proyecto?.direccion ? `Dirección: ${pedido.proyecto.direccion}` : '',
-      pedido.proyecto?.contactoSitio
-        ? `Contacto en sitio: ${pedido.proyecto.contactoSitio}`
-        : '',
-      pedido.proyecto?.whatsappSitio
-        ? `WhatsApp en sitio: ${pedido.proyecto.whatsappSitio}`
-        : '',
       '',
       '*Ítems de producción*',
       ...items.map((item, index) => {
@@ -162,56 +392,23 @@ export default function PedidosProduccion() {
             ? `Cantidad: ${item.cantidad}`
             : `${item.ancho || ''} x ${item.alto || ''} m · Cantidad: ${item.cantidad}`;
 
-        const accesorios =
-          item.accesoriosProduccion?.length > 0
-            ? item.accesoriosProduccion
-                .map((a) => `${a.nombre}: ${Number(a.cantidad).toFixed(2)} ${a.tipo}`)
-                .join(' · ')
-            : 'Sin accesorios automáticos';
-
         return `${index + 1}. ${item.descripcion || item.nombre || 'Ítem'}
 ${medida}
 Instalación: ${item.instalacion || 'No'}
-Accesorios: ${accesorios}
-${item.nota ? `Nota: ${item.nota}` : ''}`;
+Nota: ${item.nota || ''}`;
       }),
+      '',
+      '*Producción automática*',
+      ...(auto?.materiales || []).map((m) => `- ${m.nombre || m.material}: ${m.cantidad || ''} ${m.unidad || ''}`),
       '',
       '*Logística*',
       pedido.logistica?.modalidad || '',
       pedido.logistica?.km ? `KM: ${pedido.logistica.km}` : '',
       pedido.logistica?.altura ? `Altura: ${pedido.logistica.altura}` : '',
-      pedido.logistica?.complejidad
-        ? `Complejidad: ${pedido.logistica.complejidad}`
-        : '',
+      pedido.logistica?.complejidad ? `Complejidad: ${pedido.logistica.complejidad}` : '',
     ]
       .filter(Boolean)
       .join('\n');
-  };
-
-  const solicitarRecotizacion = (pedido) => {
-    const solicitud = crearSolicitudProveedor?.(pedido);
-    alert(`Solicitud de recotización generada: ${solicitud?.codigo || ''}`);
-  };
-
-  const asignarProveedor = (pedido) => {
-    if (!proveedorId) return alert('Seleccioná proveedor.');
-    if (!costoReal) return alert('Indicá costo real.');
-
-    const actualizado = asignarProveedorPedido?.({
-      pedidoId: pedido.id,
-      proveedorId,
-      costoReal,
-      tiempoEntrega,
-      nota: 'Asignado desde Pedidos / OT',
-    });
-
-    if (actualizado) {
-      setPedidoActivo(actualizado);
-      setProveedorId('');
-      setCostoReal('');
-      setTiempoEntrega('');
-      alert('Proveedor asignado y costo real actualizado.');
-    }
   };
 
   const copiarOT = async (pedido) => {
@@ -238,9 +435,9 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
   return (
     <main className={`pedidos-page ${pedidoActivo ? 'mobile-detail-open' : ''}`}>
       <section className="pedidos-hero">
-        <span>ELANVISUAL · Producción</span>
-        <h1>Pedidos y OT</h1>
-        <p>Control operativo de pedidos generados desde el Cotizador Visual.</p>
+        <span>ELANVISUAL · ERP · AI-09.2</span>
+        <h1>Pedidos y Orden de Trabajo</h1>
+        <p>Control comercial, producción, pagos, costos reales y liquidación.</p>
       </section>
 
       <section className="pedidos-tools">
@@ -263,37 +460,35 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
       <section className="pedidos-grid">
         <section className="pedidos-list">
-          {pedidosFiltrados.map((pedido) => {
-            const numeroPedido = pedido.numeroPedido || pedido.numero || '';
-            const numeroOT = pedido.numeroOT || pedido.ordenTrabajo?.codigoOT || '';
+          {pedidosFiltrados.map((pedido) => (
+            <article
+              key={pedido.id}
+              className={`pedido-card ${pedidoActivo?.id === pedido.id ? 'active' : ''}`}
+              onClick={() => {
+                setPedidoActivo(pedido);
+                setTab('comercial');
+              }}
+            >
+              <div>
+                <strong>{pedido.numeroPedido || pedido.numero || 'Pedido'}</strong>
+                <span>{getOT(pedido)}</span>
+              </div>
 
-            return (
-              <article
-                key={pedido.id}
-                className={`pedido-card ${pedidoActivo?.id === pedido.id ? 'active' : ''}`}
-                onClick={() => abrirPedido(pedido)}
-              >
-                <div>
-                  <strong>{numeroPedido}</strong>
-                  <span>{numeroOT}</span>
-                </div>
+              <h2>
+                {pedido.cliente?.empresa ||
+                  pedido.cliente?.nombre ||
+                  pedido.cliente?.contacto ||
+                  'Cliente'}
+              </h2>
 
-                <h2>
-                  {pedido.cliente?.empresa ||
-                    pedido.cliente?.nombre ||
-                    pedido.cliente?.contacto ||
-                    'Cliente'}
-                </h2>
+              <p>{pedido.proyecto?.lugar || 'Sin lugar definido'}</p>
 
-                <p>{pedido.proyecto?.lugar || 'Sin lugar definido'}</p>
-
-                <div className="pedido-meta">
-                  <small>{pedido.estado}</small>
-                  <b>{money(pedido.resumen?.total)}</b>
-                </div>
-              </article>
-            );
-          })}
+              <div className="pedido-meta">
+                <small>{pedido.estado}</small>
+                <b>{money(getTotal(pedido))}</b>
+              </div>
+            </article>
+          ))}
 
           {pedidosFiltrados.length === 0 && (
             <div className="empty">No hay pedidos guardados todavía.</div>
@@ -307,7 +502,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
           {pedidoActivo && (
             <>
-              <button className="mobile-back-btn" type="button" onClick={volverListaMobile}>
+              <button className="mobile-back-btn" type="button" onClick={() => setPedidoActivo(null)}>
                 <ArrowLeft size={18} />
                 Volver a pedidos
               </button>
@@ -315,7 +510,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
               <div className="detail-head">
                 <div>
                   <span>{pedidoActivo.numeroPedido || pedidoActivo.numero}</span>
-                  <h2>{pedidoActivo.numeroOT || pedidoActivo.ordenTrabajo?.codigoOT}</h2>
+                  <h2>{getOT(pedidoActivo)}</h2>
                   <p>
                     {pedidoActivo.cliente?.empresa ||
                       pedidoActivo.cliente?.nombre ||
@@ -327,85 +522,160 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
                 <PackageCheck size={34} />
               </div>
 
-              <label>
-                Estado operativo
-                <select
-                  value={pedidoActivo.estado}
-                  onChange={(e) => actualizarEstado(pedidoActivo.id, e.target.value)}
-                >
-                  {estados.map((e) => (
-                    <option key={e}>{e}</option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="totals-box">
-                <p>
-                  <span>Total</span>
-                  <b>{money(pedidoActivo.resumen?.total)}</b>
-                </p>
-                <p>
-                  <span>Anticipo 60%</span>
-                  <b>{money(pedidoActivo.resumen?.anticipo)}</b>
-                </p>
-                <p>
-                  <span>Saldo 40%</span>
-                  <b>{money(pedidoActivo.resumen?.saldo)}</b>
-                </p>
+              <div className="tabs">
+                <button className={tab === 'comercial' ? 'active' : ''} onClick={() => setTab('comercial')}>Comercial</button>
+                <button className={tab === 'produccion' ? 'active' : ''} onClick={() => setTab('produccion')}>Producción</button>
+                {puedeVerCostos && <button className={tab === 'proveedores' ? 'active' : ''} onClick={() => setTab('proveedores')}>Proveedores</button>}
+                {puedeVerCostos && <button className={tab === 'costos' ? 'active' : ''} onClick={() => setTab('costos')}>Costos</button>}
+                {puedeVerCostos && <button className={tab === 'rentabilidad' ? 'active' : ''} onClick={() => setTab('rentabilidad')}>Rentabilidad</button>}
               </div>
 
-              <div className="items-box">
-                <h3>Ítems producción</h3>
+              {tab === 'comercial' && (
+                <section className="panel">
+                  <h3><DollarSign size={18} /> Comercial y pagos cliente</h3>
 
-                {(pedidoActivo.items || []).map((item) => (
-                  <article key={item.id} className="item-prod">
-                    <strong>{item.descripcion || item.nombre}</strong>
-                    <p>
-                      {item.tipoCalculo === 'unidad'
-                        ? `Cantidad: ${item.cantidad}`
-                        : `${item.ancho || ''} x ${item.alto || ''} m · Cantidad: ${item.cantidad}`}
-                    </p>
-                    <span>Instalación: {item.instalacion || 'No'}</span>
+                  <div className="totals-box">
+                    <p><span>Total venta</span><b>{money(getTotal(pedidoActivo))}</b></p>
+                    <p><span>Pagado</span><b>{money(getAnticipo(pedidoActivo))}</b></p>
+                    <p><span>Saldo</span><b>{money(getSaldo(pedidoActivo))}</b></p>
+                    <p><span>Tipo cambio congelado</span><b>{pedidoActivo.tipoCambioCongelado || pedidoActivo.pagos?.tipoCambioCongelado || 'No congelado'}</b></p>
+                  </div>
 
-                    {item.accesoriosProduccion?.length > 0 && (
-                      <small>
-                        {item.accesoriosProduccion
-                          .map(
-                            (a) =>
-                              `${a.nombre}: ${Number(a.cantidad).toFixed(2)} ${a.tipo}`
-                          )
-                          .join(' · ')}
-                      </small>
-                    )}
-                  </article>
-                ))}
-              </div>
+                  {esAdmin && (
+                    <div className="form-grid">
+                      <label>Monto pago USD<input value={pagoMonto} onChange={(e) => setPagoMonto(e.target.value)} placeholder="0.00" /></label>
+                      <label>Tipo cambio<input value={tipoCambio} onChange={(e) => setTipoCambio(e.target.value)} disabled={!!pedidoActivo.tipoCambioCongelado} /></label>
+                      <label>Referencia<input value={referenciaPago} onChange={(e) => setReferenciaPago(e.target.value)} placeholder="Transferencia, recibo, banco..." /></label>
+                      <button className="primary-btn" type="button" onClick={registrarPagoCliente}>Registrar pago cliente</button>
+                    </div>
+                  )}
+                </section>
+              )}
 
-              <div className="logistica-box">
-                <Truck size={20} />
-                <div>
-                  <strong>{pedidoActivo.logistica?.modalidad || 'Logística no definida'}</strong>
-                  <p>
-                    KM: {pedidoActivo.logistica?.km || 'N/A'} · Altura:{' '}
-                    {pedidoActivo.logistica?.altura || 'N/A'} · Complejidad:{' '}
-                    {pedidoActivo.logistica?.complejidad || 'Normal'}
-                  </p>
-                </div>
-              </div>
+              {tab === 'produccion' && (
+                <section className="panel">
+                  <h3><Factory size={18} /> Producción</h3>
+
+                  <label>
+                    Estado operativo
+                    <select value={pedidoActivo.estado} onChange={(e) => actualizarEstado(pedidoActivo.id, e.target.value)}>
+                      {estados.map((e) => <option key={e}>{e}</option>)}
+                    </select>
+                  </label>
+
+                  <div className="items-box">
+                    <h3>Ítems producción</h3>
+                    {(pedidoActivo.items || []).map((item) => (
+                      <article key={item.id || item.descripcion} className="item-prod">
+                        <strong>{item.descripcion || item.nombre}</strong>
+                        <p>
+                          {item.tipoCalculo === 'unidad'
+                            ? `Cantidad: ${item.cantidad}`
+                            : `${item.ancho || ''} x ${item.alto || ''} m · Cantidad: ${item.cantidad}`}
+                        </p>
+                        <span>Instalación: {item.instalacion || 'No'}</span>
+                      </article>
+                    ))}
+                  </div>
+
+                  <div className="logistica-box">
+                    <Truck size={20} />
+                    <div>
+                      <strong>{pedidoActivo.logistica?.modalidad || 'Logística no definida'}</strong>
+                      <p>
+                        KM: {pedidoActivo.logistica?.km || 'N/A'} · Altura: {pedidoActivo.logistica?.altura || 'N/A'} · Complejidad: {pedidoActivo.logistica?.complejidad || 'Normal'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button className="primary-btn" type="button" onClick={() => copiarOT(pedidoActivo)}>
+                    <Copy size={18} />
+                    Copiar OT producción
+                  </button>
+
+                  <textarea className="ot-text" value={textoOT(pedidoActivo)} readOnly />
+                </section>
+              )}
+
+              {tab === 'proveedores' && puedeVerCostos && (
+                <section className="panel">
+                  <h3><Truck size={18} /> Proveedores y recotización</h3>
+
+                  <div className="form-grid">
+                    <button className="secondary-btn" type="button" onClick={solicitarRecotizacion}>Crear solicitud proveedor</button>
+
+                    <label>
+                      Proveedor
+                      <select value={proveedorId} onChange={(e) => setProveedorId(e.target.value)}>
+                        <option value="">Seleccionar proveedor</option>
+                        {proveedores.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+                      </select>
+                    </label>
+
+                    <label>Costo real proveedor<input value={costoRealProveedor} onChange={(e) => setCostoRealProveedor(e.target.value)} placeholder="0.00" /></label>
+                    <label>Tiempo entrega<input value={tiempoEntrega} onChange={(e) => setTiempoEntrega(e.target.value)} placeholder="Ej. 3 días" /></label>
+                    <label>Nota<input value={notaProveedor} onChange={(e) => setNotaProveedor(e.target.value)} placeholder="Condiciones, anticipo, alcance..." /></label>
+
+                    <button className="secondary-btn" type="button" onClick={registrarRespuesta}>Registrar respuesta</button>
+                    <button className="primary-btn" type="button" onClick={asignarProveedor}>Asignar proveedor</button>
+                  </div>
+
+                  {solicitudActiva && (
+                    <div className="mini-table">
+                      <strong>{solicitudActiva.codigo}</strong>
+                      {(solicitudActiva.respuestas || []).map((r) => (
+                        <p key={r.id}>{r.proveedorNombre}: {money(r.monto)} · {r.tiempoEntrega}</p>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {tab === 'costos' && puedeVerCostos && (
+                <section className="panel">
+                  <h3><ShieldCheck size={18} /> Costos reales OT</h3>
+
+                  <div className="form-grid">
+                    {Object.keys(costos).map((key) => (
+                      <label key={key}>
+                        {key.replace('costo', 'Costo ')}
+                        <input value={costos[key]} onChange={(e) => setCostos({ ...costos, [key]: e.target.value })} placeholder="0.00" />
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="totals-box">
+                    <p><span>Costo real total</span><b>{money(Object.values(costos).reduce((a, b) => a + n(b), 0))}</b></p>
+                    <p><span>Venta cliente</span><b>{money(getTotal(pedidoActivo))}</b></p>
+                    <p><span>Utilidad estimada</span><b>{money(getTotal(pedidoActivo) - Object.values(costos).reduce((a, b) => a + n(b), 0))}</b></p>
+                  </div>
+
+                  <button className="primary-btn" type="button" onClick={registrarCostosReales}>Registrar costos reales</button>
+                </section>
+              )}
+
+              {tab === 'rentabilidad' && puedeVerCostos && (
+                <section className="panel">
+                  <h3><DollarSign size={18} /> Rentabilidad real</h3>
+
+                  <div className="totals-box">
+                    <p><span>Venta cliente</span><b>{money(getTotal(pedidoActivo))}</b></p>
+                    <p><span>Costo real</span><b>{money(pedidoActivo.costos?.costoTotalReal)}</b></p>
+                    <p><span>Utilidad real</span><b>{money(pedidoActivo.utilidad?.utilidadReal)}</b></p>
+                    <p><span>Comisión vendedor 40%</span><b>{money(n(pedidoActivo.utilidad?.utilidadReal) * 0.4)}</b></p>
+                    <p><span>ELAN 60%</span><b>{money(n(pedidoActivo.utilidad?.utilidadReal) * 0.6)}</b></p>
+                  </div>
+
+                  <button className="primary-btn" type="button" onClick={liquidarOT}>Liquidar OT</button>
+                </section>
+              )}
 
               <div className="action-stack">
-                <button className="primary-btn" type="button" onClick={() => copiarOT(pedidoActivo)}>
-                  <Copy size={18} />
-                  Copiar OT producción
-                </button>
-
                 <button className="danger-btn" type="button" onClick={() => eliminarPedido(pedidoActivo.id)}>
                   <Trash2 size={18} />
                   Cancelar pedido
                 </button>
               </div>
-
-              <textarea className="ot-text" value={textoOT(pedidoActivo)} readOnly />
             </>
           )}
         </section>
@@ -413,7 +683,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
 
       <style>{`
         .pedidos-page{padding:14px;display:grid;gap:14px;background:#f4f6fb;min-height:100vh}
-        .pedidos-hero,.pedidos-tools,.pedido-detail,.pedido-card,.pedidos-lock{background:#fff;border-radius:24px;padding:18px;box-shadow:0 14px 35px rgba(15,23,42,.08)}
+        .pedidos-hero,.pedidos-tools,.pedido-detail,.pedido-card,.pedidos-lock,.panel{background:#fff;border-radius:24px;padding:18px;box-shadow:0 14px 35px rgba(15,23,42,.08)}
         .pedidos-hero span{font-size:12px;font-weight:950;color:#b48722;text-transform:uppercase}
         .pedidos-hero h1{margin:8px 0;font-size:30px;color:#111827;line-height:1}
         .pedidos-hero p{margin:0;color:#64748b;font-weight:750;line-height:1.45}
@@ -422,7 +692,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .search-box input{border:0;padding-left:0}
         input,select,textarea{width:100%;border:1px solid #dbe3ef;border-radius:16px;padding:14px;font-size:16px;background:#fff;color:#0f172a}
         label{display:grid;gap:7px;font-weight:900;color:#334155;margin-bottom:12px}
-        .pedidos-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:14px;align-items:start}
+        .pedidos-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:14px;align-items:start}
         .pedidos-list{display:grid;gap:12px}
         .pedido-card{cursor:pointer;border:2px solid transparent;display:grid;gap:8px}
         .pedido-card.active{border-color:#111827}
@@ -438,8 +708,14 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .detail-head span{font-weight:950;color:#b48722}
         .detail-head h2{margin:4px 0;font-size:28px;color:#111827}
         .detail-head p{margin:0;color:#64748b;font-weight:800}
+        .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+        .tabs button{border:1px solid #dbe3ef;background:#fff;border-radius:999px;padding:10px 13px;font-weight:950;color:#334155}
+        .tabs button.active{background:#111827;color:#fff;border-color:#111827}
+        .panel{box-shadow:none;border:1px solid #e5e7eb;margin-bottom:14px}
+        .panel h3{display:flex;align-items:center;gap:8px;margin:0 0 14px;color:#111827}
         .totals-box{background:#0f172a;color:#fff;border-radius:20px;padding:16px;margin:16px 0;display:grid;gap:8px}
-        .totals-box p{display:flex;justify-content:space-between;margin:0;color:#dbeafe}
+        .totals-box p{display:flex;justify-content:space-between;margin:0;color:#dbeafe;gap:12px}
+        .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:end}
         .items-box{display:grid;gap:10px;margin:16px 0}
         .items-box h3{margin:0;color:#111827}
         .item-prod{background:#f8fafc;border:1px solid #e5e7eb;border-radius:18px;padding:14px;display:grid;gap:5px}
@@ -447,20 +723,23 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
         .item-prod p,.item-prod span,.item-prod small{margin:0;color:#64748b;font-weight:800}
         .logistica-box{background:#fffbeb;border:1px solid #fde68a;border-radius:18px;padding:14px;display:flex;gap:10px;margin:16px 0;color:#92400e}
         .logistica-box p{margin:4px 0 0;font-weight:800}
-        .action-stack{display:grid;gap:10px}
-        .primary-btn,.danger-btn,.mobile-back-btn{width:100%;border:0;border-radius:18px;padding:15px;font-weight:950;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+        .action-stack{display:grid;gap:10px;margin-top:12px}
+        .primary-btn,.secondary-btn,.danger-btn,.mobile-back-btn{width:100%;border:0;border-radius:18px;padding:15px;font-weight:950;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
         .primary-btn{background:#111827;color:#fff}
+        .secondary-btn{background:#e2e8f0;color:#0f172a}
         .danger-btn{background:#fee2e2;color:#991b1b}
         .mobile-back-btn{display:none;background:#e2e8f0;color:#0f172a;margin-bottom:14px}
-        .ot-text{margin-top:14px;font-family:monospace;min-height:300px}
+        .ot-text{margin-top:14px;font-family:monospace;min-height:260px}
         .empty{padding:24px;text-align:center;color:#64748b;border:1px dashed #cbd5e1;border-radius:18px;font-weight:800;background:#fff}
         .detail-empty{min-height:260px;display:grid;place-items:center}
         .pedidos-lock{text-align:center;margin:40px auto;max-width:420px}
+        .mini-table{background:#f8fafc;border:1px solid #e5e7eb;border-radius:18px;padding:14px;margin-top:14px}
+        .mini-table p{margin:6px 0;color:#334155;font-weight:800}
 
         @media(max-width:850px){
           .pedidos-page{padding:12px;display:block}
           .pedidos-hero,.pedidos-tools{margin-bottom:12px}
-          .pedidos-tools,.pedidos-grid{grid-template-columns:1fr}
+          .pedidos-tools,.pedidos-grid,.form-grid{grid-template-columns:1fr}
           .pedidos-grid{display:block}
           .pedidos-list{display:grid;gap:12px}
           .pedido-detail{display:none}
@@ -471,7 +750,7 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
           .mobile-back-btn{display:flex}
           .pedidos-hero h1{font-size:27px}
           input,select,textarea{font-size:16px;padding:15px}
-          .primary-btn,.danger-btn,.mobile-back-btn{min-height:54px}
+          .primary-btn,.secondary-btn,.danger-btn,.mobile-back-btn{min-height:54px}
           .detail-head h2{font-size:24px}
           .ot-text{min-height:220px}
         }
