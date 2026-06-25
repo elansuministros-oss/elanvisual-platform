@@ -20,7 +20,7 @@ PROCEDIMIENTO OBLIGATORIO
 
 ÚLTIMO PUNTO SEGURO
 
-AI-09.5_2026-06-25.md
+AI-09.6_2026-06-25.md
 
 ESTADO
 
@@ -54,3 +54,4 @@ PedidosProduccion mobile-first completo:
 - Historial de pagos visible.
 - Recibos PDF accesibles.
 - Pagos, producción, logística, proveedores, costos, rentabilidad y acciones disponibles en móvil.
+

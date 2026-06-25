@@ -63,6 +63,7 @@ export default function PedidosProduccion() {
   const [estadoFiltro, setEstadoFiltro] = useState('Todos');
   const [pedidoActivo, setPedidoActivo] = useState(null);
   const [tab, setTab] = useState('comercial');
+  const [menuOtAbierto, setMenuOtAbierto] = useState(false);
 
   const [pagoMoneda, setPagoMoneda] = useState('NIO');
   const [pagoMonto, setPagoMonto] = useState('');
@@ -710,7 +711,7 @@ Nota: ${item.nota || ''}`;
             <>
               <button className="mobile-back-btn" type="button" onClick={() => setPedidoActivo(null)}>
                 <ArrowLeft size={18} />
-                Volver a pedidos
+                Volver
               </button>
 
               <div className="detail-head">
@@ -1008,6 +1009,7 @@ Nota: ${item.nota || ''}`;
     </main>
   );
 }
+
 
 
 
