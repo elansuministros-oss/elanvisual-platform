@@ -616,7 +616,7 @@ const [fondoDireccion, setFondoDireccion] = useState(() =>
   useEffect(() => guardarStorage('elanvisual_productos', productos), [productos]);
   useEffect(() => guardarStorage('elanvisual_imagenes', imagenes), [imagenes]);
   useEffect(() => guardarStorage('elanvisual_clientes', clientes), [clientes]);
-  useEffect(() => guardarStorage('elanvisual_pedidos', pedidos), [pedidos]);
+  // AI-09.5: pedidos ya no se persisten en localStorage; fuente oficial: Supabase pedidos_elanvisual.
   // Usuarios migrados a Supabase
   useEffect(() => guardarStorage('elanvisual_proveedores_costos', proveedores), [proveedores]);
   useEffect(() => guardarStorage('elanvisual_productos_proveedor', productosProveedor), [productosProveedor]);
@@ -2172,6 +2172,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 

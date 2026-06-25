@@ -685,6 +685,11 @@ Nota: ${item.nota || ''}`;
                 <small>{pedido.estado}</small>
                 <b>{money(getTotal(pedido))}</b>
               </div>
+
+              <div className="pedido-payment-summary">
+                <p><span>Pagado</span><b>{money(getAnticipo(pedido))}</b></p>
+                <p><span>Saldo</span><b>{money(getSaldo(pedido))}</b></p>
+              </div>
             </article>
           ))}
 
@@ -941,6 +946,10 @@ Nota: ${item.nota || ''}`;
         .pedido-meta{display:flex;justify-content:space-between;align-items:center}
         .pedido-meta small{background:#eef2ff;color:#3730a3;border-radius:999px;padding:7px 10px;font-weight:950}
         .pedido-meta b{font-size:18px;color:#111827}
+        .pedido-payment-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+        .pedido-payment-summary p{margin:0;background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:10px;display:grid;gap:3px}
+        .pedido-payment-summary span{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#64748b;font-weight:950}
+        .pedido-payment-summary b{font-size:15px;color:#111827}
         .detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
         .detail-head span{font-weight:950;color:#b48722}
         .detail-head h2{margin:4px 0;font-size:28px;color:#111827}
@@ -996,6 +1005,7 @@ Nota: ${item.nota || ''}`;
     </main>
   );
 }
+
 
 
 
