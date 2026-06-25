@@ -473,7 +473,7 @@ export default function CotizadorDirectoAI({ setPage }) {
   const guardarClienteLocal = () => {
     if (!form.cliente && !form.empresa) return;
 
-    const resumenFinal = productoSeleccionado && !lineasPreview.length
+    const resumenFinal = productoSeleccionado
   ? {
       costo: Number(productoSeleccionado.precio_total_usd || 0) / POLITICA.recomendado,
       minimo: Number(productoSeleccionado.precio_total_usd || 0),
@@ -618,7 +618,7 @@ const nuevo = {
 
     const precioProducto = Number(productoSeleccionado?.precio_total_usd || 0);
 
-    const resumenFinal = productoSeleccionado && !lineasPreview.length
+    const resumenFinal = productoSeleccionado
       ? {
           costo: precioProducto / POLITICA.recomendado,
           minimo: precioProducto,
@@ -2208,6 +2208,7 @@ const nuevo = {
     </main>
   );
 }
+
 
 
 
