@@ -709,10 +709,106 @@ Nota: ${item.nota || ''}`;
 
           {pedidoActivo && (
             <>
-              <button className="mobile-back-btn" type="button" onClick={() => setPedidoActivo(null)}>
-                <ArrowLeft size={18} />
-                Volver
-              </button>
+              <div className="mobile-ot-nav">
+
+  <button
+    className="mobile-back-btn"
+    type="button"
+    onClick={()=>{
+      setPedidoActivo(null);
+      setMenuOtAbierto(false);
+    }}
+  >
+    <ArrowLeft size={18}/>
+  </button>
+
+  <button
+    className="mobile-menu-btn"
+    type="button"
+    onClick={()=>setMenuOtAbierto(!menuOtAbierto)}
+  >
+    Menú OT
+  </button>
+
+  <button
+    className="mobile-home-btn"
+    type="button"
+    onClick={()=>window.location.href='/'}
+  >
+    Inicio
+  </button>
+
+</div>
+
+{menuOtAbierto && (
+
+<div className="mobile-ot-menu">
+
+<button
+className={tab==="comercial"?"active":""}
+onClick={()=>{
+setTab("comercial");
+setMenuOtAbierto(false);
+}}
+>
+💰 Comercial
+</button>
+
+<button
+className={tab==="produccion"?"active":""}
+onClick={()=>{
+setTab("produccion");
+setMenuOtAbierto(false);
+}}
+>
+🏭 Producción
+</button>
+
+{puedeVerCostos && (
+
+<button
+className={tab==="proveedores"?"active":""}
+onClick={()=>{
+setTab("proveedores");
+setMenuOtAbierto(false);
+}}
+>
+📦 Proveedores
+</button>
+
+)}
+
+{puedeVerCostos && (
+
+<button
+className={tab==="costos"?"active":""}
+onClick={()=>{
+setTab("costos");
+setMenuOtAbierto(false);
+}}
+>
+💲 Costos
+</button>
+
+)}
+
+{puedeVerCostos && (
+
+<button
+className={tab==="rentabilidad"?"active":""}
+onClick={()=>{
+setTab("rentabilidad");
+setMenuOtAbierto(false);
+}}
+>
+📈 Rentabilidad
+</button>
+
+)}
+
+</div>
+
+)}
 
               <div className="detail-head">
                 <div>
@@ -999,6 +1095,55 @@ Nota: ${item.nota || ''}`;
           .mobile-detail-open .pedidos-list{display:none}
           .mobile-detail-open .pedido-detail{display:block;border-radius:22px;min-height:calc(100vh - 24px)}
           .mobile-back-btn{display:flex}
+          .mobile-ot-nav{
+  display:grid;
+  grid-template-columns:58px 1fr 90px;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.mobile-menu-btn,
+.mobile-home-btn,
+.mobile-back-btn{
+  min-height:52px;
+  border:none;
+  border-radius:14px;
+  font-weight:900;
+}
+
+.mobile-menu-btn{
+  background:#111827;
+  color:#fff;
+}
+
+.mobile-home-btn{
+  background:#0f766e;
+  color:#fff;
+}
+
+.mobile-ot-menu{
+  display:grid;
+  gap:8px;
+  margin-bottom:14px;
+}
+
+.mobile-ot-menu button{
+  border:1px solid #dbe3ef;
+  background:#fff;
+  border-radius:14px;
+  padding:14px;
+  text-align:left;
+  font-weight:900;
+}
+
+.mobile-ot-menu button.active{
+  background:#111827;
+  color:#fff;
+}
+
+.tabs{
+  display:none;
+}
           .pedidos-hero h1{font-size:27px}
           input,select,textarea{font-size:16px;padding:15px}
           .primary-btn,.secondary-btn,.danger-btn,.mobile-back-btn{min-height:54px}
@@ -1009,6 +1154,8 @@ Nota: ${item.nota || ''}`;
     </main>
   );
 }
+
+
 
 
 
