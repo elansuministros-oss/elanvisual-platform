@@ -461,17 +461,15 @@ function mapPedidoToDb(pedido) {
   const total = Number(resumen.total || pedido.total || 0);
   const anticipoPorcentaje = Number(pedido.anticipoPorcentaje || 60);
   const anticipoMonto = Number(
-    pedido.anticipoRecibido ||
-      pedido.anticipoMonto ||
-      pedido.anticipoRequerido ||
-      resumen.anticipo ||
-      total * (anticipoPorcentaje / 100) ||
+    pedido.anticipoRecibido ??
+      pedido.pagos?.anticipoRecibido ??
+      pedido.anticipoMonto ??
       0
   );
   const saldoMonto = Number(
-    pedido.saldoPendiente ||
-      pedido.saldoMonto ||
-      resumen.saldo ||
+    pedido.saldoPendiente ??
+      pedido.pagos?.saldoPendiente ??
+      pedido.saldoMonto ??
       Math.max(total - anticipoMonto, 0)
   );
 
@@ -501,6 +499,9 @@ function mapPedidoToDb(pedido) {
     data_original: {
       ...(pedido.dataOriginal || pedido.data_original || {}),
       pedido,
+      pagos: pedido.pagos || {},
+      ultimoPago: pedido.ultimoPago || null,
+      tipoCambioCongelado: pedido.tipoCambioCongelado || pedido.pagos?.tipoCambioCongelado || null,
       actualizado_en: new Date().toISOString(),
     },
     actualizado_en: new Date().toISOString(),
