@@ -1,26 +1,12 @@
 ﻿import { useMemo, useState } from 'react';
-import { getPagadoOT, getSaldoOT, getTotalOT } from './useOrdenTrabajo';
+import { getSaldoOT, getTotalOT } from '../../services/ot/ordenTrabajoService';
+import {
+  calcularPagadoDesdeHistorial,
+  construirPagoOT,
+  convertirPagoAUSD,
+} from '../../services/ot/pagosService';
 
 const n = (v) => Number(v || 0);
-
-const crearId = () => {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-
-  return `pago-${Date.now()}`;
-};
-
-const convertirPagoAUSD = ({ moneda, monto, tipoCambio }) => {
-  const valor = n(monto);
-
-  if (moneda === 'USD') return valor;
-
-  const cambio = n(tipoCambio);
-  if (cambio <= 0) return 0;
-
-  return valor / cambio;
-};
 
 export default function usePagosOT({ pedido, actualizarPedido }) {
   const [formPago, setFormPago] = useState({
@@ -41,7 +27,7 @@ export default function usePagosOT({ pedido, actualizarPedido }) {
   const resumenPagos = useMemo(() => {
     return {
       total: getTotalOT(pedido),
-      pagado: getPagadoOT(pedido),
+      pagado: calcularPagadoDesdeHistorial(historial),
       saldo: getSaldoOT(pedido),
       historial,
     };
@@ -78,25 +64,9 @@ export default function usePagosOT({ pedido, actualizarPedido }) {
       return { ok: false, mensaje: 'El tipo de cambio no es válido.' };
     }
 
-    const pago = {
-      id: crearId(),
-      fecha: formPago.fecha,
-      moneda: formPago.moneda,
-      monto: montoOriginal,
-      montoUSD,
-      tipoCambio: formPago.moneda === 'USD' ? 1 : n(formPago.tipoCambio),
-      forma: formPago.forma,
-      banco: formPago.banco,
-      referencia: formPago.referencia,
-      observaciones: formPago.observaciones,
-      registradoEn: new Date().toISOString(),
-    };
-
+    const pago = construirPagoOT(formPago);
     const historialActualizado = [...historial, pago];
-    const pagadoActualizado = historialActualizado.reduce(
-      (total, item) => total + n(item.montoUSD || item.monto || 0),
-      0
-    );
+    const pagadoActualizado = calcularPagadoDesdeHistorial(historialActualizado);
 
     const total = getTotalOT(pedido);
     const saldo = Math.max(total - pagadoActualizado, 0);
