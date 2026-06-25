@@ -60,15 +60,22 @@ function extraerDatos(texto, tipo = 'cliente') {
         )
       : '';
 
-  const empresa =
+  const empresaExplicita =
     tipo === 'vendedor'
       ? ''
       : (
           t.match(/(?:empresa|cliente|proveedor|negocio)\s*:?\s*([^,\n]+)/i)?.[1] ||
-          lineas[0] ||
-          t.split(',')[0]?.trim() ||
           ''
         );
+
+  const primeraLinea = lineas[0] || t.split(',')[0]?.trim() || '';
+
+  const empresa =
+    tipo === 'cliente'
+      ? empresaExplicita
+      : tipo === 'vendedor'
+        ? ''
+        : empresaExplicita || primeraLinea;
 
   const contacto =
     tipo === 'vendedor'
@@ -93,7 +100,7 @@ function extraerDatos(texto, tipo = 'cliente') {
 
   return {
     empresa: limpiar(empresa),
-    nombre: normalizarNombre(nombreVendedor || contacto || empresa),
+    nombre: normalizarNombre(nombreVendedor || contacto || (tipo === 'cliente' ? primeraLinea : empresa)),
     contacto: tipo === 'vendedor' ? '' : limpiar(contacto),
     whatsapp: telefonos[0] || '',
     telefono: telefonos[0] || '',
@@ -398,3 +405,4 @@ export default function CapturaInteligente() {
     </main>
   );
 } 
+
