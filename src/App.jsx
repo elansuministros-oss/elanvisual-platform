@@ -18,6 +18,7 @@ import Seguimiento from './pages/Seguimiento';
 import MaterialesCostos from './pages/MaterialesCostos';
 import CotizadorVisual from './pages/CotizadorVisual';
 import PedidosProduccion from './pages/PedidosProduccion';
+import OrdenTrabajo from './pages/OrdenTrabajo';
 import DashboardERP from './pages/DashboardERP';
 import MiCuenta from './pages/MiCuenta';
 import ProveedoresCostos from './pages/ProveedoresCostos';
@@ -52,6 +53,7 @@ export default function App() {
     if (pathInicial.startsWith('/ai-studio')) return 'aiStudio';
     if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizador';
     if (pathInicial.startsWith('/cotizador')) return 'cotizador';
+    if (pathInicial.startsWith('/orden-trabajo')) return 'ordenTrabajo';
     if (pathInicial.startsWith('/pedidos')) return 'pedidos';
     if (pathInicial.startsWith('/servicios')) return 'servicios';
     if (pathInicial.startsWith('/tienda')) return 'tienda';
@@ -112,6 +114,7 @@ export default function App() {
       aiStudio: '/ai-studio',
       cotizadorVisual: '/cotizador-visual',
       pedidos: '/pedidos',
+      ordenTrabajo: '/orden-trabajo',
       ventas: '/ventas',
       inventario: '/inventario',
       finanzas: '/finanzas',
@@ -303,6 +306,13 @@ export default function App() {
           <Login setPage={ir} destino="admin" />
         ))}
 
+      {page === 'ordenTrabajo' &&
+        (accesoPedidos ? (
+          <OrdenTrabajo />
+        ) : (
+          <Login setPage={ir} destino="pedidos" />
+        ))}
+
       {page === 'pedidos' &&
         (accesoPedidos ? (
           <PedidosProduccion />
@@ -312,5 +322,6 @@ export default function App() {
     </AIAssistantProvider>
   );
 }
+
 
 
