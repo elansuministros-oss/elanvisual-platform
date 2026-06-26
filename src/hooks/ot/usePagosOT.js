@@ -79,6 +79,8 @@ export default function usePagosOT({ pedido, actualizarPedido }) {
         saldoUSD: saldo,
         actualizadoEn: new Date().toISOString(),
       },
+      anticipoRecibido: pagadoActualizado,
+      saldoPendiente: saldo,
     });
 
     limpiarPago();
@@ -94,3 +96,4 @@ export default function usePagosOT({ pedido, actualizarPedido }) {
     registrarPago,
   };
 }
+

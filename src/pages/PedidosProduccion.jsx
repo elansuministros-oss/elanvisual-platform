@@ -37,7 +37,8 @@ const n = (v) => Number(v || 0);
 const getTotal = (pedido) => n(pedido?.resumen?.total || pedido?.total);
 const getAnticipo = (pedido) => {
   const historial = Array.isArray(pedido?.pagos?.historial) ? pedido.pagos.historial : [];
-  return historial.reduce((total, pago) => total + n(pago.montoUSD || pago.monto || 0), 0);
+  const desdeHistorial = historial.reduce((total, pago) => total + n(pago.montoUSD || pago.monto || 0), 0);
+  return desdeHistorial || n(pedido?.anticipoRecibido || pedido?.pagos?.anticipoRecibido || pedido?.pagos?.pagadoUSD || 0);
 };
 const getSaldo = (pedido) => Math.max(getTotal(pedido) - getAnticipo(pedido), 0);
 const getOT = (pedido) => pedido?.numeroOT || pedido?.ordenTrabajo?.codigoOT || `OT-${String(pedido?.id || '').slice(-6)}`;
@@ -1164,6 +1165,7 @@ setMenuOtAbierto(false);
     </main>
   );
 }
+
 
 
 
