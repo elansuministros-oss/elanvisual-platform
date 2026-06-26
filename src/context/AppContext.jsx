@@ -807,6 +807,18 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
   useEffect(() => {
     let activo = true;
 
+    const cargarProveedoresSupplierHub = async () => {
+      try {
+        const data = await obtenerProveedores();
+        if (activo) setProveedores(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error cargando proveedores Supplier Hub:', error);
+        if (activo) setProveedores([]);
+      }
+    };
+
+    cargarProveedoresSupplierHub();
+
     const cargarDatosSupabase = async () => {
       if (!supabase) {
         setSupabaseListo(false);
@@ -2217,6 +2229,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
