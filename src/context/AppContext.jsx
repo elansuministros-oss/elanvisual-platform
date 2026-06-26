@@ -2,6 +2,7 @@
 import { productosIniciales } from '../data/productos';
 import { resumenCarrito } from '../lib/calculos';
 import { supabase } from '../lib/supabase';
+import { obtenerProveedores } from '../services/supplierHubService';
 
 const AppContext = createContext(null);
 
@@ -662,7 +663,7 @@ const [fondoDireccion, setFondoDireccion] = useState(() =>
   useEffect(() => guardarStorage('elanvisual_clientes', clientes), [clientes]);
   // AI-09.5: pedidos ya no se persisten en localStorage; fuente oficial: Supabase pedidos_elanvisual.
   // Usuarios migrados a Supabase
-  useEffect(() => guardarStorage('elanvisual_proveedores_costos', proveedores), [proveedores]);
+  // AI-10H: proveedores se leen desde Supplier Hub / Supabase, no localStorage.
   useEffect(() => guardarStorage('elanvisual_productos_proveedor', productosProveedor), [productosProveedor]);
   useEffect(() => guardarStorage('elanvisual_cotizaciones_proveedor', cotizacionesProveedor), [cotizacionesProveedor]);
   useEffect(() => guardarStorage('elanvisual_inventario_real', inventarioReal), [inventarioReal]);
@@ -2216,6 +2217,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
