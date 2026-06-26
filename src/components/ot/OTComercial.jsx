@@ -1,5 +1,20 @@
 ﻿import usePagosOT from '../../hooks/ot/usePagosOT';
-import { money } from '../../hooks/ot/useOrdenTrabajo';
+
+const n = (v) => Number(v || 0);
+
+const moneyUSD = (v) =>
+  new Intl.NumberFormat('es-NI', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(n(v));
+
+const moneyCordobas = (v) =>
+  'C$ ' +
+  n(v).toLocaleString('es-NI', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 export default function OTComercial({ pedido, actualizarPedido }) {
   const {
@@ -29,50 +44,54 @@ export default function OTComercial({ pedido, actualizarPedido }) {
       <div className="ot-section-header">
         <div>
           <p className="eyebrow">Control comercial</p>
-          <h2>Pagos, anticipo y saldo</h2>
-          <p>Registro financiero operativo de la Orden de Trabajo.</p>
+          <h2>Pagos reales, anticipo requerido y saldo</h2>
+          <p>El pagado real sale del historial guardado en Supabase.</p>
         </div>
       </div>
 
       <div className="ot-kpi-grid">
         <article>
-          <span>Total</span>
-          <strong>{money(resumenPagos.total)}</strong>
+          <span>Total venta C$</span>
+          <strong>{moneyCordobas(resumenPagos.totalCordobas)}</strong>
+          <small>Ref. {moneyUSD(resumenPagos.totalUSDReferencia)}</small>
         </article>
 
         <article>
-          <span>Pagado</span>
-          <strong>{money(resumenPagos.pagado)}</strong>
+          <span>Anticipo requerido C$</span>
+          <strong>{moneyCordobas(resumenPagos.anticipoRequeridoCordobas)}</strong>
+          <small>Ref. {moneyUSD(resumenPagos.anticipoRequeridoUSDReferencia)}</small>
         </article>
 
         <article>
-          <span>Saldo</span>
-          <strong>{money(resumenPagos.saldo)}</strong>
+          <span>Pagado real C$</span>
+          <strong>{moneyCordobas(resumenPagos.pagadoCordobas)}</strong>
+          <small>Ref. {moneyUSD(resumenPagos.pagadoUSD)}</small>
         </article>
 
         <article>
-          <span>Pagos</span>
-          <strong>{historial.length}</strong>
+          <span>Saldo real C$</span>
+          <strong>{moneyCordobas(resumenPagos.saldoCordobas)}</strong>
+          <small>Ref. {moneyUSD(resumenPagos.saldoUSD)}</small>
         </article>
       </div>
 
       <div className="ot-form-grid">
         <label>
-          Moneda
+          Moneda recibida
           <select
-            value={formPago.moneda}
-            onChange={(e) => actualizarCampoPago('moneda', e.target.value)}
+            value={formPago.monedaOriginal}
+            onChange={(e) => actualizarCampoPago('monedaOriginal', e.target.value)}
           >
-            <option value="NIO">Córdobas</option>
-            <option value="USD">Dólares</option>
+            <option value="C$">Córdobas C$</option>
+            <option value="USD">Dólares USD</option>
           </select>
         </label>
 
         <label>
-          Monto
+          Monto recibido
           <input
-            value={formPago.monto}
-            onChange={(e) => actualizarCampoPago('monto', e.target.value)}
+            value={formPago.montoOriginal}
+            onChange={(e) => actualizarCampoPago('montoOriginal', e.target.value)}
             placeholder="0.00"
           />
         </label>
@@ -82,24 +101,23 @@ export default function OTComercial({ pedido, actualizarPedido }) {
           <input
             value={formPago.tipoCambio}
             onChange={(e) => actualizarCampoPago('tipoCambio', e.target.value)}
-            disabled={formPago.moneda === 'USD'}
           />
         </label>
 
         <label>
-          Fecha
+          Fecha depósito / recepción
           <input
             type="date"
-            value={formPago.fecha}
-            onChange={(e) => actualizarCampoPago('fecha', e.target.value)}
+            value={formPago.fechaDeposito}
+            onChange={(e) => actualizarCampoPago('fechaDeposito', e.target.value)}
           />
         </label>
 
         <label>
           Forma de pago
           <select
-            value={formPago.forma}
-            onChange={(e) => actualizarCampoPago('forma', e.target.value)}
+            value={formPago.formaPago}
+            onChange={(e) => actualizarCampoPago('formaPago', e.target.value)}
           >
             <option>Transferencia</option>
             <option>Efectivo</option>
@@ -148,28 +166,38 @@ export default function OTComercial({ pedido, actualizarPedido }) {
           <thead>
             <tr>
               <th>Fecha</th>
+              <th>Recibo</th>
               <th>Moneda</th>
-              <th>Monto</th>
-              <th>USD</th>
+              <th>Monto recibido</th>
+              <th>TC</th>
+              <th>Equiv. C$</th>
+              <th>Equiv. USD</th>
               <th>Forma</th>
               <th>Referencia</th>
             </tr>
           </thead>
           <tbody>
             {historial.map((pago) => (
-              <tr key={pago.id || `${pago.fecha}-${pago.monto}`}>
-                <td>{pago.fecha || '-'}</td>
-                <td>{pago.moneda || 'USD'}</td>
-                <td>{money(pago.monto || 0)}</td>
-                <td>{money(pago.montoUSD || pago.monto || 0)}</td>
-                <td>{pago.forma || '-'}</td>
+              <tr key={pago.id || `${pago.fechaDeposito}-${pago.montoOriginal}`}>
+                <td>{pago.fechaDeposito || '-'}</td>
+                <td>{pago.recibo || '-'}</td>
+                <td>{pago.monedaOriginal || 'C$'}</td>
+                <td>
+                  {pago.monedaOriginal === 'USD'
+                    ? moneyUSD(pago.montoOriginal)
+                    : moneyCordobas(pago.montoOriginal)}
+                </td>
+                <td>{n(pago.tipoCambio).toFixed(2)}</td>
+                <td>{moneyCordobas(pago.montoCordobas)}</td>
+                <td>{moneyUSD(pago.montoUSD)}</td>
+                <td>{pago.formaPago || '-'}</td>
                 <td>{pago.referencia || '-'}</td>
               </tr>
             ))}
 
             {historial.length === 0 && (
               <tr>
-                <td colSpan="6">No hay pagos registrados para esta OT.</td>
+                <td colSpan="9">No hay pagos reales registrados para esta OT.</td>
               </tr>
             )}
           </tbody>
@@ -178,3 +206,4 @@ export default function OTComercial({ pedido, actualizarPedido }) {
     </section>
   );
 }
+
