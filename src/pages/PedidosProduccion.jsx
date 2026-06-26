@@ -228,7 +228,7 @@ export default function PedidosProduccion() {
     if (!pago) return alert('Primero registrá un pago.');
 
     const marca = configuracion?.logoTexto || 'ELANVISIÓN';
-    const logo = configuracion?.logo || '';
+    const logo = '/assets/branding/elanvisual.svg';
     const total = getTotal(pedidoActivo);
     const pagado = getAnticipo(pedidoActivo);
     const saldo = getSaldo(pedidoActivo);
@@ -1164,6 +1164,7 @@ setMenuOtAbierto(false);
     </main>
   );
 }
+
 
 
 

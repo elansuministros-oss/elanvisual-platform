@@ -147,7 +147,7 @@ export const generarHTMLOrdenCompra = ({ oc, pedido }) => {
   <main class="doc">
     <section class="head">
       <div>
-        <h1>ELANVISUAL</h1>
+        <img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL" style="height:54px;width:auto;object-fit:contain;display:block;" />
         <h2>Orden de Compra</h2>
       </div>
       <div>
@@ -194,3 +194,4 @@ export const generarHTMLOrdenCompra = ({ oc, pedido }) => {
 </body>
 </html>`;
 };
+

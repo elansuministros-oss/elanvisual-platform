@@ -1157,8 +1157,8 @@ export default function CotizadorDirecto({ setPage }) {
         <div className="ev-quote-sheet">
           <header className="ev-quote-header">
             <div className="ev-brand-block">
-              {configuracion?.logo ? (
-                <img src={configuracion.logo} alt={configuracion.logoTexto || 'ELANVISIÓN'} className="ev-logo-img" />
+              {true ? (
+                <img src="/assets/branding/elanvisual.svg" alt={configuracion.logoTexto || 'ELANVISIÓN'} className="ev-logo-img" />
               ) : (
                 <div className="ev-logo-mark">EV</div>
               )}
@@ -2111,3 +2111,4 @@ export default function CotizadorDirecto({ setPage }) {
     </main>
   );
 }
+
