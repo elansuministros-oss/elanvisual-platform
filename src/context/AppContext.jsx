@@ -1250,7 +1250,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
         .then(({ error }) => {
           if (error) {
             console.error('Error actualizando solicitud en Supabase:', error);
-            window.alert('No se pudo actualizar la solicitud en Supabase.');
+            window.alert('No se pudo actualizar la solicitud en Supabase: ' + (error.message || error.details || error.code || 'Error desconocido'));
           }
         });
     }
@@ -2217,6 +2217,8 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
+
 
 
 
