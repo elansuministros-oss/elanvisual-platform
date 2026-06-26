@@ -86,7 +86,7 @@ export default function Header({ page, setPage }) {
       <header className="desktop-header app-desktop-header">
         <div className="brand" onClick={() => go(usuario ? 'dashboard' : 'home')}>
           <img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL" className="brand-logo-img brand-logo-desktop" />
-          <strong>{usuario ? `${brandName} ERP` : brandName}</strong>
+
         </div>
 
         <nav className="desktop-nav app-desktop-nav">
@@ -117,7 +117,7 @@ export default function Header({ page, setPage }) {
         <div className="mobile-bar app-mobile-bar">
           <div className="brand" onClick={() => go(usuario ? 'dashboard' : 'home')}>
             <img src="/assets/branding/elanvisual-isotipo.svg" alt="ELANVISUAL" className="brand-logo-img brand-logo-mobile" />
-            <strong>{usuario ? `${brandName} ERP` : brandName}</strong>
+  
           </div>
 
           {usuario && (
@@ -169,6 +169,7 @@ export default function Header({ page, setPage }) {
     </>
   );
 }
+
 
 
 
