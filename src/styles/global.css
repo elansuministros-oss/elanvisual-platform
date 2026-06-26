@@ -2168,3 +2168,33 @@ th,td{
   color: #6b7280;
   font-weight: 700;
 }
+
+/* BRAND LOGO SVG */
+.brand-logo-img{
+  height:42px;
+  width:auto;
+  max-width:220px;
+  display:block;
+  object-fit:contain;
+}
+
+.mobile-header .brand-logo-img{
+  height:48px;
+  max-width:210px;
+}
+
+/* ===== Logo oficial ELANVISUAL ===== */
+.brand-logo-img{
+  height:42px;
+  width:auto;
+  max-width:240px;
+  object-fit:contain;
+  display:block;
+}
+
+@media(max-width:850px){
+  .brand-logo-img{
+    height:46px;
+    max-width:200px;
+  }
+}
