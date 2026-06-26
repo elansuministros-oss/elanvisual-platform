@@ -1,7 +1,7 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import { Edit3, PlusCircle, Save, Search, Star, Truck, Trash2, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { obtenerProveedores } from '../services/supplierHubService';
+import { obtenerProveedores, crearProveedor as crearProveedorHub, actualizarProveedor as actualizarProveedorHub } from '../services/supplierHubService';
 
 const money = (v) =>
   new Intl.NumberFormat('es-NI', { style: 'currency', currency: 'USD' }).format(Number(v || 0));
@@ -159,30 +159,41 @@ export default function ProveedoresCostos() {
     setEditandoId(null);
   };
 
-  const guardarProveedor = (e) => {
+  const guardarProveedor = async (e) => {
     e.preventDefault();
-    if (!proveedor.nombre.trim()) return alert('IndicÃ¡ nombre del proveedor.');
+    if (!proveedor.nombre.trim()) return alert('Indicá nombre del proveedor.');
 
     const datos = normalizarProveedor({
       ...proveedor,
-      actualizadoEn: new Date().toISOString(),
+      categoria: proveedor.categoria || 'Impresión | Corte CNC | Producción Digital',
+      subcategorias:
+        proveedor.subcategorias ||
+        'Impresión Digital Gran Formato, Impresión Digital Láser, Corte CNC, Corte PVC, Corte Acrílico, Corte MDF, Corte ACM, Lonas, Vinil Adhesivo, Vinil Microperforado, Roll Up, Material POP, Señalización, Producción Publicitaria, Fabricación de piezas para rotulación',
+      observaciones:
+        proveedor.observaciones ||
+        'Proveedor técnico estratégico para Compras. RUC pendiente. ELAN AI no debe usar precios de proveedor para cotizaciones comerciales; solo para OC cuando exista OT aprobada.',
+      activo: proveedor.activo !== false,
     });
 
-    if (editandoId) {
-      actualizarProveedor({ ...datos, id: editandoId });
-    } else {
-      crearProveedor(datos);
+    try {
+      if (editandoId) {
+        await actualizarProveedorHub(editandoId, datos);
+        actualizarProveedor?.({ ...datos, id: editandoId });
+      } else {
+        await crearProveedorHub(datos);
+      }
+
+      const actualizados = await obtenerProveedores();
+      setProveedoresHub(actualizados);
+
+      setProveedor(inicialProveedor);
+      setEditandoId(null);
+      alert('Proveedor guardado en Supabase.');
+    } catch (error) {
+      console.error('Error guardando proveedor en Supabase:', error);
+      alert('No se pudo guardar el proveedor en Supabase.');
     }
-
-    limpiarProveedor();
   };
-
-  const editarProveedor = (p) => {
-    setProveedor(normalizarProveedor(p));
-    setEditandoId(p.id);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   const guardarProducto = (e) => {
     e.preventDefault();
     if (!producto.proveedorId) return alert('SeleccionÃ¡ proveedor.');
@@ -431,5 +442,6 @@ export default function ProveedoresCostos() {
     </main>
   );
 }
+
 
 
