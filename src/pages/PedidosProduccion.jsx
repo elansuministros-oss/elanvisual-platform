@@ -1130,10 +1130,20 @@ setMenuOtAbierto(false);
 .mobile-ot-menu button{
   border:1px solid #dbe3ef;
   background:#fff;
-  border-radius:14px;
-  padding:14px;
+  border-radius:18px;
+  padding:16px 18px;
+  min-height:64px;
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:12px;
+  font-size:22px;
+  line-height:1.2;
+  font-weight:950;
+  color:#111827;
   text-align:left;
-  font-weight:900;
+  white-space:normal;
 }
 
 .mobile-ot-menu button.active{
@@ -1154,6 +1164,7 @@ setMenuOtAbierto(false);
     </main>
   );
 }
+
 
 
 
