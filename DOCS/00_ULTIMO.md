@@ -12,7 +12,6 @@ PROCEDIMIENTO OBLIGATORIO
 5. Trabajar únicamente sobre un módulo a la vez.
 6. Al finalizar:
    - Build
-   - Pruebas
    - Commit
    - Push
    - Actualizar este archivo.
@@ -20,38 +19,63 @@ PROCEDIMIENTO OBLIGATORIO
 
 ÚLTIMO PUNTO SEGURO
 
-AI-09.6_2026-06-25.md
+AI-10_2026-06-25.md
 
 ESTADO
 
+AI-10 cerrado oficialmente.
+
 Producción activa.
+Build OK.
+Git limpio.
 
-AI-09.5 cerrado:
-- Pedidos ya no carga desde localStorage.
-- Pedidos ya no persiste en localStorage.
-- Fuente oficial de pedidos: Supabase / pedidos_elanvisual.
-- Anticipo corregido: solo se calcula desde historial real de pagos.
-- Tarjetas de pedidos muestran Pagado y Saldo.
-- Commits publicados:
-  - 3769590
-  - 00facc6
-  - 78123d8
+RESUMEN AI-10
 
-DECISIÓN OFICIAL
+Se creó nueva arquitectura modular de Orden de Trabajo:
 
-A partir de AI-09.6, ELANVISUAL ERP será mobile-first real.
+- src/pages/OrdenTrabajo.jsx
+- src/components/ot/
+- src/hooks/ot/
+- src/services/ot/
 
-La versión móvil será la referencia principal de operación.
-La PC no tendrá funciones exclusivas; solo distribuirá mejor la información por espacio.
+Se abandona la estrategia de ampliar PedidosProduccion.jsx.
 
-Próxima fase:
+Compras ahora funciona bajo el flujo:
 
-AI-09.6
-PedidosProduccion mobile-first completo:
-- Mismo contenido en móvil y PC.
-- Menú hamburguesa o navegación por secciones.
-- Sin scroll excesivo.
-- Historial de pagos visible.
-- Recibos PDF accesibles.
-- Pagos, producción, logística, proveedores, costos, rentabilidad y acciones disponibles en móvil.
+OT → Compras → Orden de Compra → Proveedor → Recepción → Factura → Pago.
 
+Red de Proveedores conectada a Supabase mediante Supplier Hub.
+
+Proveedores estratégicos cargados en Supabase:
+
+1. IMPRESIONES VIDA
+ID: be240911-47b6-474c-a179-a976e87a6b81
+
+2. PLAY MARKETING
+ID: bd2e5ae3-2224-4900-b8c7-3bb98dc6097c
+
+REGLA OFICIAL
+
+La IA NO consulta proveedores durante la venta.
+
+Las cotizaciones comerciales usan:
+- Catálogo Maestro
+- Materiales Master
+- Biblioteca Técnica
+- Costos internos
+- Recetas técnicas
+- Márgenes internos
+
+Los proveedores participan solo cuando existe una Orden de Trabajo aprobada.
+
+PRÓXIMA FASE
+
+AI-11:
+Completar ciclo operativo de Compras:
+- Solicitud de cotización
+- Respuesta proveedor
+- Recepción
+- Factura
+- Pago
+- Costo real
+- Rentabilidad
