@@ -413,6 +413,12 @@ function mapPedidoFromDb(row) {
       36.8
   );
 
+  const resumen = dataOriginal.pedido?.resumen || {
+    subtotal: Number(row.subtotal || 0),
+    descuento: Number(row.descuento || 0),
+    iva: Number(row.iva || 0),
+    total: Number(row.total || 0),
+  };
   const historialPagosBase = Array.isArray(dataOriginal.pagos?.historial)
     ? dataOriginal.pagos.historial
     : [];
@@ -2249,6 +2255,8 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
+
 
 
 
