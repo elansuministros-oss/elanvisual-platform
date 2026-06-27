@@ -413,24 +413,38 @@ function mapPedidoFromDb(row) {
       36.8
   );
 
+  const ultimoPagoLegacy = dataOriginal.ultimoPago || {};
+  const montoLegacy = Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0);
+  const estadoPagoLegacy = String(row.estado_pago || dataOriginal.estadoPago || '').toLowerCase();
+  const tieneEvidenciaPagoRealLegacy = Boolean(
+    ultimoPagoLegacy.recibo ||
+      ultimoPagoLegacy.referencia ||
+      ultimoPagoLegacy.banco ||
+      ultimoPagoLegacy.formaPago ||
+      ultimoPagoLegacy.forma ||
+      estadoPagoLegacy.includes('confirm') ||
+      estadoPagoLegacy.includes('pagado') ||
+      estadoPagoLegacy.includes('parcial')
+  );
+
   const historialPagosBase = Array.isArray(dataOriginal.pagos?.historial)
     ? dataOriginal.pagos.historial
-    : Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0) > 0
+    : montoLegacy > 0 && tieneEvidenciaPagoRealLegacy
       ? [
           {
             id: `legacy-${row.id || row.numero || Date.now()}`,
-            recibo: dataOriginal.ultimoPago?.recibo || '',
+            recibo: ultimoPagoLegacy.recibo || '',
             fechaDeposito: row.creado_en || row.created_at || '',
             fechaRegistro: row.creado_en || row.created_at || '',
             monedaOriginal: 'USD',
-            montoOriginal: Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0),
+            montoOriginal: montoLegacy,
             tipoCambio: tipoCambioBase,
-            montoUSD: Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0),
-            montoCordobas: Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0) * tipoCambioBase,
-            formaPago: dataOriginal.ultimoPago?.formaPago || dataOriginal.ultimoPago?.forma || '',
-            banco: dataOriginal.ultimoPago?.banco || '',
-            referencia: dataOriginal.ultimoPago?.referencia || '',
-            observaciones: 'Pago migrado desde campos legacy.',
+            montoUSD: montoLegacy,
+            montoCordobas: montoLegacy * tipoCambioBase,
+            formaPago: ultimoPagoLegacy.formaPago || ultimoPagoLegacy.forma || '',
+            banco: ultimoPagoLegacy.banco || '',
+            referencia: ultimoPagoLegacy.referencia || '',
+            observaciones: 'Pago migrado desde campos legacy con evidencia de pago real.',
           },
         ]
       : [];
@@ -1253,8 +1267,24 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
       costoProduccion: costoProduccionEstimado,
       vendedor: vendedorReferencia,
     });
+    // El anticipo calculado desde cotización es únicamente sugerido/requerido.
+    // No se registra como pagado hasta que administración ingrese un pago real.
     const anticipo = Number(pedidoBase.resumen?.anticipo || total * 0.6);
-    const saldo = Number(pedidoBase.resumen?.saldo || Math.max(total - anticipo, 0));
+    const pagosIniciales = {
+      ...(pedidoBase.pagos || {}),
+      historial: Array.isArray(pedidoBase.pagos?.historial) ? pedidoBase.pagos.historial : [],
+      pagadoUSD: 0,
+      pagadoCordobas: 0,
+      pagadoRealUSD: 0,
+      pagadoRealCordobas: 0,
+      saldoUSD: total,
+      saldoCordobas: 0,
+      saldoRealUSD: total,
+      saldoRealCordobas: 0,
+      estadoPago: 'Pendiente anticipo',
+      ultimoPago: null,
+    };
+    const saldo = total;
 
     const pedido = {
       ...pedidoBase,
@@ -1298,12 +1328,13 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
         pedidoBase.produccion?.estado ||
         pedidoBase.ordenTrabajo?.estadoProduccion ||
         'pendiente',
-      pagoEstado: pedidoBase.pagoEstado || pedidoBase.pagos?.estadoPago || 'Pendiente anticipo',
+      pagoEstado: pagosIniciales.estadoPago,
       seguimientoEstado: pedidoBase.seguimientoEstado || 'pendiente',
       comisionEstado: pedidoBase.comisionEstado || 'no_generada',
       anticipoRequerido: anticipo,
-      anticipoRecibido: Number(pedidoBase.anticipoRecibido || pedidoBase.pagos?.anticipoRecibido || 0),
-      saldoPendiente: Number(pedidoBase.saldoPendiente || saldo),
+      anticipoRecibido: 0,
+      saldoPendiente: total,
+      pagos: pagosIniciales,
       ordenTrabajo: {
         codigoOT: numeroOT,
         pedido: numero,
@@ -1420,10 +1451,13 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
   const confirmarAnticipo = (pedido, pagoTipoConfirmado = pedido.pagoTipo || 'anticipo') => {
     const esTotal = pagoTipoConfirmado === 'total';
     const codigo = pedido.codigoSeguimiento || generarCodigoSeguimiento();
-    const anticipoRecibido = esTotal
-      ? pedido.resumen.total
-      : pedido.anticipoRequerido || pedido.resumen.total * 0.6;
-    const saldoPendiente = Math.max(0, pedido.resumen.total - anticipoRecibido);
+    const historialPagos = Array.isArray(pedido.pagos?.historial) ? pedido.pagos.historial : [];
+    const pagadoDesdeHistorial = historialPagos.reduce(
+      (totalPagado, pago) => totalPagado + Number(pago.montoUSD || pago.montoOriginal || pago.monto || 0),
+      0
+    );
+    const anticipoRecibido = esTotal ? Number(pedido.resumen?.total || 0) : pagadoDesdeHistorial;
+    const saldoPendiente = Math.max(0, Number(pedido.resumen?.total || 0) - anticipoRecibido);
 
     actualizarPedido({
       ...pedido,
