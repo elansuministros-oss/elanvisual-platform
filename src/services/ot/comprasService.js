@@ -20,6 +20,8 @@ export const crearIdOC = () => {
   return `oc-${Date.now()}`;
 };
 
+export const crearIdPagoProveedor = () => `PAG-PROV-${Date.now()}`;
+
 export const limpiarCodigoBaseOT = (codigoOT) => {
   const limpio = String(codigoOT || 'OT-000000').replace(/^OT-/i, '');
   return limpio || '000000';
@@ -80,14 +82,18 @@ export const construirOC = ({ pedido, formOC, cantidadActual, proveedores }) => 
 
 export const calcularResumenCompras = (ordenesCompra) => {
   const lista = Array.isArray(ordenesCompra) ? ordenesCompra : [];
-  const total = lista.reduce((sum, oc) => sum + n(oc.monto), 0);
+  const total = lista.reduce((sum, oc) => sum + n(oc.factura?.monto || oc.monto), 0);
+  const facturado = lista
+    .filter((oc) => oc.estado === 'Facturada' || oc.estado === 'Pagada' || oc.factura?.estado === 'Facturada')
+    .reduce((sum, oc) => sum + n(oc.factura?.monto || oc.monto), 0);
   const pagado = lista
     .filter((oc) => oc.estado === 'Pagada' || oc.pago?.estado === 'Pagado')
-    .reduce((sum, oc) => sum + n(oc.monto), 0);
+    .reduce((sum, oc) => sum + n(oc.pago?.monto || oc.factura?.monto || oc.monto), 0);
 
   return {
     total,
     cantidad: lista.length,
+    facturado,
     pagado,
     pendiente: Math.max(total - pagado, 0),
   };
@@ -99,19 +105,70 @@ export const construirRecepcionOC = () => ({
   nota: 'Recepción registrada desde OT Compras.',
 });
 
-export const construirFacturaOC = (montoFactura) => ({
-  numero: '',
+export const construirFacturaOC = (montoFactura, numeroFactura = '') => ({
+  numero: numeroFactura || '',
   fecha: new Date().toISOString().slice(0, 10),
   monto: n(montoFactura),
   estado: 'Facturada',
 });
 
-export const construirPagoOC = (montoPago) => ({
+export const construirPagoOC = (montoPago, referencia = '') => ({
+  id: crearIdPagoProveedor(),
   estado: 'Pagado',
   fecha: new Date().toISOString().slice(0, 10),
   monto: n(montoPago),
-  referencia: '',
+  moneda: 'USD',
+  referencia,
+  formaPago: 'Transferencia',
 });
+
+export const construirEgresoProveedorDesdeOC = ({ oc, pedido, pago }) => {
+  const montoUSD = n(pago?.monto || oc.factura?.monto || oc.monto);
+  const tipoCambio = n(pedido?.tipoCambioCongelado || pedido?.pagos?.tipoCambioCongelado || 36.8);
+  const montoCordobas = montoUSD * tipoCambio;
+
+  return {
+    id: `MOV-PROV-${Date.now()}`,
+    tipo: 'Egreso',
+    origen: 'Orden de Compra',
+    unidadNegocio: pedido?.unidadNegocio || 'ELANVISUAL',
+    pedidoId: pedido?.id || '',
+    pedidoNumero: pedido?.numero || pedido?.numeroPedido || '',
+    ordenTrabajo: getCodigoOT(pedido),
+    ocId: oc.id,
+    ocCodigo: oc.codigo,
+    proveedorId: oc.proveedorId || '',
+    proveedor: oc.proveedor || '',
+    concepto: `Pago proveedor ${oc.proveedor || ''} / ${oc.codigo}`.trim(),
+    monedaOriginal: 'USD',
+    montoOriginal: montoUSD,
+    tipoCambio,
+    montoUSD,
+    montoCordobas,
+    formaPago: pago?.formaPago || 'Transferencia',
+    banco: pago?.banco || '',
+    cuenta: pago?.cuenta || '',
+    referencia: pago?.referencia || '',
+    fechaMovimiento: pago?.fecha || new Date().toISOString().slice(0, 10),
+    fechaRegistro: new Date().toISOString(),
+    estado: 'Confirmado',
+    observaciones: `Egreso generado por pago de ${oc.codigo}.`,
+  };
+};
+
+export const construirCosteoRealDesdeOC = (ordenesCompra = []) => {
+  const lista = Array.isArray(ordenesCompra) ? ordenesCompra : [];
+  const costoProveedorUSD = lista.reduce(
+    (sum, oc) => sum + n(oc.pago?.monto || oc.factura?.monto || 0),
+    0
+  );
+
+  return {
+    costoProveedorUSD,
+    ordenesCompra: lista.length,
+    actualizadoEn: new Date().toISOString(),
+  };
+};
 
 export const generarHTMLOrdenCompra = ({ oc, pedido }) => {
   const codigoOT = oc.ot || getCodigoOT(pedido);
@@ -150,9 +207,7 @@ export const generarHTMLOrdenCompra = ({ oc, pedido }) => {
         <img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL" style="height:54px;width:auto;object-fit:contain;display:block;" />
         <h2>Orden de Compra</h2>
       </div>
-      <div>
-        <div class="badge">${oc.codigo}</div>
-      </div>
+      <div><div class="badge">${oc.codigo}</div></div>
     </section>
 
     <section class="grid">
@@ -191,7 +246,9 @@ export const generarHTMLOrdenCompra = ({ oc, pedido }) => {
       Esta Orden de Compra pertenece a ${codigoOT}. La recepción, factura y pago deberán registrarse dentro del módulo de Compras de ELANVISUAL ERP.
     </div>
   </main>
+  <script>
+    window.onload = () => { window.focus(); window.print(); };
+  </script>
 </body>
 </html>`;
 };
-

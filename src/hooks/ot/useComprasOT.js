@@ -1,6 +1,8 @@
 ﻿import { useMemo, useState } from 'react';
 import {
   calcularResumenCompras,
+  construirCosteoRealDesdeOC,
+  construirEgresoProveedorDesdeOC,
   construirFacturaOC,
   construirOC,
   construirPagoOC,
@@ -52,13 +54,21 @@ export default function useComprasOT({ pedido, proveedores, actualizarPedido }) 
     });
   };
 
-  const guardarOrdenes = (ordenesActualizadas) => {
+  const guardarPedidoCompras = (ordenesActualizadas, extras = {}) => {
+    const costeoProveedor = construirCosteoRealDesdeOC(ordenesActualizadas);
+
     actualizarPedido?.({
       ...pedido,
+      ...extras,
       compras: {
         ...(pedido.compras || {}),
         ordenesCompra: ordenesActualizadas,
+        resumen: calcularResumenCompras(ordenesActualizadas),
         actualizadoEn: new Date().toISOString(),
+      },
+      costeoReal: {
+        ...(pedido.costeoReal || {}),
+        ...costeoProveedor,
       },
     });
   };
@@ -75,7 +85,7 @@ export default function useComprasOT({ pedido, proveedores, actualizarPedido }) 
       proveedores: proveedoresDisponibles,
     });
 
-    guardarOrdenes([...ordenesCompra, nuevaOC]);
+    guardarPedidoCompras([...ordenesCompra, nuevaOC]);
     limpiarOC();
 
     return { ok: true, mensaje: `${nuevaOC.codigo} generada correctamente.` };
@@ -88,7 +98,7 @@ export default function useComprasOT({ pedido, proveedores, actualizarPedido }) 
       oc.id === ocId ? { ...oc, ...cambios, actualizadoEn: new Date().toISOString() } : oc
     );
 
-    guardarOrdenes(ordenesActualizadas);
+    guardarPedidoCompras(ordenesActualizadas);
   };
 
   const registrarRecepcion = (ocId) => {
@@ -100,7 +110,43 @@ export default function useComprasOT({ pedido, proveedores, actualizarPedido }) 
   };
 
   const registrarPago = (ocId, montoPago) => {
-    actualizarOC(ocId, { estado: 'Pagada', pago: construirPagoOC(montoPago) });
+    if (!pedido) return;
+
+    let movimientoProveedor = null;
+
+    const ordenesActualizadas = ordenesCompra.map((oc) => {
+      if (oc.id !== ocId) return oc;
+
+      const pago = construirPagoOC(montoPago || oc.factura?.monto || oc.monto);
+      const ocPagada = {
+        ...oc,
+        estado: 'Pagada',
+        pago,
+        actualizadoEn: new Date().toISOString(),
+      };
+
+      movimientoProveedor = construirEgresoProveedorDesdeOC({
+        oc: ocPagada,
+        pedido,
+        pago,
+      });
+
+      return ocPagada;
+    });
+
+    const tesoreriaActual = pedido.tesoreria || {};
+    const movimientos = Array.isArray(tesoreriaActual.movimientos)
+      ? tesoreriaActual.movimientos
+      : [];
+
+    guardarPedidoCompras(ordenesActualizadas, {
+      ultimoMovimientoProveedor: movimientoProveedor,
+      tesoreria: {
+        ...tesoreriaActual,
+        movimientos: movimientoProveedor ? [...movimientos, movimientoProveedor] : movimientos,
+        actualizadoEn: new Date().toISOString(),
+      },
+    });
   };
 
   const imprimirOC = (oc) => {
@@ -112,10 +158,6 @@ export default function useComprasOT({ pedido, proveedores, actualizarPedido }) 
     win.document.write(html);
     win.document.close();
     win.focus();
-
-    setTimeout(() => {
-      win.print();
-    }, 400);
   };
 
   return {
