@@ -1,20 +1,12 @@
 ﻿import React from 'react';
 import {
   ArrowRight,
-  BadgeCheck,
-  BriefcaseBusiness,
-  ClipboardList,
   Factory,
-  Image,
-  LayoutGrid,
   MessageCircle,
-  PackageSearch,
-  Phone,
   ShoppingBag,
   Sparkles,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import HorizontalCarousel from '../components/HorizontalCarousel';
 
 const normalizarWhatsApp = (numero) => {
   const limpio = String(numero || '').replace(/[^0-9]/g, '');
@@ -70,23 +62,6 @@ const productosCatalogo = [
   },
 ];
 
-const portafolio = [
-  { titulo: 'Recepciones', texto: 'Logos corporativos interiores.' },
-  { titulo: 'Botones', texto: 'Rotulos circulares luminosos.' },
-  { titulo: 'Jalavistas', texto: 'Doble cara para fachada.' },
-  { titulo: 'Retail', texto: 'Imagen comercial para tiendas.' },
-  { titulo: 'Eventos', texto: 'Stands, displays y activaciones.' },
-];
-
-const categorias = [
-  'Rotulos luminosos',
-  'Letras corporeas',
-  'Impresion gran formato',
-  'PVC / Acrilico',
-  'Estructuras metalicas',
-  'Senalizacion',
-];
-
 const formatearPrecio = (producto) => {
   if (producto?.etiqueta) return producto.etiqueta;
   const precio = Number(producto?.precio || 0);
@@ -103,21 +78,23 @@ export default function Home({ setPage }) {
     agregar,
   } = useApp();
 
-  const bannersSeguros = Array.isArray(banners) && banners.length > 0
-    ? banners
-    : [
-        {
-          id: 'hero-fallback',
-          ubicacion: 'hero-principal',
-          activo: true,
-          titulo: 'Rotulacion profesional para negocios reales',
-          subtitulo: 'Letras 3D, fachadas, acrilico, PVC, impresion UV, DTF UV, CNC, laser y displays fabricables.',
-          imagen: '/productos/portada2-01.png',
-          imagenRuta: '/productos/portada2-01.png',
-          imagenDesktop: '/productos/portada2-01.png',
-          imagenMobile: '/productos/portada2-01.png',
-        },
-      ];
+  const bannersSeguros =
+    Array.isArray(banners) && banners.length > 0
+      ? banners
+      : [
+          {
+            id: 'hero-fallback',
+            ubicacion: 'hero-principal',
+            activo: true,
+            titulo: 'Rotulacion profesional para negocios reales',
+            subtitulo:
+              'Letras 3D, fachadas, acrilico, PVC, impresion UV, DTF UV, CNC, laser y displays fabricables.',
+            imagen: '/productos/portada2-01.png',
+            imagenRuta: '/productos/portada2-01.png',
+            imagenDesktop: '/productos/portada2-01.png',
+            imagenMobile: '/productos/portada2-01.png',
+          },
+        ];
 
   const bannerHome = bannersSeguros.find(
     (b) => b.ubicacion === 'hero-principal' && b.activo
@@ -145,18 +122,19 @@ export default function Home({ setPage }) {
     ? productos.filter((p) => p.activo !== false)
     : [];
 
-  const catalogoHome = productosAdmin.length > 0
-    ? productosAdmin.map((p) => ({
-        id: p.id,
-        titulo: p.nombre || p.titulo || 'Producto',
-        texto: p.descripcion || p.texto || 'Producto personalizado ELANVISUAL.',
-        categoria: p.categoria || 'ELANVISUAL',
-        medidas: p.medidas || '',
-        precio: formatearPrecio(p),
-        img: p.imagen || p.img || '/productos/portada2-01.png',
-        raw: p,
-      }))
-    : productosCatalogo;
+  const catalogoHome =
+    productosAdmin.length > 0
+      ? productosAdmin.map((p) => ({
+          id: p.id,
+          titulo: p.nombre || p.titulo || 'Producto',
+          texto: p.descripcion || p.texto || 'Producto personalizado ELANVISUAL.',
+          categoria: p.categoria || 'ELANVISUAL',
+          medidas: p.medidas || '',
+          precio: formatearPrecio(p),
+          img: p.imagen || p.img || '/productos/portada2-01.png',
+          raw: p,
+        }))
+      : productosCatalogo;
 
   const cantidadCarrito = Array.isArray(carrito)
     ? carrito.reduce((total, item) => total + Number(item.cantidad || 1), 0)
@@ -164,14 +142,16 @@ export default function Home({ setPage }) {
 
   const agregarProducto = (item) => {
     if (typeof agregar === 'function') {
-      agregar(item.raw || {
-        id: item.id || item.titulo,
-        nombre: item.titulo,
-        descripcion: item.texto,
-        imagen: item.img,
-        precio: Number(String(item.precio || '').replace(/[^0-9.]/g, '')) || 0,
-        etiqueta: item.precio,
-      });
+      agregar(
+        item.raw || {
+          id: item.id || item.titulo,
+          nombre: item.titulo,
+          descripcion: item.texto,
+          imagen: item.img,
+          precio: Number(String(item.precio || '').replace(/[^0-9.]/g, '')) || 0,
+          etiqueta: item.precio,
+        }
+      );
     }
   };
 
@@ -272,25 +252,6 @@ export default function Home({ setPage }) {
             </button>
           </div>
         )}
-      </section>
-
-
-      <section className="app-category-section">
-        <div className="app-section-head">
-          <div>
-            <h2>Categorias</h2>
-            <p>Produccion lista para cotizar</p>
-          </div>
-        </div>
-
-        <div className="app-chip-scroll">
-          {categorias.map((cat) => (
-            <button type="button" key={cat} onClick={() => go('servicios')} className="app-chip">
-              <LayoutGrid size={16} />
-              {cat}
-            </button>
-          ))}
-        </div>
       </section>
 
       <section className="app-final-cta">
@@ -492,5 +453,3 @@ export default function Home({ setPage }) {
     </main>
   );
 }
-
-
