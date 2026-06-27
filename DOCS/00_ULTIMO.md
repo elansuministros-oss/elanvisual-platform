@@ -19,63 +19,33 @@ PROCEDIMIENTO OBLIGATORIO
 
 ÚLTIMO PUNTO SEGURO
 
-AI-10_2026-06-25.md
+AI-11B_2026-06-26.md
 
 ESTADO
 
-AI-10 cerrado oficialmente.
+AI-11B cerrado oficialmente.
 
-Producción activa.
 Build OK.
 Git limpio.
+Push OK.
 
-RESUMEN AI-10
+RESUMEN AI-11B
 
-Se creó nueva arquitectura modular de Orden de Trabajo:
+Se creó y conectó el motor financiero centralizado:
 
-- src/pages/OrdenTrabajo.jsx
-- src/components/ot/
-- src/hooks/ot/
-- src/services/ot/
+- src/services/finanzas/finanzasPedidoService.js
+- src/services/finanzas/finanzasPedidoAdapter.js
+- src/services/finanzas/index.js
 
-Se abandona la estrategia de ampliar PedidosProduccion.jsx.
-
-Compras ahora funciona bajo el flujo:
-
-OT → Compras → Orden de Compra → Proveedor → Recepción → Factura → Pago.
-
-Red de Proveedores conectada a Supabase mediante Supplier Hub.
-
-Proveedores estratégicos cargados en Supabase:
-
-1. IMPRESIONES VIDA
-ID: be240911-47b6-474c-a179-a976e87a6b81
-
-2. PLAY MARKETING
-ID: bd2e5ae3-2224-4900-b8c7-3bb98dc6097c
+OT Comercial usa el motor financiero.
+AppContext normaliza pagos, anticipos, saldos y data_original usando el motor financiero.
 
 REGLA OFICIAL
 
-La IA NO consulta proveedores durante la venta.
-
-Las cotizaciones comerciales usan:
-- Catálogo Maestro
-- Materiales Master
-- Biblioteca Técnica
-- Costos internos
-- Recetas técnicas
-- Márgenes internos
-
-Los proveedores participan solo cuando existe una Orden de Trabajo aprobada.
+Supabase es la única fuente persistente para pedidos y pagos.
+No usar localStorage para pagos, anticipos, saldos ni historial financiero.
 
 PRÓXIMA FASE
 
-AI-11:
-Completar ciclo operativo de Compras:
-- Solicitud de cotización
-- Respuesta proveedor
-- Recepción
-- Factura
-- Pago
-- Costo real
-- Rentabilidad
+AI-11C:
+Caja, Tesorería, Recibos reales, bancos y control de pagos.
