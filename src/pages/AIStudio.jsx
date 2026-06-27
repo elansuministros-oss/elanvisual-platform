@@ -294,6 +294,46 @@ export default function AIStudio({ setPage }) {
         usuario,
         firma,
       });
+        setEstado('Analizando contexto ERP...');
+
+      const busquedaPedidoIA = await ejecutarAccionIA({
+        accion: 'buscar_pedido_ot',
+        contexto: {
+          texto: contenidoUsuario,
+          pedidos,
+        },
+      });
+
+      const busquedaProveedorIA = await ejecutarAccionIA({
+        accion: 'buscar_proveedor',
+        contexto: {
+          texto: contenidoUsuario,
+          proveedores,
+        },
+      });
+
+      memoriaOperativa.ai16_acciones_erp = {
+        motor: 'AI-16D',
+        modo: 'solo_lectura',
+        pedido_detectado: busquedaPedidoIA?.pedido
+          ? {
+              id: busquedaPedidoIA.pedido.id,
+              numero: busquedaPedidoIA.pedido.numero,
+              codigoSeguimiento: busquedaPedidoIA.pedido.codigoSeguimiento,
+              codigoOT: busquedaPedidoIA.pedido.ordenTrabajo?.codigoOT,
+              cliente: busquedaPedidoIA.pedido.cliente,
+              total: busquedaPedidoIA.pedido.resumen?.total || busquedaPedidoIA.pedido.total || 0,
+              requiereConfirmacion: busquedaPedidoIA.requiereConfirmacion,
+            }
+          : null,
+        proveedor_detectado: busquedaProveedorIA?.proveedor
+          ? {
+              id: busquedaProveedorIA.proveedor.id,
+              nombre: busquedaProveedorIA.proveedor.nombre,
+              categoria: busquedaProveedorIA.proveedor.categoria,
+            }
+          : null,
+      };
 
       const solicitudesCostosAI06D = await crearSolicitudesCostosFaltantes({
         faltantes: memoriaOperativa.ai06d_costos_faltantes || [],
