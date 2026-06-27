@@ -7,7 +7,8 @@ import React, { useEffect, useState } from 'react';
 import CRM from './crm/App/CRM.jsx';
 import Header from './components/Header';
 import Home from './pages/Home';
-import Catalogo from './pages/Catalogo';
+import Servicios from './pages/Servicios';
+import Tienda from './pages/Tienda';
 import Carrito from './pages/Carrito';
 import ProduccionPanel from './pages/ProduccionPanel';
 import AdminPanel from './pages/AdminPanel';
@@ -151,9 +152,9 @@ export default function App() {
       
 
       {page === 'home' && <Home setPage={ir} />}
-      {page === 'servicios' && <Catalogo />}
-      {page === 'tienda' && <Catalogo />}
-      {page === 'catalogo' && <Catalogo />}
+      {page === 'servicios' && <Servicios setPage={ir} />}
+      {page === 'tienda' && <Tienda setPage={ir} />}
+      {page === 'catalogo' && <Servicios setPage={ir} />}
       {page === 'trabajos' && <Trabajos />}
       {page === 'carrito' && <Carrito />}
       {page === 'contacto' && <Contacto />}
@@ -322,6 +323,7 @@ export default function App() {
     </AIAssistantProvider>
   );
 }
+
 
 
 
