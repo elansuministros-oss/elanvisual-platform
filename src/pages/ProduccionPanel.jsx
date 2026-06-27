@@ -9,6 +9,7 @@ import {
   Video,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { construirFinanzasDesdePedido } from '../services/finanzas';
 import { generarProduccionAutomatica } from '../services/motorProduccion';
 
 const ESTADOS_PRODUCCION_VISUAL = [
@@ -66,24 +67,12 @@ function obtenerMonto(pedido) {
   );
 }
 
-function obtenerAnticipo(pedido) {
-  const monto = obtenerMonto(pedido);
-
-  return Number(
-    pedido?.anticipo ||
-      pedido?.montoAnticipo ||
-      pedido?.pago?.anticipo ||
-      pedido?.resumen?.anticipo ||
-      monto * 0.6 ||
-      0
-  );
-}
-
 function crearOTBase(pedido) {
   const items = Array.isArray(pedido?.items) ? pedido.items : [];
   const monto = obtenerMonto(pedido);
-  const anticipo = obtenerAnticipo(pedido);
-  const saldo = Math.max(monto - anticipo, 0);
+  const finanzas = construirFinanzasDesdePedido(pedido || {});
+  const pagado = finanzas.pagadoUSD;
+  const saldo = finanzas.saldoUSD;
 
   return {
     codigoOT:
@@ -104,7 +93,7 @@ function crearOTBase(pedido) {
       items.map((item) => item.nombre).join(', ') ||
       'Servicio ELANVISUAL',
     monto: pedido?.ordenTrabajo?.monto ?? monto,
-    anticipo: pedido?.ordenTrabajo?.anticipo ?? anticipo,
+    pagado: pedido?.ordenTrabajo?.pagado ?? pagado,
     saldo: pedido?.ordenTrabajo?.saldo ?? saldo,
     responsable: pedido?.ordenTrabajo?.responsable || '',
     observaciones: pedido?.ordenTrabajo?.observaciones || '',
@@ -259,10 +248,9 @@ export default function ProduccionPanel() {
       [campo]: valor,
     };
 
-    const monto = Number(campo === 'monto' ? valor : nuevaOT.monto || 0);
-    const anticipo = Number(campo === 'anticipo' ? valor : nuevaOT.anticipo || 0);
-
-    nuevaOT.saldo = Math.max(monto - anticipo, 0);
+    const finanzas = construirFinanzasDesdePedido(pedidoActivo || {});
+    nuevaOT.pagado = finanzas.pagadoUSD;
+    nuevaOT.saldo = finanzas.saldoUSD;
 
     actualizarOrdenTrabajo(pedidoActivo, nuevaOT);
     setMensaje('Orden de trabajo actualizada.');
@@ -474,10 +462,10 @@ export default function ProduccionPanel() {
                     <input
                       type="number"
                       min="0"
-                      value={ot.anticipo}
-                      onChange={(e) => guardarCampoOT('anticipo', e.target.value)}
+                      value={ot.pagado || 0}
+                      onChange={(e) => guardarCampoOT('pagado', ot.pagado || 0)}
                     />
-                    <small>{formatearDinero(ot.anticipo)}</small>
+                    <small>{formatearDinero(ot.pagado || 0)}</small>
                   </label>
 
                   <label>
@@ -654,3 +642,4 @@ export default function ProduccionPanel() {
     </main>
   );
 }
+

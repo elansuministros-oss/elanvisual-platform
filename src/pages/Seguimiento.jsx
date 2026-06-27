@@ -101,8 +101,8 @@ export default function Seguimiento() {
         <div className="tracking-summary">
           <div><b>Cliente</b><span>{pedido.cliente?.nombre}</span></div>
           <div><b>Total</b><span>{formatoC$(pedido.resumen?.total || pedido.total || 0)}</span></div>
-          <div><b>Anticipo recibido</b><span>{formatoC$(pedido.anticipoRecibido || 0)}</span></div>
-          <div><b>Saldo pendiente</b><span>{formatoC$(pedido.saldoPendiente || 0)}</span></div>
+          <div><b>Pagado real</b><span>{formatoC$(pedido.pagos?.pagadoUSD || 0)}</span></div>
+          <div><b>Saldo pendiente</b><span>{formatoC$(pedido.pagos?.saldoUSD || 0)}</span></div>
         </div>
 
         <h3>Estado actual: {etiquetasEstado[pedido.estadoProduccion] || pedido.estadoProduccion}</h3>
@@ -152,4 +152,5 @@ export default function Seguimiento() {
     </main>
   );
 }
+
 

@@ -12,6 +12,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { construirFinanzasDesdePedido } from '../services/finanzas';
 import { useCore } from '../core/context/CoreContext';
 import { generarProduccionAutomatica } from '../services/motorProduccion';
 
@@ -35,13 +36,10 @@ const money = (v) =>
 
 const n = (v) => Number(v || 0);
 
-const getTotal = (pedido) => n(pedido?.resumen?.total || pedido?.total);
-const getAnticipo = (pedido) => {
-  const historial = Array.isArray(pedido?.pagos?.historial) ? pedido.pagos.historial : [];
-  const desdeHistorial = historial.reduce((total, pago) => total + n(pago.montoUSD || pago.monto || 0), 0);
-  return desdeHistorial || n(pedido?.anticipoRecibido || pedido?.pagos?.anticipoRecibido || pedido?.pagos?.pagadoUSD || 0);
-};
-const getSaldo = (pedido) => Math.max(getTotal(pedido) - getAnticipo(pedido), 0);
+const getFinanzas = (pedido) => construirFinanzasDesdePedido(pedido || {});
+const getTotal = (pedido) => getFinanzas(pedido).totalUSDReferencia || n(pedido?.resumen?.total || pedido?.total);
+const getPagado = (pedido) => getFinanzas(pedido).pagadoUSD;
+const getSaldo = (pedido) => getFinanzas(pedido).saldoUSD;
 const getOT = (pedido) => pedido?.numeroOT || pedido?.ordenTrabajo?.codigoOT || `OT-${String(pedido?.id || '').slice(-6)}`;
 
 export default function PedidosProduccion() {
@@ -172,9 +170,9 @@ export default function PedidosProduccion() {
     const montoNIO = pagoMoneda === 'NIO' ? montoRecibido : montoRecibido * tc;
 
     const total = getTotal(pedidoActivo);
-    const anticipoAnterior = getAnticipo(pedidoActivo);
-    const anticipoNuevo = Math.min(total, anticipoAnterior + montoUSD);
-    const saldoNuevo = Math.max(total - anticipoNuevo, 0);
+    const pagadoAnterior = getPagado(pedidoActivo);
+    const pagadoNuevo = Math.min(total, pagadoAnterior + montoUSD);
+    const saldoNuevo = Math.max(total - pagadoNuevo, 0);
 
     const numeroRecibo = `RC-${String(Date.now()).slice(-6)}`;
 
@@ -195,17 +193,13 @@ export default function PedidosProduccion() {
     };
 
     actualizarActivo({
-      ...pedidoActivo,
-      anticipoRecibido: anticipoNuevo,
-      saldoPendiente: saldoNuevo,
+      ...pedidoActivo,
       tipoCambioCongelado: pedidoActivo.tipoCambioCongelado || tc,
       ultimoPago: pago,
       pagoEstado: saldoNuevo <= 0 ? 'Pagado' : 'Pago parcial',
       pagos: {
         ...(pedidoActivo.pagos || {}),
-        estadoPago: saldoNuevo <= 0 ? 'Pagado' : 'Pago parcial',
-        anticipoRecibido: anticipoNuevo,
-        saldoPendiente: saldoNuevo,
+        estadoPago: saldoNuevo <= 0 ? 'Pagado' : 'Pago parcial',
         tipoCambioCongelado: pedidoActivo.tipoCambioCongelado || tc,
         historial: [...(pedidoActivo.pagos?.historial || []), pago],
       },
@@ -234,9 +228,8 @@ export default function PedidosProduccion() {
       fecha: pagoFecha,
       fechaRegistro: new Date().toISOString(),
       monto: total,
-      abonado: anticipoNuevo,
-      saldo: saldoNuevo,
-      saldoPendiente: saldoNuevo,
+      abonado: pagadoNuevo,
+      saldo: saldoNuevo,
       estado: saldoNuevo <= 0 ? 'Pagado' : 'Pago parcial',
       origen: 'tesoreria_cliente',
       recibo: numeroRecibo,
@@ -286,7 +279,7 @@ export default function PedidosProduccion() {
     const marca = configuracion?.logoTexto || 'ELANVISIÓN';
     const logo = '/assets/branding/elanvisual.svg';
     const total = getTotal(pedidoActivo);
-    const pagado = getAnticipo(pedidoActivo);
+    const pagado = getPagado(pedidoActivo);
     const saldo = getSaldo(pedidoActivo);
     const cliente =
       pedidoActivo.cliente?.empresa ||
@@ -747,7 +740,7 @@ Nota: ${item.nota || ''}`;
               </div>
 
               <div className="pedido-payment-summary">
-                <p><span>Pagado</span><b>{money(getAnticipo(pedido))}</b></p>
+                <p><span>Pagado</span><b>{money(getPagado(pedido))}</b></p>
                 <p><span>Saldo</span><b>{money(getSaldo(pedido))}</b></p>
               </div>
             </article>
@@ -895,7 +888,7 @@ setMenuOtAbierto(false);
 
                   <div className="totals-box">
                     <p><span>Total venta</span><b>{money(getTotal(pedidoActivo))}</b></p>
-                    <p><span>Pagado</span><b>{money(getAnticipo(pedidoActivo))}</b></p>
+                    <p><span>Pagado</span><b>{money(getPagado(pedidoActivo))}</b></p>
                     <p><span>Saldo</span><b>{money(getSaldo(pedidoActivo))}</b></p>
                     <p><span>Tipo cambio congelado</span><b>{pedidoActivo.tipoCambioCongelado || pedidoActivo.pagos?.tipoCambioCongelado || 'No congelado'}</b></p>
                   </div>
@@ -1220,6 +1213,7 @@ setMenuOtAbierto(false);
     </main>
   );
 }
+
 
 
 

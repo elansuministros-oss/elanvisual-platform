@@ -1,5 +1,6 @@
 ﻿import { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { construirFinanzasDesdePedido } from '../services/finanzas';
 import {
   OTResumen,
   OTComercial,
@@ -20,20 +21,9 @@ const money = (v) =>
     minimumFractionDigits: 2,
   }).format(n(v));
 
-const getTotal = (pedido) => n(pedido?.resumen?.total || pedido?.total);
-
-const getAnticipo = (pedido) => {
-  const historial = Array.isArray(pedido?.pagos?.historial)
-    ? pedido.pagos.historial
-    : [];
-
-  return historial.reduce(
-    (total, pago) => total + n(pago.montoUSD || pago.monto || 0),
-    0
-  );
-};
-
-const getSaldo = (pedido) => Math.max(getTotal(pedido) - getAnticipo(pedido), 0);
+const getFinanzas = (pedido) => construirFinanzasDesdePedido(pedido || {});
+const getTotal = (pedido) => getFinanzas(pedido).totalUSDReferencia || n(pedido?.resumen?.total || pedido?.total);
+const getSaldo = (pedido) => getFinanzas(pedido).saldoUSD;
 
 const getOT = (pedido) =>
   pedido?.numeroOT ||
@@ -163,6 +153,7 @@ export default function OrdenTrabajo() {
     </main>
   );
 }
+
 
 
 

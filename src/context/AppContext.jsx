@@ -415,44 +415,7 @@ function mapPedidoFromDb(row) {
 
   const historialPagosBase = Array.isArray(dataOriginal.pagos?.historial)
     ? dataOriginal.pagos.historial
-    : Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0) > 0
-      ? [
-          {
-            id: `legacy-${row.id || row.numero || Date.now()}`,
-            recibo: dataOriginal.ultimoPago?.recibo || '',
-            fechaDeposito: row.creado_en || row.created_at || '',
-            fechaRegistro: row.creado_en || row.created_at || '',
-            monedaOriginal: 'USD',
-            montoOriginal: Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0),
-            tipoCambio: tipoCambioBase,
-            montoUSD: Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0),
-            montoCordobas: Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0) * tipoCambioBase,
-            formaPago: dataOriginal.ultimoPago?.formaPago || dataOriginal.ultimoPago?.forma || '',
-            banco: dataOriginal.ultimoPago?.banco || '',
-            referencia: dataOriginal.ultimoPago?.referencia || '',
-            observaciones: 'Pago migrado desde campos legacy.',
-          },
-        ]
-      : [];
-
-  const cliente = {
-    nombre: row.cliente_nombre || form.cliente || '',
-    empresa: row.cliente_empresa || form.empresa || '',
-    telefono: row.cliente_telefono || form.whatsapp || '',
-    whatsapp: row.cliente_telefono || form.whatsapp || '',
-    correo: row.cliente_correo || form.correo || '',
-    direccion: row.cliente_direccion || form.direccion || '',
-    ciudad: row.ciudad || form.ciudad || '',
-  };
-
-  const resumen = {
-    subtotal: Number(row.subtotal || resumenOriginal.subtotal || 0),
-    descuentoPorcentaje: 0,
-    descuentoMonto: Number(row.descuento || resumenOriginal.descuento || 0),
-    total,
-    comision: 0,
-  };
-
+    : [];
   const basePedido = {
     ...(dataOriginal.pedido || {}),
     resumen,
@@ -603,8 +566,7 @@ function mapPedidoToDb(pedido) {
     descuento: Number(resumen.descuento || resumen.descuentoMonto || pedido.descuento || 0),
     iva: Number(resumen.iva || pedido.iva || 0),
     total,
-    anticipo_porcentaje: anticipoPorcentaje,
-    anticipo_monto: finanzas.pagadoUSD,
+    anticipo_porcentaje: anticipoPorcentaje,
     saldo_monto: finanzas.saldoUSD,
     items,
     orden_trabajo: pedido.ordenTrabajo || {},
@@ -617,8 +579,7 @@ function mapPedidoToDb(pedido) {
       tipoCambioCongelado: finanzas.tipoCambioCongelado,
       totalCordobas: finanzas.totalCordobas,
       totalUSDReferencia: finanzas.totalUSDReferencia,
-      anticipoSolicitado: finanzas.anticipoRequeridoUSDReferencia,
-      anticipoPagado: finanzas.pagadoUSD,
+      anticipoSolicitado: finanzas.anticipoRequeridoUSDReferencia,
       anticipoRequeridoCordobas: finanzas.anticipoRequeridoCordobas,
       anticipoRequeridoUSDReferencia: finanzas.anticipoRequeridoUSDReferencia,
       saldoContraEntregaCordobas: finanzas.saldoContraEntregaCordobas,
@@ -1416,43 +1377,6 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
       ...(pedido?.ordenTrabajo?.evidencias || {}),
     },
   });
-
-  const confirmarAnticipo = (pedido, pagoTipoConfirmado = pedido.pagoTipo || 'anticipo') => {
-    const esTotal = pagoTipoConfirmado === 'total';
-    const codigo = pedido.codigoSeguimiento || generarCodigoSeguimiento();
-    const anticipoRecibido = esTotal
-      ? pedido.resumen.total
-      : pedido.anticipoRequerido || pedido.resumen.total * 0.6;
-    const saldoPendiente = Math.max(0, pedido.resumen.total - anticipoRecibido);
-
-    actualizarPedido({
-      ...pedido,
-      codigoSeguimiento: codigo,
-      pagoTipo: pagoTipoConfirmado,
-      anticipoRecibido,
-      saldoPendiente,
-      estado: 'pago_validado',
-      estadoProduccion: 'produccion',
-      pagoEstado: esTotal ? 'pago_total_confirmado' : 'anticipo_confirmado',
-      seguimientoEstado: 'produccion',
-      comisionEstado: 'pendiente_entrega',
-      ordenTrabajo: crearOrdenTrabajoBase({
-        ...pedido,
-        codigoSeguimiento: codigo,
-        estadoProduccion: 'produccion',
-      }),
-      historial: [
-        ...(pedido.historial || []),
-        {
-          estado: esTotal ? 'pago_total_confirmado' : 'anticipo_confirmado',
-          fecha: new Date().toISOString(),
-          nota: 'Pago validado por administracin.',
-        },
-      ],
-    });
-
-    return codigo;
-  };
 
   const cambiarEstadoProduccion = (pedido, estadoProduccion) => {
     const entregado = estadoProduccion === 'entregado';
@@ -2268,8 +2192,7 @@ const generarComisionAutomatica = ({
         crearPedidoTransferencia,
         crearPedidoOperativo,
         actualizarPedido,
-        eliminarPedido,
-        confirmarAnticipo,
+        eliminarPedido,
         cambiarEstadoProduccion,
         actualizarOrdenTrabajo,
         guardarEvidenciaProduccion,
@@ -2326,6 +2249,8 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
+
 
 
 
