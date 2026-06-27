@@ -497,11 +497,11 @@ const productosFiltrados = useMemo(() => {
 
     const resumenFinal = productoSeleccionado
   ? {
-      costo: Number(productoSeleccionado.precio_total_usd || 0) / POLITICA.recomendado,
-      minimo: Number(productoSeleccionado.precio_total_usd || 0),
-      recomendado: Number(productoSeleccionado.precio_total_usd || 0),
-      objetivo: Number(productoSeleccionado.precio_total_usd || 0),
-      venta: Number(productoSeleccionado.precio_total_usd || 0),
+      costo: Number(productoSeleccionado.precio || productoSeleccionado.precio_total_usd || 0) / POLITICA.recomendado,
+      minimo: Number(productoSeleccionado.precio || productoSeleccionado.precio_total_usd || 0),
+      recomendado: Number(productoSeleccionado.precio || productoSeleccionado.precio_total_usd || 0),
+      objetivo: Number(productoSeleccionado.precio || productoSeleccionado.precio_total_usd || 0),
+      venta: Number(productoSeleccionado.precio || productoSeleccionado.precio_total_usd || 0),
     }
   : preview;
 
@@ -638,7 +638,7 @@ const nuevo = {
       return;
     }
 
-    const precioProducto = Number(productoSeleccionado?.precio_total_usd || 0);
+    const precioProducto = Number(productoSeleccionado?.precio || productoSeleccionado?.precio_total_usd || 0);
 
     const resumenFinal = productoSeleccionado
       ? {
@@ -987,8 +987,8 @@ cantidad: 1,
           <span>{p.nombre}</span>
 
           <small>
-            {p.precio_total_usd
-              ? `C$ ${Number(p.precio_total_usd).toFixed(2)}`
+            {(p.precio || p.precio_total_usd)
+              ? `C$ ${Number((p.precio || p.precio_total_usd)).toFixed(2)}`
               : ''}
           </small>
         </button>
@@ -2230,6 +2230,8 @@ cantidad: 1,
     </main>
   );
 }
+
+
 
 
 
