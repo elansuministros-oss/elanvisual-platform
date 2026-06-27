@@ -314,6 +314,7 @@ const [tab, setTab] = useState('dashboard');
               <label>WhatsApp<input value={configuracion?.whatsapp || ''} onChange={(e) => actualizarConfiguracion({ whatsapp: e.target.value })} /></label>
               <label>Correo<input value={configuracion?.correo || ''} onChange={(e) => actualizarConfiguracion({ correo: e.target.value })} /></label>
               <label>Anticipo configurado<input type="number" value={configuracion?.anticipoPorcentaje || 60} onChange={(e) => actualizarConfiguracion({ anticipoPorcentaje: Number(e.target.value || 60) })} /></label>
+              <label>Tipo de cambio C$ por USD<input type="number" step="0.01" value={configuracion?.tipoCambio || 36.8} onChange={(e) => actualizarConfiguracion({ tipoCambio: Number(e.target.value || 36.8) })} /></label>
             </div>
           </section>
 
@@ -515,6 +516,9 @@ const [tab, setTab] = useState('dashboard');
     </main>
   );
 }
+
+
+
 
 
 

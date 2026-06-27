@@ -20,12 +20,22 @@ const POLITICA = {
   descuentos: [0, 5, 10],
 };
 
-const money = (v) =>
-  new Intl.NumberFormat('es-NI', {
+const moneyUSD = (v) =>
+  new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
   }).format(Number(v || 0));
+
+const moneyNIO = (v) =>
+  `C$ ${new Intl.NumberFormat('es-NI', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(v || 0))}`;
+
+const convertirUSDaNIO = (v, tc) => Number(v || 0) * Number(tc || 36.8);
+
+const money = (v, tc = 36.8) => moneyNIO(convertirUSDaNIO(v, tc));
 
 const n = (v) => Number(v || 0);
 
@@ -259,6 +269,7 @@ function campoCompleto(valor) {
 
 export default function CotizadorDirecto({ setPage }) {
   const { configuracion } = useApp();
+  const tipoCambioCotizacion = Number(configuracion?.tipoCambio || 36.8);
   const [materiales, setMateriales] = useState([]);
   const [tintas, setTintas] = useState([]);
   const [mensaje, setMensaje] = useState('');
@@ -1074,19 +1085,20 @@ export default function CotizadorDirecto({ setPage }) {
           <div className="total-box">
             <p>
               <span>Subtotal</span>
-              <b>{money(total.subtotal)}</b>
+              <b>{money(total.subtotal, tipoCambioCotizacion)}</b>
             </p>
 
             {form.usaIVA && (
               <p>
                 <span>IVA</span>
-                <b>{money(total.iva)}</b>
+                <b>{money(total.iva, tipoCambioCotizacion)}</b>
               </p>
             )}
 
             <p className="total-line">
-              <span>Total</span>
-              <b>{money(total.totalCliente)}</b>
+              <span>TOTAL</span>
+              <b>{money(total.totalCliente, tipoCambioCotizacion)}</b>
+              <small>Equivalente {moneyUSD(total.totalCliente)} · TC C$ {tipoCambioCotizacion.toFixed(2)}</small>
             </p>
 
             <hr />
@@ -1095,7 +1107,7 @@ export default function CotizadorDirecto({ setPage }) {
             {total.pagos.map((p) => (
               <p key={p.label}>
                 <span>{p.label}</span>
-                <b>{money(p.monto)}</b>
+                <b>{money(p.monto, tipoCambioCotizacion)}</b>
               </p>
             ))}
           </div>
@@ -1126,7 +1138,7 @@ export default function CotizadorDirecto({ setPage }) {
             <article className="item" key={item.id}>
               <b>{idx + 1}</b>
               <span>{item.descripcion}</span>
-              <strong>{money(item.resumen.venta)}</strong>
+              <strong>{money(item.resumen.venta, tipoCambioCotizacion)}</strong>
               <button type="button" onClick={() => eliminarItem(item.id)}>
                 <Trash2 size={16} />
               </button>
@@ -1229,8 +1241,8 @@ export default function CotizadorDirecto({ setPage }) {
 
                   <div className="ev-item-values">
                     <p><span>Cantidad</span><b>{cantidad}</b></p>
-                    <p><span>Precio Unitario</span><b>{money(precioUnitario)}</b></p>
-                    <p><span>Subtotal</span><b>{money(subtotalItem)}</b></p>
+                    <p><span>Precio Unitario</span><b>{money(precioUnitario, tipoCambioCotizacion)}</b></p>
+                    <p><span>Subtotal</span><b>{money(subtotalItem, tipoCambioCotizacion)}</b></p>
                   </div>
                 </article>
               );
@@ -1242,38 +1254,40 @@ export default function CotizadorDirecto({ setPage }) {
 
             <div className="ev-summary-line">
               <span>Subtotal</span>
-              <b>{money(total.subtotalBruto)}</b>
+              <b>{money(total.subtotalBruto, tipoCambioCotizacion)}</b>
             </div>
 
             <div className="ev-summary-line">
               <span>Descuento comercial</span>
-              <b>-{money(total.descuento)}</b>
+              <b>-{money(total.descuento, tipoCambioCotizacion)}</b>
             </div>
 
             <div className="ev-summary-line">
               <span>Subtotal ajustado</span>
-              <b>{money(total.subtotal)}</b>
+              <b>{money(total.subtotal, tipoCambioCotizacion)}</b>
             </div>
 
             {form.usaIVA && (
               <div className="ev-summary-line">
                 <span>IVA 15%</span>
-                <b>{money(total.iva)}</b>
+                <b>{money(total.iva, tipoCambioCotizacion)}</b>
               </div>
             )}
 
             <div className="ev-total-line">
               <span>TOTAL</span>
-              <b>{money(total.totalCliente)}</b>
+              <b>{money(total.totalCliente, tipoCambioCotizacion)}</b>
+              <small>Equivalente {moneyUSD(total.totalCliente)} · TC C$ {tipoCambioCotizacion.toFixed(2)}</small>
             </div>
           </section>
 
           <section className="ev-payment-box">
             <h2>FORMA DE PAGO</h2>
+            <p className="ev-tc-line"><span>Tipo de cambio aplicado</span><b>1 USD = C$ {tipoCambioCotizacion.toFixed(2)}</b></p>
             {total.pagos.map((p) => (
               <p key={p.label}>
                 <span>{p.label}</span>
-                <b>{money(p.monto)}</b>
+                <b>{money(p.monto, tipoCambioCotizacion)}</b>
               </p>
             ))}
           </section>
@@ -2111,4 +2125,5 @@ export default function CotizadorDirecto({ setPage }) {
     </main>
   );
 }
+
 

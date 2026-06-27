@@ -26,6 +26,7 @@ const configuracionInicial = {
   instruccionesPago:
     'Despus de transferir, responde este mensaje enviando el comprobante para confirmar tu solicitud.',
   anticipoPorcentaje: 60,
+  tipoCambio: 36.8,
 };
 
 const cuentasIniciales = [];
@@ -668,6 +669,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
         configuracion?.nombreSitio ||
         'ELANVISUAL',
       anticipoPorcentaje: Number(datos?.anticipoPorcentaje ?? configuracion?.anticipoPorcentaje ?? 60),
+      tipoCambio: Number(datos?.tipoCambio ?? configuracion?.tipoCambio ?? 36.8),
     };
 
     setConfiguracion(nuevaConfiguracion);
@@ -1999,6 +2001,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
