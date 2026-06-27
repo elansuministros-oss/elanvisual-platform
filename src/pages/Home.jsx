@@ -70,13 +70,6 @@ const productosCatalogo = [
   },
 ];
 
-const portafolio = [
-  { titulo: 'Recepciones', texto: 'Logos corporativos interiores.' },
-  { titulo: 'Botones', texto: 'Rotulos circulares luminosos.' },
-  { titulo: 'Jalavistas', texto: 'Doble cara para fachada.' },
-  { titulo: 'Retail', texto: 'Imagen comercial para tiendas.' },
-  { titulo: 'Eventos', texto: 'Stands, displays y activaciones.' },
-];
 
 const categorias = [
   'Rotulos luminosos',
@@ -273,14 +266,6 @@ export default function Home({ setPage }) {
           </div>
         )}
       </section>
-
-      <HorizontalCarousel
-        title="Portafolio"
-        subtitle="Trabajos por tipo de aplicacion"
-        items={portafolio}
-        renderItem={(item) => (
-          <div className="app-portfolio-card">
-            <BadgeCheck size={24} />
             <h3>{item.titulo}</h3>
             <p>{item.texto}</p>
           </div>
@@ -504,5 +489,6 @@ export default function Home({ setPage }) {
     </main>
   );
 }
+
 
 
