@@ -261,7 +261,7 @@ function campoCompleto(valor) {
 }
 
 export default function CotizadorDirectoAI({ setPage }) {
-  const { configuracion } = useApp();
+  const { configuracion, productos = [] } = useApp();
   const [materiales, setMateriales] = useState([]);
   const [productosRegistrados, setProductosRegistrados] = useState([]);
   const [tintas, setTintas] = useState([]);
@@ -2230,6 +2230,7 @@ cantidad: 1,
     </main>
   );
 }
+
 
 
 
