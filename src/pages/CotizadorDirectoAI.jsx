@@ -23,7 +23,7 @@ const POLITICA = {
 const money = (v) =>
   new Intl.NumberFormat('es-NI', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'NIO',
     minimumFractionDigits: 2,
   }).format(Number(v || 0));
 
@@ -988,7 +988,7 @@ cantidad: 1,
 
           <small>
             {p.precio_total_usd
-              ? `USD ${Number(p.precio_total_usd).toFixed(2)}`
+              ? `C$ ${Number(p.precio_total_usd).toFixed(2)}`
               : ''}
           </small>
         </button>
@@ -2230,6 +2230,8 @@ cantidad: 1,
     </main>
   );
 }
+
+
 
 
 
