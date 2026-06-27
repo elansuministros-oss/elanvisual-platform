@@ -274,16 +274,38 @@ export default function CotizadorDirectoAI({ setPage }) {
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [cargandoEdicion, setCargandoEdicion] = useState(false);
 
-  const productosFiltrados = useMemo(() => {
-    const q = limpiar(busquedaProducto);
-    if (!q) return [];
-    return productosRegistrados
-      .filter((p) => {
-        const texto = limpiar((p.codigo || '') + ' ' + (p.nombre || '') + ' ' + (p.categoria || ''));
-        return texto.includes(q);
-      })
-      .slice(0, 8);
-  }, [productosRegistrados, busquedaProducto]);
+  const productosDisponibles = useMemo(() => {
+  const desdeContexto = Array.isArray(productos)
+    ? productos.filter((p) => p?.activo !== false)
+    : [];
+
+  const desdeSupabase = Array.isArray(productosRegistrados)
+    ? productosRegistrados.filter((p) => p?.activo !== false)
+    : [];
+
+  const mapa = new Map();
+
+  [...desdeSupabase, ...desdeContexto].forEach((p) => {
+    const key = p.id || p.codigo || p.nombre;
+    if (key) mapa.set(String(key), p);
+  });
+
+  return Array.from(mapa.values());
+}, [productos, productosRegistrados]);
+
+const productosFiltrados = useMemo(() => {
+  const q = limpiar(busquedaProducto);
+  if (!q) return [];
+
+  return productosDisponibles
+    .filter((p) => {
+      const texto = limpiar(
+        `${p.codigo || ''} ${p.nombre || ''} ${p.titulo || ''} ${p.categoria || ''} ${p.descripcion || ''}`
+      );
+      return texto.includes(q);
+    })
+    .slice(0, 8);
+}, [productosDisponibles, busquedaProducto]);
 
   const params = new URLSearchParams(window.location.search);
   const cotizacionIdEdicion = params.get('id');
@@ -954,10 +976,10 @@ const nuevo = {
 
             setForm((prev) => ({
               ...prev,
-              descripcion: p.nombre || prev.descripcion,
-              ancho: p.ancho_m || prev.ancho,
-              alto: p.largo_m || prev.alto,
-              cantidad: 1,
+              descripcion: p.nombre || p.titulo || prev.descripcion,
+ancho: p.ancho_m || p.ancho || prev.ancho,
+alto: p.largo_m || p.alto || prev.alto,
+cantidad: 1,
             }));
           }}
         >
