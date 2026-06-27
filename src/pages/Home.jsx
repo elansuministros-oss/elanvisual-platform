@@ -274,18 +274,6 @@ export default function Home({ setPage }) {
         )}
       </section>
 
-      <HorizontalCarousel
-        title="Portafolio"
-        subtitle="Trabajos por tipo de aplicacion"
-        items={portafolio}
-        renderItem={(item) => (
-          <div className="app-portfolio-card">
-            <BadgeCheck size={24} />
-            <h3>{item.titulo}</h3>
-            <p>{item.texto}</p>
-          </div>
-        )}
-      />
 
       <section className="app-category-section">
         <div className="app-section-head">
