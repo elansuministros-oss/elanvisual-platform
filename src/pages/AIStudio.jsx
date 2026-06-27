@@ -5,6 +5,7 @@ import { esAdminCRM, filtrarRegistrosCRM, obtenerFirmaVendedor } from '../servic
 import { prepararArchivosTemporalesAI, construirResumenArchivosTemporales } from '../services/aiTemporalService';
 import { cargarMemoriaOperativaElan } from '../services/memoriaOperativaElan';
 import { crearSolicitudesCostosFaltantes } from '../services/solicitudesCostosService';
+import { ejecutarAccionIA } from '../services/ai/aiDispatcher';
 import '../styles/AIStudio.css';
 
 const CORE_URL = import.meta.env.VITE_ELANKAV_CORE_URL || '';
@@ -70,7 +71,11 @@ function extraerJSON(texto) {
 }
 
 export default function AIStudio({ setPage }) {
-  const { usuario } = useApp();
+  const {
+    usuario,
+    pedidos = [],
+    proveedores = [],
+  } = useApp();
   const firma = useMemo(() => obtenerFirmaVendedor(usuario || {}), [usuario]);
   const admin = esAdminCRM(usuario || {});
 
@@ -562,6 +567,7 @@ setPage?.('CotizacionesInteligentes');
     </main>
   );
 }
+
 
 
 
