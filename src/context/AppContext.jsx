@@ -1,15 +1,9 @@
 ﻿import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { normalizarPedidoDesdeDb, normalizarPedidoParaDb, unirPedidosNuevo } from '../modules/pedidos';
 import { productosIniciales } from '../data/productos';
-import { normalizarPedidoDesdeDb, normalizarPedidoParaDb, unirPedidosNuevo } from '../modules/pedidos';
 import { resumenCarrito } from '../lib/calculos';
-import { normalizarPedidoDesdeDb, normalizarPedidoParaDb, unirPedidosNuevo } from '../modules/pedidos';
 import { supabase } from '../lib/supabase';
-import { normalizarPedidoDesdeDb, normalizarPedidoParaDb, unirPedidosNuevo } from '../modules/pedidos';
 import { obtenerProveedores } from '../services/supplierHubService';
-import { normalizarPedidoDesdeDb, normalizarPedidoParaDb, unirPedidosNuevo } from '../modules/pedidos';
 import { construirFinanzasDesdePedido } from '../services/finanzas';
-import { normalizarPedidoDesdeDb, normalizarPedidoParaDb, unirPedidosNuevo } from '../modules/pedidos';
 
 const AppContext = createContext(null);
 
@@ -913,7 +907,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
 
         if (pedidosError) throw pedidosError;
 
-        const pedidosRemotos = (pedidosData || []).map(normalizarPedidoDesdeDb);
+        const pedidosRemotos = (pedidosData || []).map(mapPedidoFromDb);
 
         if (!activo) return;
 
@@ -939,7 +933,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
 
           return asegurarUsuariosBase(Array.from(mapa.values()));
         });
-        setPedidos((prev) => unirPedidosNuevo(prev, pedidosRemotos));
+        setPedidos((prev) => unirPedidos(prev, pedidosRemotos));
 
         const usuarioActual = leerStorage('elanvisual_usuario_actual', null);
         if (usuarioActual?.id) {
@@ -1167,7 +1161,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
     if (supabase) {
       supabase
         .from('pedidos_elanvisual')
-        .insert(normalizarPedidoParaDb(pedido))
+        .insert(mapPedidoToDb(pedido))
         .select('*')
         .single()
         .then(({ data, error }) => {
@@ -1179,7 +1173,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
             return;
           }
 
-          const pedidoGuardado = normalizarPedidoDesdeDb(data);
+          const pedidoGuardado = mapPedidoFromDb(data);
           setPedidos((prev) => prev.map((p) => (p.id === pedido.id ? { ...p, ...pedidoGuardado } : p)));
         });
     }
@@ -1327,7 +1321,7 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
     if (supabase && esUuid(pedidoActualizado.id)) {
       supabase
         .from('pedidos_elanvisual')
-        .update(normalizarPedidoParaDb(pedidoActualizado))
+        .update(mapPedidoToDb(pedidoActualizado))
         .eq('id', pedidoActualizado.id)
         .then(({ error }) => {
           if (error) {
@@ -2261,7 +2255,6 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
-
 
 
 
