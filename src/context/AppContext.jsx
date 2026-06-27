@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { obtenerProveedores } from '../services/supplierHubService';
 import { unirPedidos } from '../services/pedidos/pedidosMapper';
 import { cargarPedidosElanvisual, insertarPedidoElanvisual, actualizarPedidoElanvisual, eliminarPedidoElanvisual } from '../services/pedidos/pedidosStorageService';
+import { codigoVendedorElanvisual, obtenerReferenciaVendedorElanvisual, crearComisionInicialElanvisual } from '../services/pedidos/pedidosFactory';
 
 const AppContext = createContext(null);
 
@@ -281,97 +282,6 @@ function normalizarRol(rol) {
   return 'produccion';
 }
 
-
-function codigoVendedorElanvisual(usuario = {}) {
-  if (usuario.codigoVendedor) return usuario.codigoVendedor;
-  if (usuario.codigoQR) return usuario.codigoQR;
-  if (usuario.usuario === 'admin') return 'ERICK-001';
-  if (usuario.rol === 'ventas') {
-    return `VEN-${String(usuario.usuario || usuario.id || '001')
-      .toUpperCase()
-      .replace(/[^A-Z0-9]/g, '')}`;
-  }
-  return String(usuario.id || 'USR-001').toUpperCase();
-}
-
-function obtenerReferenciaVendedorElanvisual(usuarios = [], usuarioActivo = null) {
-  const ref = String(localStorage.getItem('elanvisual_ref_vendedor') || '').trim();
-
-  const buscar = (valor) => {
-    const normal = String(valor || '').toLowerCase().trim();
-    if (!normal) return null;
-
-    return usuarios.find((u) => {
-      const codigo = codigoVendedorElanvisual(u).toLowerCase();
-      return (
-        codigo === normal ||
-        String(u.usuario || '').toLowerCase() === normal ||
-        String(u.email || '').toLowerCase() === normal ||
-        String(u.id || '').toLowerCase() === normal
-      );
-    });
-  };
-
-  const desdeRef = buscar(ref);
-  if (desdeRef) {
-    return {
-      id: desdeRef.id,
-      nombre: desdeRef.nombre || desdeRef.usuario || desdeRef.email,
-      usuario: desdeRef.usuario,
-      email: desdeRef.email,
-      codigo: codigoVendedorElanvisual(desdeRef),
-      rol: desdeRef.rol,
-    };
-  }
-
-  if (usuarioActivo?.rol === 'ventas' || usuarioActivo?.usuario === 'admin') {
-    return {
-      id: usuarioActivo.id,
-      nombre: usuarioActivo.nombre || usuarioActivo.usuario || usuarioActivo.email,
-      usuario: usuarioActivo.usuario,
-      email: usuarioActivo.email,
-      codigo: codigoVendedorElanvisual(usuarioActivo),
-      rol: usuarioActivo.rol,
-    };
-  }
-
-  return null;
-}
-
-function crearComisionInicialElanvisual({ total = 0, costoProduccion = 0, vendedor = null }) {
-  const venta = Number(total || 0);
-  const costo = Number(costoProduccion || 0);
-  const utilidadRealEstimada = Math.max(venta - costo, 0);
-  const fondoComunitario = utilidadRealEstimada * 0.05;
-  const direccionGeneral = utilidadRealEstimada * 0.05;
-  const baseDistribuible = Math.max(utilidadRealEstimada - fondoComunitario - direccionGeneral, 0);
-  const comisionVendedor = vendedor ? baseDistribuible * 0.4 : 0;
-  const elanvisual = baseDistribuible - comisionVendedor;
-  const fondoIncentivoVendedor = vendedor ? elanvisual * 0.05 : 0;
-
-  return {
-    estado: 'en_proceso',
-    vendedorId: vendedor?.id || '',
-    vendedorCodigo: vendedor?.codigo || '',
-    vendedorNombre: vendedor?.nombre || '',
-    utilidadRealEstimada,
-    fondoComunitario,
-    direccionGeneral,
-    baseDistribuible,
-    comisionVendedor,
-    fondoIncentivoVendedor,
-    utilidadElanvisual: Math.max(elanvisual - fondoIncentivoVendedor, 0),
-    pagada: false,
-    pagoSolicitado: false,
-    historial: [
-      {
-        estado: 'en_proceso',
-        fecha: new Date().toISOString(),
-        nota: 'Comisin creada en proceso. Se valida hasta trabajo finalizado y pago cancelado.',
-      },
-    ],
-  };
-}
 
 function mapUsuarioFromDb(row) {
   return {
@@ -2088,6 +1998,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
