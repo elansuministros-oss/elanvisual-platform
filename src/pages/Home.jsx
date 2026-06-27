@@ -218,38 +218,6 @@ export default function Home({ setPage }) {
         </div>
       </section>
 
-      <section className="app-launcher-screen">
-        <button type="button" onClick={() => go('servicios')} className="app-launcher-item">
-          <BriefcaseBusiness />
-          <span>Servicios</span>
-        </button>
-
-        <button type="button" onClick={() => go('tienda')} className="app-launcher-item">
-          <ShoppingBag />
-          <span>Tienda</span>
-        </button>
-
-        <button type="button" onClick={() => go('portafolio')} className="app-launcher-item">
-          <Image />
-          <span>Portafolio</span>
-        </button>
-
-        <button type="button" onClick={() => go('seguimiento')} className="app-launcher-item">
-          <PackageSearch />
-          <span>Seguimiento</span>
-        </button>
-
-        <button type="button" onClick={() => go('contacto')} className="app-launcher-item">
-          <Phone />
-          <span>Contacto</span>
-        </button>
-
-        <button type="button" onClick={() => go('portal')} className="app-launcher-item">
-          <ClipboardList />
-          <span>Portal</span>
-        </button>
-      </section>
-
       <section className="ev-catalog-section">
         <div className="ev-catalog-head">
           <div>
@@ -536,4 +504,5 @@ export default function Home({ setPage }) {
     </main>
   );
 }
+
 
