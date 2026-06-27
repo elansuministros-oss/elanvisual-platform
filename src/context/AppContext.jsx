@@ -4,7 +4,8 @@ import { resumenCarrito } from '../lib/calculos';
 import { supabase } from '../lib/supabase';
 import { obtenerProveedores } from '../services/supplierHubService';
 import { unirPedidos } from '../services/pedidos/pedidosMapper';
-import { cargarPedidosElanvisual, insertarPedidoElanvisual, actualizarPedidoElanvisual, eliminarPedidoElanvisual } from '../services/pedidos/pedidosStorageService';
+import { cargarPedidosElanvisual } from '../services/pedidos/queries/pedidosQueryService';
+import { insertarPedidoElanvisual, actualizarPedidoElanvisual, eliminarPedidoElanvisual } from '../services/pedidos/commands/pedidosCommandService';
 import { codigoVendedorElanvisual, obtenerReferenciaVendedorElanvisual, crearComisionInicialElanvisual } from '../services/pedidos/pedidosFactory';
 
 const AppContext = createContext(null);
@@ -1998,6 +1999,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
