@@ -3,49 +3,29 @@
 
 ESTE ES EL PRIMER ARCHIVO QUE DEBE LEERSE AL INICIAR CUALQUIER NUEVO CHAT.
 
-PROCEDIMIENTO OBLIGATORIO
-
-1. Leer este archivo completo.
-2. Leer el último documento dentro de DOCS\PUNTOS_SEGUROS.
-3. Auditar el módulo solicitado.
-4. No modificar código antes de terminar la auditoría.
-5. Trabajar únicamente sobre un módulo a la vez.
-6. Al finalizar:
-   - Build
-   - Commit
-   - Push
-   - Actualizar este archivo.
-   - Crear un nuevo Punto Seguro.
-
 ÚLTIMO PUNTO SEGURO
 
-AI-11B_2026-06-26.md
+AI-13C_2026-06-26.md
 
 ESTADO
 
-AI-11B cerrado oficialmente.
+AI-13C cerrado oficialmente.
 
 Build OK.
-Git limpio.
 Push OK.
 
-RESUMEN AI-11B
-
-Se creó y conectó el motor financiero centralizado:
-
-- src/services/finanzas/finanzasPedidoService.js
-- src/services/finanzas/finanzasPedidoAdapter.js
-- src/services/finanzas/index.js
-
-OT Comercial usa el motor financiero.
-AppContext normaliza pagos, anticipos, saldos y data_original usando el motor financiero.
+Se eliminó la lógica financiera heredada que convertía anticipo solicitado en pago real.
 
 REGLA OFICIAL
 
-Supabase es la única fuente persistente para pedidos y pagos.
-No usar localStorage para pagos, anticipos, saldos ni historial financiero.
+- El anticipo solicitado es solo referencia comercial.
+- El pago real solo existe si está registrado en pagos.historial.
+- Pagado = suma de pagos.historial.
+- Saldo = total - pagado.
+- OT, Producción, Seguimiento y Dashboard no deben inventar pagos.
+- Supabase sigue siendo la fuente persistente.
 
 PRÓXIMA FASE
 
-AI-11C:
-Caja, Tesorería, Recibos reales, bancos y control de pagos.
+AI-13D:
+Validación producción y limpieza final de nombres legacy si aparecen en UI.
