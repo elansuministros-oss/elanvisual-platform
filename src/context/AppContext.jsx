@@ -3,6 +3,7 @@ import { productosIniciales } from '../data/productos';
 import { resumenCarrito } from '../lib/calculos';
 import { supabase } from '../lib/supabase';
 import { obtenerProveedores } from '../services/supplierHubService';
+import { construirFinanzasDesdePedido } from '../services/finanzas';
 
 const AppContext = createContext(null);
 
@@ -403,6 +404,36 @@ function mapPedidoFromDb(row) {
   const dataOriginal = row.data_original || {};
   const form = dataOriginal.form || {};
   const resumenOriginal = dataOriginal.total || {};
+  const total = Number(row.total || resumenOriginal.totalCliente || 0);
+  const anticipoPorcentaje = Number(row.anticipo_porcentaje || form.p1 || 60);
+  const tipoCambioBase = Number(
+    dataOriginal.tipoCambioCongelado ||
+      dataOriginal.pagos?.tipoCambioCongelado ||
+      dataOriginal.pedido?.tipoCambioCongelado ||
+      36.8
+  );
+
+  const historialPagosBase = Array.isArray(dataOriginal.pagos?.historial)
+    ? dataOriginal.pagos.historial
+    : Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0) > 0
+      ? [
+          {
+            id: `legacy-${row.id || row.numero || Date.now()}`,
+            recibo: dataOriginal.ultimoPago?.recibo || '',
+            fechaDeposito: row.creado_en || row.created_at || '',
+            fechaRegistro: row.creado_en || row.created_at || '',
+            monedaOriginal: 'USD',
+            montoOriginal: Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0),
+            tipoCambio: tipoCambioBase,
+            montoUSD: Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0),
+            montoCordobas: Number(row.anticipo_monto || dataOriginal.anticipoPagado || 0) * tipoCambioBase,
+            formaPago: dataOriginal.ultimoPago?.formaPago || dataOriginal.ultimoPago?.forma || '',
+            banco: dataOriginal.ultimoPago?.banco || '',
+            referencia: dataOriginal.ultimoPago?.referencia || '',
+            observaciones: 'Pago migrado desde campos legacy.',
+          },
+        ]
+      : [];
 
   const cliente = {
     nombre: row.cliente_nombre || form.cliente || '',
@@ -413,6 +444,31 @@ function mapPedidoFromDb(row) {
     direccion: row.cliente_direccion || form.direccion || '',
     ciudad: row.ciudad || form.ciudad || '',
   };
+
+  const resumen = {
+    subtotal: Number(row.subtotal || resumenOriginal.subtotal || 0),
+    descuentoPorcentaje: 0,
+    descuentoMonto: Number(row.descuento || resumenOriginal.descuento || 0),
+    total,
+    comision: 0,
+  };
+
+  const basePedido = {
+    ...(dataOriginal.pedido || {}),
+    resumen,
+    total,
+    totalUSDReferencia: dataOriginal.totalUSDReferencia || dataOriginal.pagos?.totalUSDReferencia || total,
+    totalCordobas: dataOriginal.totalCordobas || dataOriginal.pagos?.totalCordobas || 0,
+    tipoCambioCongelado: tipoCambioBase,
+    anticipoPorcentaje,
+    pagos: {
+      ...(dataOriginal.pagos || {}),
+      historial: historialPagosBase,
+    },
+    dataOriginal,
+  };
+
+  const finanzas = construirFinanzasDesdePedido(basePedido);
 
   return {
     id: row.id || row.numero || `pedido-${Date.now()}`,
@@ -429,39 +485,44 @@ function mapPedidoFromDb(row) {
     origenComercialCodigo: '',
     vendedorCodigo: '',
     veterinariaCodigo: '',
-    resumen: {
-      subtotal: Number(row.subtotal || resumenOriginal.subtotal || 0),
-      descuentoPorcentaje: 0,
-      descuentoMonto: Number(row.descuento || resumenOriginal.descuento || 0),
-      total: Number(row.total || resumenOriginal.totalCliente || 0),
-      comision: 0,
-    },
+    resumen,
     pagoTipo: 'anticipo',
-    anticipoPorcentaje: Number(row.anticipo_porcentaje || form.p1 || 60),
-    montoSolicitado: Number(
-      dataOriginal.anticipoSolicitado ??
-        dataOriginal.pedido?.montoSolicitado ??
-        (((Number(row.total || resumenOriginal.totalCliente || 0)) *
-          Number(row.anticipo_porcentaje || form.p1 || 60)) /
-          100)
-    ),
-    anticipoRequerido: Number(
-      dataOriginal.anticipoSolicitado ??
-        dataOriginal.pedido?.anticipoRequerido ??
-        dataOriginal.pedido?.montoSolicitado ??
-        (((Number(row.total || resumenOriginal.totalCliente || 0)) *
-          Number(row.anticipo_porcentaje || form.p1 || 60)) /
-          100)
-    ),
-    anticipoRecibido: Number(dataOriginal.anticipoPagado ?? row.anticipo_monto ?? 0),
-    saldoPendiente: Math.max(
-      Number(row.total || resumenOriginal.totalCliente || 0) -
-        Number(dataOriginal.anticipoPagado ?? row.anticipo_monto ?? 0),
-      0
-    ),
+    anticipoPorcentaje,
+
+    totalCordobas: finanzas.totalCordobas,
+    totalUSDReferencia: finanzas.totalUSDReferencia,
+    tipoCambioCongelado: finanzas.tipoCambioCongelado,
+
+    anticipoRequerido: finanzas.anticipoRequeridoUSDReferencia,
+    anticipoRequeridoCordobas: finanzas.anticipoRequeridoCordobas,
+    anticipoRequeridoUSDReferencia: finanzas.anticipoRequeridoUSDReferencia,
+    montoSolicitado: finanzas.anticipoRequeridoUSDReferencia,
+    saldoContraEntregaCordobas: finanzas.saldoContraEntregaCordobas,
+
+    pagos: {
+      ...(dataOriginal.pagos || {}),
+      historial: finanzas.historialPagos,
+      totalCordobas: finanzas.totalCordobas,
+      totalUSDReferencia: finanzas.totalUSDReferencia,
+      tipoCambioCongelado: finanzas.tipoCambioCongelado,
+      pagadoUSD: finanzas.pagadoUSD,
+      pagadoCordobas: finanzas.pagadoCordobas,
+      pagadoRealUSD: finanzas.pagadoRealUSD,
+      pagadoRealCordobas: finanzas.pagadoRealCordobas,
+      saldoUSD: finanzas.saldoUSD,
+      saldoCordobas: finanzas.saldoCordobas,
+      saldoRealUSD: finanzas.saldoRealUSD,
+      saldoRealCordobas: finanzas.saldoRealCordobas,
+      estadoPago: finanzas.estadoPago,
+    },
+
+    // Compatibilidad legacy: derivados del historial real.
+    anticipoRecibido: finanzas.pagadoUSD,
+    saldoPendiente: finanzas.saldoUSD,
+
     estado: row.estado || 'cotizacion_guardada',
     estadoProduccion: row.estado_produccion || 'pendiente',
-    pagoEstado: row.estado_pago || 'pendiente',
+    pagoEstado: row.estado_pago || finanzas.estadoPago,
     seguimientoEstado: row.seguimiento_estado || row.estado || 'cotizacion_guardada',
     comisionEstado: 'no_generada',
     ordenTrabajo: row.orden_trabajo || {},
@@ -476,24 +537,55 @@ function mapPedidoToDb(pedido) {
   const cliente = pedido.cliente || {};
   const resumen = pedido.resumen || {};
   const items = Array.isArray(pedido.items) ? pedido.items : [];
-  const total = Number(resumen.total || pedido.total || 0);
+  const total = Number(resumen.total || pedido.total || pedido.totalUSDReferencia || 0);
   const anticipoPorcentaje = Number(pedido.anticipoPorcentaje || 60);
 
-  const anticipoSolicitado = Number(
-    pedido.anticipoRequerido ??
-      pedido.montoSolicitado ??
-      resumen.anticipo ??
-      ((total * anticipoPorcentaje) / 100)
-  );
+  const finanzas = construirFinanzasDesdePedido({
+    ...pedido,
+    resumen: {
+      ...resumen,
+      total,
+    },
+    total,
+    anticipoPorcentaje,
+  });
 
-  const anticipoPagado = Number(
-    pedido.anticipoRecibido ??
-      pedido.pagos?.anticipoRecibido ??
-      pedido.pagos?.totalPagado ??
-      0
-  );
+  const pagosNormalizados = {
+    ...(pedido.pagos || {}),
+    historial: finanzas.historialPagos,
+    totalCordobas: finanzas.totalCordobas,
+    totalUSDReferencia: finanzas.totalUSDReferencia,
+    tipoCambioCongelado: finanzas.tipoCambioCongelado,
+    pagadoUSD: finanzas.pagadoUSD,
+    pagadoCordobas: finanzas.pagadoCordobas,
+    pagadoRealUSD: finanzas.pagadoRealUSD,
+    pagadoRealCordobas: finanzas.pagadoRealCordobas,
+    saldoUSD: finanzas.saldoUSD,
+    saldoCordobas: finanzas.saldoCordobas,
+    saldoRealUSD: finanzas.saldoRealUSD,
+    saldoRealCordobas: finanzas.saldoRealCordobas,
+    anticipoRequeridoUSDReferencia: finanzas.anticipoRequeridoUSDReferencia,
+    anticipoRequeridoCordobas: finanzas.anticipoRequeridoCordobas,
+    saldoContraEntregaCordobas: finanzas.saldoContraEntregaCordobas,
+    estadoPago: finanzas.estadoPago,
+    ultimoPago: pedido.ultimoPago || pedido.pagos?.ultimoPago || null,
+    actualizadoEn: new Date().toISOString(),
+  };
 
-  const saldoMonto = Math.max(total - anticipoPagado, 0);
+  const pedidoNormalizado = {
+    ...pedido,
+    totalCordobas: finanzas.totalCordobas,
+    totalUSDReferencia: finanzas.totalUSDReferencia,
+    tipoCambioCongelado: finanzas.tipoCambioCongelado,
+    anticipoRequeridoCordobas: finanzas.anticipoRequeridoCordobas,
+    anticipoRequeridoUSDReferencia: finanzas.anticipoRequeridoUSDReferencia,
+    saldoContraEntregaCordobas: finanzas.saldoContraEntregaCordobas,
+    pagos: pagosNormalizados,
+    anticipoRecibido: finanzas.pagadoUSD,
+    saldoPendiente: finanzas.saldoUSD,
+    pagoEstado: finanzas.estadoPago,
+  };
+
   return {
     numero: pedido.numero || pedido.numeroPedido || '',
     cliente_nombre: cliente.nombre || cliente.empresa || pedido.clienteNombre || '',
@@ -503,7 +595,7 @@ function mapPedidoToDb(pedido) {
     cliente_direccion: cliente.direccion || pedido.clienteDireccion || '',
     ciudad: cliente.ciudad || pedido.ciudad || '',
     estado: pedido.estado || 'cotizacion_guardada',
-    estado_pago: pedido.pagoEstado || pedido.estadoPago || 'pendiente',
+    estado_pago: finanzas.estadoPago,
     estado_produccion: pedido.estadoProduccion || 'pendiente',
     seguimiento_estado: pedido.seguimientoEstado || pedido.estado || 'cotizacion_guardada',
     unidad_negocio: pedido.unidadNegocio || pedido.unidad_negocio || 'ELANVISUAL',
@@ -512,26 +604,31 @@ function mapPedidoToDb(pedido) {
     iva: Number(resumen.iva || pedido.iva || 0),
     total,
     anticipo_porcentaje: anticipoPorcentaje,
-    anticipo_monto: anticipoPagado,
-    saldo_monto: saldoMonto,
+    anticipo_monto: finanzas.pagadoUSD,
+    saldo_monto: finanzas.saldoUSD,
     items,
     orden_trabajo: pedido.ordenTrabajo || {},
     historial: pedido.historial || [],
     data_original: {
       ...(pedido.dataOriginal || pedido.data_original || {}),
-      pedido,
-      pagos: pedido.pagos || {},
-      ultimoPago: pedido.ultimoPago || null,
-      tipoCambioCongelado: pedido.tipoCambioCongelado || pedido.pagos?.tipoCambioCongelado || null,
-      anticipoSolicitado,
-      anticipoPagado,
-      saldoReal: saldoMonto,
+      pedido: pedidoNormalizado,
+      pagos: pagosNormalizados,
+      ultimoPago: pedido.ultimoPago || pedido.pagos?.ultimoPago || null,
+      tipoCambioCongelado: finanzas.tipoCambioCongelado,
+      totalCordobas: finanzas.totalCordobas,
+      totalUSDReferencia: finanzas.totalUSDReferencia,
+      anticipoSolicitado: finanzas.anticipoRequeridoUSDReferencia,
+      anticipoPagado: finanzas.pagadoUSD,
+      anticipoRequeridoCordobas: finanzas.anticipoRequeridoCordobas,
+      anticipoRequeridoUSDReferencia: finanzas.anticipoRequeridoUSDReferencia,
+      saldoContraEntregaCordobas: finanzas.saldoContraEntregaCordobas,
+      saldoReal: finanzas.saldoUSD,
+      saldoRealCordobas: finanzas.saldoCordobas,
       actualizado_en: new Date().toISOString(),
     },
     actualizado_en: new Date().toISOString(),
   };
 }
-
 function unirPedidos(locales = [], remotos = []) {
   const mapa = new Map();
 
@@ -2229,6 +2326,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
