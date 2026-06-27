@@ -12,6 +12,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useCore } from '../core/context/CoreContext';
 import { generarProduccionAutomatica } from '../services/motorProduccion';
 
 const estados = [
@@ -59,6 +60,12 @@ export default function PedidosProduccion() {
     calcularUtilidadReal,
     generarComisionAutomatica,
   } = useApp();
+
+  const {
+    crearCuentaPorCobrar,
+    crearCuentaPorPagar,
+    crearMovimientoFlujoCaja,
+  } = useCore();
 
   const [busqueda, setBusqueda] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('Todos');
@@ -210,6 +217,54 @@ export default function PedidosProduccion() {
           nota: `Pago cliente registrado. Recibo ${numeroRecibo}. USD ${montoUSD.toFixed(2)}.`,
         },
       ],
+    });
+
+    const clienteNombre =
+      pedidoActivo.cliente?.empresa ||
+      pedidoActivo.cliente?.nombre ||
+      pedidoActivo.cliente?.contacto ||
+      'Cliente';
+
+    crearCuentaPorCobrar?.({
+      pedidoId: pedidoActivo.id,
+      numeroPedido: pedidoActivo.numeroPedido || pedidoActivo.numero || '',
+      numeroOT: getOT(pedidoActivo),
+      cliente: clienteNombre,
+      concepto: 'Cobro cliente ' + (pedidoActivo.numeroPedido || pedidoActivo.numero || getOT(pedidoActivo)),
+      fecha: pagoFecha,
+      fechaRegistro: new Date().toISOString(),
+      monto: total,
+      abonado: anticipoNuevo,
+      saldo: saldoNuevo,
+      saldoPendiente: saldoNuevo,
+      estado: saldoNuevo <= 0 ? 'Pagado' : 'Pago parcial',
+      origen: 'tesoreria_cliente',
+      recibo: numeroRecibo,
+      referencia: referenciaPago,
+      unidadNegocio: 'ELANVISUAL',
+    });
+
+    crearMovimientoFlujoCaja?.({
+      pedidoId: pedidoActivo.id,
+      numeroPedido: pedidoActivo.numeroPedido || pedidoActivo.numero || '',
+      numeroOT: getOT(pedidoActivo),
+      cliente: clienteNombre,
+      concepto: 'Ingreso cliente ' + numeroRecibo,
+      fecha: pagoFecha,
+      fechaRegistro: new Date().toISOString(),
+      tipo: 'Ingreso',
+      categoria: 'Cobro cliente',
+      monto: montoUSD,
+      montoUSD,
+      montoNIO,
+      moneda: pagoMoneda,
+      tipoCambio: tc,
+      formaPago: pagoForma,
+      banco: pagoBanco,
+      referencia: referenciaPago,
+      estado: 'Confirmado',
+      origen: 'tesoreria_cliente',
+      unidadNegocio: 'ELANVISUAL',
     });
 
     setPagoMonto('');
@@ -1165,6 +1220,7 @@ setMenuOtAbierto(false);
     </main>
   );
 }
+
 
 
 

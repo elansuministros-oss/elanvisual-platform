@@ -20,6 +20,7 @@ import {
   WalletCards,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useCore } from '../core/context/CoreContext';
 
 const money = (valor) =>
   new Intl.NumberFormat('es-NI', {
@@ -187,6 +188,7 @@ function MiniAction({ icon, title, desc, onClick }) {
 
 export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
   const app = useApp();
+  const core = useCore();
   const [area, setArea] = useState(areaInicial);
 
   const {
@@ -206,6 +208,9 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
 
   const data = useMemo(() => {
     const listaPedidos = Array.isArray(pedidos) ? pedidos : [];
+    const cuentasPorCobrar = Array.isArray(core?.cuentasPorCobrar) ? core.cuentasPorCobrar : [];
+    const cuentasPorPagar = Array.isArray(core?.cuentasPorPagar) ? core.cuentasPorPagar : [];
+    const flujoCaja = Array.isArray(core?.flujoCaja) ? core.flujoCaja : [];
 
     const pedidosActivos = listaPedidos.filter((p) => estadoActivo(p.estado)).length;
     const produccionActiva = listaPedidos.filter((p) => estadoActivo(p.estadoProduccion)).length;
@@ -215,10 +220,18 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
       0
     );
 
-    const cxc = listaPedidos.reduce(
-      (acc, p) => acc + Number(p.saldoPendiente || p.saldo || 0),
+    const cxc = cuentasPorCobrar.reduce(
+      (acc, item) => acc + Number(item.saldo || item.saldoPendiente || item.pendiente || item.montoPendiente || item.totalPendiente || 0),
       0
     );
+
+    const cxp = cuentasPorPagar.reduce(
+      (acc, item) => acc + Number(item.saldo || item.saldoPendiente || item.pendiente || item.montoPendiente || item.totalPendiente || 0),
+      0
+    );
+
+    const ingresosCaja = flujoCaja.filter((item) => String(item.tipo || '').toLowerCase() === 'ingreso').reduce((acc, item) => acc + Number(item.monto || item.total || 0), 0);
+    const egresosCaja = flujoCaja.filter((item) => String(item.tipo || '').toLowerCase() === 'egreso').reduce((acc, item) => acc + Number(item.monto || item.total || 0), 0);
 
     const utilidadRealTotal = (utilidadesReales || []).reduce(
       (acc, item) => acc + Number(item.utilidadReal || 0),
@@ -259,6 +272,9 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
       usuarios: contador(usuarios),
       totalVentas,
       cxc,
+      cxp,
+      ingresosCaja,
+      egresosCaja,
       utilidadRealTotal,
       totalComisiones,
       totalComunidad,
@@ -270,6 +286,7 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     clientes,
     productos,
     pedidos,
+    core,
     trabajos,
     banners,
     usuarios,
@@ -319,7 +336,7 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
       key: 'finanzas',
       title: 'Finanzas',
       count: money(data.cxc),
-      desc: 'CxC estimada',
+      desc: 'CxC CoreContext',
       icon: <WalletCards size={22} />,
       accent: '#0f766e',
     },
@@ -400,7 +417,7 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     if (area === 'finanzas') {
       return (
         <>
-          <MiniAction icon={<WalletCards size={20} />} title="Cobros pendientes" desc="CxC desde pedidos existentes." onClick={() => setPage('pedidos')} />
+          <MiniAction icon={<WalletCards size={20} />} title="Cobros pendientes" desc="CxC desde CoreContext." onClick={() => setPage('pedidos')} />
           <MiniAction icon={<HandCoins size={20} />} title="Ventas registradas" desc="Total acumulado de pedidos." onClick={() => setPage('pedidos')} />
           <MiniAction icon={<BarChart3 size={20} />} title="Reporte financiero" desc="Base para siguiente fase ERP." onClick={() => setArea('reportes')} />
         </>
@@ -584,3 +601,5 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     </main>
   );
 }
+
+
