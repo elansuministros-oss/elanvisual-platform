@@ -15,9 +15,15 @@
         </div>
       </div>
 
-      <div className="printy-hero-card">
-        <span>Producción personalizada</span>
-        <strong>Diseño + fabricación + instalación</strong>
+      <div className="printy-hero-image">
+        <img
+          src="https://images.unsplash.com/photo-1577401239170-897942555fb3?auto=format&fit=crop&w=1200&q=90"
+          alt="Rotulación luminosa ELANVISUAL"
+        />
+
+        <a className="printy-floating-btn" href="/contacto">
+          Cotizar diseño
+        </a>
       </div>
     </section>
   );
