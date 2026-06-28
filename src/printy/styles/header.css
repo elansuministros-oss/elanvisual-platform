@@ -8,7 +8,7 @@
     display:flex;
     align-items:center;
     padding:0 18px;
-    gap:28px;
+    gap:18px;
     box-sizing:border-box;
 }
 
@@ -16,23 +16,7 @@
     flex:0 0 auto;
     display:flex;
     align-items:center;
-    margin-right:80px;
-}
-
-.printy-nav{
-    flex:1;
-    display:flex;
-    align-items:center;
-    justify-content:flex-start;
-    gap:30px;
-
-    margin-left:0;
-
-    color:#fff;
-    font-size:12px;
-    font-weight:800;
-    letter-spacing:.035em;
-    text-transform:uppercase;
+    margin-right:0;
 }
 
 .printy-logo img{
@@ -42,11 +26,14 @@
 }
 
 .printy-nav{
-    flex:1;
+    flex:0 0 auto;
+    margin-left:auto;
+
     display:flex;
     align-items:center;
-    justify-content:flex-start;
-    gap:30px;
+    justify-content:flex-end;
+    gap:28px;
+
     color:#fff;
     font-size:12px;
     font-weight:800;
@@ -76,6 +63,7 @@
     font-weight:900;
     cursor:pointer;
     white-space:nowrap;
+    margin-left:8px;
 }
 
 .printy-icons{
@@ -99,7 +87,7 @@
 @media (max-width:1100px){
     .printy-header{
         padding:0 14px;
-        gap:20px;
+        gap:14px;
     }
 
     .printy-nav{
@@ -111,4 +99,3 @@
         height:25px;
     }
 }
-
