@@ -62,7 +62,7 @@ export default function Home({ setPage }) {
           .sort((a, b) => Number(a.orden || 999) - Number(b.orden || 999))
       : [];
 
-    return lista.length > 0 ? lista : categoriasFallback;
+    return lista;
   }, [categoriasHome]);
 
   useEffect(() => {
