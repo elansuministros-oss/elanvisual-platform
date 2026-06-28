@@ -177,3 +177,89 @@
     justify-content: center;
   }
 }
+
+.catalog-page .store-ai-banner {
+  width: 100%;
+  margin: 0 0 30px !important;
+  padding: 36px !important;
+  border-radius: 30px !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f3f6f9 100%) !important;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08) !important;
+  display: grid !important;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(620px, 1.35fr) !important;
+  gap: 42px !important;
+  align-items: center !important;
+}
+
+.catalog-page .store-ai-copy {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+
+.catalog-page .store-ai-copy h1 {
+  margin: 18px 0 14px !important;
+  font-size: clamp(46px, 5vw, 72px) !important;
+  line-height: 0.95 !important;
+  letter-spacing: -0.06em !important;
+  color: #070707 !important;
+}
+
+.catalog-page .store-ai-copy p {
+  margin: 0 0 28px !important;
+  font-size: 20px !important;
+  line-height: 1.5 !important;
+  color: #4b5563 !important;
+  font-weight: 500 !important;
+}
+
+.catalog-page .store-ai-flow {
+  display: grid !important;
+  grid-template-columns: 1fr 34px 1.15fr 34px 1fr !important;
+  gap: 18px !important;
+  align-items: center !important;
+}
+
+.catalog-page .store-ai-step {
+  min-height: 220px !important;
+  background: #fff !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-radius: 18px !important;
+  padding: 22px !important;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08) !important;
+}
+
+.catalog-page .store-ai-arrow {
+  display: block !important;
+  width: 34px !important;
+  color: #111 !important;
+}
+
+@media (max-width: 1100px) {
+  .catalog-page .store-ai-banner {
+    grid-template-columns: 1fr !important;
+  }
+
+  .catalog-page .store-ai-flow {
+    grid-template-columns: 1fr !important;
+  }
+
+  .catalog-page .store-ai-arrow {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .catalog-page .store-ai-banner {
+    padding: 22px !important;
+    border-radius: 22px !important;
+  }
+
+  .catalog-page .store-ai-copy h1 {
+    font-size: 42px !important;
+  }
+
+  .catalog-page .store-ai-copy p {
+    font-size: 17px !important;
+  }
+}
