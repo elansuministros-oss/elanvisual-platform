@@ -20,9 +20,20 @@ import {
 import { useApp } from '../context/AppContext';
 import MediaLibrary from '../components/MediaLibrary';
 
+const slugify = (value = '') =>
+  String(value)
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+
 const nuevoServicioBase = {
   nombre: '',
-  categoria: 'Rotulacion',
+  categoria: '',
+  categoriaSlug: '',
+  categoriaHomeId: '',
   descripcion: '',
   medidas: '',
   imagen: '',
@@ -56,6 +67,7 @@ export default function AdminPanel() {
     productos = [],
     trabajos = [],
     banners = [],
+    categoriasHome = [],
     pedidos = [],
     usuarios = [],
     imagenes = [],
@@ -81,6 +93,17 @@ export default function AdminPanel() {
   const [editandoServicioId, setEditandoServicioId] = useState(null);
   const [editandoTrabajoId, setEditandoTrabajoId] = useState(null);
   const [editandoBannerId, setEditandoBannerId] = useState(null);
+
+  const categoriasDisponibles = useMemo(() => {
+    return [...categoriasHome]
+      .filter((cat) => cat?.activo !== false)
+      .map((cat) => ({
+        id: cat.id,
+        nombre: cat.nombre || cat.titulo || 'Categoria',
+        slug: cat.slug || slugify(cat.nombre || cat.titulo || cat.id),
+      }))
+      .sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }, [categoriasHome]);
 
   const kpis = [
     { label: 'Servicios', value: productos.length },
@@ -143,11 +166,28 @@ export default function AdminPanel() {
     setEditandoBannerId(null);
   };
 
+  const cambiarCategoriaServicio = (slug) => {
+    const categoria = categoriasDisponibles.find((cat) => cat.slug === slug);
+
+    setServicio({
+      ...servicio,
+      categoria: categoria?.nombre || '',
+      categoriaSlug: categoria?.slug || '',
+      categoriaHomeId: categoria?.id || '',
+    });
+  };
+
   const guardarServicio = () => {
     if (!servicio.nombre.trim()) return alert('Escribi el nombre del servicio.');
+    if (!servicio.categoriaSlug) return alert('Selecciona la Categoria Home donde aparecera este servicio.');
+
+    const categoria = categoriasDisponibles.find((cat) => cat.slug === servicio.categoriaSlug);
 
     const datos = {
       ...servicio,
+      categoria: categoria?.nombre || servicio.categoria || '',
+      categoriaSlug: categoria?.slug || servicio.categoriaSlug || slugify(servicio.categoria),
+      categoriaHomeId: categoria?.id || servicio.categoriaHomeId || '',
       precio: Number(servicio.precio || 0),
       activo: servicio.activo !== false,
     };
@@ -209,9 +249,14 @@ export default function AdminPanel() {
   };
 
   const editarServicio = (p) => {
+    const slug = p.categoriaSlug || slugify(p.categoria || 'Rotulacion');
+    const categoria = categoriasDisponibles.find((cat) => cat.slug === slug);
+
     setServicio({
       nombre: p.nombre || '',
-      categoria: p.categoria || 'Rotulacion',
+      categoria: categoria?.nombre || p.categoria || '',
+      categoriaSlug: categoria?.slug || slug,
+      categoriaHomeId: categoria?.id || p.categoriaHomeId || '',
       descripcion: p.descripcion || '',
       medidas: p.medidas || '',
       imagen: p.imagen || '',
@@ -356,7 +401,16 @@ export default function AdminPanel() {
 
           <div className="form-grid">
             <input placeholder="Nombre del servicio" value={servicio.nombre} onChange={(e) => setServicio({ ...servicio, nombre: e.target.value })} />
-            <input placeholder="Categoria" value={servicio.categoria} onChange={(e) => setServicio({ ...servicio, categoria: e.target.value })} />
+
+            <select value={servicio.categoriaSlug || ''} onChange={(e) => cambiarCategoriaServicio(e.target.value)}>
+              <option value="">Seleccionar Categoria Home</option>
+              {categoriasDisponibles.map((cat) => (
+                <option key={cat.id || cat.slug} value={cat.slug}>
+                  {cat.nombre}
+                </option>
+              ))}
+            </select>
+
             <input placeholder="Medidas / referencia" value={servicio.medidas} onChange={(e) => setServicio({ ...servicio, medidas: e.target.value })} />
             <input placeholder="Etiqueta de precio opcional" value={servicio.etiqueta} onChange={(e) => setServicio({ ...servicio, etiqueta: e.target.value })} />
             <input type="number" placeholder="Precio base USD" value={servicio.precio} onChange={(e) => setServicio({ ...servicio, precio: e.target.value })} />
@@ -386,7 +440,7 @@ export default function AdminPanel() {
             {productos.map((p) => (
               <article className="admin-row" key={p.id}>
                 {p.imagen ? <img src={p.imagen} alt={p.nombre} /> : <div className="admin-thumb-empty">IMG</div>}
-                <div><b>{p.nombre}</b><span>{p.categoria}  {p.medidas || 'Medidas por definir'}</span></div>
+                <div><b>{p.nombre}</b><span>{p.categoria || 'Sin categoria'}  {p.medidas || 'Medidas por definir'}</span></div>
                 <strong>{p.activo === false ? 'Oculto' : 'Activo'}</strong>
                 <button type="button" onClick={() => editarServicio(p)}><Pencil size={15} /> Editar</button>
                 <button type="button" onClick={() => {

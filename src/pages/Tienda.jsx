@@ -21,8 +21,22 @@ const slugify = (value) =>
 
 const imagenFallback = '/productos/portada-visual.png';
 
+const obtenerImagenCategoria = (categoria = {}) =>
+  categoria.imagenDesktop ||
+  categoria.imagenRuta ||
+  categoria.imagen ||
+  categoria.img ||
+  categoria.imagenMobile ||
+  imagenFallback;
+
 export default function Tienda({ setPage }) {
-  const { productos = [], agregar, carrito = [] } = useApp();
+  const {
+    productos = [],
+    categoriasHome = [],
+    agregar,
+    carrito = [],
+  } = useApp();
+
   const [busqueda, setBusqueda] = useState('');
 
   const slugInicial = (() => {
@@ -33,54 +47,70 @@ export default function Tienda({ setPage }) {
 
   const [categoriaActiva, setCategoriaActiva] = useState(slugInicial);
 
+  const categoriasOficiales = useMemo(() => {
+    return Array.isArray(categoriasHome)
+      ? categoriasHome
+          .filter((categoria) => categoria?.activo !== false)
+          .map((categoria) => ({
+            ...categoria,
+            id: categoria.id || `cat-${slugify(categoria.nombre || categoria.titulo || 'general')}`,
+            nombre: texto(categoria.nombre || categoria.titulo || 'Categoria ELANVISUAL'),
+            slug: categoria.slug || slugify(categoria.nombre || categoria.titulo || categoria.id || 'general'),
+            imagen: obtenerImagenCategoria(categoria),
+            orden: Number(categoria.orden || 999),
+          }))
+          .filter((categoria) => categoria.slug)
+          .sort((a, b) => Number(a.orden || 999) - Number(b.orden || 999))
+      : [];
+  }, [categoriasHome]);
+
   const productosNormalizados = useMemo(() => {
     return productos
       .filter((producto) => producto?.activo !== false)
-      .map((producto) => ({
-        ...producto,
-        id: producto.id || producto.codigo || producto.nombre,
-        nombre: texto(producto.nombre) || 'Producto ELANVISUAL',
-        descripcion: texto(producto.descripcion) || 'Producto disponible para compra.',
-        categoria: texto(producto.categoria) || 'General',
-        slugCategoria: slugify(texto(producto.categoria) || 'General'),
-        imagen: texto(producto.imagen) || texto(producto.url) || imagenFallback,
-        precio: Number(producto.precio || producto.precioUSD || producto.precio_usd || 0),
-      }));
-  }, [productos]);
+      .map((producto) => {
+        const slugCategoria =
+          producto.categoriaSlug ||
+          producto.slugCategoria ||
+          slugify(texto(producto.categoria) || 'general');
+
+        const categoriaOficial = categoriasOficiales.find((cat) => cat.slug === slugCategoria);
+
+        return {
+          ...producto,
+          id: producto.id || producto.codigo || producto.nombre,
+          nombre: texto(producto.nombre) || 'Producto ELANVISUAL',
+          descripcion: texto(producto.descripcion) || 'Producto disponible para compra.',
+          categoria: categoriaOficial?.nombre || texto(producto.categoria) || 'General',
+          categoriaSlug: categoriaOficial?.slug || slugCategoria,
+          categoriaHomeId: categoriaOficial?.id || producto.categoriaHomeId || '',
+          imagen: texto(producto.imagen) || texto(producto.url) || imagenFallback,
+          precio: Number(producto.precio || producto.precioUSD || producto.precio_usd || 0),
+        };
+      });
+  }, [productos, categoriasOficiales]);
 
   const categorias = useMemo(() => {
-    const mapa = new Map();
+    return categoriasOficiales
+      .map((categoria) => {
+        const productosCategoria = productosNormalizados.filter(
+          (producto) => producto.categoriaSlug === categoria.slug
+        );
 
-    productosNormalizados.forEach((producto) => {
-      const slug = producto.slugCategoria || 'general';
+        return {
+          ...categoria,
+          cantidad: productosCategoria.length,
+        };
+      })
+      .filter((categoria) => categoria.cantidad > 0);
+  }, [categoriasOficiales, productosNormalizados]);
 
-      if (!mapa.has(slug)) {
-        mapa.set(slug, {
-          slug,
-          nombre: producto.categoria || 'General',
-          imagen: producto.imagen || imagenFallback,
-          cantidad: 0,
-        });
-      }
-
-      const actual = mapa.get(slug);
-      actual.cantidad += 1;
-
-      if ((!actual.imagen || actual.imagen === imagenFallback) && producto.imagen) {
-        actual.imagen = producto.imagen;
-      }
-    });
-
-    return Array.from(mapa.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
-  }, [productosNormalizados]);
-
-  const categoriaSeleccionada = categorias.find((item) => item.slug === categoriaActiva);
+  const categoriaSeleccionada = categoriasOficiales.find((item) => item.slug === categoriaActiva);
 
   const productosFiltrados = useMemo(() => {
     const q = busqueda.toLowerCase().trim();
 
     return productosNormalizados
-      .filter((producto) => !categoriaActiva || producto.slugCategoria === categoriaActiva)
+      .filter((producto) => !categoriaActiva || producto.categoriaSlug === categoriaActiva)
       .filter((producto) => {
         if (!q) return true;
 
@@ -120,7 +150,11 @@ export default function Tienda({ setPage }) {
       <section className="catalog-hero">
         <div>
           <span className="badge">ELANVISUAL · Tienda</span>
-          <h1>{categoriaActiva ? categoriaSeleccionada?.nombre || 'Productos' : 'Categorias de productos'}</h1>
+          <h1>
+            {categoriaActiva
+              ? categoriaSeleccionada?.nombre || 'Productos'
+              : 'Categorias de productos'}
+          </h1>
           <p>
             {categoriaActiva
               ? 'Selecciona el producto que queres cotizar o agregar al carrito.'
@@ -226,14 +260,18 @@ export default function Tienda({ setPage }) {
       {!categoriaActiva && categorias.length === 0 && (
         <section className="panel empty-catalog">
           <h2>No hay categorias disponibles</h2>
-          <p className="note">Agrega productos activos con categoria desde el panel administrativo.</p>
+          <p className="note">
+            Agrega productos activos y asignales una Categoria Home desde el panel administrativo.
+          </p>
         </section>
       )}
 
       {categoriaActiva && productosFiltrados.length === 0 && (
         <section className="panel empty-catalog">
           <h2>No hay productos disponibles</h2>
-          <p className="note">Agrega productos activos en esta categoria desde el panel administrativo.</p>
+          <p className="note">
+            Agrega productos activos en esta categoria desde el panel administrativo.
+          </p>
         </section>
       )}
     </main>
