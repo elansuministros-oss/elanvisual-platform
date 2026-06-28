@@ -1,5 +1,5 @@
 ﻿import React, { useMemo, useState } from 'react';
-import { PackageSearch, Search, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, PackageSearch, Search, ShoppingCart } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const moneyUSD = (value) =>
@@ -11,13 +11,29 @@ const moneyUSD = (value) =>
 
 const texto = (value) => String(value || '').trim();
 
+const slugify = (value) =>
+  texto(value)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+
+const imagenFallback = '/productos/portada-visual.png';
+
 export default function Tienda({ setPage }) {
   const { productos = [], agregar, carrito = [] } = useApp();
   const [busqueda, setBusqueda] = useState('');
 
-  const productosTienda = useMemo(() => {
-    const q = busqueda.toLowerCase().trim();
+  const slugInicial = (() => {
+    const path = window.location.pathname || '/tienda';
+    const partes = path.split('/').filter(Boolean);
+    return partes[0] === 'tienda' && partes[1] ? partes[1] : '';
+  })();
 
+  const [categoriaActiva, setCategoriaActiva] = useState(slugInicial);
+
+  const productosNormalizados = useMemo(() => {
     return productos
       .filter((producto) => producto?.activo !== false)
       .map((producto) => ({
@@ -25,10 +41,46 @@ export default function Tienda({ setPage }) {
         id: producto.id || producto.codigo || producto.nombre,
         nombre: texto(producto.nombre) || 'Producto ELANVISUAL',
         descripcion: texto(producto.descripcion) || 'Producto disponible para compra.',
-        categoria: texto(producto.categoria) || 'Producto',
-        imagen: texto(producto.imagen) || texto(producto.url) || '/productos/portada-visual.png',
+        categoria: texto(producto.categoria) || 'General',
+        slugCategoria: slugify(texto(producto.categoria) || 'General'),
+        imagen: texto(producto.imagen) || texto(producto.url) || imagenFallback,
         precio: Number(producto.precio || producto.precioUSD || producto.precio_usd || 0),
-      }))
+      }));
+  }, [productos]);
+
+  const categorias = useMemo(() => {
+    const mapa = new Map();
+
+    productosNormalizados.forEach((producto) => {
+      const slug = producto.slugCategoria || 'general';
+
+      if (!mapa.has(slug)) {
+        mapa.set(slug, {
+          slug,
+          nombre: producto.categoria || 'General',
+          imagen: producto.imagen || imagenFallback,
+          cantidad: 0,
+        });
+      }
+
+      const actual = mapa.get(slug);
+      actual.cantidad += 1;
+
+      if ((!actual.imagen || actual.imagen === imagenFallback) && producto.imagen) {
+        actual.imagen = producto.imagen;
+      }
+    });
+
+    return Array.from(mapa.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
+  }, [productosNormalizados]);
+
+  const categoriaSeleccionada = categorias.find((item) => item.slug === categoriaActiva);
+
+  const productosFiltrados = useMemo(() => {
+    const q = busqueda.toLowerCase().trim();
+
+    return productosNormalizados
+      .filter((producto) => !categoriaActiva || producto.slugCategoria === categoriaActiva)
       .filter((producto) => {
         if (!q) return true;
 
@@ -36,12 +88,26 @@ export default function Tienda({ setPage }) {
           .toLowerCase()
           .includes(q);
       });
-  }, [productos, busqueda]);
+  }, [productosNormalizados, categoriaActiva, busqueda]);
 
   const cantidadCarrito = carrito.reduce(
     (acc, item) => acc + Number(item?.cantidad || 1),
     0
   );
+
+  const abrirCategoria = (slug) => {
+    setCategoriaActiva(slug);
+    setBusqueda('');
+    window.history.pushState({}, '', `/tienda/${slug}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const volverCategorias = () => {
+    setCategoriaActiva('');
+    setBusqueda('');
+    window.history.pushState({}, '', '/tienda');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const agregarAlCarrito = (producto) => {
     if (typeof agregar === 'function') {
@@ -54,10 +120,11 @@ export default function Tienda({ setPage }) {
       <section className="catalog-hero">
         <div>
           <span className="badge">ELANVISUAL · Tienda</span>
-          <h1>Productos listos para comprar</h1>
+          <h1>{categoriaActiva ? categoriaSeleccionada?.nombre || 'Productos' : 'Categorias de productos'}</h1>
           <p>
-            Productos registrados con precio en USD. Esta sección usa la misma base de productos
-            del cotizador y del carrito.
+            {categoriaActiva
+              ? 'Selecciona el producto que queres cotizar o agregar al carrito.'
+              : 'Explora por categoria. Primero elegi el tipo de solucion y luego mira los productos disponibles.'}
           </p>
         </div>
 
@@ -69,14 +136,23 @@ export default function Tienda({ setPage }) {
       </section>
 
       <section className="catalog-tools">
-        <div className="search-box">
-          <Search size={18} />
-          <input
-            placeholder="Buscar producto, medida o categoría..."
-            value={busqueda}
-            onChange={(event) => setBusqueda(event.target.value)}
-          />
-        </div>
+        {categoriaActiva ? (
+          <button type="button" className="filter-label" onClick={volverCategorias}>
+            <ArrowLeft size={18} />
+            Categorias
+          </button>
+        ) : null}
+
+        {categoriaActiva ? (
+          <div className="search-box">
+            <Search size={18} />
+            <input
+              placeholder="Buscar producto dentro de esta categoria..."
+              value={busqueda}
+              onChange={(event) => setBusqueda(event.target.value)}
+            />
+          </div>
+        ) : null}
 
         <button type="button" className="filter-label" onClick={() => setPage?.('carrito')}>
           <ShoppingCart size={18} />
@@ -84,45 +160,80 @@ export default function Tienda({ setPage }) {
         </button>
       </section>
 
-      <div className="product-grid">
-        {productosTienda.map((producto) => (
-          <article className="product-card" key={producto.id}>
-            <div className="product-image-wrap">
-              <img
-                className="product-image"
-                src={producto.imagen}
-                alt={producto.nombre}
-                loading="lazy"
-              />
-              {producto.etiqueta ? (
-                <span className="product-tag">{producto.etiqueta}</span>
-              ) : null}
-            </div>
-
-            <div className="product-body">
-              <small>{producto.categoria}</small>
-              <h3>{producto.nombre}</h3>
-              <p>{producto.descripcion}</p>
-
-              <div className="product-footer">
-                <strong className="price">
-                  {producto.precio > 0 ? moneyUSD(producto.precio) : 'Consultar'}
-                </strong>
-
-                <button type="button" onClick={() => agregarAlCarrito(producto)}>
-                  <PackageSearch size={16} />
-                  Agregar
-                </button>
+      {!categoriaActiva && (
+        <div className="product-grid">
+          {categorias.map((categoria) => (
+            <button
+              type="button"
+              className="product-card"
+              key={categoria.slug}
+              onClick={() => abrirCategoria(categoria.slug)}
+              style={{ textAlign: 'left', cursor: 'pointer' }}
+            >
+              <div className="product-image-wrap">
+                <img
+                  className="product-image"
+                  src={categoria.imagen || imagenFallback}
+                  alt={categoria.nombre}
+                  loading="lazy"
+                />
               </div>
-            </div>
-          </article>
-        ))}
-      </div>
 
-      {productosTienda.length === 0 && (
+              <div className="product-body">
+                <h3>{categoria.nombre}</h3>
+                <p>{categoria.cantidad} producto(s)</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {categoriaActiva && (
+        <div className="product-grid">
+          {productosFiltrados.map((producto) => (
+            <article className="product-card" key={producto.id}>
+              <div className="product-image-wrap">
+                <img
+                  className="product-image"
+                  src={producto.imagen}
+                  alt={producto.nombre}
+                  loading="lazy"
+                />
+                {producto.etiqueta ? (
+                  <span className="product-tag">{producto.etiqueta}</span>
+                ) : null}
+              </div>
+
+              <div className="product-body">
+                <small>{producto.categoria}</small>
+                <h3>{producto.nombre}</h3>
+                <p>{producto.descripcion}</p>
+
+                <div className="product-footer">
+                  <strong className="price">
+                    {producto.precio > 0 ? moneyUSD(producto.precio) : 'Consultar'}
+                  </strong>
+                  <button type="button" onClick={() => agregarAlCarrito(producto)}>
+                    <PackageSearch size={16} />
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {!categoriaActiva && categorias.length === 0 && (
+        <section className="panel empty-catalog">
+          <h2>No hay categorias disponibles</h2>
+          <p className="note">Agrega productos activos con categoria desde el panel administrativo.</p>
+        </section>
+      )}
+
+      {categoriaActiva && productosFiltrados.length === 0 && (
         <section className="panel empty-catalog">
           <h2>No hay productos disponibles</h2>
-          <p className="note">Agregá productos activos desde el panel administrativo.</p>
+          <p className="note">Agrega productos activos en esta categoria desde el panel administrativo.</p>
         </section>
       )}
     </main>
