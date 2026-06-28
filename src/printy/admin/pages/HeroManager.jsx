@@ -26,67 +26,36 @@ export default function HeroManager(){
 
   };
 
-  const updateBoton = (btn, field, value) => {
-
-    const updated = { ...hero };
-
-    updated[btn][field] = value;
-
-    setHero(updated);
-
-    saveHero(updated);
-
-  };
-
   return (
 
     <div className="hero-manager">
 
-      <h2>HERO CMS</h2>
+      <h2>Hero Printy</h2>
 
-      <label>Imagen Desktop</label>
+      <p>
+        El Hero no usa titulo, subtitulo ni descripcion HTML.
+        Todo el mensaje debe venir integrado dentro de la imagen del banner.
+      </p>
+
+      <label>Imagen Desktop / PC</label>
 
       <ImagePicker
-        value={hero.desktop}
+        value={hero.desktop || ""}
         onSelect={(url)=>update("desktop", url)}
       />
 
       <label>Imagen Mobile</label>
 
       <ImagePicker
-        value={hero.mobile}
+        value={hero.mobile || ""}
         onSelect={(url)=>update("mobile", url)}
-      />
-
-      <h3>Botón Negro</h3>
-
-      <input
-        value={hero.boton1.texto}
-        onChange={(e)=>updateBoton("boton1","texto",e.target.value)}
-      />
-
-      <input
-        value={hero.boton1.link}
-        onChange={(e)=>updateBoton("boton1","link",e.target.value)}
-      />
-
-      <h3>Botón Amarillo</h3>
-
-      <input
-        value={hero.boton2.texto}
-        onChange={(e)=>updateBoton("boton2","texto",e.target.value)}
-      />
-
-      <input
-        value={hero.boton2.link}
-        onChange={(e)=>updateBoton("boton2","link",e.target.value)}
       />
 
       <label>
 
         <input
           type="checkbox"
-          checked={hero.activo}
+          checked={!!hero.activo}
           onChange={(e)=>update("activo", e.target.checked)}
         />
 

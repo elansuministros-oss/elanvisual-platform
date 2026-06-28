@@ -1,7 +1,6 @@
 ﻿import React from "react";
 
-export default function Sidebar({ page, setPage }){
-
+export default function Sidebar({ page, setPage }) {
   const items = [
     { id: "dashboard", label: "Dashboard" },
     { id: "hero", label: "Hero" },
@@ -14,27 +13,21 @@ export default function Sidebar({ page, setPage }){
   ];
 
   return (
+    <aside className="printy-admin-sidebar">
+      <div className="printy-admin-sidebar-title">
+        PRINTY CMS
+      </div>
 
-    <aside style={{width:"220px", background:"#111", color:"#fff", minHeight:"100vh", padding:"20px"}}>
-
-      <h2>PRINTY</h2>
-
-      {items.map(i => (
-
-        <div
-          key={i.id}
-          onClick={()=>setPage(i.id)}
-          style={{padding:"10px", cursor:"pointer"}}
+      {items.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          onClick={() => setPage(item.id)}
+          className={page === item.id ? "active" : ""}
         >
-
-          {i.label}
-
-        </div>
-
+          {item.label}
+        </button>
       ))}
-
     </aside>
-
   );
-
 }

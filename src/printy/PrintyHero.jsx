@@ -3,41 +3,42 @@ import { getHero } from "./data/printyStore";
 
 export default function PrintyHero(){
 
-  const [hero, setHero] = useState(getHero());
+  const [hero,setHero]=useState(getHero());
 
   useEffect(()=>{
 
-    const update = () => setHero(getHero());
+    const update=()=>setHero(getHero());
 
-    window.addEventListener("printy-data-updated", update);
+    window.addEventListener("printy-data-updated",update);
 
-    return () => window.removeEventListener("printy-data-updated", update);
+    return()=>window.removeEventListener("printy-data-updated",update);
 
   },[]);
 
-  if(!hero.activo) return null;
+  if(!hero?.activo) return null;
 
-  return (
+  const desktop = hero?.desktop || "";
+  const mobile = hero?.mobile || desktop;
+
+  if(!desktop) return null;
+
+  return(
 
     <section className="printy-hero">
 
-      <img
-        src={hero.desktop}
-        alt=""
-        style={{width:"100%", display:"block"}}
-      />
+      <picture>
 
-      <div className="hero-buttons">
+        {mobile && (
+          <source media="(max-width:768px)" srcSet={mobile}/>
+        )}
 
-        <a className="btn-black" href={hero.boton1.link}>
-          {hero.boton1.texto}
-        </a>
+        <img
+          src={desktop}
+          alt="Banner Printy"
+          loading="eager"
+        />
 
-        <a className="btn-yellow" href={hero.boton2.link}>
-          {hero.boton2.texto}
-        </a>
-
-      </div>
+      </picture>
 
     </section>
 

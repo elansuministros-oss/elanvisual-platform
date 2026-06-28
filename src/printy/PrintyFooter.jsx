@@ -1,8 +1,8 @@
 ﻿export default function PrintyFooter() {
   return (
     <footer className="printy-footer">
-      <strong>ELANVISUAL</strong>
-      <span>Rotulación · Impresión · Acrílico · PVC · Estructuras</span>
+      <strong>VISUAL KAV PRINTY</strong>
+      <span>One Vision - Multiple Solutions</span>
     </footer>
   );
 }

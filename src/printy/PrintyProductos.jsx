@@ -1,80 +1,44 @@
-﻿import { useEffect, useState } from "react";
-import { getProductos, getCategorias } from "./data/printyStore";
+﻿const productos = [
+  "Letreros luminosos",
+  "Letras 3D",
+  "Botones acrilicos",
+  "Jalavistas",
+  "Vinil impreso",
+  "Displays",
+  "Senalizacion",
+  "Exhibidores"
+];
 
-export default function PrintyProductos(){
-
-  const [productos, setProductos] = useState(getProductos());
-  const [categorias, setCategorias] = useState(getCategorias());
-  const [filtro, setFiltro] = useState("todos");
-
-  useEffect(()=>{
-
-    const update = () => {
-      setProductos(getProductos());
-      setCategorias(getCategorias());
-    };
-
-    window.addEventListener("printy-data-updated", update);
-
-    return () => window.removeEventListener("printy-data-updated", update);
-
-  },[]);
-
-  const filtrados = filtro === "todos"
-    ? productos
-    : productos.filter(p => p.categoria === filtro);
-
+export default function PrintyProductos() {
   return (
-
-    <section className="printy-productos">
-
-      {/* FILTROS CATEGORÍAS */}
-
-      <div className="printy-filtros">
-
-        <button
-          onClick={()=>setFiltro("todos")}
-          className={filtro === "todos" ? "active" : ""}
-        >
-          Todos
-        </button>
-
-        {categorias.map(cat => (
-
-          <button
-            key={cat.id}
-            onClick={()=>setFiltro(cat.nombre)}
-            className={filtro === cat.nombre ? "active" : ""}
-          >
-            {cat.nombre}
-          </button>
-
-        ))}
-
+    <section className="printy-products" id="productos">
+      <div className="printy-section-head">
+        <span>Catalogo</span>
+        <h2>Productos destacados</h2>
       </div>
-
-      {/* GRID PRODUCTOS */}
 
       <div className="printy-grid">
-
-        {filtrados.map(p => (
-
-          <div key={p.id} className="producto-card">
-
-            <img src={p.imagen} alt={p.nombre} />
-
-            <h3>{p.nombre}</h3>
-
-            <p>{p.precio}</p>
-
-          </div>
-
+        {productos.map((item) => (
+          <article className="printy-card" key={item}>
+            <div className="printy-card-image" />
+            <h3>{item}</h3>
+            <p>Cotizacion personalizada segun medida, material y acabado.</p>
+            <button>Cotizar</button>
+          </article>
         ))}
-
       </div>
 
+      <section className="printy-tracking" id="tracking">
+        <div>
+          <span>Tracking</span>
+          <h2>Consulta el estado de tu pedido</h2>
+          <p>Ingresa tu codigo de orden para revisar avance, produccion y entrega.</p>
+        </div>
+        <form>
+          <input placeholder="Codigo de pedido" />
+          <button type="button">Buscar</button>
+        </form>
+      </section>
     </section>
-
   );
-
 }

@@ -1,84 +1,19 @@
-﻿import { useEffect, useState } from "react";
-import { getHeader, getCategorias } from "./data/printyStore";
-
-export default function PrintyHeader(){
-
-  const [header, setHeader] = useState(getHeader());
-  const [categorias, setCategorias] = useState(getCategorias());
-
-  useEffect(()=>{
-
-    const update = () => {
-      setHeader(getHeader());
-      setCategorias(getCategorias());
-    };
-
-    window.addEventListener("printy-data-updated", update);
-
-    return () => window.removeEventListener("printy-data-updated", update);
-
-  },[]);
-
+﻿export default function PrintyHeader() {
   return (
-
     <header className="printy-header">
-
-      <div className="printy-logo">
-
-        {header.logo ? (
-          <img src={header.logo} alt="logo" />
-        ) : (
-          <h2>PRINTY</h2>
-        )}
-
-      </div>
+      <a className="printy-logo" href="/printy">
+        <img src="/assets/branding/visualkav.svg" alt="Visual KAV" />
+      </a>
 
       <nav className="printy-nav">
-
-        {header.items.map(item => (
-
-          item.visible && (
-
-            <div key={item.id} className="nav-item">
-
-              {item.tipo === "mega" ? (
-
-                <div className="mega">
-
-                  <span>{item.nombre}</span>
-
-                  <div className="mega-panel">
-
-                    {categorias.map(cat => (
-
-                      <a key={cat.id} href={"/printy?cat=" + cat.slug}>
-                        {cat.nombre}
-                      </a>
-
-                    ))}
-
-                  </div>
-
-                </div>
-
-              ) : (
-
-                <a href={item.link}>
-                  {item.nombre}
-                </a>
-
-              )}
-
-            </div>
-
-          )
-
-        ))}
-
+        <a href="/printy">Catalogo</a>
+        <a href="/printy">Personaliza</a>
+        <a href="/printy">Espejos</a>
+        <a href="/printy">Interior</a>
+        <a href="/printy">Exterior</a>
       </nav>
 
+      <a className="printy-track" href="#tracking">Sign Tracking</a>
     </header>
-
   );
-
 }
