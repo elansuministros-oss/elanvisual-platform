@@ -186,19 +186,6 @@ export default function Home({ setPage }) {
       </section>
 
       <section className="ev-catalog-section">
-        <div className="ev-catalog-head">
-          <div>
-            <h2>Catalogo por categorias</h2>
-            <p>Elegí una categoria para ver sus productos.</p>
-          </div>
-
-          <button type="button" className="ev-cart-pill" onClick={() => go('carrito')}>
-            <ShoppingBag size={18} />
-            Carrito
-            <strong>{cantidadCarrito}</strong>
-          </button>
-        </div>
-
         <div className={`ev-catalog-grid ${categoriasHome.length === 1 ? 'single' : ''}`}>
           {categoriasHome.map((item) => (
             <button
