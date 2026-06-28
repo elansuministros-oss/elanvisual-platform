@@ -45,10 +45,18 @@ export default function Servicios({ setPage }) {
       .filter((trabajo) => trabajo?.activo !== false)
       .map((trabajo) => ({
         id: trabajo.id || trabajo.titulo || trabajo.nombre,
-        nombre: texto(trabajo.titulo) || texto(trabajo.nombre) || 'Servicio ELANVISUAL',
+        nombre:
+          texto(trabajo.titulo) ||
+          texto(trabajo.nombre) ||
+          'Servicio ELANVISUAL',
         categoria: texto(trabajo.categoria) || 'Portafolio',
-        descripcion: texto(trabajo.descripcion) || 'Trabajo realizado por ELANVISUAL.',
-        imagen: texto(trabajo.imagen) || texto(trabajo.url) || '/productos/fachada.jpg',
+        descripcion:
+          texto(trabajo.descripcion) ||
+          'Trabajo realizado por ELANVISUAL.',
+        imagen:
+          texto(trabajo.imagen) ||
+          texto(trabajo.url) ||
+          '/productos/fachada.jpg',
       }));
   }, [trabajos]);
 
@@ -66,23 +74,6 @@ export default function Servicios({ setPage }) {
 
   return (
     <main className="catalog-page">
-      <section className="catalog-hero">
-        <div>
-          <span className="badge">ELANVISUAL · Servicios</span>
-          <h1>Servicios fabricables y soluciones visuales</h1>
-          <p>
-            Esta sección funciona como portafolio de soluciones. No muestra productos de tienda,
-            precios ni carrito. Cada servicio se cotiza según medidas, materiales, ubicación e
-            instalación.
-          </p>
-        </div>
-
-        <aside className="cart-summary-mini">
-          <b>Flujo correcto</b>
-          <span>Servicio → Cotización → OT → Producción</span>
-          <strong>A cotizar</strong>
-        </aside>
-      </section>
 
       <section className="catalog-tools">
         <div className="search-box">
@@ -110,6 +101,7 @@ export default function Servicios({ setPage }) {
                   alt={servicio.nombre}
                   loading="lazy"
                 />
+
                 <span className="product-zoom-badge">
                   <Maximize2 size={15} />
                   Ampliar
@@ -119,13 +111,20 @@ export default function Servicios({ setPage }) {
 
             <div className="product-body">
               <small>{servicio.categoria}</small>
+
               <h3>{servicio.nombre}</h3>
+
               <p>{servicio.descripcion}</p>
 
               <div className="product-footer">
-                <strong className="price">A cotizar</strong>
+                <strong className="price">
+                  A cotizar
+                </strong>
 
-                <button type="button" onClick={() => setPage?.('cotizador')}>
+                <button
+                  type="button"
+                  onClick={() => setPage?.('cotizador')}
+                >
                   <BriefcaseBusiness size={16} />
                   Solicitar cotización
                 </button>
@@ -138,12 +137,18 @@ export default function Servicios({ setPage }) {
       {lista.length === 0 && (
         <section className="panel empty-catalog">
           <h2>No hay servicios disponibles</h2>
-          <p className="note">Agregá trabajos o referencias desde el panel administrativo.</p>
+
+          <p className="note">
+            Agregá trabajos o referencias desde el panel administrativo.
+          </p>
         </section>
       )}
 
       {imagenActiva && (
-        <section className="image-lightbox" onMouseDown={() => setImagenActiva(null)}>
+        <section
+          className="image-lightbox"
+          onMouseDown={() => setImagenActiva(null)}
+        >
           <button
             type="button"
             className="image-lightbox-close"
@@ -152,8 +157,14 @@ export default function Servicios({ setPage }) {
             <X size={28} />
           </button>
 
-          <div className="image-lightbox-content" onMouseDown={(event) => event.stopPropagation()}>
-            <img src={imagenActiva.imagen} alt={imagenActiva.nombre} />
+          <div
+            className="image-lightbox-content"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <img
+              src={imagenActiva.imagen}
+              alt={imagenActiva.nombre}
+            />
 
             <div className="image-lightbox-caption">
               <b>{imagenActiva.nombre}</b>
