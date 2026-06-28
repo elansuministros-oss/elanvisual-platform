@@ -154,9 +154,10 @@ export default function Tienda({ setPage }) {
   };
 
   const abrirCotizadorAI = () => {
-    setPage?.('cotizador-ai');
-    window.history.pushState({}, '', '/cotizador-ai');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const grid = document.querySelector(".product-grid");
+    if (grid) {
+      grid.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   const agregarAlCarrito = (producto) => {
@@ -326,4 +327,5 @@ export default function Tienda({ setPage }) {
     </main>
   );
 }
+
 
