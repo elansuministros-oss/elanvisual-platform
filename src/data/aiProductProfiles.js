@@ -3,59 +3,45 @@
 export const aiProductProfiles = [
   {
     id: 'boton-luminoso',
-    nombre: 'Botón luminoso',
+    nombre: 'ELAN AI Botones',
     keywords: ['boton', 'botón', 'circular', 'redondo'],
     medidaBase: '60 x 60 cm',
-    acabadoBase: 'Botón luminoso con acabado del modelo seleccionado',
-    salida: 'Render hiperrealista de botón luminoso manteniendo medida, acabado y precio base.',
-  },
-  {
-    id: 'fachada-acm',
-    nombre: 'Fachada ACM',
-    keywords: ['fachada', 'acm', 'alucobond', 'panel'],
-    medidaBase: 'Según fachada del cliente',
-    acabadoBase: 'Fachada ACM con aplicación de marca',
-    salida: 'Render hiperrealista de fachada ACM, sin convertirlo en otro producto.',
-  },
-  {
-    id: 'roll-up',
-    nombre: 'Roll Up',
-    keywords: ['roll', 'rollup', 'roll up', 'banner'],
-    medidaBase: '85 x 200 cm',
-    acabadoBase: 'Diseño vertical aplicado sobre roll up',
-    salida: 'Montaje realista del diseño del cliente en roll up.',
-  },
-  {
-    id: 'display',
-    nombre: 'Display',
-    keywords: ['display', 'exhibidor', 'punto de venta'],
-    medidaBase: 'Según modelo seleccionado',
-    acabadoBase: 'Display promocional con marca aplicada',
-    salida: 'Render hiperrealista del display manteniendo estructura y acabado.',
-  },
-  {
-    id: 'mesa-degustadora',
-    nombre: 'Mesa degustadora',
-    keywords: ['mesa', 'degustadora', 'activacion', 'activación'],
-    medidaBase: 'Mesa promocional estándar',
-    acabadoBase: 'Branding aplicado al frente y laterales',
-    salida: 'Render realista de mesa degustadora con la marca del cliente.',
+    instrucciones: `
+Eres ELAN AI BOTONES.
+
+Solo puedes diseñar botones luminosos comerciales.
+No puedes diseñar fachadas ACM, letras 3D, roll up, displays, mesas, neón, directorios ni tótems.
+
+Mantén siempre:
+- Formato de botón.
+- Medida base del producto.
+- Precio base del producto.
+- Acabado base del modelo.
+- Construcción fabricable por ELANVISUAL.
+- Materiales reales: acrílico, PVC, dorado espejo, frost, LED, estructura interna.
+- Iluminación frontal, rebote o contorno según el modelo.
+
+Render:
+- Hiperrealista.
+- Escala real.
+- Cámara 50 mm.
+- Fondo limpio.
+- Sombras reales.
+- Reflejos reales.
+- No usar fondos fantasiosos.
+
+No entregar archivos CNC, DXF, vectores finales ni archivos de producción.
+La propuesta es conceptual. La digitalización final se realiza al confirmar pedido.
+    `,
   },
 ];
 
 export function obtenerPerfilIA(producto = {}) {
-  const texto = `${producto.nombre || ''} ${producto.categoria || ''} ${producto.descripcion || ''}`.toLowerCase();
+  const base = `${producto.nombre || ''} ${producto.categoria || ''} ${producto.descripcion || ''}`.toLowerCase();
 
   return (
     aiProductProfiles.find((perfil) =>
-      perfil.keywords.some((keyword) => texto.includes(keyword))
-    ) || {
-      id: 'modelo-general',
-      nombre: producto.categoria || 'Modelo personalizado',
-      keywords: [],
-      medidaBase: 'Según modelo seleccionado',
-      acabadoBase: 'Acabado base del producto elegido',
-      salida: 'Propuesta visual basada únicamente en el modelo seleccionado.',
-    }
+      perfil.keywords.some((keyword) => base.includes(keyword))
+    ) || aiProductProfiles[0]
   );
 }

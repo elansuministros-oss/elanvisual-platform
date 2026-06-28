@@ -4,14 +4,12 @@ import {
   ArrowRight,
   CheckCircle2,
   Download,
-  MessageCircle,
   PackageSearch,
   Phone,
   Search,
   ShoppingCart,
   Sparkles,
   Upload,
-  Wand2,
   X,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -473,164 +471,89 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
       )}
 
       {modalAI && (
-        <section className="ai-model-modal" role="dialog" aria-modal="true">
-          <div className="ai-model-card">
-            <button type="button" className="ai-model-close" onClick={cerrarAI}>
+        <section className="ai-chat-modal" role="dialog" aria-modal="true">
+          <div className="ai-chat-card">
+            <button type="button" className="ai-chat-close" onClick={cerrarAI}>
               <X size={22} />
             </button>
 
-            <div className="ai-model-head">
-              <span>
-                <Wand2 size={18} />
-                ELAN AI Designer
-              </span>
-              <h2>
-                {productoBase
-                  ? `Personaliza ${productoBase.nombre}`
-                  : 'Selecciona un modelo para iniciar'}
-              </h2>
+            <div className="ai-chat-head">
+              <span><Sparkles size={18} /> ELAN AI Botones</span>
+              <h2>{productoBase?.nombre || 'Diseña tu botón luminoso'}</h2>
               <p>
-                La IA trabaja sobre el modelo elegido, mantiene el acabado base y respeta
-                el presupuesto inicial registrado.
+                {productoBase?.precio > 0 ? `Desde ${moneyUSD(productoBase.precio)} · ` : ''}
+                {perfilActivo?.medidaBase || '60 x 60 cm'}
               </p>
             </div>
 
-            {!productoBase && (
-              <div className="ai-model-grid">
-                {modelosAI.map((producto) => (
-                  <button
-                    type="button"
-                    key={producto.id}
-                    className="ai-model-option"
-                    onClick={() => setProductoAI(producto)}
-                  >
-                    <img src={producto.imagen} alt={producto.nombre} />
-                    <strong>{producto.nombre}</strong>
-                    <small>
-                      {producto.precio > 0 ? `Desde ${moneyUSD(producto.precio)}` : 'Consultar'}
-                    </small>
-                  </button>
-                ))}
+            <div className="ai-chat-body">
+              <div className="ai-chat-message ai-bot">
+                Sube tu logo, escribe tu idea y deja tu WhatsApp. Haré una propuesta basada únicamente en este modelo.
               </div>
-            )}
 
-            {productoBase && (
-              <div className="ai-builder-grid">
-                <aside className="ai-selected-model">
-                  <img src={productoBase.imagen} alt={productoBase.nombre} />
-                  <h3>{productoBase.nombre}</h3>
-                  <strong>
-                    {productoBase.precio > 0 ? `Desde ${moneyUSD(productoBase.precio)}` : 'Consultar'}
-                  </strong>
-                  <p>{perfilActivo?.medidaBase}</p>
-                  <small>{perfilActivo?.acabadoBase}</small>
-                </aside>
+              <label className="ai-chat-field">
+                <Phone size={18} />
+                <input
+                  value={formAI.whatsapp}
+                  onChange={(event) => actualizarFormAI('whatsapp', event.target.value)}
+                  placeholder="WhatsApp obligatorio"
+                />
+              </label>
 
-                <div className="ai-builder-form">
-                  <label>
-                    Nombre del negocio
-                    <input
-                      value={formAI.negocio}
-                      onChange={(event) => actualizarFormAI('negocio', event.target.value)}
-                      placeholder="Ej. Café Central"
-                    />
-                  </label>
+              <label className="ai-chat-field">
+                <input
+                  value={formAI.negocio}
+                  onChange={(event) => actualizarFormAI('negocio', event.target.value)}
+                  placeholder="Nombre del negocio"
+                />
+              </label>
 
-                  <label>
-                    WhatsApp obligatorio
-                    <div className="ai-phone-row">
-                      <Phone size={18} />
-                      <input
-                        value={formAI.whatsapp}
-                        onChange={(event) => actualizarFormAI('whatsapp', event.target.value)}
-                        placeholder="+505 8888 8888"
-                      />
-                    </div>
-                  </label>
+              <label className="ai-chat-upload">
+                <Upload size={20} />
+                {formAI.logoNombre || 'Cargar logo o imagen'}
+                <input
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.webp,.svg,.pdf,.ai,.eps"
+                  onChange={(event) =>
+                    actualizarFormAI('logoNombre', event.target.files?.[0]?.name || '')
+                  }
+                />
+              </label>
 
-                  <div className="ai-usage-pill">
-                    Diseños disponibles para este numero: {disponibles} de {AI_DESIGN_LIMIT}
-                  </div>
+              <textarea
+                className="ai-chat-textarea"
+                value={formAI.idea}
+                onChange={(event) => actualizarFormAI('idea', event.target.value)}
+                placeholder="Describe tu idea. Ej: Quiero un botón elegante, dorado espejo, luz cálida y fondo transparente."
+              />
 
-                  <label>
-                    Describe tu idea
-                    <textarea
-                      value={formAI.idea}
-                      onChange={(event) => actualizarFormAI('idea', event.target.value)}
-                      placeholder="Quiero algo elegante, moderno, con luz calida y acabado premium."
-                    />
-                  </label>
+              <button type="button" className="ai-chat-generate" onClick={generarPropuestaAI}>
+                <Sparkles size={20} />
+                Generar render
+              </button>
 
-                  <div className="ai-upload-row">
-                    <label>
-                      <Upload size={18} />
-                      Logo o arte
-                      <input
-                        type="file"
-                        accept=".png,.jpg,.jpeg,.webp,.svg,.pdf,.ai,.eps"
-                        onChange={(event) =>
-                          actualizarFormAI('logoNombre', event.target.files?.[0]?.name || '')
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      <Upload size={18} />
-                      Foto del lugar
-                      <input
-                        type="file"
-                        accept=".png,.jpg,.jpeg,.webp"
-                        onChange={(event) =>
-                          actualizarFormAI('lugarNombre', event.target.files?.[0]?.name || '')
-                        }
-                      />
-                    </label>
-                  </div>
-
-                  <button type="button" className="ai-generate-btn" onClick={generarPropuestaAI}>
-                    <Sparkles size={20} />
-                    Generar propuesta IA
-                  </button>
-
-                  {resultadoAI?.bloqueado && (
-                    <div className="ai-result-box warning">
-                      <h3>Limite alcanzado</h3>
-                      <p>
-                        Este numero ya utilizo sus 3 propuestas gratuitas. Para continuar,
-                        debe contactar a ELANVISUAL para realizar el pedido y la
-                        digitalizacion profesional del diseño.
-                      </p>
-                      <button type="button">
-                        <MessageCircle size={18} />
-                        Contactar por WhatsApp
-                      </button>
-                    </div>
-                  )}
-
-                  {resultadoAI && !resultadoAI.bloqueado && (
-                    <div className="ai-result-box">
-                      <h3>Propuesta registrada</h3>
-                      <p>
-                        Se guardo la solicitud. La propuesta usa el perfil maestro:
-                        <strong> {resultadoAI.perfil.nombre}</strong>.
-                      </p>
-                      <ul>
-                        <li>Seguimiento dia 2</li>
-                        <li>Seguimiento dia 7</li>
-                        <li>Ultimo seguimiento dia 15</li>
-                      </ul>
-                      <button type="button" onClick={descargarResumenAI}>
-                        <Download size={18} />
-                        Descargar resumen
-                      </button>
-                    </div>
-                  )}
+              {resultadoAI?.bloqueado && (
+                <div className="ai-chat-result warning">
+                  <h3>Límite alcanzado</h3>
+                  <p>Este WhatsApp ya usó sus 3 diseños gratuitos. Contacta a ELANVISUAL para pedido y digitalización profesional.</p>
                 </div>
-              </div>
-            )}
+              )}
+
+              {resultadoAI && !resultadoAI.bloqueado && (
+                <div className="ai-chat-result">
+                  <h3>Render solicitado</h3>
+                  <p>La solicitud quedó guardada. El diseño se generará con el maestro ELAN AI Botones.</p>
+                  <button type="button" onClick={descargarResumenAI}>
+                    <Download size={18} />
+                    Descargar resumen
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       )}
     </main>
   );
 }
+
