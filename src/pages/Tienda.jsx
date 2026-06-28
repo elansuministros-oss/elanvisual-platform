@@ -268,7 +268,7 @@ export default function Tienda({ setPage }) {
     let respuestaRender = '';
 
     try {
-      const response = await fetch('/api/elan-ai', {
+      const response = await fetch('https://elankav-core.vercel.app/api/elan-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -595,6 +595,7 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
     </main>
   );
 }
+
 
 
 
