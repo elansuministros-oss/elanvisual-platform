@@ -4,6 +4,41 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const ELAN_AI_BOTONES = `
+Eres ELAN AI BOTONES.
+
+Solo puedes diseñar botones luminosos comerciales.
+No puedes diseñar fachadas ACM, letras 3D, roll up, displays, mesas, neón, directorios ni tótems.
+
+Mantén siempre:
+- Formato de botón.
+- Medida base del producto.
+- Precio base del producto.
+- Acabado base del modelo.
+- Construcción fabricable por ELANVISUAL.
+- Materiales reales: acrílico, PVC, dorado espejo, frost, LED, estructura interna.
+- Iluminación frontal, rebote o contorno según el modelo.
+
+Modelos permitidos:
+1. Botón Transparente — referencia Beauty Therapy — desde USD 100.
+2. Botón con Impresión — referencia La Casa de las Gorras — desde USD 130.
+3. Botón Impresión UV Premium — referencia Fiesta Naty — desde USD 150.
+4. Botón Premium Combinado — referencia Lanza's Ranch — desde USD 190.
+
+Render:
+- Hiperrealista.
+- Escala real.
+- Cámara 50 mm.
+- Fondo limpio.
+- Sombras reales.
+- Reflejos reales.
+- No usar fondos fantasiosos.
+- No generar productos fuera de la categoría botón.
+
+No entregar archivos CNC, DXF, vectores finales ni archivos de producción.
+La propuesta es conceptual. La digitalización final se realiza al confirmar pedido.
+`;
+
 function extraerTexto(reqBody = {}) {
   if (reqBody.mensaje) return String(reqBody.mensaje);
 
@@ -34,6 +69,61 @@ function prepararImagenesTemporales(archivos = []) {
     }));
 }
 
+async function generarRenderBotones(body = {}) {
+  const producto = body.producto || {};
+  const cliente = body.cliente || {};
+  const contexto = body.contexto || {};
+  const archivos = prepararImagenesTemporales(body.archivos_temporales);
+
+  const prompt = [
+    ELAN_AI_BOTONES,
+    "",
+    "PRODUCTO SELECCIONADO:",
+    `Nombre: ${producto.nombre || "Botón luminoso"}`,
+    `Categoría: ${producto.categoria || "Botones Publicitarios Premium"}`,
+    `Precio base: ${producto.precio ? `USD ${producto.precio}` : "Consultar"}`,
+    `Medida base: ${contexto.medidaBase || "60 x 60 cm"}`,
+    "",
+    "DATOS DEL CLIENTE:",
+    `Negocio: ${cliente.negocio || "No indicado"}`,
+    `WhatsApp: ${cliente.whatsapp || "No indicado"}`,
+    "",
+    "IDEA DEL CLIENTE:",
+    cliente.idea || body.mensaje || "Crear propuesta visual elegante para el modelo seleccionado.",
+    "",
+    "INSTRUCCIÓN FINAL:",
+    "Genera un render conceptual hiperrealista del botón seleccionado. Mantén el formato de botón, la medida base, el acabado del modelo y el precio base. Usa los archivos adjuntos como referencia visual si existen. No salgas de la categoría Botones.",
+  ].join("\n");
+
+  const input = [
+    {
+      role: "user",
+      content: [
+        {
+          type: "input_text",
+          text: prompt,
+        },
+        ...archivos,
+      ],
+    },
+  ];
+
+  const response = await client.responses.create({
+    model: "gpt-4.1-mini",
+    input,
+    tools: [{ type: "image_generation" }],
+  });
+
+  const imageOutput = response.output?.find((item) => item.type === "image_generation_call");
+  const imageBase64 = imageOutput?.result || "";
+
+  return {
+    prompt,
+    render_base64: imageBase64,
+    respuesta: response.output_text || "Render solicitado.",
+  };
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -61,6 +151,17 @@ export default async function handler(req, res) {
 
   try {
     const body = req.body || {};
+
+    if (body.tipo === "render-botones") {
+      const render = await generarRenderBotones(body);
+
+      return res.status(200).json({
+        ok: true,
+        tipo: "render-botones",
+        ...render,
+      });
+    }
+
     const texto = extraerTexto(body);
     const contexto = body.contexto || body.proyecto || "Sin contexto";
     const imagenes = prepararImagenesTemporales(body.archivos_temporales);

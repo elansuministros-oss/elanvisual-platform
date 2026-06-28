@@ -79,12 +79,15 @@ export default function Tienda({ setPage }) {
   const [modalAI, setModalAI] = useState(false);
   const [productoAI, setProductoAI] = useState(null);
   const [resultadoAI, setResultadoAI] = useState(null);
+  const [generandoAI, setGenerandoAI] = useState(false);
   const [formAI, setFormAI] = useState({
     negocio: '',
     whatsapp: '',
     idea: '',
     logoNombre: '',
     lugarNombre: '',
+    logoDataUrl: '',
+    lugarDataUrl: '',
   });
 
   const slugInicial = (() => {
@@ -222,7 +225,17 @@ export default function Tienda({ setPage }) {
     }));
   };
 
-  const generarPropuestaAI = () => {
+  const leerArchivoComoDataUrl = (file) => {
+    return new Promise((resolve) => {
+      if (!file) return resolve('');
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const generarPropuestaAI = async () => {
     const whatsapp = normalizarWhatsapp(formAI.whatsapp);
 
     if (!productoAI) {
@@ -249,6 +262,54 @@ export default function Tienda({ setPage }) {
     const nuevoUso = registrarUsoNumero(whatsapp);
     const perfil = obtenerPerfilIA(productoAI);
 
+    setGenerandoAI(true);
+
+    let renderBase64 = '';
+    let respuestaRender = '';
+
+    try {
+      const response = await fetch('/api/elan-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo: 'render-botones',
+          producto: productoAI,
+          cliente: {
+            negocio: formAI.negocio,
+            whatsapp,
+            idea: formAI.idea,
+          },
+          contexto: {
+            medidaBase: perfil.medidaBase || '60 x 60 cm',
+            perfilNombre: perfil.nombre,
+          },
+          archivos_temporales: [
+            formAI.logoDataUrl
+              ? { nombre: formAI.logoNombre || 'logo', dataUrl: formAI.logoDataUrl }
+              : null,
+            formAI.lugarDataUrl
+              ? { nombre: formAI.lugarNombre || 'foto-lugar', dataUrl: formAI.lugarDataUrl }
+              : null,
+          ].filter(Boolean),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || 'No se pudo generar el render.');
+      }
+
+      renderBase64 = data.render_base64 || '';
+      respuestaRender = data.respuesta || '';
+    } catch (error) {
+      alert(error?.message || 'Error generando render.');
+      setGenerandoAI(false);
+      return;
+    }
+
+    setGenerandoAI(false);
+
     const lead = {
       id: `ai-${Date.now()}`,
       estado: 'propuesta_generada',
@@ -263,6 +324,8 @@ export default function Tienda({ setPage }) {
         lugarNombre: formAI.lugarNombre,
       },
       usos: nuevoUso,
+      renderBase64,
+      respuestaRender,
       creadoEn: new Date().toISOString(),
     };
 
@@ -510,7 +573,15 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
               {resultadoAI && !resultadoAI.bloqueado && (
                 <div className="ai-chat-result">
                   <h3>Render solicitado</h3>
-                  <p>La solicitud quedó guardada. El diseño se generará con el maestro ELAN AI Botones.</p>
+                  <p>La solicitud quedó guardada con el maestro ELAN AI Botones.</p>
+
+                  {resultadoAI.renderBase64 ? (
+                    <img
+                      className="ai-render-preview"
+                      src={`data:image/png;base64,${resultadoAI.renderBase64}`}
+                      alt="Render generado por ELAN AI"
+                    />
+                  ) : null}
                   <button type="button" onClick={descargarResumenAI}>
                     <Download size={18} />
                     Descargar resumen
@@ -524,6 +595,8 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
     </main>
   );
 }
+
+
 
 
 
