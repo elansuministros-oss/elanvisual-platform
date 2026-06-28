@@ -56,6 +56,7 @@ export default function Header({ page, setPage }) {
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['produccion', 'Produccin', <Factory size={24} />],
     ['materiales', 'Inventario', <PackageSearch size={24} />],
+    ['proveedores', 'Proveedores', <Users size={24} />],
     ['finanzas', 'Finanzas', <WalletCards size={24} />],
     ['reportes', 'Reportes', <BarChart3 size={24} />],
     ['admin', 'Administracin', <Settings size={24} />],
