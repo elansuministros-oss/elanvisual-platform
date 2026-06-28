@@ -290,7 +290,14 @@ export default function Tienda({ setPage }) {
         body: JSON.stringify({
           tipo: 'render-botones',
           whatsapp,
-          producto: productoAI,
+          producto: {
+            ...productoAI,
+            tipo: 'boton',
+            perfil: 'boton',
+            perfilIA: 'boton',
+            tipoRender: 'boton',
+            categoriaIA: 'botones',
+          },
           cliente: {
             negocio: formAI.negocio,
             whatsapp,
@@ -626,6 +633,7 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
     </main>
   );
 }
+
 
 
 
