@@ -275,7 +275,6 @@ export default function Tienda({ setPage }) {
       return;
     }
 
-    const nuevoUso = registrarUsoNumero(whatsapp);
     const perfil = obtenerPerfilIA(productoAI);
 
     setGenerandoAI(true);
@@ -341,7 +340,7 @@ export default function Tienda({ setPage }) {
         logoNombre: formAI.logoNombre,
         lugarNombre: formAI.lugarNombre,
       },
-      usos: nuevoUso,
+      usos: registrarUsoNumero(whatsapp),
       renderBase64,
       respuestaRender,
       creadoEn: new Date().toISOString(),
@@ -627,6 +626,7 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
     </main>
   );
 }
+
 
 
 
