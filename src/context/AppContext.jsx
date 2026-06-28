@@ -234,6 +234,7 @@ function construirEstadoCompartido({
   configuracion,
   cuentasBancarias,
   banners,
+  categoriasHome,
   trabajos,
   productos,
   imagenes,
@@ -245,6 +246,7 @@ function construirEstadoCompartido({
     },
     cuentasBancarias: Array.isArray(cuentasBancarias) ? cuentasBancarias : cuentasIniciales,
     banners: normalizarBanners(banners, bannersIniciales),
+    categoriasHome: normalizarCategoriasHome(categoriasHome, categoriasHomeIniciales),
     trabajos: Array.isArray(trabajos) ? trabajos : trabajosIniciales,
     productos: Array.isArray(productos) ? productos : productosIniciales,
     imagenes: Array.isArray(imagenes) ? imagenes : [],
@@ -532,20 +534,26 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
 
           setBanners(normalizarBanners(remoto.banners, bannersIniciales));
 
+setCategoriasHome(normalizarCategoriasHome(remoto.categoriasHome, categoriasHomeIniciales));
+
+setTrabajos(Array.isArray(remoto.trabajos) ? remoto.trabajos : trabajosIniciales);
+
           setTrabajos(Array.isArray(remoto.trabajos) ? remoto.trabajos : trabajosIniciales);
 
           setProductos(Array.isArray(remoto.productos) ? remoto.productos : productosIniciales);
 
           setImagenes(Array.isArray(remoto.imagenes) ? remoto.imagenes : []);
         } else {
+          
           const estadoInicialCompartido = construirEstadoCompartido({
-            configuracion,
-            cuentasBancarias,
-            banners,
-            trabajos,
-            productos,
-            imagenes,
-          });
+  configuracion,
+  cuentasBancarias,
+  banners,
+  categoriasHome,
+  trabajos,
+  productos,
+  imagenes,
+});
 
           await supabase.from(APP_STATE_TABLE).upsert(
             {
@@ -575,14 +583,17 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
     if (!supabase || !estadoCompartidoCargado) return;
 
     const timer = window.setTimeout(async () => {
-      const estadoCompartido = construirEstadoCompartido({
-        configuracion,
-        cuentasBancarias,
-        banners,
-        trabajos,
-        productos,
-        imagenes,
-      });
+      
+  const estadoCompartido = construirEstadoCompartido({
+  estadoCompartidoCargado,
+  configuracion,
+  cuentasBancarias,
+  banners,
+  categoriasHome,
+  trabajos,
+  productos,
+  imagenes,
+});
 
       try {
         const { error } = await supabase.from(APP_STATE_TABLE).upsert(
@@ -602,14 +613,15 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
 
     return () => window.clearTimeout(timer);
   }, [
-    estadoCompartidoCargado,
-    configuracion,
-    cuentasBancarias,
-    banners,
-    trabajos,
-    productos,
-    imagenes,
-  ]);
+  estadoCompartidoCargado,
+  configuracion,
+  cuentasBancarias,
+  banners,
+  categoriasHome,
+  trabajos,
+  productos,
+  imagenes,
+]);
 
   useEffect(() => {
     let activo = true;
@@ -2046,6 +2058,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 
