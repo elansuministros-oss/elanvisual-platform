@@ -2370,3 +2370,44 @@ th,td{
   }
 }
 
+
+/* FIX DEFINITIVO — ALINEAR TARJETAS TIENDA */
+.catalog-page .product-grid{
+  align-items:stretch !important;
+}
+
+.catalog-page .product-card{
+  height:100% !important;
+  min-height:435px !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+
+.catalog-page .product-image-wrap{
+  flex:0 0 auto !important;
+}
+
+.catalog-page .product-body{
+  flex:1 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  padding:18px !important;
+}
+
+.catalog-page .product-body h3{
+  min-height:52px !important;
+  max-height:52px !important;
+  overflow:hidden !important;
+  margin:0 !important;
+}
+
+.catalog-page .product-card .price{
+  min-height:30px !important;
+  margin-top:8px !important;
+  display:block !important;
+}
+
+.catalog-page .product-main-action{
+  margin-top:auto !important;
+  width:100% !important;
+}
