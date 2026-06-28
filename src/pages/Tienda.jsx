@@ -283,9 +283,6 @@ export default function Tienda({ setPage }) {
                   alt={producto.nombre}
                   loading="lazy"
                 />
-                {producto.etiqueta ? (
-                  <span className="product-tag">{producto.etiqueta}</span>
-                ) : null}
               </div>
 
               <div className="product-body">
@@ -329,3 +326,4 @@ export default function Tienda({ setPage }) {
     </main>
   );
 }
+
