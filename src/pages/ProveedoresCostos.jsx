@@ -341,13 +341,13 @@ export default function ProveedoresCostos() {
 
           <div className="two">
             <label>Tiempo promedio entrega<input value={proveedor.tiempoEntrega} onChange={(e)=>actualizarCampo('tiempoEntrega', e.target.value)} /></label>
-            <label>Capacidad producciÃ³n<input value={proveedor.capacidad} onChange={(e)=>actualizarCampo('capacidad', e.target.value)} placeholder="Baja, media, alta, por volumen..." /></label>
+            <label>Capacidad producción<input value={proveedor.capacidad} onChange={(e)=>actualizarCampo('capacidad', e.target.value)} placeholder="Baja, media, alta, por volumen..." /></label>
           </div>
 
           <label>Condiciones de pago<textarea value={proveedor.condicionesPago} onChange={(e)=>actualizarCampo('condicionesPago', e.target.value)} /></label>
           <label>Observaciones<textarea value={proveedor.observaciones} onChange={(e)=>actualizarCampo('observaciones', e.target.value)} /></label>
 
-          <div className="section-title">EvaluaciÃ³n</div>
+          <div className="section-title">Evaluación</div>
           <div className="four">
             <label>Calidad<input type="number" min="1" max="5" value={proveedor.calidad} onChange={(e)=>actualizarCampo('calidad', e.target.value)} /></label>
             <label>Cumplimiento<input type="number" min="1" max="5" value={proveedor.cumplimiento} onChange={(e)=>actualizarCampo('cumplimiento', e.target.value)} /></label>
