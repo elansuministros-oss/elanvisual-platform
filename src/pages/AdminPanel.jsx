@@ -39,15 +39,13 @@ const nuevoTrabajoBase = {
 };
 
 const nuevoBannerBase = {
-  titulo: '',
-  subtitulo: '',
   ubicacion: 'hero-principal',
-  link: 'catalogo',
   imagen: '',
   imagenRuta: '',
   imagenDesktop: '',
   imagenMobile: '',
   activo: true,
+  orden: 1,
 };
 
 export default function AdminPanel() {
@@ -69,27 +67,15 @@ export default function AdminPanel() {
     crearBanner,
     actualizarBanner,
     eliminarBanner,
-    crearUsuario,
-    actualizarUsuario,
-    eliminarUsuario,
     crearImagen,
     actualizarImagen,
     eliminarImagen,
   } = useApp();
 
-  const rolesSistema = ['admin', 'ventas', 'produccion'];
-const [tab, setTab] = useState('dashboard');
+  const [tab, setTab] = useState('dashboard');
   const [servicio, setServicio] = useState(nuevoServicioBase);
   const [trabajo, setTrabajo] = useState(nuevoTrabajoBase);
   const [banner, setBanner] = useState(nuevoBannerBase);
-  const [nuevoUsuario, setNuevoUsuario] = useState({
-    nombre: '',
-    usuario: '',
-    email: '',
-    password: '',
-    rol: 'ventas',
-    activo: true,
-  });
 
   const [editandoServicioId, setEditandoServicioId] = useState(null);
   const [editandoTrabajoId, setEditandoTrabajoId] = useState(null);
@@ -118,7 +104,7 @@ const [tab, setTab] = useState('dashboard');
 
         {lista.length === 0 ? (
           <p className="note">
-            Todava no hay imgenes cargadas. Sub imgenes desde la pestaa Multimedia.
+            Todavia no hay imagenes cargadas. Subi imagenes desde la pestana Multimedia.
           </p>
         ) : (
           <div className="image-picker-grid">
@@ -192,14 +178,24 @@ const [tab, setTab] = useState('dashboard');
   };
 
   const guardarBanner = () => {
-    if (!banner.titulo.trim()) return alert('Escrib el ttulo del banner.');
+    const imagenDesktop =
+      banner.imagenDesktop ||
+      banner.imagenRuta ||
+      banner.imagen ||
+      '';
+
+    if (!imagenDesktop.trim()) {
+      return alert('Selecciona o pega una imagen Desktop para el banner.');
+    }
 
     const datos = {
-      ...banner,
-      imagenRuta: banner.imagenRuta || banner.imagen,
-      imagenDesktop: banner.imagenDesktop || banner.imagenRuta || banner.imagen,
+      ubicacion: banner.ubicacion || 'hero-principal',
+      imagen: imagenDesktop,
+      imagenRuta: imagenDesktop,
+      imagenDesktop,
       imagenMobile: banner.imagenMobile || '',
       activo: banner.activo !== false,
+      orden: Number(banner.orden || 1),
     };
 
     if (editandoBannerId) {
@@ -239,30 +235,36 @@ const [tab, setTab] = useState('dashboard');
   };
 
   const editarBanner = (b) => {
+    const imagenDesktop = b.imagenDesktop || b.imagenRuta || b.imagen || '';
+
     setBanner({
-      titulo: b.titulo || '',
-      subtitulo: b.subtitulo || '',
       ubicacion: b.ubicacion || 'hero-principal',
-      link: b.link || 'catalogo',
-      imagen: b.imagen || b.imagenRuta || '',
-      imagenRuta: b.imagenRuta || b.imagen || '',
-      imagenDesktop: b.imagenDesktop || b.imagenRuta || b.imagen || '',
+      imagen: imagenDesktop,
+      imagenRuta: imagenDesktop,
+      imagenDesktop,
       imagenMobile: b.imagenMobile || '',
       activo: b.activo !== false,
+      orden: Number(b.orden || 1),
     });
     setEditandoBannerId(b.id);
     setTab('banners');
   };
 
   const duplicarBanner = (b) => {
+    const imagenDesktop = b.imagenDesktop || b.imagenRuta || b.imagen || '';
+
     crearBanner({
-      ...b,
-      titulo: `${b.titulo || 'Banner'} copia`,
+      ubicacion: b.ubicacion || 'hero-principal',
+      imagen: imagenDesktop,
+      imagenRuta: imagenDesktop,
+      imagenDesktop,
+      imagenMobile: b.imagenMobile || '',
       activo: false,
-      imagen: b.imagen || b.imagenRuta || '',
-      imagenRuta: b.imagenRuta || b.imagen || '',
+      orden: Number(b.orden || 1) + 1,
     });
   };
+
+  const miniaturaBanner = (b) => b.imagenDesktop || b.imagenRuta || b.imagen || b.imagenMobile || '';
 
   return (
     <main>
@@ -321,8 +323,8 @@ const [tab, setTab] = useState('dashboard');
           <section className="panel">
             <h2><ClipboardList size={20} /> Flujo operativo vigente</h2>
             <p className="note">
-              Cliente ? Solicitud ? Cotizacin ? Pedido ? Orden de Trabajo ?
-              Produccin ? Instalacin ? Entrega ? Cobro ? Comisin.
+              Cliente ? Solicitud ? Cotizacion ? Pedido ? Orden de Trabajo ?
+              Produccion ? Instalacion ? Entrega ? Cobro ? Comision.
             </p>
           </section>
 
@@ -330,7 +332,7 @@ const [tab, setTab] = useState('dashboard');
             <h2><Factory size={20} /> Administracion real</h2>
             <div className="admin-list">
               <article className="admin-row no-image">
-                <div><b>Servicios</b><span>Catlogo pblico y solicitudes comerciales.</span></div>
+                <div><b>Servicios</b><span>Catalogo publico y solicitudes comerciales.</span></div>
                 <strong>{productos.length}</strong>
               </article>
               <article className="admin-row no-image">
@@ -338,7 +340,7 @@ const [tab, setTab] = useState('dashboard');
                 <strong>{trabajos.length}</strong>
               </article>
               <article className="admin-row no-image">
-                <div><b>Banners</b><span>Portada, catalogo y promociones.</span></div>
+                <div><b>Banners</b><span>Imagenes principales sin texto HTML superpuesto.</span></div>
                 <strong>{banners.length}</strong>
               </article>
             </div>
@@ -407,14 +409,14 @@ const [tab, setTab] = useState('dashboard');
           <h2><ImagePlus size={20} /> {editandoTrabajoId ? 'Editar trabajo' : 'Portafolio'}</h2>
 
           <div className="form-grid">
-            <input placeholder="Ttulo del trabajo" value={trabajo.titulo} onChange={(e) => setTrabajo({ ...trabajo, titulo: e.target.value })} />
+            <input placeholder="Titulo del trabajo" value={trabajo.titulo} onChange={(e) => setTrabajo({ ...trabajo, titulo: e.target.value })} />
             <input placeholder="Tipo" value={trabajo.tipo} onChange={(e) => setTrabajo({ ...trabajo, tipo: e.target.value })} />
             <select value={trabajo.activo ? 'activo' : 'oculto'} onChange={(e) => setTrabajo({ ...trabajo, activo: e.target.value === 'activo' })}>
               <option value="activo">Activo</option>
               <option value="oculto">Oculto</option>
             </select>
             <input className="span-2" placeholder="URL o imagen seleccionada" value={trabajo.imagen} onChange={(e) => setTrabajo({ ...trabajo, imagen: e.target.value })} />
-            <textarea className="span-2" placeholder="Descripcin del trabajo" value={trabajo.descripcion} onChange={(e) => setTrabajo({ ...trabajo, descripcion: e.target.value })} />
+            <textarea className="span-2" placeholder="Descripcion del trabajo" value={trabajo.descripcion} onChange={(e) => setTrabajo({ ...trabajo, descripcion: e.target.value })} />
           </div>
 
           <SelectorImagen valor={trabajo.imagen} categoriaPreferida="portafolio" onPick={(src) => setTrabajo({ ...trabajo, imagen: src })} />
@@ -451,28 +453,61 @@ const [tab, setTab] = useState('dashboard');
       {tab === 'banners' && (
         <section className="panel">
           <h2><ShieldCheck size={20} /> {editandoBannerId ? 'Editar banner' : 'Banners'}</h2>
+          <p className="note">
+            El Hero no usa titulo, subtitulo, descripcion ni botones HTML. Todo el mensaje comercial debe venir integrado en la imagen del banner.
+          </p>
 
           <div className="form-grid">
-            <input placeholder="Ttulo" value={banner.titulo} onChange={(e) => setBanner({ ...banner, titulo: e.target.value })} />
             <select value={banner.ubicacion} onChange={(e) => setBanner({ ...banner, ubicacion: e.target.value })}>
               <option value="hero-principal">Hero principal</option>
-              <option value="catalogo">Catlogo</option>
+              <option value="catalogo">Catalogo</option>
               <option value="home">Home</option>
               <option value="slider-home">Slider Home</option>
             </select>
+
             <select value={banner.activo ? 'activo' : 'oculto'} onChange={(e) => setBanner({ ...banner, activo: e.target.value === 'activo' })}>
               <option value="activo">Activo</option>
               <option value="oculto">Oculto</option>
             </select>
-            <input className="span-2" placeholder="Subttulo" value={banner.subtitulo} onChange={(e) => setBanner({ ...banner, subtitulo: e.target.value })} />
-            <input className="span-2" placeholder="URL o imagen seleccionada" value={banner.imagen} onChange={(e) => setBanner({ ...banner, imagen: e.target.value, imagenRuta: e.target.value, imagenDesktop: e.target.value })} />
-            <input className="span-2" placeholder="Imagen Hero Desktop 1920x1080" value={banner.imagenDesktop || ''} onChange={(e) => setBanner({ ...banner, imagenDesktop: e.target.value })} />
-            <input className="span-2" placeholder="Imagen Hero Mobile 1080x1920" value={banner.imagenMobile || ''} onChange={(e) => setBanner({ ...banner, imagenMobile: e.target.value })} />
+
+            <input type="number" min="1" placeholder="Orden" value={banner.orden || 1} onChange={(e) => setBanner({ ...banner, orden: e.target.value })} />
+
+            <input
+              className="span-2"
+              placeholder="Imagen Desktop del banner"
+              value={banner.imagenDesktop || ''}
+              onChange={(e) => setBanner({
+                ...banner,
+                imagen: e.target.value,
+                imagenRuta: e.target.value,
+                imagenDesktop: e.target.value,
+              })}
+            />
+
+            <input
+              className="span-2"
+              placeholder="Imagen Mobile del banner"
+              value={banner.imagenMobile || ''}
+              onChange={(e) => setBanner({ ...banner, imagenMobile: e.target.value })}
+            />
           </div>
 
-          <SelectorImagen valor={banner.imagen} categoriaPreferida="banner" onPick={(src) => setBanner({ ...banner, imagen: src, imagenRuta: src, imagenDesktop: src })} />
+          <SelectorImagen
+            valor={banner.imagenDesktop}
+            categoriaPreferida="banner"
+            onPick={(src) => setBanner({
+              ...banner,
+              imagen: src,
+              imagenRuta: src,
+              imagenDesktop: src,
+            })}
+          />
 
-          <SelectorImagen valor={banner.imagenMobile} categoriaPreferida="banner" onPick={(src) => setBanner({ ...banner, imagenMobile: src })} />
+          <SelectorImagen
+            valor={banner.imagenMobile}
+            categoriaPreferida="banner"
+            onPick={(src) => setBanner({ ...banner, imagenMobile: src })}
+          />
 
           <div className="form-actions">
             <button type="button" onClick={guardarBanner}>
@@ -486,23 +521,33 @@ const [tab, setTab] = useState('dashboard');
           </div>
 
           <div className="admin-list">
-            {banners.map((b) => (
-              <article className="admin-row" key={b.id}>
-                {b.imagen ? <img src={b.imagen} alt={b.titulo} /> : <div className="admin-thumb-empty">IMG</div>}
-                <div><b>{b.titulo}</b><span>{b.ubicacion}  {b.subtitulo}</span></div>
-                <strong>{b.activo === false ? 'Oculto' : 'Activo'}</strong>
-                <button type="button" onClick={() => editarBanner(b)}><Pencil size={15} /> Editar</button>
-                <button type="button" onClick={() => duplicarBanner(b)}><Copy size={15} /> Duplicar</button>
-                <button type="button" onClick={() => actualizarBanner({ ...b, activo: b.activo === false })}>
-                  {b.activo === false ? <Eye size={15} /> : <EyeOff size={15} />}
-                  {b.activo === false ? 'Activar' : 'Ocultar'}
-                </button>
-                <button type="button" onClick={() => eliminarBanner(b.id)}><Trash2 size={15} /> Eliminar</button>
-              </article>
-            ))}
+            {banners.map((b) => {
+              const thumb = miniaturaBanner(b);
+
+              return (
+                <article className="admin-row" key={b.id}>
+                  {thumb ? <img src={thumb} alt="Banner ELANVISUAL" /> : <div className="admin-thumb-empty">IMG</div>}
+                  <div>
+                    <b>{b.ubicacion || 'hero-principal'}</b>
+                    <span>
+                      Desktop: {b.imagenDesktop || b.imagenRuta || b.imagen ? 'Configurada' : 'Pendiente'} · Mobile: {b.imagenMobile ? 'Configurada' : 'Usa desktop'} · Orden {b.orden || 1}
+                    </span>
+                  </div>
+                  <strong>{b.activo === false ? 'Oculto' : 'Activo'}</strong>
+                  <button type="button" onClick={() => editarBanner(b)}><Pencil size={15} /> Editar</button>
+                  <button type="button" onClick={() => duplicarBanner(b)}><Copy size={15} /> Duplicar</button>
+                  <button type="button" onClick={() => actualizarBanner({ ...b, activo: b.activo === false })}>
+                    {b.activo === false ? <Eye size={15} /> : <EyeOff size={15} />}
+                    {b.activo === false ? 'Activar' : 'Ocultar'}
+                  </button>
+                  <button type="button" onClick={() => eliminarBanner(b.id)}><Trash2 size={15} /> Eliminar</button>
+                </article>
+              );
+            })}
           </div>
         </section>
       )}
+
       {tab === 'usuarios' && <Usuarios20Panel />}
 
       {tab === 'multimedia' && (
@@ -516,14 +561,3 @@ const [tab, setTab] = useState('dashboard');
     </main>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
