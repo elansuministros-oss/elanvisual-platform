@@ -10,6 +10,8 @@
     padding:0 18px;
     gap:18px;
     box-sizing:border-box;
+    position:relative;
+    z-index:100;
 }
 
 .printy-logo{
@@ -28,12 +30,10 @@
 .printy-nav{
     flex:0 0 auto;
     margin-left:auto;
-
     display:flex;
     align-items:center;
     justify-content:flex-end;
     gap:28px;
-
     color:#fff;
     font-size:12px;
     font-weight:800;
@@ -49,6 +49,58 @@
 
 .printy-nav div:hover{
     color:#FFD400;
+}
+
+.printy-menu-dropdown{
+    position:relative;
+}
+
+.printy-menu-trigger{
+    background:transparent;
+    border:none;
+    color:#fff;
+    font:inherit;
+    letter-spacing:inherit;
+    text-transform:uppercase;
+    cursor:pointer;
+    padding:26px 0;
+}
+
+.printy-menu-trigger:hover{
+    color:#FFD400;
+}
+
+.printy-dropdown-panel{
+    position:absolute;
+    top:72px;
+    left:0;
+    width:230px;
+    background:#ffffff;
+    border-top:3px solid #FFD400;
+    box-shadow:0 16px 35px rgba(0,0,0,.18);
+    padding:12px 0;
+    display:none;
+    z-index:999;
+}
+
+.printy-menu-dropdown:hover .printy-dropdown-panel{
+    display:block;
+}
+
+.printy-dropdown-panel a{
+    display:block;
+    padding:13px 18px;
+    color:#111;
+    text-decoration:none;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.04em;
+    white-space:nowrap;
+}
+
+.printy-dropdown-panel a:hover{
+    background:#f3f3f3;
+    color:#000;
 }
 
 .printy-track-btn{
@@ -97,5 +149,9 @@
 
     .printy-logo img{
         height:25px;
+    }
+
+    .printy-dropdown-panel{
+        width:220px;
     }
 }

@@ -1,0 +1,15 @@
+﻿export const printyCategoriasMenu = [
+  "LETREROS MINIS",
+  "BELLEZA",
+  "NEGOCIOS Y PROFESIONES",
+  "EVENTOS",
+  "FRASES",
+  "CANVA LED",
+  "CARTOONS",
+  "COMIDA",
+  "DEPORTES",
+  "FESTIVIDADES",
+  "GAMING",
+  "HOGAR",
+  "MUSICA",
+];
