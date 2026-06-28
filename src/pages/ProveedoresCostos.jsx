@@ -191,7 +191,19 @@ export default function ProveedoresCostos() {
       alert('Proveedor eliminado de Supabase.');
     } catch (error) {
       console.error('Error eliminando proveedor en Supabase:', error);
-      alert('No se pudo eliminar el proveedor en Supabase.');
+
+      alert(
+        JSON.stringify(
+          {
+            message: error?.message,
+            details: error?.details,
+            hint: error?.hint,
+            code: error?.code,
+          },
+          null,
+          2
+        )
+      );
     }
   };
   const guardarProveedor = async (e) => {
@@ -477,6 +489,7 @@ export default function ProveedoresCostos() {
     </main>
   );
 }
+
 
 
 
