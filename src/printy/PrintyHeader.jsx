@@ -10,12 +10,15 @@ export default function PrintyHeader() {
       <nav className="printy-nav">
         <div className="printy-menu-dropdown">
           <button className="printy-menu-trigger" type="button">
-            CATALOGO^
+            CATÁLOGO⌃
           </button>
 
           <div className="printy-dropdown-panel">
             {printyCategoriasMenu.map((item) => (
-              <a href={/printy?categoria=} key={item}>
+              <a
+                href={"/printy?categoria=" + encodeURIComponent(item)}
+                key={item}
+              >
                 {item}
               </a>
             ))}
