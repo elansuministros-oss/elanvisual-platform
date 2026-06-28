@@ -329,11 +329,7 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
             presupuestos predefinidos de ELANVISUAL.
           </p>
 
-          <button type="button" className="store-ai-button" onClick={() => abrirAI(null)}>
-            <Sparkles size={20} />
-            Crear mi diseño con IA
-            <ArrowRight size={22} />
-          </button>
+          
         </div>
       </section>
 
@@ -528,5 +524,6 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
     </main>
   );
 }
+
 
 
