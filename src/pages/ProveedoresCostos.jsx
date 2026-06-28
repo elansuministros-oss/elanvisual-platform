@@ -26,7 +26,7 @@ const inicialProveedor = {
   municipio: '',
   zonaCobertura: '',
   ubicacion: '',
-  categoria: 'ImpresiÃ³n',
+  categoria: 'Impresión',
   subcategorias: '',
   aceptaCredito: 'No',
   diasCredito: 0,
@@ -46,19 +46,19 @@ const inicialProveedor = {
 const inicialProducto = {
   proveedorId: '',
   nombre: '',
-  categoria: 'ImpresiÃ³n',
+  categoria: 'Impresión',
   unidad: 'm2',
   costo: '',
   tiempoEntrega: '',
 };
 
 const categorias = [
-  'ImpresiÃ³n',
+  'Impresión',
   'Suministros',
   'Displays',
-  'PVC / AcrÃ­lico',
-  'CNC / LÃ¡ser',
-  'InstalaciÃ³n',
+  'PVC / Acrílico',
+  'CNC / Láser',
+  'Instalación',
   'Metal / Estructuras',
   'Electricidad / LED',
   'Transporte',
@@ -69,19 +69,19 @@ const departamentos = [
   '',
   'Managua',
   'Chinandega',
-  'LeÃ³n',
+  'León',
   'Masaya',
   'Granada',
   'Carazo',
   'Rivas',
-  'EstelÃ­',
+  'Estelí',
   'Matagalpa',
   'Jinotega',
   'Boaco',
   'Chontales',
   'Nueva Segovia',
   'Madriz',
-  'RÃ­o San Juan',
+  'Río San Juan',
   'RAAN',
   'RAAS',
 ];
@@ -244,8 +244,8 @@ export default function ProveedoresCostos() {
   };
   const guardarProducto = (e) => {
     e.preventDefault();
-    if (!producto.proveedorId) return alert('SeleccionÃ¡ proveedor.');
-    if (!producto.nombre.trim()) return alert('IndicÃ¡ producto/servicio.');
+    if (!producto.proveedorId) return alert('Seleccioná proveedor.');
+    if (!producto.nombre.trim()) return alert('Indicá producto/servicio.');
     crearProductoProveedor(producto);
     setProducto(inicialProducto);
   };
@@ -256,7 +256,7 @@ export default function ProveedoresCostos() {
         <section className="proveedor-card lock">
           <Truck size={42} />
           <h1>Acceso privado</h1>
-          <p>Proveedores, costos reales e inventario son solo para administraciÃ³n.</p>
+          <p>Proveedores, costos reales e inventario son solo para administración.</p>
         </section>
       </main>
     );
@@ -265,9 +265,9 @@ export default function ProveedoresCostos() {
   return (
     <main className="proveedores-page">
       <section className="proveedor-hero">
-        <span>ELANVISUAL Â· CRM CENTRAL</span>
+        <span>ELANVISUAL · CRM CENTRAL</span>
         <h1>Proveedores Corporativos</h1>
-        <p>Red privada por zona, categorÃ­a, costos reales, tiempos de entrega y capacidad operativa.</p>
+        <p>Red privada por zona, categoría, costos reales, tiempos de entrega y capacidad operativa.</p>
       </section>
 
       <section className="proveedor-grid">
@@ -282,20 +282,20 @@ export default function ProveedoresCostos() {
             )}
           </div>
 
-          <div className="section-title">InformaciÃ³n general</div>
+          <div className="section-title">Información general</div>
           <div className="two">
             <label>Proveedor<input value={proveedor.nombre} onChange={(e)=>actualizarCampo('nombre', e.target.value)} /></label>
-            <label>RazÃ³n social<input value={proveedor.razonSocial} onChange={(e)=>actualizarCampo('razonSocial', e.target.value)} /></label>
+            <label>Razón social<input value={proveedor.razonSocial} onChange={(e)=>actualizarCampo('razonSocial', e.target.value)} /></label>
           </div>
 
           <div className="two">
             <label>RUC<input value={proveedor.ruc} onChange={(e)=>actualizarCampo('ruc', e.target.value)} /></label>
-            <label>CategorÃ­a principal<select value={proveedor.categoria} onChange={(e)=>actualizarCampo('categoria', e.target.value)}>
+            <label>Categoría principal<select value={proveedor.categoria} onChange={(e)=>actualizarCampo('categoria', e.target.value)}>
               {categorias.map((c)=><option key={c}>{c}</option>)}
             </select></label>
           </div>
 
-          <label>SubcategorÃ­as<input value={proveedor.subcategorias} onChange={(e)=>actualizarCampo('subcategorias', e.target.value)} placeholder="Lona, vinil, PVC, roll up, CNC..." /></label>
+          <label>Subcategorías<input value={proveedor.subcategorias} onChange={(e)=>actualizarCampo('subcategorias', e.target.value)} placeholder="Lona, vinil, PVC, roll up, CNC..." /></label>
 
           <div className="section-title">Contacto</div>
           <div className="two">
@@ -305,7 +305,7 @@ export default function ProveedoresCostos() {
 
           <div className="two">
             <label>WhatsApp<input value={proveedor.whatsapp} onChange={(e)=>actualizarCampo('whatsapp', e.target.value)} /></label>
-            <label>TelÃ©fono alterno<input value={proveedor.telefonoAlterno} onChange={(e)=>actualizarCampo('telefonoAlterno', e.target.value)} /></label>
+            <label>Teléfono alterno<input value={proveedor.telefonoAlterno} onChange={(e)=>actualizarCampo('telefonoAlterno', e.target.value)} /></label>
           </div>
 
           <div className="two">
@@ -313,8 +313,8 @@ export default function ProveedoresCostos() {
             <label>Sitio web<input value={proveedor.sitioWeb} onChange={(e)=>actualizarCampo('sitioWeb', e.target.value)} /></label>
           </div>
 
-          <div className="section-title">UbicaciÃ³n y cobertura</div>
-          <label>DirecciÃ³n<input value={proveedor.direccion} onChange={(e)=>actualizarCampo('direccion', e.target.value)} /></label>
+          <div className="section-title">Ubicación y cobertura</div>
+          <label>Dirección<input value={proveedor.direccion} onChange={(e)=>actualizarCampo('direccion', e.target.value)} /></label>
 
           <div className="three">
             <label>Departamento<select value={proveedor.departamento} onChange={(e)=>actualizarCampo('departamento', e.target.value)}>
@@ -324,15 +324,15 @@ export default function ProveedoresCostos() {
             <label>Zona / cobertura<input value={proveedor.zonaCobertura} onChange={(e)=>actualizarCampo('zonaCobertura', e.target.value)} placeholder="Occidente, Managua, nacional..." /></label>
           </div>
 
-          <label>UbicaciÃ³n corta<input value={proveedor.ubicacion} onChange={(e)=>actualizarCampo('ubicacion', e.target.value)} placeholder="Referencia rÃ¡pida" /></label>
+          <label>Ubicación corta<input value={proveedor.ubicacion} onChange={(e)=>actualizarCampo('ubicacion', e.target.value)} placeholder="Referencia rápida" /></label>
 
           <div className="section-title">Condiciones comerciales</div>
           <div className="three">
-            <label>Acepta crÃ©dito<select value={proveedor.aceptaCredito} onChange={(e)=>actualizarCampo('aceptaCredito', e.target.value)}>
+            <label>Acepta crédito<select value={proveedor.aceptaCredito} onChange={(e)=>actualizarCampo('aceptaCredito', e.target.value)}>
               <option>No</option>
-              <option>SÃ­</option>
+              <option>Sí</option>
             </select></label>
-            <label>DÃ­as crÃ©dito<input type="number" value={proveedor.diasCredito} onChange={(e)=>actualizarCampo('diasCredito', e.target.value)} /></label>
+            <label>Días crédito<input type="number" value={proveedor.diasCredito} onChange={(e)=>actualizarCampo('diasCredito', e.target.value)} /></label>
             <label>Moneda<select value={proveedor.moneda} onChange={(e)=>actualizarCampo('moneda', e.target.value)}>
               <option>USD</option>
               <option>C$</option>
@@ -374,14 +374,14 @@ export default function ProveedoresCostos() {
             {proveedoresActivos.filter((p)=>p.activo !== false).map((p)=><option key={p.id} value={p.id}>{p.nombre}</option>)}
           </select></label>
 
-          <label>Producto / servicio<input value={producto.nombre} onChange={(e)=>setProducto({...producto,nombre:e.target.value})} placeholder="Roll Up 0.85x2, impresiÃ³n lona, PVC 3mm..." /></label>
+          <label>Producto / servicio<input value={producto.nombre} onChange={(e)=>setProducto({...producto,nombre:e.target.value})} placeholder="Roll Up 0.85x2, impresión lona, PVC 3mm..." /></label>
 
-          <label>CategorÃ­a<select value={producto.categoria} onChange={(e)=>setProducto({...producto,categoria:e.target.value})}>
-            <option>ImpresiÃ³n</option><option>Suministro</option><option>Display</option><option>LÃ¡mina</option><option>Corte</option><option>InstalaciÃ³n</option><option>Transporte</option>
+          <label>Categoría<select value={producto.categoria} onChange={(e)=>setProducto({...producto,categoria:e.target.value})}>
+            <option>Impresión</option><option>Suministro</option><option>Display</option><option>Lámina</option><option>Corte</option><option>Instalación</option><option>Transporte</option>
           </select></label>
 
           <label>Unidad<select value={producto.unidad} onChange={(e)=>setProducto({...producto,unidad:e.target.value})}>
-            <option>m2</option><option>unidad</option><option>metro lineal</option><option>lÃ¡mina</option><option>viaje</option>
+            <option>m2</option><option>unidad</option><option>metro lineal</option><option>lámina</option><option>viaje</option>
           </select></label>
 
           <label>Costo USD<input type="number" step="0.01" value={producto.costo} onChange={(e)=>setProducto({...producto,costo:e.target.value})} /></label>
@@ -391,7 +391,7 @@ export default function ProveedoresCostos() {
         </form>
       </section>
 
-      <section className="proveedor-card"><p className="hub-status">{cargandoHub ? 'Cargando Supplier Hub...' : `Supplier Hub: ${proveedoresHub.length} proveedor(es) desde Supabase`}</p><div className="search-box"><Search size={18}/><input value={busqueda} onChange={(e)=>setBusqueda(e.target.value)} placeholder="Buscar por proveedor, zona, categorÃ­a, contacto..." /></div>
+      <section className="proveedor-card"><p className="hub-status">{cargandoHub ? 'Cargando Supplier Hub...' : `Supplier Hub: ${proveedoresHub.length} proveedor(es) desde Supabase`}</p><div className="search-box"><Search size={18}/><input value={busqueda} onChange={(e)=>setBusqueda(e.target.value)} placeholder="Buscar por proveedor, zona, categoría, contacto..." /></div>
       </section>
 
       <section className="proveedor-list">
@@ -405,7 +405,7 @@ export default function ProveedoresCostos() {
                 <div>
                   <span>{p.categoria}</span>
                   <h2>{p.nombre}</h2>
-                  <p>{p.contacto || 'Sin contacto'} Â· {p.whatsapp || 'Sin WhatsApp'}</p>
+                  <p>{p.contacto || 'Sin contacto'} · {p.whatsapp || 'Sin WhatsApp'}</p>
                 </div>
 
                 <div className="prov-actions">
@@ -424,15 +424,15 @@ export default function ProveedoresCostos() {
               <div className="prov-info">
                 <p><b>Zona:</b> {p.zonaCobertura || p.ubicacion || 'No definida'}</p>
                 <p><b>Entrega:</b> {p.tiempoEntrega || 'Por confirmar'}</p>
-                <p><b>CrÃ©dito:</b> {p.aceptaCredito || 'No'} {Number(p.diasCredito || 0) > 0 ? `Â· ${p.diasCredito} dÃ­as` : ''}</p>
+                <p><b>Crédito:</b> {p.aceptaCredito || 'No'} {Number(p.diasCredito || 0) > 0 ? `· ${p.diasCredito} días` : ''}</p>
                 <p><b>Correo:</b> {p.correo || 'No registrado'}</p>
-                <p><b>DirecciÃ³n:</b> {p.direccion || 'No registrada'}</p>
+                <p><b>Dirección:</b> {p.direccion || 'No registrada'}</p>
               </div>
 
               <div className="rating-box">
                 <Star size={18} />
                 <strong>{promedio}/5</strong>
-                <small>Calidad {p.calidad} Â· Cumplimiento {p.cumplimiento} Â· Precio {p.precio} Â· Tiempo {p.tiempo}</small>
+                <small>Calidad {p.calidad} · Cumplimiento {p.cumplimiento} · Precio {p.precio} · Tiempo {p.tiempo}</small>
               </div>
 
               {p.observaciones && <p className="observacion">{p.observaciones}</p>}
@@ -442,7 +442,7 @@ export default function ProveedoresCostos() {
                   <div className="costo-row" key={x.id}>
                     <b>{x.nombre}</b>
                     <span>{money(x.costo)} / {x.unidad}</span>
-                    <small>{x.categoria} Â· Entrega: {x.tiempoEntrega || p.tiempoEntrega || 'Por confirmar'}</small>
+                    <small>{x.categoria} · Entrega: {x.tiempoEntrega || p.tiempoEntrega || 'Por confirmar'}</small>
                     <button onClick={()=>eliminarProductoProveedor(x.id)}>Eliminar</button>
                   </div>
                 ))}
@@ -490,6 +490,7 @@ export default function ProveedoresCostos() {
     </main>
   );
 }
+
 
 
 
