@@ -187,3 +187,21 @@ export async function obtenerProductosProveedor(proveedorId) {
 
   return data || [];
 }
+
+export async function eliminarProveedor(id) {
+  if (!supabase) throw new Error('Supabase no configurado');
+  if (!id) throw new Error('ID de proveedor requerido');
+
+  await supabase.from(PRODUCTOS).delete().eq('proveedor_id', id);
+  await supabase.from(CAPACIDADES).delete().eq('proveedor_id', id);
+  await supabase.from(CONTACTOS).delete().eq('proveedor_id', id);
+
+  const { error } = await supabase
+    .from(EMPRESAS)
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+
+  return true;
+}

@@ -1,7 +1,12 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
 import { Edit3, PlusCircle, Save, Search, Star, Truck, Trash2, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { obtenerProveedores, crearProveedor as crearProveedorHub, actualizarProveedor as actualizarProveedorHub } from '../services/supplierHubService';
+import {
+  obtenerProveedores,
+  crearProveedor as crearProveedorHub,
+  actualizarProveedor as actualizarProveedorHub,
+  eliminarProveedor as eliminarProveedorHub,
+} from '../services/supplierHubService';
 
 const money = (v) =>
   new Intl.NumberFormat('es-NI', { style: 'currency', currency: 'USD' }).format(Number(v || 0));
@@ -108,7 +113,7 @@ export default function ProveedoresCostos() {
     productosProveedor = [],
     crearProveedor,
     actualizarProveedor,
-    eliminarProveedor,
+    eliminarProveedor: eliminarProveedorLocal,
     crearProductoProveedor,
     eliminarProductoProveedor,
   } = useApp();
@@ -159,6 +164,36 @@ export default function ProveedoresCostos() {
     setEditandoId(null);
   };
 
+  const refrescarProveedores = async () => {
+    await cargarSupplierHub();
+  };
+
+  const editarProveedor = (p) => {
+    setProveedor(normalizarProveedor(p));
+    setEditandoId(p.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const eliminarProveedor = async (id) => {
+    if (!id) return;
+
+    const ok = window.confirm('¿Eliminar este proveedor del Supplier Hub? Esta acción no se puede deshacer.');
+    if (!ok) return;
+
+    try {
+      await eliminarProveedorHub(id);
+      await refrescarProveedores();
+
+      if (editandoId === id) {
+        limpiarProveedor();
+      }
+
+      alert('Proveedor eliminado de Supabase.');
+    } catch (error) {
+      console.error('Error eliminando proveedor en Supabase:', error);
+      alert('No se pudo eliminar el proveedor en Supabase.');
+    }
+  };
   const guardarProveedor = async (e) => {
     e.preventDefault();
     if (!proveedor.nombre.trim()) return alert('Indicá nombre del proveedor.');
@@ -442,6 +477,7 @@ export default function ProveedoresCostos() {
     </main>
   );
 }
+
 
 
 
