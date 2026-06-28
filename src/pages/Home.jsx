@@ -1,48 +1,14 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Factory,
-  ShoppingBag,
-} from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Factory } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const texto = (value) => String(value || '').trim();
-
-const slugify = (value) =>
-  texto(value)
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
 
 const normalizarWhatsApp = (numero) => {
   const limpio = String(numero || '').replace(/[^0-9]/g, '');
   if (limpio.length === 8) return `505${limpio}`;
   return limpio || '50585228183';
 };
-
-const categoriasFallback = [
-  {
-    id: 'rotulacion',
-    titulo: 'Rotulacion',
-    img: '/productos/fachada.jpg',
-  },
-  {
-    id: 'displays',
-    titulo: 'Displays publicitarios',
-    img: '/productos/display.jpg',
-  },
-  {
-    id: 'letras-3d',
-    titulo: 'Letras 3D',
-    img: '/productos/letras-pvc.jpg',
-  },
-  {
-    id: 'impresion-digital',
-    titulo: 'Impresion digital',
-    img: '/productos/portada2-01.png',
-  },
-];
 
 const bannerFallback = {
   id: 'hero-fallback',
@@ -55,23 +21,24 @@ const bannerFallback = {
   imagenMobile: '/productos/portada2-01.png',
 };
 
-const obtenerImagenDesktop = (banner) =>
-  banner?.imagenDesktop ||
-  banner?.imagenRuta ||
-  banner?.imagen ||
-  banner?.url ||
-  banner?.src ||
-  '/productos/portada2-01.png';
+const categoriasFallback = [
+  { id: 'cat-home-rotulacion', nombre: 'Rotulacion', slug: 'rotulacion', imagenDesktop: '/productos/fachada.jpg', imagenMobile: '', orden: 1, activo: true },
+  { id: 'cat-home-displays', nombre: 'Displays publicitarios', slug: 'displays', imagenDesktop: '/productos/display.jpg', imagenMobile: '', orden: 2, activo: true },
+  { id: 'cat-home-letras-3d', nombre: 'Letras 3D', slug: 'letras-3d', imagenDesktop: '/productos/letras-pvc.jpg', imagenMobile: '', orden: 3, activo: true },
+  { id: 'cat-home-impresion-digital', nombre: 'Impresion digital', slug: 'impresion-digital', imagenDesktop: '/productos/portada2-01.png', imagenMobile: '', orden: 4, activo: true },
+];
 
-const obtenerImagenMobile = (banner) =>
-  banner?.imagenMobile || obtenerImagenDesktop(banner);
+const obtenerImagenDesktop = (item) =>
+  item?.imagenDesktop || item?.imagenRuta || item?.imagen || item?.img || item?.url || item?.src || '/productos/portada2-01.png';
+
+const obtenerImagenMobile = (item) =>
+  item?.imagenMobile || obtenerImagenDesktop(item);
 
 export default function Home({ setPage }) {
   const {
     banners = [],
+    categoriasHome = [],
     configuracion = {},
-    productos = [],
-    carrito = [],
   } = useApp();
 
   const [bannerActivoIndex, setBannerActivoIndex] = useState(0);
@@ -86,6 +53,17 @@ export default function Home({ setPage }) {
 
     return lista.length > 0 ? lista : [bannerFallback];
   }, [banners]);
+
+  const categoriasPortada = useMemo(() => {
+    const lista = Array.isArray(categoriasHome)
+      ? categoriasHome
+          .filter((item) => item?.activo !== false)
+          .filter((item) => obtenerImagenDesktop(item))
+          .sort((a, b) => Number(a.orden || 999) - Number(b.orden || 999))
+      : [];
+
+    return lista.length > 0 ? lista : categoriasFallback;
+  }, [categoriasHome]);
 
   useEffect(() => {
     setBannerActivoIndex(0);
@@ -109,49 +87,6 @@ export default function Home({ setPage }) {
   const go = (page) => {
     if (typeof setPage === 'function') setPage(page);
   };
-
-  const productosAdmin = Array.isArray(productos)
-    ? productos.filter((p) => p.activo !== false)
-    : [];
-
-  const categoriasHome =
-    productosAdmin.length > 0
-      ? Array.from(
-          productosAdmin.reduce((mapa, producto) => {
-            const nombreCategoria = texto(producto.categoria) || 'ELANVISUAL';
-            const slug = slugify(nombreCategoria) || 'elanvisual';
-
-            if (!mapa.has(slug)) {
-              mapa.set(slug, {
-                id: slug,
-                titulo: nombreCategoria,
-                img:
-                  texto(producto.imagen) ||
-                  texto(producto.img) ||
-                  texto(producto.url) ||
-                  '/productos/portada2-01.png',
-              });
-            }
-
-            const actual = mapa.get(slug);
-            const imagenProducto =
-              texto(producto.imagen) || texto(producto.img) || texto(producto.url);
-
-            if (
-              (!actual.img || actual.img === '/productos/portada2-01.png') &&
-              imagenProducto
-            ) {
-              actual.img = imagenProducto;
-            }
-
-            return mapa;
-          }, new Map()).values()
-        )
-      : categoriasFallback;
-
-  const cantidadCarrito = Array.isArray(carrito)
-    ? carrito.reduce((total, item) => total + Number(item.cantidad || 1), 0)
-    : 0;
 
   const abrirCategoria = (slug) => {
     window.location.href = `/tienda/${slug}`;
@@ -183,18 +118,24 @@ export default function Home({ setPage }) {
       </section>
 
       <section className="ev-catalog-section">
-        <div className={`ev-catalog-grid ${categoriasHome.length === 1 ? 'single' : ''}`}>
-          {categoriasHome.map((item) => (
-            <button
-              type="button"
-              className="ev-category-card"
-              key={item.id || item.titulo}
-              onClick={() => abrirCategoria(item.id)}
-            >
-              <img src={item.img} alt={item.titulo} />
-              <strong>{item.titulo}</strong>
-            </button>
-          ))}
+        <div className={`ev-catalog-grid ${categoriasPortada.length === 1 ? 'single' : ''}`}>
+          {categoriasPortada.map((item) => {
+            const nombre = texto(item.nombre || item.titulo || 'Categoria ELANVISUAL');
+            const slug = texto(item.slug || item.id || nombre.toLowerCase().replace(/\s+/g, '-'));
+            const img = obtenerImagenDesktop(item);
+
+            return (
+              <button
+                type="button"
+                className="ev-category-card"
+                key={item.id || slug}
+                onClick={() => abrirCategoria(slug)}
+              >
+                <img src={img} alt={nombre} />
+                <strong>{nombre}</strong>
+              </button>
+            );
+          })}
         </div>
       </section>
 
@@ -250,45 +191,6 @@ export default function Home({ setPage }) {
         }
         .ev-catalog-section{
           padding:30px 18px 40px;
-        }
-        .ev-catalog-head{
-          display:flex;
-          align-items:center;
-          justify-content:space-between;
-          gap:14px;
-          margin-bottom:22px;
-        }
-        .ev-catalog-head h2{
-          margin:0;
-          font-size:34px;
-          font-weight:950;
-          color:#020617;
-        }
-        .ev-catalog-head p{
-          margin:5px 0 0;
-          color:#64748b;
-          font-weight:800;
-        }
-        .ev-cart-pill{
-          border:0;
-          border-radius:999px;
-          padding:12px 16px;
-          background:#0f172a;
-          color:white;
-          font-weight:950;
-          display:flex;
-          align-items:center;
-          gap:9px;
-          cursor:pointer;
-        }
-        .ev-cart-pill strong{
-          background:#facc15;
-          color:#111827;
-          min-width:24px;
-          height:24px;
-          border-radius:999px;
-          display:grid;
-          place-items:center;
         }
         .ev-catalog-grid{
           display:grid;
@@ -347,10 +249,6 @@ export default function Home({ setPage }) {
           }
           .ev-catalog-section{
             padding:24px 14px 34px;
-          }
-          .ev-catalog-head{
-            align-items:flex-start;
-            flex-direction:column;
           }
           .ev-catalog-grid,
           .ev-catalog-grid.single{

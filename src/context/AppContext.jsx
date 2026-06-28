@@ -103,6 +103,42 @@ const usuariosIniciales = [
   },
 ];
 
+const categoriasHomeIniciales = [
+  { id: 'cat-home-rotulacion', nombre: 'Rotulacion', slug: 'rotulacion', descripcion: '', imagenDesktop: '/productos/fachada.jpg', imagenMobile: '', orden: 1, activo: true },
+  { id: 'cat-home-displays', nombre: 'Displays publicitarios', slug: 'displays', descripcion: '', imagenDesktop: '/productos/display.jpg', imagenMobile: '', orden: 2, activo: true },
+  { id: 'cat-home-letras-3d', nombre: 'Letras 3D', slug: 'letras-3d', descripcion: '', imagenDesktop: '/productos/letras-pvc.jpg', imagenMobile: '', orden: 3, activo: true },
+  { id: 'cat-home-impresion-digital', nombre: 'Impresion digital', slug: 'impresion-digital', descripcion: '', imagenDesktop: '/productos/portada2-01.png', imagenMobile: '', orden: 4, activo: true },
+];
+
+function normalizarCategoriaHome(categoria = {}) {
+  const nombre = String(categoria.nombre || categoria.titulo || 'Categoria ELANVISUAL').trim();
+  const slug = String(categoria.slug || nombre)
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '') || `categoria-${Date.now()}`;
+
+  return {
+    id: categoria.id || `cat-home-${slug}`,
+    nombre,
+    slug,
+    descripcion: categoria.descripcion || '',
+    imagenDesktop: categoria.imagenDesktop || categoria.imagenRuta || categoria.imagen || categoria.img || '/productos/portada2-01.png',
+    imagenMobile: categoria.imagenMobile || '',
+    orden: Number(categoria.orden || 1),
+    activo: categoria.activo !== false,
+    creadoEn: categoria.creadoEn || Date.now(),
+    actualizadoEn: categoria.actualizadoEn || Date.now(),
+  };
+}
+
+function normalizarCategoriasHome(lista, valorInicial = categoriasHomeIniciales) {
+  const origen = Array.isArray(lista) && lista.length > 0 ? lista : valorInicial;
+  return origen.map(normalizarCategoriaHome);
+}
+
 export const rolesSistema = ['admin', 'ventas', 'produccion'];
 
 export const estadosProduccion = [
@@ -328,6 +364,9 @@ export function AppProvider({ children }) {
     leerStorage('elanvisual_cuentas_bancarias', cuentasIniciales)
   );
   const [banners, setBanners] = useState(() => leerStorage('elanvisual_banners', bannersIniciales));
+  const [categoriasHome, setCategoriasHome] = useState(() =>
+    leerStorage('elanvisual_categorias_home', categoriasHomeIniciales)
+  );
   const [trabajos, setTrabajos] = useState(() =>
     leerStorage('elanvisual_trabajos', trabajosIniciales)
   );
@@ -424,6 +463,7 @@ const [fondoDireccion, setFondoDireccion] = useState(() =>
   useEffect(() => guardarStorage('elanvisual_configuracion', configuracion), [configuracion]);
   useEffect(() => guardarStorage('elanvisual_cuentas_bancarias', cuentasBancarias), [cuentasBancarias]);
   useEffect(() => guardarStorage('elanvisual_banners', banners), [banners]);
+  useEffect(() => guardarStorage('elanvisual_categorias_home', categoriasHome), [categoriasHome]);
   useEffect(() => guardarStorage('elanvisual_trabajos', trabajos), [trabajos]);
   useEffect(() => guardarStorage('elanvisual_productos', productos), [productos]);
   useEffect(() => guardarStorage('elanvisual_imagenes', imagenes), [imagenes]);
@@ -1651,24 +1691,13 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
     setBanners((prev) => {
       const nuevoBanner = normalizarBanner({
         ...banner,
-        id: `banner-${Date.now()}`,
+        id: banner.id || `banner-${Date.now()}`,
         activo: banner.activo ?? true,
-        createdAt: Date.now(),
+        createdAt: banner.createdAt || Date.now(),
         actualizadoEn: Date.now(),
       });
 
-      const bannersPrevios = normalizarBanners(prev, []);
-
-      if (nuevoBanner.activo && nuevoBanner.ubicacion === 'hero-principal') {
-        return [
-          nuevoBanner,
-          ...bannersPrevios.map((b) =>
-            b.ubicacion === 'hero-principal' ? { ...b, activo: false } : b
-          ),
-        ];
-      }
-
-      return [nuevoBanner, ...bannersPrevios];
+      return [nuevoBanner, ...normalizarBanners(prev, []).filter((b) => b.id !== nuevoBanner.id)];
     });
 
   const actualizarBanner = (banner) =>
@@ -1678,28 +1707,39 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
         actualizadoEn: Date.now(),
       });
 
-      return normalizarBanners(prev, []).map((b) => {
-        if (
-          bannerNormalizado.activo &&
-          bannerNormalizado.ubicacion === 'hero-principal' &&
-          b.ubicacion === 'hero-principal' &&
-          b.id !== bannerNormalizado.id
-        ) {
-          return { ...b, activo: false };
-        }
-
-        if (b.id === bannerNormalizado.id) {
-          return {
-            ...b,
-            ...bannerNormalizado,
-          };
-        }
-
-        return b;
-      });
+      return normalizarBanners(prev, []).map((b) =>
+        b.id === bannerNormalizado.id ? { ...b, ...bannerNormalizado } : b
+      );
     });
 
   const eliminarBanner = (id) => setBanners((prev) => prev.filter((b) => b.id !== id));
+
+  const crearCategoriaHome = (categoria) =>
+    setCategoriasHome((prev) => {
+      const normalizada = normalizarCategoriaHome({
+        ...categoria,
+        id: categoria.id || `cat-home-${Date.now()}`,
+        creadoEn: Date.now(),
+        actualizadoEn: Date.now(),
+      });
+
+      return [normalizada, ...normalizarCategoriasHome(prev, []).filter((item) => item.id !== normalizada.id)];
+    });
+
+  const actualizarCategoriaHome = (categoria) =>
+    setCategoriasHome((prev) => {
+      const normalizada = normalizarCategoriaHome({
+        ...categoria,
+        actualizadoEn: Date.now(),
+      });
+
+      return normalizarCategoriasHome(prev, []).map((item) =>
+        item.id === normalizada.id ? { ...item, ...normalizada } : item
+      );
+    });
+
+  const eliminarCategoriaHome = (id) =>
+    setCategoriasHome((prev) => normalizarCategoriasHome(prev, []).filter((item) => item.id !== id));
 
   const crearTrabajo = (trabajo) =>
     setTrabajos((prev) => [{ ...trabajo, id: `trabajo-${Date.now()}`, activo: true }, ...prev]);

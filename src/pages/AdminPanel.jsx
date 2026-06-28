@@ -1,5 +1,6 @@
 ﻿import React, { useMemo, useState } from 'react';
 import Usuarios20Panel from '../components/admin/Usuarios20Panel';
+import CategoriasHomePanel from '../components/admin/CategoriasHomePanel';
 import {
   Building2,
   ClipboardList,
@@ -284,6 +285,7 @@ export default function AdminPanel() {
           ['servicios', 'Servicios'],
           ['portafolio', 'Portafolio'],
           ['banners', 'Banners'],
+          ['categoriasHome', 'Categorías Home'],
           ['multimedia', 'Multimedia'],
           ['usuarios', 'Usuarios'],
         ].map(([key, label]) => (
@@ -547,6 +549,8 @@ export default function AdminPanel() {
           </div>
         </section>
       )}
+
+      {tab === 'categoriasHome' && <CategoriasHomePanel />}
 
       {tab === 'usuarios' && <Usuarios20Panel />}
 
