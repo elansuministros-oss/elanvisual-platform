@@ -1,13 +1,13 @@
 ﻿.printy-header{
-    height:82px;
-    background:#fff;
-    border-bottom:1px solid #ececec;
+    height:78px;
+    background:#0b0b0b;
+    border-bottom:1px solid #1d1d1d;
 
     display:flex;
     align-items:center;
 
-    padding:0 40px;
-    gap:40px;
+    padding:0 28px;
+    gap:28px;
 }
 
 .printy-logo{
@@ -17,7 +17,7 @@
 }
 
 .printy-logo img{
-    height:46px;
+    height:32px;
     width:auto;
     display:block;
 }
@@ -27,24 +27,60 @@
 
     display:flex;
     align-items:center;
-    gap:38px;
+    justify-content:flex-start;
 
-    font-size:14px;
-    font-weight:800;
-    letter-spacing:.05em;
+    gap:26px;
+
+    color:#fff;
+
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.04em;
+
+    text-transform:uppercase;
+}
+
+.printy-nav div{
+    cursor:pointer;
+    white-space:nowrap;
+    transition:.25s;
+}
+
+.printy-nav div:hover{
+    color:#FFD400;
 }
 
 .printy-track-btn{
     background:#FFD400;
+    color:#111;
+
     border:none;
     border-radius:999px;
-    padding:12px 24px;
+
+    padding:12px 22px;
+
+    font-size:13px;
     font-weight:800;
+
     cursor:pointer;
+
+    white-space:nowrap;
 }
 
 .printy-icons{
     display:flex;
+    align-items:center;
     gap:18px;
-    font-size:22px;
+
+    color:#fff;
+    font-size:20px;
+}
+
+.printy-icons span{
+    cursor:pointer;
+    transition:.25s;
+}
+
+.printy-icons span:hover{
+    color:#FFD400;
 }
