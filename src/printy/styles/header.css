@@ -16,6 +16,23 @@
     flex:0 0 auto;
     display:flex;
     align-items:center;
+    margin-right:80px;
+}
+
+.printy-nav{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:30px;
+
+    margin-left:0;
+
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.035em;
+    text-transform:uppercase;
 }
 
 .printy-logo img{
@@ -94,3 +111,4 @@
         height:25px;
     }
 }
+
