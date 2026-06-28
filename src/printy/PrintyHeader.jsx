@@ -36,7 +36,7 @@ export default function PrintyHeader() {
         <div>LETREROS DE EXTERIOR</div>
       </nav>
 
-      <button className="printy-track-btn">SIGN TRACKING</button>
+      <button className="printy-track-btn">MI PEDIDO</button>
 
       <div className="printy-icons">
         <span>⌕</span>
@@ -46,3 +46,4 @@ export default function PrintyHeader() {
     </header>
   );
 }
+
