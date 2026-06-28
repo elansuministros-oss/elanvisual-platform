@@ -21,15 +21,8 @@ const bannerFallback = {
   imagenMobile: '/productos/portada2-01.png',
 };
 
-const categoriasFallback = [
-  { id: 'cat-home-rotulacion', nombre: 'Rotulacion', slug: 'rotulacion', imagenDesktop: '/productos/fachada.jpg', imagenMobile: '', orden: 1, activo: true },
-  { id: 'cat-home-displays', nombre: 'Displays publicitarios', slug: 'displays', imagenDesktop: '/productos/display.jpg', imagenMobile: '', orden: 2, activo: true },
-  { id: 'cat-home-letras-3d', nombre: 'Letras 3D', slug: 'letras-3d', imagenDesktop: '/productos/letras-pvc.jpg', imagenMobile: '', orden: 3, activo: true },
-  { id: 'cat-home-impresion-digital', nombre: 'Impresion digital', slug: 'impresion-digital', imagenDesktop: '/productos/portada2-01.png', imagenMobile: '', orden: 4, activo: true },
-];
-
 const obtenerImagenDesktop = (item) =>
-  item?.imagenDesktop || item?.imagenRuta || item?.imagen || item?.img || item?.url || item?.src || '/productos/portada2-01.png';
+  item?.imagenDesktop || item?.imagenRuta || item?.imagen || item?.img || item?.url || item?.src || '';
 
 const obtenerImagenMobile = (item) =>
   item?.imagenMobile || obtenerImagenDesktop(item);
@@ -55,14 +48,12 @@ export default function Home({ setPage }) {
   }, [banners]);
 
   const categoriasPortada = useMemo(() => {
-    const lista = Array.isArray(categoriasHome)
+    return Array.isArray(categoriasHome)
       ? categoriasHome
           .filter((item) => item?.activo !== false)
           .filter((item) => obtenerImagenDesktop(item))
           .sort((a, b) => Number(a.orden || 999) - Number(b.orden || 999))
       : [];
-
-    return lista;
   }, [categoriasHome]);
 
   useEffect(() => {
@@ -117,27 +108,33 @@ export default function Home({ setPage }) {
         )}
       </section>
 
-      <section className="ev-catalog-section">
-        <div className={`ev-catalog-grid ${categoriasPortada.length === 1 ? 'single' : ''}`}>
-          {categoriasPortada.map((item) => {
-            const nombre = texto(item.nombre || item.titulo || 'Categoria ELANVISUAL');
-            const slug = texto(item.slug || item.id || nombre.toLowerCase().replace(/\s+/g, '-'));
-            const img = obtenerImagenDesktop(item);
+      {categoriasPortada.length > 0 && (
+        <section className="ev-catalog-section">
+          <div className={`ev-catalog-grid ${categoriasPortada.length === 1 ? 'single' : ''}`}>
+            {categoriasPortada.map((item) => {
+              const nombre = texto(item.nombre || item.titulo || 'Categoria ELANVISUAL');
+              const slug = texto(item.slug || item.id || nombre.toLowerCase().replace(/\s+/g, '-'));
+              const imgDesktop = obtenerImagenDesktop(item);
+              const imgMobile = obtenerImagenMobile(item);
 
-            return (
-              <button
-                type="button"
-                className="ev-category-card"
-                key={item.id || slug}
-                onClick={() => abrirCategoria(slug)}
-              >
-                <img src={img} alt={nombre} />
-                <strong>{nombre}</strong>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+              return (
+                <button
+                  type="button"
+                  className="ev-category-card"
+                  key={item.id || slug}
+                  onClick={() => abrirCategoria(slug)}
+                >
+                  <picture>
+                    <source media="(max-width: 700px)" srcSet={imgMobile} />
+                    <img src={imgDesktop} alt={nombre} />
+                  </picture>
+                  <strong>{nombre}</strong>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="app-final-cta">
         <Factory size={34} />
@@ -213,12 +210,15 @@ export default function Home({ setPage }) {
           padding:0;
           text-align:left;
         }
+        .ev-category-card picture,
         .ev-category-card img{
           width:100%;
           height:100%;
           min-height:310px;
-          object-fit:cover;
           display:block;
+        }
+        .ev-category-card img{
+          object-fit:cover;
           transform:scale(1.01);
           transition:transform .25s ease;
         }
@@ -264,7 +264,9 @@ export default function Home({ setPage }) {
             max-width:86vw;
             min-height:330px;
             scroll-snap-align:start;
+            border-radius:26px;
           }
+          .ev-category-card picture,
           .ev-category-card img{
             min-height:330px;
           }
