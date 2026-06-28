@@ -196,12 +196,18 @@ export async function eliminarProveedor(id) {
   await supabase.from(CAPACIDADES).delete().eq('proveedor_id', id);
   await supabase.from(CONTACTOS).delete().eq('proveedor_id', id);
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from(EMPRESAS)
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .select('id');
 
   if (error) throw error;
 
+  if (!data || data.length === 0) {
+    throw new Error('Supabase no eliminó el proveedor. Puede existir bloqueo por RLS, permisos o ID incorrecto.');
+  }
+
   return true;
 }
+
