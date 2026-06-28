@@ -1932,6 +1932,11 @@ const generarComisionAutomatica = ({
         actualizarBanner,
         eliminarBanner,
 
+        categoriasHome,
+        crearCategoriaHome,
+        actualizarCategoriaHome,
+        eliminarCategoriaHome,
+
         trabajos,
         crearTrabajo,
         actualizarTrabajo,
