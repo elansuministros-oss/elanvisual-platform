@@ -1,12 +1,20 @@
 ﻿import React, { useMemo, useState } from 'react';
-import { ArrowLeft, PackageSearch, Search, ShoppingCart } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  PackageSearch,
+  Search,
+  ShoppingCart,
+  Sparkles,
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const moneyUSD = (value) =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 0,
   }).format(Number(value || 0));
 
 const texto = (value) => String(value || '').trim();
@@ -85,7 +93,7 @@ export default function Tienda({ setPage }) {
           ...producto,
           id: producto.id || producto.codigo || producto.nombre,
           nombre: texto(producto.nombre) || 'Producto ELANVISUAL',
-          descripcion: texto(producto.descripcion) || 'Producto disponible para compra.',
+          descripcion: texto(producto.descripcion) || '',
           categoria: categoriaOficial?.nombre || texto(producto.categoria) || 'General',
           categoriaSlug: categoriaOficial?.slug || slugCategoria,
           categoriaHomeId: categoriaOficial?.id || producto.categoriaHomeId || '',
@@ -145,6 +153,12 @@ export default function Tienda({ setPage }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const abrirCotizadorAI = () => {
+    setPage?.('cotizador-ai');
+    window.history.pushState({}, '', '/cotizador-ai');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const agregarAlCarrito = (producto) => {
     if (typeof agregar === 'function') {
       agregar(producto);
@@ -153,6 +167,57 @@ export default function Tienda({ setPage }) {
 
   return (
     <main className="catalog-page">
+      <section className="store-ai-banner">
+        <div className="store-ai-copy">
+          <span className="store-ai-badge">
+            <Sparkles size={15} />
+            NUEVO
+          </span>
+
+          <h1>Diseña tu rótulo</h1>
+
+          <p>
+            Describe tu idea, sube tu logo o dinos qué negocio tienes.
+            <br />
+            Nuestra IA te ayuda a crear tu propuesta inicial en minutos.
+          </p>
+
+          <button type="button" className="store-ai-button" onClick={abrirCotizadorAI}>
+            <Sparkles size={20} />
+            Crear mi diseño con IA
+            <ArrowRight size={22} />
+          </button>
+        </div>
+
+        <div className="store-ai-flow" aria-label="Flujo de propuesta con IA">
+          <div className="store-ai-step">
+            <strong>1. Tu idea</strong>
+            <p>Quiero un letrero moderno para mi negocio.</p>
+          </div>
+
+          <ArrowRight className="store-ai-arrow" size={28} />
+
+          <div className="store-ai-step store-ai-preview">
+            <strong>2. Propuesta IA</strong>
+            <div className="store-ai-mockup">
+              <Sparkles size={24} />
+              <span>Café del Barrio</span>
+            </div>
+          </div>
+
+          <ArrowRight className="store-ai-arrow" size={28} />
+
+          <div className="store-ai-step">
+            <strong>3. Listo para cotizar</strong>
+            <ul>
+              <li><CheckCircle2 size={17} /> Medidas sugeridas</li>
+              <li><CheckCircle2 size={17} /> Materiales</li>
+              <li><CheckCircle2 size={17} /> Iluminación</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <section className="catalog-tools">
         {categoriaActiva ? (
           <button type="button" className="filter-label" onClick={volverCategorias}>
@@ -224,19 +289,20 @@ export default function Tienda({ setPage }) {
               </div>
 
               <div className="product-body">
-                <small>{producto.categoria}</small>
                 <h3>{producto.nombre}</h3>
-                <p>{producto.descripcion}</p>
 
-                <div className="product-footer">
-                  <strong className="price">
-                    {producto.precio > 0 ? moneyUSD(producto.precio) : 'Consultar'}
-                  </strong>
+                <strong className="price">
+                  {producto.precio > 0 ? `Desde ${moneyUSD(producto.precio)}` : 'Consultar'}
+                </strong>
 
-                  <button type="button" onClick={() => agregarAlCarrito(producto)}>
-                    <PackageSearch size={16} />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="product-main-action"
+                  onClick={() => agregarAlCarrito(producto)}
+                >
+                  <PackageSearch size={18} />
+                  Personalizar
+                </button>
               </div>
             </article>
           ))}
