@@ -44,6 +44,19 @@ const obtenerImagenCategoria = (categoria = {}) =>
 
 const normalizarWhatsapp = (value) => texto(value).replace(/[^\d+]/g, '');
 
+const PAISES_WHATSAPP = [
+  { codigo: 'NI', nombre: 'Nicaragua', bandera: '🇳🇮', prefijo: '+505' },
+  { codigo: 'CR', nombre: 'Costa Rica', bandera: '🇨🇷', prefijo: '+506' },
+  { codigo: 'HN', nombre: 'Honduras', bandera: '🇭🇳', prefijo: '+504' },
+  { codigo: 'SV', nombre: 'El Salvador', bandera: '🇸🇻', prefijo: '+503' },
+  { codigo: 'GT', nombre: 'Guatemala', bandera: '🇬🇹', prefijo: '+502' },
+  { codigo: 'PA', nombre: 'Panama', bandera: '🇵🇦', prefijo: '+507' },
+  { codigo: 'MX', nombre: 'Mexico', bandera: '🇲🇽', prefijo: '+52' },
+  { codigo: 'US', nombre: 'Estados Unidos', bandera: '🇺🇸', prefijo: '+1' },
+];
+
+const PAIS_WHATSAPP_DEFAULT = PAISES_WHATSAPP[0];
+
 const obtenerUsoNumero = (whatsapp) => {
   if (!whatsapp) return 0;
   try {
@@ -82,6 +95,7 @@ export default function Tienda({ setPage }) {
   const [generandoAI, setGenerandoAI] = useState(false);
   const [formAI, setFormAI] = useState({
     negocio: '',
+    paisWhatsapp: PAIS_WHATSAPP_DEFAULT.codigo,
     whatsapp: '',
     idea: '',
     logoNombre: '',
@@ -236,7 +250,9 @@ export default function Tienda({ setPage }) {
   };
 
   const generarPropuestaAI = async () => {
-    const whatsapp = normalizarWhatsapp(formAI.whatsapp);
+    const paisWhatsapp = PAISES_WHATSAPP.find((pais) => pais.codigo === formAI.paisWhatsapp) || PAIS_WHATSAPP_DEFAULT;
+    const whatsappLocal = normalizarWhatsapp(formAI.whatsapp).replace(/^\+/, '');
+    const whatsapp = paisWhatsapp.prefijo + whatsappLocal;
 
     if (!productoAI) {
       alert('Selecciona primero un modelo.');
@@ -372,7 +388,9 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
 
   const productoBase = productoAI;
   const perfilActivo = productoBase ? obtenerPerfilIA(productoBase) : null;
-  const whatsappNormalizado = normalizarWhatsapp(formAI.whatsapp);
+  const paisWhatsappActivo = PAISES_WHATSAPP.find((pais) => pais.codigo === formAI.paisWhatsapp) || PAIS_WHATSAPP_DEFAULT;
+  const whatsappLocalActivo = normalizarWhatsapp(formAI.whatsapp).replace(/^\+/, '');
+  const whatsappNormalizado = whatsappLocalActivo ? paisWhatsappActivo.prefijo + whatsappLocalActivo : '';
   const usoWhatsapp = obtenerUsoNumero(whatsappNormalizado);
   const disponibles = Math.max(AI_DESIGN_LIMIT - usoWhatsapp, 0);
 
@@ -522,12 +540,24 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
                 Sube tu logo, escribe tu idea y deja tu WhatsApp. Haré una propuesta basada únicamente en este modelo.
               </div>
 
-              <label className="ai-chat-field">
-                <Phone size={18} />
+              <label className="ai-chat-field ai-chat-phone-field">
+                <select
+                  className="ai-country-select"
+                  value={formAI.paisWhatsapp}
+                  onChange={(event) => actualizarFormAI('paisWhatsapp', event.target.value)}
+                  aria-label="Pais WhatsApp"
+                >
+                  {PAISES_WHATSAPP.map((pais) => (
+                    <option key={pais.codigo} value={pais.codigo}>
+                      {pais.bandera} {pais.prefijo}
+                    </option>
+                  ))}
+                </select>
                 <input
                   value={formAI.whatsapp}
                   onChange={(event) => actualizarFormAI('whatsapp', event.target.value)}
                   placeholder="WhatsApp obligatorio"
+                  inputMode="tel"
                 />
               </label>
 
@@ -595,6 +625,8 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
     </main>
   );
 }
+
+
 
 
 
