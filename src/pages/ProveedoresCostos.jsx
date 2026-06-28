@@ -182,6 +182,7 @@ export default function ProveedoresCostos() {
 
     try {
       await eliminarProveedorHub(id);
+      setProveedoresHub((prev) => prev.filter((p) => p.id !== id));
       await refrescarProveedores();
 
       if (editandoId === id) {
@@ -489,6 +490,7 @@ export default function ProveedoresCostos() {
     </main>
   );
 }
+
 
 
 
