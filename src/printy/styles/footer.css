@@ -1,0 +1,8 @@
+﻿.printy-footer {
+  padding: 44px 6vw;
+  background: #111;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}

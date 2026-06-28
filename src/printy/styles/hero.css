@@ -1,0 +1,51 @@
+﻿.printy-hero {
+  min-height: 620px;
+  padding: 80px 6vw;
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  align-items: center;
+  gap: 40px;
+  background: linear-gradient(135deg, #f7f7f7, #ffffff);
+}
+
+.printy-eyebrow {
+  font-weight: 900;
+  letter-spacing: 3px;
+}
+
+.printy-hero h1 {
+  font-size: clamp(46px, 6vw, 86px);
+  line-height: .95;
+  margin: 0 0 24px;
+}
+
+.printy-hero p {
+  font-size: 20px;
+  max-width: 620px;
+}
+
+.printy-hero-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.printy-hero .secondary {
+  background: #ffe100;
+  color: #111;
+}
+
+.printy-hero-card {
+  min-height: 430px;
+  border-radius: 34px;
+  background: #111;
+  color: #fff;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.printy-hero-card strong {
+  font-size: 42px;
+}

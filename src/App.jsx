@@ -7,6 +7,8 @@ import React, { useEffect, useState } from 'react';
 import CRM from './crm/App/CRM.jsx';
 import Header from './components/Header';
 import Home from './pages/Home';
+import HomePrintyStyle from './pages/HomePrintyStyle';
+import PrintyApp from './printy/PrintyApp';
 import Servicios from './pages/Servicios';
 import Tienda from './pages/Tienda';
 import Carrito from './pages/Carrito';
@@ -39,6 +41,8 @@ export default function App() {
   const pathInicial = window.location.pathname || '/';
 
   const paginaInicial = (() => {
+    if (pathInicial.startsWith('/home-v2')) return 'homeV2';
+    if (pathInicial.startsWith('/printy')) return 'printy';
     if (pathInicial.startsWith('/clientes')) return 'clientes';
     if (pathInicial.startsWith('/crm')) return 'crm';
     if (pathInicial.startsWith('/seguimiento')) return 'seguimiento';
@@ -147,11 +151,13 @@ export default function App() {
       </>
     )}
 
-    <Header page={page} setPage={ir} />
+    {page !== 'homeV2' && page !== 'printy' && <Header page={page} setPage={ir} />}
 
       
 
       {page === 'home' && <Home setPage={ir} />}
+      {page === 'homeV2' && <HomePrintyStyle setPage={ir} />}
+      {page === 'printy' && <PrintyApp />}
       {page === 'servicios' && <Servicios setPage={ir} />}
       {page === 'tienda' && <Tienda setPage={ir} />}
       {page === 'catalogo' && <Servicios setPage={ir} />}
@@ -323,6 +329,11 @@ export default function App() {
     </AIAssistantProvider>
   );
 }
+
+
+
+
+
 
 
 
