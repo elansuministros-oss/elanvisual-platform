@@ -134,8 +134,8 @@ function normalizarCategoriaHome(categoria = {}) {
   };
 }
 
-function normalizarCategoriasHome(lista, valorInicial = categoriasHomeIniciales) {
-  const origen = Array.isArray(lista) && lista.length > 0 ? lista : valorInicial;
+function normalizarCategoriasHome(lista, valorInicial = []) {
+  const origen = Array.isArray(lista) ? lista : valorInicial;
   return origen.map(normalizarCategoriaHome);
 }
 
@@ -213,6 +213,10 @@ function leerStorage(clave, valorInicial) {
       return normalizarBanners(datos, valorInicial);
     }
 
+    if (clave === 'elanvisual_categorias_home') {
+      return normalizarCategoriasHome(datos, valorInicial);
+    }
+
     return datos;
   } catch {
     return valorInicial;
@@ -246,7 +250,7 @@ function construirEstadoCompartido({
     },
     cuentasBancarias: Array.isArray(cuentasBancarias) ? cuentasBancarias : cuentasIniciales,
     banners: normalizarBanners(banners, bannersIniciales),
-    categoriasHome: normalizarCategoriasHome(categoriasHome, categoriasHomeIniciales),
+    categoriasHome: normalizarCategoriasHome(categoriasHome, []),
     trabajos: Array.isArray(trabajos) ? trabajos : trabajosIniciales,
     productos: Array.isArray(productos) ? productos : productosIniciales,
     imagenes: Array.isArray(imagenes) ? imagenes : [],
@@ -260,6 +264,7 @@ function estadoCompartidoTieneDatos(data) {
   return Boolean(
     (Array.isArray(data.productos) && data.productos.length > 0) ||
       (Array.isArray(data.banners) && data.banners.length > 0) ||
+      (Array.isArray(data.categoriasHome) && data.categoriasHome.length > 0) ||
       (Array.isArray(data.trabajos) && data.trabajos.length > 0) ||
       (Array.isArray(data.imagenes) && data.imagenes.length > 0) ||
       (Array.isArray(data.cuentasBancarias) && data.cuentasBancarias.length > 0) ||
@@ -534,9 +539,9 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
 
           setBanners(normalizarBanners(remoto.banners, bannersIniciales));
 
-setCategoriasHome(normalizarCategoriasHome(remoto.categoriasHome, categoriasHomeIniciales));
-
-setTrabajos(Array.isArray(remoto.trabajos) ? remoto.trabajos : trabajosIniciales);
+          if (Array.isArray(remoto.categoriasHome)) {
+            setCategoriasHome(normalizarCategoriasHome(remoto.categoriasHome, []));
+          }
 
           setTrabajos(Array.isArray(remoto.trabajos) ? remoto.trabajos : trabajosIniciales);
 
@@ -546,14 +551,14 @@ setTrabajos(Array.isArray(remoto.trabajos) ? remoto.trabajos : trabajosIniciales
         } else {
           
           const estadoInicialCompartido = construirEstadoCompartido({
-  configuracion,
-  cuentasBancarias,
-  banners,
-  categoriasHome,
-  trabajos,
-  productos,
-  imagenes,
-});
+            configuracion,
+            cuentasBancarias,
+            banners,
+            categoriasHome,
+            trabajos,
+            productos,
+            imagenes,
+          });
 
           await supabase.from(APP_STATE_TABLE).upsert(
             {
@@ -585,15 +590,14 @@ setTrabajos(Array.isArray(remoto.trabajos) ? remoto.trabajos : trabajosIniciales
     const timer = window.setTimeout(async () => {
       
   const estadoCompartido = construirEstadoCompartido({
-  estadoCompartidoCargado,
-  configuracion,
-  cuentasBancarias,
-  banners,
-  categoriasHome,
-  trabajos,
-  productos,
-  imagenes,
-});
+        configuracion,
+        cuentasBancarias,
+        banners,
+        categoriasHome,
+        trabajos,
+        productos,
+        imagenes,
+      });
 
       try {
         const { error } = await supabase.from(APP_STATE_TABLE).upsert(
