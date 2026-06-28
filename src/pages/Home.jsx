@@ -1,4 +1,4 @@
-﻿import React from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   Factory,
   ShoppingBag,
@@ -44,6 +44,28 @@ const categoriasFallback = [
   },
 ];
 
+const bannerFallback = {
+  id: 'hero-fallback',
+  ubicacion: 'hero-principal',
+  activo: true,
+  orden: 1,
+  imagen: '/productos/portada2-01.png',
+  imagenRuta: '/productos/portada2-01.png',
+  imagenDesktop: '/productos/portada2-01.png',
+  imagenMobile: '/productos/portada2-01.png',
+};
+
+const obtenerImagenDesktop = (banner) =>
+  banner?.imagenDesktop ||
+  banner?.imagenRuta ||
+  banner?.imagen ||
+  banner?.url ||
+  banner?.src ||
+  '/productos/portada2-01.png';
+
+const obtenerImagenMobile = (banner) =>
+  banner?.imagenMobile || obtenerImagenDesktop(banner);
+
 export default function Home({ setPage }) {
   const {
     banners = [],
@@ -52,38 +74,37 @@ export default function Home({ setPage }) {
     carrito = [],
   } = useApp();
 
-  const bannersSeguros =
-    Array.isArray(banners) && banners.length > 0
+  const [bannerActivoIndex, setBannerActivoIndex] = useState(0);
+
+  const bannersHero = useMemo(() => {
+    const lista = Array.isArray(banners)
       ? banners
-      : [
-          {
-            id: 'hero-fallback',
-            ubicacion: 'hero-principal',
-            activo: true,
-            imagen: '/productos/portada2-01.png',
-            imagenRuta: '/productos/portada2-01.png',
-            imagenDesktop: '/productos/portada2-01.png',
-            imagenMobile: '/productos/portada2-01.png',
-          },
-        ];
+          .filter((b) => b?.ubicacion === 'hero-principal' && b?.activo !== false)
+          .filter((b) => obtenerImagenDesktop(b))
+          .sort((a, b) => Number(a.orden || 999) - Number(b.orden || 999))
+      : [];
 
-  const bannerHome = bannersSeguros.find(
-    (b) => b.ubicacion === 'hero-principal' && b.activo
-  );
+    return lista.length > 0 ? lista : [bannerFallback];
+  }, [banners]);
 
-  const isMobileHero =
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 1099px)').matches;
+  useEffect(() => {
+    setBannerActivoIndex(0);
+  }, [bannersHero.length]);
 
-  const heroImgDesktop =
-    bannerHome?.imagenDesktop ||
-    bannerHome?.imagenRuta ||
-    bannerHome?.imagen ||
-    bannerHome?.url ||
-    bannerHome?.src ||
-    '/productos/portada2-01.png';
+  useEffect(() => {
+    if (bannersHero.length <= 1) return undefined;
 
-  const heroImgMobile = bannerHome?.imagenMobile || heroImgDesktop;
-  const heroImg = isMobileHero ? heroImgMobile : heroImgDesktop;
+    const intervalo = window.setInterval(() => {
+      setBannerActivoIndex((actual) => (actual + 1) % bannersHero.length);
+    }, 6000);
+
+    return () => window.clearInterval(intervalo);
+  }, [bannersHero.length]);
+
+  const bannerHome = bannersHero[bannerActivoIndex] || bannersHero[0] || bannerFallback;
+
+  const heroImgDesktop = obtenerImagenDesktop(bannerHome);
+  const heroImgMobile = obtenerImagenMobile(bannerHome);
 
   const go = (page) => {
     if (typeof setPage === 'function') setPage(page);
@@ -145,6 +166,20 @@ export default function Home({ setPage }) {
             <img src={heroImgDesktop} alt="ELANVISUAL" />
           </picture>
         </div>
+
+        {bannersHero.length > 1 && (
+          <div className="app-hero-dots" aria-label="Indicadores de banners">
+            {bannersHero.map((banner, index) => (
+              <button
+                key={banner.id || `${banner.ubicacion}-${index}`}
+                type="button"
+                className={index === bannerActivoIndex ? 'active' : ''}
+                aria-label={`Ver banner ${index + 1}`}
+                onClick={() => setBannerActivoIndex(index)}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="ev-catalog-section">
@@ -185,6 +220,34 @@ export default function Home({ setPage }) {
       </section>
 
       <style>{`
+        .app-hero-dots{
+          position:absolute;
+          left:50%;
+          bottom:18px;
+          transform:translateX(-50%);
+          z-index:3;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:8px;
+          padding:8px 10px;
+          border-radius:999px;
+          background:rgba(15,23,42,.28);
+          backdrop-filter:blur(8px);
+        }
+        .app-hero-dots button{
+          width:10px;
+          height:10px;
+          border:0;
+          border-radius:999px;
+          padding:0;
+          background:rgba(255,255,255,.55);
+          cursor:pointer;
+        }
+        .app-hero-dots button.active{
+          width:26px;
+          background:#fff;
+        }
         .ev-catalog-section{
           padding:30px 18px 40px;
         }
@@ -279,6 +342,9 @@ export default function Home({ setPage }) {
           transform:scale(1.06);
         }
         @media (max-width: 700px){
+          .app-hero-dots{
+            bottom:12px;
+          }
           .ev-catalog-section{
             padding:24px 14px 34px;
           }
