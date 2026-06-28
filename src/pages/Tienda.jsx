@@ -335,34 +335,6 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
             <ArrowRight size={22} />
           </button>
         </div>
-
-        <div className="store-ai-flow" aria-label="Flujo de propuesta con IA">
-          <div className="store-ai-step">
-            <strong>1. Modelo</strong>
-            <p>Selecciona el tipo de rotulo con precio base definido.</p>
-          </div>
-
-          <ArrowRight className="store-ai-arrow" size={28} />
-
-          <div className="store-ai-step store-ai-preview">
-            <strong>2. Propuesta IA</strong>
-            <div className="store-ai-mockup">
-              <Sparkles size={24} />
-              <span>Render conceptual</span>
-            </div>
-          </div>
-
-          <ArrowRight className="store-ai-arrow" size={28} />
-
-          <div className="store-ai-step">
-            <strong>3. Seguimiento</strong>
-            <ul>
-              <li><CheckCircle2 size={17} /> WhatsApp obligatorio</li>
-              <li><CheckCircle2 size={17} /> Maximo 3 diseños</li>
-              <li><CheckCircle2 size={17} /> Seguimiento 2, 7 y 15 dias</li>
-            </ul>
-          </div>
-        </div>
       </section>
 
       <section className="catalog-tools">
@@ -556,4 +528,5 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
     </main>
   );
 }
+
 
