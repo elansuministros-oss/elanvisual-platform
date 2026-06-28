@@ -53,9 +53,13 @@ export default function Tienda({ setPage }) {
           .filter((categoria) => categoria?.activo !== false)
           .map((categoria) => ({
             ...categoria,
-            id: categoria.id || `cat-${slugify(categoria.nombre || categoria.titulo || 'general')}`,
+            id:
+              categoria.id ||
+              `cat-${slugify(categoria.nombre || categoria.titulo || 'general')}`,
             nombre: texto(categoria.nombre || categoria.titulo || 'Categoria ELANVISUAL'),
-            slug: categoria.slug || slugify(categoria.nombre || categoria.titulo || categoria.id || 'general'),
+            slug:
+              categoria.slug ||
+              slugify(categoria.nombre || categoria.titulo || categoria.id || 'general'),
             imagen: obtenerImagenCategoria(categoria),
             orden: Number(categoria.orden || 999),
           }))
@@ -73,7 +77,9 @@ export default function Tienda({ setPage }) {
           producto.slugCategoria ||
           slugify(texto(producto.categoria) || 'general');
 
-        const categoriaOficial = categoriasOficiales.find((cat) => cat.slug === slugCategoria);
+        const categoriaOficial = categoriasOficiales.find(
+          (cat) => cat.slug === slugCategoria
+        );
 
         return {
           ...producto,
@@ -104,8 +110,6 @@ export default function Tienda({ setPage }) {
       .filter((categoria) => categoria.cantidad > 0);
   }, [categoriasOficiales, productosNormalizados]);
 
-  const categoriaSeleccionada = categoriasOficiales.find((item) => item.slug === categoriaActiva);
-
   const productosFiltrados = useMemo(() => {
     const q = busqueda.toLowerCase().trim();
 
@@ -114,7 +118,9 @@ export default function Tienda({ setPage }) {
       .filter((producto) => {
         if (!q) return true;
 
-        return `${producto.nombre} ${producto.descripcion} ${producto.categoria} ${producto.codigo || ''}`
+        return `${producto.nombre} ${producto.descripcion} ${producto.categoria} ${
+          producto.codigo || ''
+        }`
           .toLowerCase()
           .includes(q);
       });
@@ -147,28 +153,6 @@ export default function Tienda({ setPage }) {
 
   return (
     <main className="catalog-page">
-      <section className="catalog-hero">
-        <div>
-          <span className="badge">ELANVISUAL · Tienda</span>
-          <h1>
-            {categoriaActiva
-              ? categoriaSeleccionada?.nombre || 'Productos'
-              : 'Categorias de productos'}
-          </h1>
-          <p>
-            {categoriaActiva
-              ? 'Selecciona el producto que queres cotizar o agregar al carrito.'
-              : 'Explora por categoria. Primero elegi el tipo de solucion y luego mira los productos disponibles.'}
-          </p>
-        </div>
-
-        <aside className="cart-summary-mini">
-          <b>Carrito</b>
-          <span>{cantidadCarrito} producto(s)</span>
-          <strong>Pago por transferencia</strong>
-        </aside>
-      </section>
-
       <section className="catalog-tools">
         {categoriaActiva ? (
           <button type="button" className="filter-label" onClick={volverCategorias}>
@@ -191,6 +175,7 @@ export default function Tienda({ setPage }) {
         <button type="button" className="filter-label" onClick={() => setPage?.('carrito')}>
           <ShoppingCart size={18} />
           Ver carrito
+          {cantidadCarrito > 0 ? ` (${cantidadCarrito})` : ''}
         </button>
       </section>
 
@@ -247,6 +232,7 @@ export default function Tienda({ setPage }) {
                   <strong className="price">
                     {producto.precio > 0 ? moneyUSD(producto.precio) : 'Consultar'}
                   </strong>
+
                   <button type="button" onClick={() => agregarAlCarrito(producto)}>
                     <PackageSearch size={16} />
                   </button>
