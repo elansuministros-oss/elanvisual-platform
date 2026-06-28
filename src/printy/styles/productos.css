@@ -1,26 +1,161 @@
-﻿.printy-productos {
-  background: #fafafa;
+﻿.printy-store{
+    background:#ffffff;
+    padding:34px 6vw 80px;
+    font-family:Arial, Helvetica, sans-serif;
 }
 
-.printy-productos-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
+.printy-store-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:28px;
+    margin-bottom:34px;
 }
 
-.printy-producto-card {
-  background: #fff;
-  border-radius: 28px;
-  padding: 18px;
-  border: 1px solid #e5e5e5;
+.printy-filter-group,
+.printy-sort-group{
+    display:flex;
+    align-items:center;
+    gap:18px;
 }
 
-.printy-producto-img {
-  aspect-ratio: 4 / 3;
-  border-radius: 20px;
-  background: #ededed;
+.printy-filter-group span,
+.printy-sort-group span{
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.12em;
 }
 
-.printy-producto-card h3 {
-  font-size: 22px;
+.printy-store select{
+    min-width:136px;
+    height:40px;
+    border:1px solid #dcdcdc;
+    border-radius:999px;
+    background:#fff;
+    padding:0 18px;
+    font-size:14px;
+    font-weight:600;
+}
+
+.printy-sort-group select{
+    min-width:240px;
+}
+
+.printy-sort-group small{
+    color:#6f6f6f;
+    font-size:13px;
+    white-space:nowrap;
+}
+
+.printy-store-grid{
+    display:grid;
+    grid-template-columns:repeat(5, minmax(0, 1fr));
+    gap:18px 40px;
+}
+
+.printy-store-card{
+    min-height:430px;
+    background:#fff;
+    border-radius:14px;
+    padding:16px;
+    box-shadow:0 8px 28px rgba(0,0,0,.06);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.printy-store-image-wrap{
+    width:100%;
+    aspect-ratio:1 / 1.32;
+    border-radius:10px;
+    overflow:hidden;
+    position:relative;
+    background:#f0f0f0;
+}
+
+.printy-store-image-wrap img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+
+.printy-store-image-wrap span{
+    position:absolute;
+    left:12px;
+    bottom:12px;
+    background:#FFD400;
+    color:#fff;
+    border-radius:999px;
+    padding:7px 14px;
+    font-size:13px;
+    font-weight:900;
+}
+
+.printy-store-info{
+    width:100%;
+    text-align:center;
+    padding-top:24px;
+}
+
+.printy-store-info h3{
+    margin:0 0 10px;
+    font-size:13px;
+    line-height:1.25;
+    font-weight:900;
+}
+
+.printy-store-info p{
+    margin:0 0 12px;
+    font-size:13px;
+    line-height:1.2;
+    font-weight:800;
+}
+
+.printy-store-info del{
+    display:block;
+    color:#aaa;
+    font-size:13px;
+    margin-bottom:8px;
+}
+
+.printy-store-info strong{
+    display:block;
+    text-align:left;
+    font-size:16px;
+    line-height:1.45;
+    font-weight:900;
+    letter-spacing:.02em;
+}
+
+@media(max-width:1200px){
+    .printy-store-grid{
+        grid-template-columns:repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media(max-width:900px){
+    .printy-store-toolbar{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .printy-store-grid{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media(max-width:560px){
+    .printy-store{
+        padding:24px 18px 60px;
+    }
+
+    .printy-filter-group,
+    .printy-sort-group{
+        flex-wrap:wrap;
+    }
+
+    .printy-store-grid{
+        grid-template-columns:1fr;
+    }
 }
