@@ -1,18 +1,9 @@
 ﻿import React from 'react';
 import {
-  ArrowRight,
   Factory,
-  MessageCircle,
   ShoppingBag,
-  Sparkles,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-
-const normalizarWhatsApp = (numero) => {
-  const limpio = String(numero || '').replace(/[^0-9]/g, '');
-  if (limpio.length === 8) return `505${limpio}`;
-  return limpio || '50585228183';
-};
 
 const texto = (value) => String(value || '').trim();
 
@@ -23,6 +14,12 @@ const slugify = (value) =>
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+
+const normalizarWhatsApp = (numero) => {
+  const limpio = String(numero || '').replace(/[^0-9]/g, '');
+  if (limpio.length === 8) return `505${limpio}`;
+  return limpio || '50585228183';
+};
 
 const categoriasFallback = [
   {
@@ -63,9 +60,6 @@ export default function Home({ setPage }) {
             id: 'hero-fallback',
             ubicacion: 'hero-principal',
             activo: true,
-            titulo: 'Rotulacion profesional para negocios reales',
-            subtitulo:
-              'Letras 3D, fachadas, acrilico, PVC, impresion UV, DTF UV, CNC, laser y displays fabricables.',
             imagen: '/productos/portada2-01.png',
             imagenRuta: '/productos/portada2-01.png',
             imagenDesktop: '/productos/portada2-01.png',
@@ -144,44 +138,12 @@ export default function Home({ setPage }) {
 
   return (
     <main className="app-home">
-      <section className="app-hero-screen">
+      <section className="app-hero-screen" aria-label="Banner principal ELANVISUAL">
         <div className="app-hero-image">
-          <img src={heroImg} alt="ELANVISUAL" />
-        </div>
-        <div className="app-hero-overlay" />
-
-        <div className="app-hero-content">
-          <span className="app-pill">
-            <Sparkles size={15} />
-            Rotulacion · Produccion · Imagen Comercial
-          </span>
-
-          <h1>{bannerHome?.titulo || 'ELANVISUAL'}</h1>
-
-          <p>
-            {bannerHome?.subtitulo ||
-              'Diseno, fabricacion e instalacion de soluciones visuales profesionales.'}
-          </p>
-
-          <div className="app-hero-buttons">
-            <button type="button" onClick={() => go('servicios')} className="app-btn primary">
-              Servicios <ArrowRight size={18} />
-            </button>
-
-            <button type="button" onClick={() => go('contacto')} className="app-btn secondary">
-              Cotizar
-            </button>
-
-            <a
-              href={`https://wa.me/${normalizarWhatsApp(configuracion.whatsapp)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="app-btn whatsapp"
-            >
-              <MessageCircle size={18} />
-              WhatsApp
-            </a>
-          </div>
+          <picture>
+            <source media="(max-width: 1099px)" srcSet={heroImgMobile} />
+            <img src={heroImgDesktop} alt="ELANVISUAL" />
+          </picture>
         </div>
       </section>
 
