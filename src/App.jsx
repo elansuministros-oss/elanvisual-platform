@@ -8,6 +8,7 @@ import CRM from './crm/App/CRM.jsx';
 import Header from './components/Header';
 import Home from './pages/Home';
 import PrintyApp from './printy/PrintyApp';
+import PrintyAdmin from './printy/admin/PrintyAdmin';
 import Servicios from './pages/Servicios';
 import Tienda from './pages/Tienda';
 import Carrito from './pages/Carrito';
@@ -40,6 +41,7 @@ export default function App() {
   const pathInicial = window.location.pathname || '/';
 
   const paginaInicial = (() => {
+    if (pathInicial.startsWith('/printy-admin')) return 'printyAdmin';
     if (pathInicial.startsWith('/printy')) return 'printy';
     if (pathInicial.startsWith('/clientes')) return 'clientes';
     if (pathInicial.startsWith('/crm')) return 'crm';
@@ -149,11 +151,12 @@ export default function App() {
       </>
     )}
 
-    {page !== 'printy' && <Header page={page} setPage={ir} />}
+    {page !== 'printy' && page !== 'printyAdmin' && <Header page={page} setPage={ir} />}
 
       
 
       {page === 'home' && <Home setPage={ir} />}      {page === 'printy' && <PrintyApp />}
+      {page === 'printyAdmin' && (accesoAdmin ? <PrintyAdmin /> : <Login setPage={ir} destino="admin" />)}
       {page === 'servicios' && <Servicios setPage={ir} />}
       {page === 'tienda' && <Tienda setPage={ir} />}
       {page === 'catalogo' && <Servicios setPage={ir} />}
@@ -325,6 +328,7 @@ export default function App() {
     </AIAssistantProvider>
   );
 }
+
 
 
 

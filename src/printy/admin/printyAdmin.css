@@ -1,0 +1,103 @@
+﻿.printy-admin{
+    min-height:100vh;
+    padding:44px;
+    background:#f4f4f5;
+    font-family:Arial, Helvetica, sans-serif;
+    color:#111;
+}
+
+.printy-admin-panel{
+    max-width:1100px;
+    margin:0 auto;
+    background:#fff;
+    border-radius:28px;
+    padding:34px;
+    box-shadow:0 20px 60px rgba(0,0,0,.08);
+}
+
+.printy-admin-head{
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+    margin-bottom:32px;
+}
+
+.printy-admin-head p{
+    margin:0 0 8px;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.14em;
+    color:#777;
+}
+
+.printy-admin-head h1{
+    margin:0;
+    font-size:36px;
+}
+
+.printy-admin-head a,
+.printy-admin-save,
+.printy-admin-add button,
+.printy-admin-row button,
+.printy-product-editor button{
+    border:0;
+    border-radius:999px;
+    background:#111;
+    color:#fff;
+    padding:12px 18px;
+    font-weight:900;
+    text-decoration:none;
+    cursor:pointer;
+}
+
+.printy-admin h2{
+    margin:34px 0 18px;
+    font-size:24px;
+}
+
+.printy-admin-add,
+.printy-admin-row{
+    display:flex;
+    gap:12px;
+    margin-bottom:12px;
+}
+
+.printy-admin input{
+    width:100%;
+    border:1px solid #ddd;
+    border-radius:14px;
+    padding:13px 15px;
+    font-weight:800;
+}
+
+.printy-admin-save{
+    background:#FFD400;
+    color:#111;
+    margin:14px 0;
+}
+
+.printy-products-editor{
+    display:grid;
+    gap:16px;
+}
+
+.printy-product-editor{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:12px;
+    border:1px solid #eee;
+    border-radius:20px;
+    padding:18px;
+    background:#fafafa;
+}
+
+.printy-product-editor label{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:900;
+}
+
+.printy-product-editor label input{
+    width:auto;
+}
