@@ -311,7 +311,7 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
       key: 'inventario',
       title: 'Inventario',
       count: data.productos,
-      desc: 'Productos / materiales',
+      desc: 'EMC / materiales',
       icon: <PackageSearch size={22} />,
       accent: '#7c3aed',
     },
@@ -390,7 +390,7 @@ export default function DashboardERP({ setPage, areaInicial = 'dashboard' }) {
     if (area === 'inventario') {
       return (
         <>
-          <MiniAction icon={<PackageSearch size={20} />} title="Material Master V3" desc="Materiales, tintas y combinaciones." onClick={() => setPage('materiales')} />
+          <MiniAction icon={<PackageSearch size={20} />} title="Catálogo Maestro EMC" desc="Materiales, precios, proveedores e IA." onClick={() => setPage('emc')} />
           <MiniAction icon={<Calculator size={20} />} title="Consumo cotizable" desc="Relación material → venta → OT." onClick={() => setPage('cotizador')} />
           <MiniAction icon={<FileText size={20} />} title="Productos" desc="Catálogo operativo actual." onClick={() => setPage('admin')} />
         </>
