@@ -25,20 +25,6 @@ const grupoFecha = (fecha) => {
   return 'Anteriores';
 };
 
-const obtenerImagenCliente = (s = {}) => {
-  const directa = s.logo_url || s.referencia_url || s.lugar_url || '';
-  if (String(directa).startsWith('data:image')) return directa;
-
-  const observaciones = Array.isArray(s.orden_tecnica?.observaciones)
-    ? s.orden_tecnica.observaciones.join(' ')
-    : '';
-
-  const inicio = observaciones.indexOf('data:image/');
-  if (inicio === -1) return '';
-
-  return observaciones.slice(inicio).split(/\s+/)[0];
-};
-
 const detectarCategoria = (s) => {
   const t = `${s.producto || ''} ${s.modelo || ''} ${s.idea || ''}`.toLowerCase();
   if (t.includes('boton') || t.includes('botón')) return 'Botones';
