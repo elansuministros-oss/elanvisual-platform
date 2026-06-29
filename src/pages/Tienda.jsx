@@ -361,7 +361,7 @@ export default function Tienda({ setPage }) {
     if (!resultadoAI?.renderBase64) return;
 
     const link = document.createElement('a');
-    link.href = `data:image/png;base64,${resultadoAI.renderBase64}`;
+    link.href = resultadoAI.renderBase64;
     link.download = `render-elanvisual-${resultadoAI.id}.png`;
     link.click();
   };
@@ -617,7 +617,7 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
                   {resultadoAI.renderBase64 ? (
                     <img
                       className="ai-render-preview"
-                      src={`data:image/png;base64,${resultadoAI.renderBase64}`}
+                      src={resultadoAI.renderBase64}
                       alt="Render generado por ELAN AI"
                     />
                   ) : null}
