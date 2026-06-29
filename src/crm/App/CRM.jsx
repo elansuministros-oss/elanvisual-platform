@@ -89,7 +89,8 @@ export default function CRM() {
           { id: 'proveedores', label: 'Proveedores', icono: '', componente: <Proveedores /> },
           { id: 'compras', label: 'Compras', icono: '', componente: <Compras /> },
           { id: 'seguimiento', label: 'Seguimiento', icono: '', componente: <SeguimientoCRM /> },
-          { id: 'crm-comercial', label: 'CRM Comercial', icono: '', componente: <CRMComercialAvanzado /> },
+{ id: 'solicitudes-ai', label: 'Solicitudes AI', icono: '', componente: <SolicitudesDisenoAI /> },
+{ id: 'crm-comercial', label: 'CRM Comercial', icono: '', componente: <CRMComercialAvanzado /> },
         ],
       },
       {
