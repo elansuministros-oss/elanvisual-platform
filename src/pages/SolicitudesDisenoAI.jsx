@@ -206,6 +206,13 @@ export default function SolicitudesDisenoAI() {
               <div className="ai-chat-result">
                 <h3>Archivos</h3>
                 <p><strong>Logo / referencia:</strong> {abierta.logo_url ? 'Recibido' : 'No recibido'}</p>
+                {abierta.logo_url ? (
+                  <img
+                    src={abierta.logo_url}
+                    alt="Logo o referencia del cliente"
+                    style={{ width: '100%', maxHeight: 260, objectFit: 'contain', borderRadius: 14, background: '#fff', border: '1px solid #dbe5f0', marginTop: 10 }}
+                  />
+                ) : null}
                 <p><strong>Foto lugar:</strong> {abierta.lugar_url ? 'Recibida' : 'No recibida'}</p>
               </div>
             </div>
@@ -215,3 +222,4 @@ export default function SolicitudesDisenoAI() {
     </main>
   );
 }
+
