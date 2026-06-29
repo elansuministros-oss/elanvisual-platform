@@ -317,7 +317,7 @@ export default function Tienda({ setPage }) {
         throw new Error(data.error || 'No se pudo generar el render.');
       }
 
-      renderBase64 = data.render_base64 || '';
+      renderBase64 = data.imagen || data.render_base64 || '';
       respuestaRender = data.respuesta || '';
     } catch (error) {
       alert(error?.message || 'Error generando render.');
@@ -357,6 +357,14 @@ export default function Tienda({ setPage }) {
     setResultadoAI(lead);
   };
 
+  const descargarRenderAI = () => {
+    if (!resultadoAI?.renderBase64) return;
+
+    const link = document.createElement('a');
+    link.href = `data:image/png;base64,${resultadoAI.renderBase64}`;
+    link.download = `render-elanvisual-${resultadoAI.id}.png`;
+    link.click();
+  };
   const descargarResumenAI = () => {
     if (!resultadoAI || resultadoAI.bloqueado) return;
 
@@ -369,7 +377,7 @@ Producto: ${resultadoAI.producto.nombre}
 Categoria: ${resultadoAI.producto.categoria}
 Precio base: ${resultadoAI.producto.precio > 0 ? moneyUSD(resultadoAI.producto.precio) : 'Consultar'}
 Medida base: ${resultadoAI.perfil.medidaBase}
-Acabado base: ${resultadoAI.perfil.acabadoBase}
+Acabado base: ${resultadoAI.perfil.acabadoBase || resultadoAI.perfil.acabado || "No especificado"}
 
 Idea del cliente:
 ${resultadoAI.cliente.idea || 'No indicada'}
@@ -613,6 +621,13 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
                       alt="Render generado por ELAN AI"
                     />
                   ) : null}
+                  {resultadoAI.renderBase64 ? (
+                    <button type="button" onClick={descargarRenderAI}>
+                      <Download size={18} />
+                      Descargar render
+                    </button>
+                  ) : null}
+
                   <button type="button" onClick={descargarResumenAI}>
                     <Download size={18} />
                     Descargar resumen
@@ -626,16 +641,4 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
     </main>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
