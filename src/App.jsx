@@ -32,6 +32,7 @@ import CapturaInteligente from './pages/CapturaInteligente';
 import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
 import AIStudio from './pages/AIStudio';
+import SolicitudesDisenoAI from './pages/SolicitudesDisenoAI';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -51,6 +52,7 @@ export default function App() {
     if (pathInicial.startsWith('/cotizador-visual')) return 'cotizadorVisual';
     if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
+    if (pathInicial.startsWith('/diseno-ai')) return 'disenoAI';
     if (pathInicial.startsWith('/ai-studio')) return 'aiStudio';
     if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizador';
     if (pathInicial.startsWith('/cotizador')) return 'cotizador';
@@ -113,6 +115,7 @@ export default function App() {
       cotizacionesInteligentes: '/cotizaciones-inteligentes',
       recomendadorTecnico: '/recomendador-tecnico',
       aiStudio: '/ai-studio',
+      disenoAI: '/diseno-ai',
       cotizadorVisual: '/cotizador-visual',
       pedidos: '/pedidos',
       ordenTrabajo: '/orden-trabajo',
@@ -323,6 +326,7 @@ export default function App() {
     </AIAssistantProvider>
   );
 }
+
 
 
 
