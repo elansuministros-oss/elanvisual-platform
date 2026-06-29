@@ -53,6 +53,7 @@ export default function App() {
     if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
     if (pathInicial.startsWith('/diseno-ai')) return 'disenoAI';
+    if (pathInicial.startsWith('/solicitudes-ai')) return 'solicitudesAI';
     if (pathInicial.startsWith('/ai-studio')) return 'aiStudio';
     if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizador';
     if (pathInicial.startsWith('/cotizador')) return 'cotizador';
@@ -115,6 +116,7 @@ export default function App() {
       cotizacionesInteligentes: '/cotizaciones-inteligentes',
       recomendadorTecnico: '/recomendador-tecnico',
       aiStudio: '/ai-studio',
+      solicitudesAI: '/solicitudes-ai',
       disenoAI: '/diseno-ai',
       cotizadorVisual: '/cotizador-visual',
       pedidos: '/pedidos',
@@ -326,6 +328,7 @@ export default function App() {
     </AIAssistantProvider>
   );
 }
+
 
 
 
