@@ -25,6 +25,20 @@ const grupoFecha = (fecha) => {
   return 'Anteriores';
 };
 
+const obtenerImagenCliente = (s = {}) => {
+  const directa = s.logo_url || s.referencia_url || s.lugar_url || '';
+  if (String(directa).startsWith('data:image')) return directa;
+
+  const observaciones = Array.isArray(s.orden_tecnica?.observaciones)
+    ? s.orden_tecnica.observaciones.join(' ')
+    : '';
+
+  const inicio = observaciones.indexOf('data:image/');
+  if (inicio === -1) return '';
+
+  return observaciones.slice(inicio).split(/\s+/)[0];
+};
+
 const detectarCategoria = (s) => {
   const t = `${s.producto || ''} ${s.modelo || ''} ${s.idea || ''}`.toLowerCase();
   if (t.includes('boton') || t.includes('botón')) return 'Botones';
@@ -74,7 +88,9 @@ export default function SolicitudesDisenoAI() {
       .filter((s) => estado === 'Todos' || s.estado === estado)
       .filter((s) => {
         if (!q) return true;
-        return `${s.whatsapp || ''} ${s.producto || ''} ${s.modelo || ''} ${s.idea || ''} ${s.estado || ''}`.toLowerCase().includes(q);
+        return `${s.whatsapp || ''} ${s.producto || ''} ${s.modelo || ''} ${s.idea || ''} ${s.estado || ''}`
+          .toLowerCase()
+          .includes(q);
       });
   }, [solicitudes, busqueda, categoria, estado]);
 
@@ -88,13 +104,23 @@ export default function SolicitudesDisenoAI() {
 
     if (!error) {
       setSolicitudes((prev) =>
-        prev.map((item) => item.id === s.id ? { ...item, estado: nuevoEstado } : item)
+        prev.map((item) => (item.id === s.id ? { ...item, estado: nuevoEstado } : item))
       );
-      setAbierta((prev) => prev?.id === s.id ? { ...prev, estado: nuevoEstado } : prev);
+      setAbierta((prev) => (prev?.id === s.id ? { ...prev, estado: nuevoEstado } : prev));
     }
   };
 
-  const categorias = ['Todas', 'Botones', 'Letras', 'Jalavistas', 'Fachadas', 'Tótems', 'Señalización', 'Otros'];
+  const categorias = [
+    'Todas',
+    'Botones',
+    'Letras',
+    'Jalavistas',
+    'Fachadas',
+    'Tótems',
+    'Señalización',
+    'Otros',
+  ];
+
   const fechas = ['Hoy', 'Ayer', 'Esta semana', 'Este mes', 'Anteriores'];
 
   return (
@@ -119,12 +145,16 @@ export default function SolicitudesDisenoAI() {
           </div>
 
           <select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
-            {categorias.map((c) => <option key={c}>{c}</option>)}
+            {categorias.map((c) => (
+              <option key={c}>{c}</option>
+            ))}
           </select>
 
           <select value={estado} onChange={(e) => setEstado(e.target.value)}>
             <option>Todos</option>
-            {ESTADOS.map((e) => <option key={e}>{e}</option>)}
+            {ESTADOS.map((e) => (
+              <option key={e}>{e}</option>
+            ))}
           </select>
 
           <button type="button" className="filter-label" onClick={cargar}>
@@ -151,9 +181,16 @@ export default function SolicitudesDisenoAI() {
                   <div className="product-body">
                     <span className="store-ai-badge">{s.categoriaDetectada}</span>
                     <h3>{s.modelo || s.producto || 'Solicitud AI'}</h3>
-                    <p><strong>WhatsApp:</strong> {s.whatsapp || 'No indicado'}</p>
-                    <p><strong>Estado:</strong> {s.estado || 'pendiente'}</p>
-                    <p><strong>Fecha:</strong> {s.creado_en ? new Date(s.creado_en).toLocaleString() : 'Sin fecha'}</p>
+                    <p>
+                      <strong>WhatsApp:</strong> {s.whatsapp || 'No indicado'}
+                    </p>
+                    <p>
+                      <strong>Estado:</strong> {s.estado || 'pendiente'}
+                    </p>
+                    <p>
+                      <strong>Fecha:</strong>{' '}
+                      {s.creado_en ? new Date(s.creado_en).toLocaleString() : 'Sin fecha'}
+                    </p>
                     <button type="button" className="product-main-action" onClick={() => setAbierta(s)}>
                       Abrir expediente
                     </button>
@@ -179,15 +216,24 @@ export default function SolicitudesDisenoAI() {
             </button>
 
             <div className="ai-chat-head">
-              <span><Sparkles size={18} /> Expediente AI</span>
+              <span>
+                <Sparkles size={18} /> Expediente AI
+              </span>
               <h2>{abierta.modelo || abierta.producto || 'Solicitud'}</h2>
               <p>{abierta.whatsapp}</p>
             </div>
 
             <div className="ai-chat-body">
               <label className="ai-chat-field">
-                <select value={abierta.estado || 'pendiente_diseno_manual'} onChange={(e) => cambiarEstado(abierta, e.target.value)}>
-                  {ESTADOS.map((e) => <option key={e} value={e}>{e}</option>)}
+                <select
+                  value={abierta.estado || 'pendiente_diseno_manual'}
+                  onChange={(e) => cambiarEstado(abierta, e.target.value)}
+                >
+                  {ESTADOS.map((e) => (
+                    <option key={e} value={e}>
+                      {e}
+                    </option>
+                  ))}
                 </select>
               </label>
 
@@ -197,23 +243,54 @@ export default function SolicitudesDisenoAI() {
               </div>
 
               <div className="ai-chat-result">
+                <h3>Archivos</h3>
+                <p>
+                  <strong>Logo / referencia:</strong>{' '}
+                  {obtenerImagenCliente(abierta) ? 'Recibido' : 'No recibido'}
+                </p>
+
+                {obtenerImagenCliente(abierta) ? (
+                  <img
+                    src={obtenerImagenCliente(abierta)}
+                    alt="Imagen enviada por el cliente"
+                    style={{
+                      width: '100%',
+                      maxHeight: 320,
+                      objectFit: 'contain',
+                      borderRadius: 14,
+                      background: '#fff',
+                      border: '1px solid #dbe5f0',
+                      marginTop: 10,
+                    }}
+                  />
+                ) : null}
+
+                <p>
+                  <strong>Foto lugar:</strong> {abierta.lugar_url ? 'Recibida' : 'No recibida'}
+                </p>
+
+                {abierta.lugar_url && String(abierta.lugar_url).startsWith('data:image') ? (
+                  <img
+                    src={abierta.lugar_url}
+                    alt="Foto del lugar enviada por el cliente"
+                    style={{
+                      width: '100%',
+                      maxHeight: 320,
+                      objectFit: 'contain',
+                      borderRadius: 14,
+                      background: '#fff',
+                      border: '1px solid #dbe5f0',
+                      marginTop: 10,
+                    }}
+                  />
+                ) : null}
+              </div>
+
+              <div className="ai-chat-result">
                 <h3>Orden técnica</h3>
                 <pre style={{ whiteSpace: 'pre-wrap', fontSize: 13 }}>
                   {JSON.stringify(abierta.orden_tecnica || {}, null, 2)}
                 </pre>
-              </div>
-
-              <div className="ai-chat-result">
-                <h3>Archivos</h3>
-                <p><strong>Logo / referencia:</strong> {abierta.logo_url ? 'Recibido' : 'No recibido'}</p>
-                {abierta.logo_url ? (
-                  <img
-                    src={abierta.logo_url}
-                    alt="Logo o referencia del cliente"
-                    style={{ width: '100%', maxHeight: 260, objectFit: 'contain', borderRadius: 14, background: '#fff', border: '1px solid #dbe5f0', marginTop: 10 }}
-                  />
-                ) : null}
-                <p><strong>Foto lugar:</strong> {abierta.lugar_url ? 'Recibida' : 'No recibida'}</p>
               </div>
             </div>
           </div>
@@ -222,4 +299,3 @@ export default function SolicitudesDisenoAI() {
     </main>
   );
 }
-
