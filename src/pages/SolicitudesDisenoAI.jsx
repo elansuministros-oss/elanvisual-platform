@@ -25,8 +25,17 @@ const grupoFecha = (fecha) => {
   return 'Anteriores';
 };
 
+const obtenerImagenCliente = (s = {}) => {
+  return s.logo_url || s.referencia_url || s.lugar_url || '';
+};
+
+const esImagenVisible = (url = '') => {
+  const valor = String(url || '');
+  return valor.startsWith('data:image') || valor.startsWith('http') || valor.startsWith('/');
+};
+
 const detectarCategoria = (s) => {
-  const t = `${s.producto || ''} ${s.modelo || ''} ${s.idea || ''}`.toLowerCase();
+  const t = `${s.categoria || ''} ${s.producto || ''} ${s.modelo || ''} ${s.idea || ''}`.toLowerCase();
   if (t.includes('boton') || t.includes('botón')) return 'Botones';
   if (t.includes('letra')) return 'Letras';
   if (t.includes('jalavista')) return 'Jalavistas';
@@ -35,6 +44,31 @@ const detectarCategoria = (s) => {
   if (t.includes('señal') || t.includes('senal')) return 'Señalización';
   return 'Otros';
 };
+
+const ImagenArchivo = ({ titulo, nombre, url, alt }) => (
+  <div style={{ marginTop: 14 }}>
+    <p>
+      <strong>{titulo}:</strong> {url ? 'Recibido' : 'No recibido'}
+      {nombre ? ` · ${nombre}` : ''}
+    </p>
+
+    {url && esImagenVisible(url) ? (
+      <img
+        src={url}
+        alt={alt}
+        style={{
+          width: '100%',
+          maxHeight: 320,
+          objectFit: 'contain',
+          borderRadius: 14,
+          background: '#fff',
+          border: '1px solid #dbe5f0',
+          marginTop: 10,
+        }}
+      />
+    ) : null}
+  </div>
+);
 
 export default function SolicitudesDisenoAI() {
   const [solicitudes, setSolicitudes] = useState([]);
@@ -74,7 +108,7 @@ export default function SolicitudesDisenoAI() {
       .filter((s) => estado === 'Todos' || s.estado === estado)
       .filter((s) => {
         if (!q) return true;
-        return `${s.whatsapp || ''} ${s.producto || ''} ${s.modelo || ''} ${s.idea || ''} ${s.estado || ''}`
+        return `${s.negocio || ''} ${s.whatsapp || ''} ${s.producto || ''} ${s.modelo || ''} ${s.idea || ''} ${s.estado || ''}`
           .toLowerCase()
           .includes(q);
       });
@@ -85,7 +119,10 @@ export default function SolicitudesDisenoAI() {
 
     const { error } = await supabase
       .from('elan_ai_solicitudes_render')
-      .update({ estado: nuevoEstado })
+      .update({
+        estado: nuevoEstado,
+        actualizado_en: new Date().toISOString(),
+      })
       .eq('id', s.id);
 
     if (!error) {
@@ -126,7 +163,7 @@ export default function SolicitudesDisenoAI() {
             <input
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar WhatsApp, modelo, idea o estado..."
+              placeholder="Buscar WhatsApp, negocio, modelo, idea o estado..."
             />
           </div>
 
@@ -166,7 +203,7 @@ export default function SolicitudesDisenoAI() {
                 <article className="product-card" key={s.id}>
                   <div className="product-body">
                     <span className="store-ai-badge">{s.categoriaDetectada}</span>
-                    <h3>{s.modelo || s.producto || 'Solicitud AI'}</h3>
+                    <h3>{s.negocio || s.modelo || s.producto || 'Solicitud AI'}</h3>
                     <p>
                       <strong>WhatsApp:</strong> {s.whatsapp || 'No indicado'}
                     </p>
@@ -205,7 +242,7 @@ export default function SolicitudesDisenoAI() {
               <span>
                 <Sparkles size={18} /> Expediente AI
               </span>
-              <h2>{abierta.modelo || abierta.producto || 'Solicitud'}</h2>
+              <h2>{abierta.negocio || abierta.modelo || abierta.producto || 'Solicitud'}</h2>
               <p>{abierta.whatsapp}</p>
             </div>
 
@@ -230,46 +267,27 @@ export default function SolicitudesDisenoAI() {
 
               <div className="ai-chat-result">
                 <h3>Archivos</h3>
-                <p>
-                  <strong>Logo / referencia:</strong>{' '}
-                  {obtenerImagenCliente(abierta) ? 'Recibido' : 'No recibido'}
-                </p>
 
-                {obtenerImagenCliente(abierta) ? (
-                  <img
-                    src={obtenerImagenCliente(abierta)}
-                    alt="Imagen enviada por el cliente"
-                    style={{
-                      width: '100%',
-                      maxHeight: 320,
-                      objectFit: 'contain',
-                      borderRadius: 14,
-                      background: '#fff',
-                      border: '1px solid #dbe5f0',
-                      marginTop: 10,
-                    }}
-                  />
-                ) : null}
+                <ImagenArchivo
+                  titulo="Logo"
+                  nombre={abierta.logo_nombre}
+                  url={abierta.logo_url}
+                  alt="Logo enviado por el cliente"
+                />
 
-                <p>
-                  <strong>Foto lugar:</strong> {abierta.lugar_url ? 'Recibida' : 'No recibida'}
-                </p>
+                <ImagenArchivo
+                  titulo="Referencia"
+                  nombre={abierta.referencia_nombre}
+                  url={abierta.referencia_url}
+                  alt="Referencia enviada por el cliente"
+                />
 
-                {abierta.lugar_url && String(abierta.lugar_url).startsWith('data:image') ? (
-                  <img
-                    src={abierta.lugar_url}
-                    alt="Foto del lugar enviada por el cliente"
-                    style={{
-                      width: '100%',
-                      maxHeight: 320,
-                      objectFit: 'contain',
-                      borderRadius: 14,
-                      background: '#fff',
-                      border: '1px solid #dbe5f0',
-                      marginTop: 10,
-                    }}
-                  />
-                ) : null}
+                <ImagenArchivo
+                  titulo="Foto del lugar"
+                  nombre={abierta.lugar_nombre}
+                  url={abierta.lugar_url || (!abierta.referencia_url && !abierta.logo_url ? obtenerImagenCliente(abierta) : '')}
+                  alt="Foto del lugar enviada por el cliente"
+                />
               </div>
 
               <div className="ai-chat-result">
