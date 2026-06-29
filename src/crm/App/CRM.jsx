@@ -42,6 +42,7 @@ import Inventario from '../Inventario';
 import Materiales from '../Materiales';
 import UsuariosPermisos from '../UsuariosPermisos';
 import AuditoriaCRM from '../AuditoriaCRM';
+import SolicitudesDisenoAI from '../../pages/SolicitudesDisenoAI';
 
 export default function CRM() {
   const { usuarioActivoCRM, rolUsuarioActivoCRM, usuarioTienePermisoCRM } = useCore();
