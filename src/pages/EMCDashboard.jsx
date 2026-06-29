@@ -14,10 +14,7 @@ import {
 } from "lucide-react";
 import { obtenerResumenEMC } from "../services/emc/emcService";
 import { analizarImportacionEMC } from "../services/emc/emcImportService";
-
-const proveedorInicial = {
-  nombre: "",
-};
+import { obtenerProveedores } from "../services/supplierHubService";
 
 const modosImportacion = [
   {
@@ -37,6 +34,28 @@ const modosImportacion = [
   },
 ];
 
+const tiposProveedor = [
+  { key: "materiales", label: "Materiales" },
+  { key: "produccion", label: "Producción" },
+  { key: "mixto", label: "Mixto" },
+];
+
+const inputStyle = {
+  border: "1px solid #cbd5e1",
+  borderRadius: 16,
+  padding: 12,
+  fontWeight: 800,
+  background: "#fff",
+};
+
+const cardStyle = {
+  background: "#fff",
+  border: "1px solid rgba(15,23,42,.08)",
+  borderRadius: 24,
+  padding: 16,
+  boxShadow: "0 18px 45px rgba(15,23,42,.08)",
+};
+
 export default function EMCDashboard() {
   const [resumen, setResumen] = useState(null);
   const [cargando, setCargando] = useState(true);
@@ -44,22 +63,36 @@ export default function EMCDashboard() {
   const [error, setError] = useState("");
   const [resultado, setResultado] = useState(null);
 
-  const [proveedor, setProveedor] = useState(proveedorInicial);
+  const [proveedores, setProveedores] = useState([]);
+  const [proveedorId, setProveedorId] = useState("");
+  const [tipoProveedor, setTipoProveedor] = useState("materiales");
+
   const [modo, setModo] = useState("catalogo_mas_lista");
   const [catalogoTexto, setCatalogoTexto] = useState("");
   const [listaPrecioTexto, setListaPrecioTexto] = useState("");
+
+  const proveedor = useMemo(
+    () => proveedores.find((p) => String(p.id) === String(proveedorId)) || null,
+    [proveedores, proveedorId]
+  );
 
   const modoActual = useMemo(
     () => modosImportacion.find((m) => m.key === modo),
     [modo]
   );
 
-  async function cargarResumen() {
+  async function cargarDatos() {
     try {
       setCargando(true);
       setError("");
-      const data = await obtenerResumenEMC();
-      setResumen(data);
+
+      const [resumenData, proveedoresData] = await Promise.all([
+        obtenerResumenEMC(),
+        obtenerProveedores(),
+      ]);
+
+      setResumen(resumenData);
+      setProveedores((proveedoresData || []).filter((p) => p.activo !== false));
     } catch (err) {
       setError(err.message || "No se pudo cargar EMC");
     } finally {
@@ -68,7 +101,7 @@ export default function EMCDashboard() {
   }
 
   useEffect(() => {
-    cargarResumen();
+    cargarDatos();
   }, []);
 
   async function analizar() {
@@ -77,8 +110,8 @@ export default function EMCDashboard() {
       setError("");
       setResultado(null);
 
-      if (!proveedor.nombre.trim()) {
-        throw new Error("Escribí o seleccioná primero el proveedor.");
+      if (!proveedor) {
+        throw new Error("Seleccioná primero un proveedor corporativo del Supplier Hub.");
       }
 
       if (modo === "catalogo_con_precios" && !catalogoTexto.trim()) {
@@ -95,6 +128,7 @@ export default function EMCDashboard() {
 
       const data = await analizarImportacionEMC({
         proveedor,
+        tipoProveedor,
         modo,
         catalogoTexto,
         listaPrecioTexto,
@@ -125,64 +159,88 @@ export default function EMCDashboard() {
   return (
     <main style={{ minHeight: "100vh", background: "#f8fafc", padding: 14 }}>
       <section style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <div style={{
-          borderRadius: 28,
-          padding: 20,
-          background: "linear-gradient(135deg,#0f172a,#334155)",
-          color: "#fff",
-          boxShadow: "0 24px 60px rgba(15,23,42,.20)",
-        }}>
-          <span style={{
-            display: "inline-flex",
-            gap: 8,
-            alignItems: "center",
-            padding: "8px 12px",
-            borderRadius: 999,
-            background: "rgba(255,255,255,.12)",
-            fontSize: 12,
-            fontWeight: 900,
-          }}>
+        <div
+          style={{
+            borderRadius: 28,
+            padding: 20,
+            background: "linear-gradient(135deg,#0f172a,#334155)",
+            color: "#fff",
+            boxShadow: "0 24px 60px rgba(15,23,42,.20)",
+          }}
+        >
+          <span
+            style={{
+              display: "inline-flex",
+              gap: 8,
+              alignItems: "center",
+              padding: "8px 12px",
+              borderRadius: 999,
+              background: "rgba(255,255,255,.12)",
+              fontSize: 12,
+              fontWeight: 900,
+            }}
+          >
             <Boxes size={17} />
             ELANKAV MASTER CATALOG
           </span>
 
-          <h1 style={{ margin: "14px 0 6px", fontSize: "clamp(30px,7vw,50px)", lineHeight: 1 }}>
+          <h1
+            style={{
+              margin: "14px 0 6px",
+              fontSize: "clamp(30px,7vw,50px)",
+              lineHeight: 1,
+            }}
+          >
             Catálogo Maestro EMC
           </h1>
 
-          <p style={{ margin: 0, color: "rgba(255,255,255,.78)", fontWeight: 650, maxWidth: 760 }}>
-            Importación inteligente de catálogos, listas de precios, materiales, proveedores e información técnica para IA.
+          <p
+            style={{
+              margin: 0,
+              color: "rgba(255,255,255,.78)",
+              fontWeight: 650,
+              maxWidth: 760,
+            }}
+          >
+            Centro de catálogo maestro, proveedores, materiales, servicios, listas de precio e importación inteligente.
           </p>
         </div>
 
         {error && (
-          <div style={{
-            marginTop: 12,
-            border: "1px solid #fecaca",
-            background: "#fff1f2",
-            color: "#991b1b",
-            borderRadius: 18,
-            padding: 14,
-            fontWeight: 800,
-          }}>
+          <div
+            style={{
+              marginTop: 12,
+              border: "1px solid #fecaca",
+              background: "#fff1f2",
+              color: "#991b1b",
+              borderRadius: 18,
+              padding: 14,
+              fontWeight: 800,
+            }}
+          >
             {error}
           </div>
         )}
 
-        <section style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(145px,1fr))",
-          gap: 10,
-          marginTop: 14,
-        }}>
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(145px,1fr))",
+            gap: 10,
+            marginTop: 14,
+          }}
+        >
           {cards.map(([label, value, icon]) => (
-            <article key={label} style={{
-              background: "#fff",
-              border: "1px solid rgba(15,23,42,.08)",
-              borderRadius: 22,
-              padding: 15,
-              boxShadow: "0 14px 32px rgba(15,23,42,.07)",
-            }}>
+            <article
+              key={label}
+              style={{
+                background: "#fff",
+                border: "1px solid rgba(15,23,42,.08)",
+                borderRadius: 22,
+                padding: 15,
+                boxShadow: "0 14px 32px rgba(15,23,42,.07)",
+              }}
+            >
               <div style={{ color: "#1E5AA8" }}>{icon}</div>
               <b style={{ display: "block", fontSize: 28, marginTop: 8 }}>
                 {cargando ? "…" : value}
@@ -192,97 +250,121 @@ export default function EMCDashboard() {
           ))}
         </section>
 
-        <section style={{
-          marginTop: 14,
-          background: "#fff",
-          border: "1px solid rgba(15,23,42,.08)",
-          borderRadius: 24,
-          padding: 16,
-          boxShadow: "0 18px 45px rgba(15,23,42,.08)",
-        }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+        <section style={{ ...cardStyle, marginTop: 14 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <div>
-              <small style={{ color: "#64748b", fontWeight: 900 }}>IMPORTADOR INTELIGENTE</small>
+              <small style={{ color: "#64748b", fontWeight: 900 }}>
+                IMPORTADOR INTELIGENTE
+              </small>
               <h2 style={{ margin: "3px 0 0", color: "#0f172a" }}>
-                {proveedor.nombre || "Proveedor no seleccionado"}
+                {proveedor?.nombre || "Proveedor no seleccionado"}
               </h2>
+              {proveedor && (
+                <p style={{ margin: "4px 0 0", color: "#64748b", fontWeight: 700 }}>
+                  {proveedor.razonSocial || "Sin razón social"} · {proveedor.categoria || "Sin categoría"}
+                </p>
+              )}
             </div>
 
-            <button type="button" onClick={cargarResumen} style={{
-              border: 0,
-              borderRadius: 999,
-              padding: "10px 13px",
-              background: "#0f172a",
-              color: "#fff",
-              fontWeight: 900,
-              cursor: "pointer",
-            }}>
+            <button
+              type="button"
+              onClick={cargarDatos}
+              style={{
+                border: 0,
+                borderRadius: 999,
+                padding: "10px 13px",
+                background: "#0f172a",
+                color: "#fff",
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
+            >
               <RefreshCcw size={16} /> Actualizar
             </button>
           </div>
 
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-            gap: 12,
-            marginTop: 16,
-          }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+              gap: 12,
+              marginTop: 16,
+            }}
+          >
             <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
-              Proveedor
-              <input
-                value={proveedor.nombre}
-                onChange={(e) => setProveedor({ nombre: e.target.value })}
-                placeholder="Ej: Centro de Pinturas Vargas"
-                style={{
-                  border: "1px solid #cbd5e1",
-                  borderRadius: 16,
-                  padding: 12,
-                  fontWeight: 800,
-                }}
-              />
+              Proveedor corporativo
+              <select
+                value={proveedorId}
+                onChange={(e) => setProveedorId(e.target.value)}
+                style={inputStyle}
+              >
+                <option value="">Seleccionar proveedor</option>
+                {proveedores.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
+              Tipo de proveedor
+              <select
+                value={tipoProveedor}
+                onChange={(e) => setTipoProveedor(e.target.value)}
+                style={inputStyle}
+              >
+                {tiposProveedor.map((t) => (
+                  <option key={t.key} value={t.key}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
               Modo de importación
-              <select
-                value={modo}
-                onChange={(e) => setModo(e.target.value)}
-                style={{
-                  border: "1px solid #cbd5e1",
-                  borderRadius: 16,
-                  padding: 12,
-                  fontWeight: 800,
-                  background: "#fff",
-                }}
-              >
+              <select value={modo} onChange={(e) => setModo(e.target.value)} style={inputStyle}>
                 {modosImportacion.map((m) => (
-                  <option key={m.key} value={m.key}>{m.titulo}</option>
+                  <option key={m.key} value={m.key}>
+                    {m.titulo}
+                  </option>
                 ))}
               </select>
             </label>
           </div>
 
-          <div style={{
-            marginTop: 12,
-            border: "1px solid #e2e8f0",
-            background: "#f8fafc",
-            borderRadius: 18,
-            padding: 12,
-            color: "#475569",
-            fontWeight: 750,
-          }}>
+          <div
+            style={{
+              marginTop: 12,
+              border: "1px solid #e2e8f0",
+              background: "#f8fafc",
+              borderRadius: 18,
+              padding: 12,
+              color: "#475569",
+              fontWeight: 750,
+            }}
+          >
             <CheckCircle2 size={17} /> {modoActual?.desc}
           </div>
 
           {modo !== "solo_lista_precios" && (
             <div style={{ marginTop: 14 }}>
               <h3 style={{ margin: "0 0 8px", color: "#0f172a" }}>
-                <FileText size={18} /> Catálogo de productos
+                <FileText size={18} /> Catálogo de productos / servicios
               </h3>
               <textarea
                 value={catalogoTexto}
                 onChange={(e) => setCatalogoTexto(e.target.value)}
-                placeholder="Pegá aquí el texto extraído del catálogo: productos, descripciones, códigos, medidas, colores, usos, precios si vienen incluidos..."
+                placeholder="Pegá aquí el texto extraído del catálogo: productos, servicios, descripciones, códigos, medidas, colores, usos y precios si vienen incluidos..."
                 style={{
                   width: "100%",
                   minHeight: 150,
@@ -321,15 +403,21 @@ export default function EMCDashboard() {
           )}
 
           <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button type="button" onClick={analizar} disabled={analizando} style={{
-              border: 0,
-              borderRadius: 999,
-              padding: "13px 18px",
-              background: "#1E5AA8",
-              color: "#fff",
-              fontWeight: 900,
-              cursor: "pointer",
-            }}>
+            <button
+              type="button"
+              onClick={analizar}
+              disabled={analizando}
+              style={{
+                border: 0,
+                borderRadius: 999,
+                padding: "13px 18px",
+                background: "#1E5AA8",
+                color: "#fff",
+                fontWeight: 900,
+                cursor: analizando ? "not-allowed" : "pointer",
+                opacity: analizando ? 0.75 : 1,
+              }}
+            >
               <FileUp size={18} /> {analizando ? "Analizando..." : "Analizar con CORE"}
             </button>
 
@@ -357,14 +445,7 @@ export default function EMCDashboard() {
         </section>
 
         {resultado && (
-          <section style={{
-            marginTop: 14,
-            background: "#fff",
-            border: "1px solid rgba(15,23,42,.08)",
-            borderRadius: 24,
-            padding: 16,
-            boxShadow: "0 18px 45px rgba(15,23,42,.08)",
-          }}>
+          <section style={{ ...cardStyle, marginTop: 14 }}>
             <small style={{ color: "#64748b", fontWeight: 900 }}>VISTA PREVIA EMC</small>
             <h2 style={{ margin: "3px 0 12px", color: "#0f172a" }}>
               {items.length} ítems detectados
@@ -384,13 +465,21 @@ export default function EMCDashboard() {
                 </thead>
                 <tbody>
                   {items.map((item, i) => (
-                    <tr key={`${item.nombre}-${i}`} style={{ borderTop: "1px solid #e2e8f0" }}>
+                    <tr key={`${item.nombre || "item"}-${i}`} style={{ borderTop: "1px solid #e2e8f0" }}>
                       <td style={{ padding: 10, fontWeight: 900 }}>{item.nombre}</td>
-                      <td style={{ padding: 10 }}>{item.categoria_sugerida} / {item.subcategoria_sugerida}</td>
+                      <td style={{ padding: 10 }}>
+                        {item.categoria_sugerida} / {item.subcategoria_sugerida}
+                      </td>
                       <td style={{ padding: 10 }}>{item.unidad_sugerida}</td>
-                      <td style={{ padding: 10 }}>{item.precio_detectado || "Revisar"} {item.moneda_sugerida}</td>
-                      <td style={{ padding: 10 }}>{item.iva_detectado?.detectado ? "Detectado" : "Revisar"}</td>
-                      <td style={{ padding: 10 }}>{item.requiere_revision ? "Revisión" : "Listo"}</td>
+                      <td style={{ padding: 10 }}>
+                        {item.precio_detectado || "Revisar"} {item.moneda_sugerida}
+                      </td>
+                      <td style={{ padding: 10 }}>
+                        {item.iva_detectado?.detectado ? "Detectado" : "Revisar"}
+                      </td>
+                      <td style={{ padding: 10 }}>
+                        {item.requiere_revision ? "Revisión" : "Listo"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

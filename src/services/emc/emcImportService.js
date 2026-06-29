@@ -3,6 +3,7 @@
 
 export async function analizarImportacionEMC({
   proveedor,
+  tipoProveedor,
   modo,
   catalogoTexto = "",
   listaPrecioTexto = "",
@@ -11,7 +12,10 @@ export async function analizarImportacionEMC({
 }) {
   const texto = [
     `MODO_IMPORTACION: ${modo}`,
+    `TIPO_PROVEEDOR: ${tipoProveedor || ""}`,
+    `PROVEEDOR_ID: ${proveedor?.id || ""}`,
     `PROVEEDOR: ${proveedor?.nombre || ""}`,
+    `RAZON_SOCIAL: ${proveedor?.razonSocial || ""}`,
     "",
     "=== CATALOGO ===",
     catalogoTexto || "",
@@ -27,6 +31,7 @@ export async function analizarImportacionEMC({
       tipo: "importar-emc",
       unidad: "ELANVISUAL",
       proveedor,
+      tipo_proveedor: tipoProveedor,
       modo_importacion: modo,
       texto_extraido: texto,
       file_name: fileName,
