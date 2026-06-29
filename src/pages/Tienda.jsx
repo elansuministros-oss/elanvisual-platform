@@ -1,11 +1,7 @@
 ﻿import React, { useMemo, useState } from 'react';
 import {
   ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  Download,
   PackageSearch,
-  Phone,
   Search,
   ShoppingCart,
   Sparkles,
@@ -81,12 +77,7 @@ const registrarUsoNumero = (whatsapp) => {
 };
 
 export default function Tienda({ setPage }) {
-  const {
-    productos = [],
-    categoriasHome = [],
-    agregar,
-    carrito = [],
-  } = useApp();
+  const { productos = [], categoriasHome = [], agregar, carrito = [] } = useApp();
 
   const [busqueda, setBusqueda] = useState('');
   const [modalAI, setModalAI] = useState(false);
@@ -99,8 +90,10 @@ export default function Tienda({ setPage }) {
     whatsapp: '',
     idea: '',
     logoNombre: '',
+    referenciaNombre: '',
     lugarNombre: '',
     logoDataUrl: '',
+    referenciaDataUrl: '',
     lugarDataUrl: '',
   });
 
@@ -142,9 +135,7 @@ export default function Tienda({ setPage }) {
           producto.slugCategoria ||
           slugify(texto(producto.categoria) || 'general');
 
-        const categoriaOficial = categoriasOficiales.find(
-          (cat) => cat.slug === slugCategoria
-        );
+        const categoriaOficial = categoriasOficiales.find((cat) => cat.slug === slugCategoria);
 
         return {
           ...producto,
@@ -162,16 +153,12 @@ export default function Tienda({ setPage }) {
 
   const categorias = useMemo(() => {
     return categoriasOficiales
-      .map((categoria) => {
-        const productosCategoria = productosNormalizados.filter(
+      .map((categoria) => ({
+        ...categoria,
+        cantidad: productosNormalizados.filter(
           (producto) => producto.categoriaSlug === categoria.slug
-        );
-
-        return {
-          ...categoria,
-          cantidad: productosCategoria.length,
-        };
-      })
+        ).length,
+      }))
       .filter((categoria) => categoria.cantidad > 0);
   }, [categoriasOficiales, productosNormalizados]);
 
@@ -191,14 +178,7 @@ export default function Tienda({ setPage }) {
       });
   }, [productosNormalizados, categoriaActiva, busqueda]);
 
-  const modelosAI = useMemo(() => {
-    return productosNormalizados.slice(0, 12);
-  }, [productosNormalizados]);
-
-  const cantidadCarrito = carrito.reduce(
-    (acc, item) => acc + Number(item?.cantidad || 1),
-    0
-  );
+  const cantidadCarrito = carrito.reduce((acc, item) => acc + Number(item?.cantidad || 1), 0);
 
   const abrirCategoria = (slug) => {
     setCategoriaActiva(slug);
@@ -226,17 +206,8 @@ export default function Tienda({ setPage }) {
     setResultadoAI(null);
   };
 
-  const agregarAlCarrito = (producto) => {
-    if (typeof agregar === 'function') {
-      agregar(producto);
-    }
-  };
-
   const actualizarFormAI = (campo, value) => {
-    setFormAI((prev) => ({
-      ...prev,
-      [campo]: value,
-    }));
+    setFormAI((prev) => ({ ...prev, [campo]: value }));
   };
 
   const leerArchivoComoDataUrl = (file) => {
@@ -249,8 +220,21 @@ export default function Tienda({ setPage }) {
     });
   };
 
-  const generarPropuestaAI = async () => {
-    const paisWhatsapp = PAISES_WHATSAPP.find((pais) => pais.codigo === formAI.paisWhatsapp) || PAIS_WHATSAPP_DEFAULT;
+  const manejarArchivoAI = async (event, nombreCampo, dataCampo) => {
+    const file = event.target.files?.[0];
+    const dataUrl = await leerArchivoComoDataUrl(file);
+    setFormAI((prev) => ({
+      ...prev,
+      [nombreCampo]: file?.name || '',
+      [dataCampo]: dataUrl,
+    }));
+  };
+
+  const enviarSolicitudDisenoAI = async () => {
+    const paisWhatsapp =
+      PAISES_WHATSAPP.find((pais) => pais.codigo === formAI.paisWhatsapp) ||
+      PAIS_WHATSAPP_DEFAULT;
+
     const whatsappLocal = normalizarWhatsapp(formAI.whatsapp).replace(/^\+/, '');
     const whatsapp = paisWhatsapp.prefijo + whatsappLocal;
 
@@ -259,8 +243,13 @@ export default function Tienda({ setPage }) {
       return;
     }
 
-    if (!whatsapp || whatsapp.length < 8) {
-      alert('Ingresa un numero de WhatsApp valido para dar seguimiento.');
+    if (!whatsappLocal || whatsapp.length < 8) {
+      alert('Ingresa un número de WhatsApp válido para dar seguimiento.');
+      return;
+    }
+
+    if (!formAI.logoNombre && !formAI.referenciaNombre && !formAI.lugarNombre) {
+      alert('Carga al menos un logo, una referencia o una foto del lugar.');
       return;
     }
 
@@ -276,13 +265,19 @@ export default function Tienda({ setPage }) {
     }
 
     const perfil = obtenerPerfilIA(productoAI);
-
     setGenerandoAI(true);
 
-    let renderBase64 = '';
-    let respuestaRender = '';
-
     try {
+      const ideaCompleta = [
+        formAI.idea ? `Idea del cliente: ${formAI.idea}` : '',
+        formAI.negocio ? `Negocio: ${formAI.negocio}` : '',
+        formAI.logoNombre ? `Archivo de logo: ${formAI.logoNombre}` : '',
+        formAI.referenciaNombre ? `Imagen de referencia: ${formAI.referenciaNombre}` : '',
+        formAI.lugarNombre ? `Foto del lugar: ${formAI.lugarNombre}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n');
+
       const response = await fetch('https://elankav-core.vercel.app/api/elan-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -291,6 +286,9 @@ export default function Tienda({ setPage }) {
           whatsapp,
           producto: 'botones',
           modelo: productoAI.codigo || productoAI.slug || productoAI.id || 'boton-transparente',
+          idea: ideaCompleta,
+          logo_url: formAI.logoDataUrl || formAI.referenciaDataUrl || '',
+          lugar_url: formAI.lugarDataUrl || '',
           cliente: {
             negocio: formAI.negocio,
             whatsapp,
@@ -299,107 +297,56 @@ export default function Tienda({ setPage }) {
           contexto: {
             medidaBase: perfil.medidaBase || '60 x 60 cm',
             perfilNombre: perfil.nombre,
+            logoNombre: formAI.logoNombre,
+            referenciaNombre: formAI.referenciaNombre,
+            lugarNombre: formAI.lugarNombre,
           },
-          archivos_temporales: [
-            formAI.logoDataUrl
-              ? { nombre: formAI.logoNombre || 'logo', dataUrl: formAI.logoDataUrl }
-              : null,
-            formAI.lugarDataUrl
-              ? { nombre: formAI.lugarNombre || 'foto-lugar', dataUrl: formAI.lugarDataUrl }
-              : null,
-          ].filter(Boolean),
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok || !data.ok) {
-        throw new Error(data.error || 'No se pudo generar el render.');
+        throw new Error(data.error || 'No se pudo enviar la solicitud técnica.');
       }
 
-      renderBase64 = data.imagen || data.render_base64 || '';
-      respuestaRender = data.respuesta || '';
+      const lead = {
+        id: data.id_solicitud || `ai-${Date.now()}`,
+        estado: data.estado || 'pendiente_diseno_manual',
+        producto: productoAI,
+        perfil,
+        cliente: {
+          negocio: formAI.negocio,
+          whatsapp,
+          idea: formAI.idea,
+          logoNombre: formAI.logoNombre,
+          referenciaNombre: formAI.referenciaNombre,
+          lugarNombre: formAI.lugarNombre,
+        },
+        usos: registrarUsoNumero(whatsapp),
+        mensaje:
+          data.mensaje ||
+          'Tu solicitud fue enviada correctamente. Nuestro equipo de diseño preparará una propuesta personalizada y la recibirás por WhatsApp.',
+        creadoEn: new Date().toISOString(),
+      };
+
+      setResultadoAI(lead);
     } catch (error) {
-      alert(error?.message || 'Error generando render.');
+      alert(error?.message || 'Error enviando la solicitud técnica.');
+    } finally {
       setGenerandoAI(false);
-      return;
     }
-
-    setGenerandoAI(false);
-
-    const lead = {
-      id: `ai-${Date.now()}`,
-      estado: 'propuesta_generada',
-      seguimiento: ['dia_2', 'dia_7', 'dia_15'],
-      producto: productoAI,
-      perfil,
-      cliente: {
-        negocio: formAI.negocio,
-        whatsapp,
-        idea: formAI.idea,
-        logoNombre: formAI.logoNombre,
-        lugarNombre: formAI.lugarNombre,
-      },
-      usos: registrarUsoNumero(whatsapp),
-      renderBase64,
-      respuestaRender,
-      creadoEn: new Date().toISOString(),
-    };
-
-    try {
-      const leads = JSON.parse(localStorage.getItem('elanvisual_ai_leads') || '[]');
-      leads.unshift(lead);
-      localStorage.setItem('elanvisual_ai_leads', JSON.stringify(leads.slice(0, 100)));
-    } catch {
-      // No bloquear experiencia por error local.
-    }
-
-    setResultadoAI(lead);
-  };
-
-  const descargarRenderAI = () => {
-    if (!resultadoAI?.renderBase64) return;
-
-    const link = document.createElement('a');
-    link.href = resultadoAI.renderBase64;
-    link.download = `render-elanvisual-${resultadoAI.id}.png`;
-    link.click();
-  };
-  const descargarResumenAI = () => {
-    if (!resultadoAI || resultadoAI.bloqueado) return;
-
-    const contenido = `
-ELANVISUAL — Propuesta IA
-
-Negocio: ${resultadoAI.cliente.negocio || 'No indicado'}
-WhatsApp: ${resultadoAI.cliente.whatsapp}
-Producto: ${resultadoAI.producto.nombre}
-Categoria: ${resultadoAI.producto.categoria}
-Precio base: ${resultadoAI.producto.precio > 0 ? moneyUSD(resultadoAI.producto.precio) : 'Consultar'}
-Medida base: ${resultadoAI.perfil.medidaBase}
-Acabado base: ${resultadoAI.perfil.acabadoBase || resultadoAI.perfil.acabado || "No especificado"}
-
-Idea del cliente:
-${resultadoAI.cliente.idea || 'No indicada'}
-
-Nota:
-Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, archivos de produccion, vectorizacion, ajustes tecnicos y preparacion para fabricacion se realizan al confirmar el pedido con ELANVISUAL.
-`;
-
-    const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `propuesta-elanvisual-${resultadoAI.id}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
   };
 
   const productoBase = productoAI;
   const perfilActivo = productoBase ? obtenerPerfilIA(productoBase) : null;
-  const paisWhatsappActivo = PAISES_WHATSAPP.find((pais) => pais.codigo === formAI.paisWhatsapp) || PAIS_WHATSAPP_DEFAULT;
+  const paisWhatsappActivo =
+    PAISES_WHATSAPP.find((pais) => pais.codigo === formAI.paisWhatsapp) ||
+    PAIS_WHATSAPP_DEFAULT;
   const whatsappLocalActivo = normalizarWhatsapp(formAI.whatsapp).replace(/^\+/, '');
-  const whatsappNormalizado = whatsappLocalActivo ? paisWhatsappActivo.prefijo + whatsappLocalActivo : '';
+  const whatsappNormalizado = whatsappLocalActivo
+    ? paisWhatsappActivo.prefijo + whatsappLocalActivo
+    : '';
   const usoWhatsapp = obtenerUsoNumero(whatsappNormalizado);
   const disponibles = Math.max(AI_DESIGN_LIMIT - usoWhatsapp, 0);
 
@@ -415,11 +362,9 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
           <h1>Diseña tu rótulo</h1>
 
           <p>
-            Elige un modelo, carga tu idea y recibe una propuesta visual basada en
-            presupuestos predefinidos de ELANVISUAL.
+            Elige un modelo, sube tu logo, referencia y foto del lugar. ELAN AI prepara
+            una orden técnica para diseño manual profesional.
           </p>
-
-          
         </div>
       </section>
 
@@ -427,7 +372,7 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
         {categoriaActiva ? (
           <button type="button" className="filter-label" onClick={volverCategorias}>
             <ArrowLeft size={18} />
-            Categorias
+            Categorías
           </button>
         ) : null}
 
@@ -435,7 +380,7 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
           <div className="search-box">
             <Search size={18} />
             <input
-              placeholder="Buscar producto dentro de esta categoria..."
+              placeholder="Buscar producto dentro de esta categoría..."
               value={busqueda}
               onChange={(event) => setBusqueda(event.target.value)}
             />
@@ -503,7 +448,7 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
                   onClick={() => abrirAI(producto)}
                 >
                   <PackageSearch size={18} />
-                  Personalizar
+                  Solicitar diseño
                 </button>
               </div>
             </article>
@@ -514,7 +459,7 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
       {!categoriaActiva && categorias.length === 0 && (
         <section className="panel empty-catalog">
           <p className="note">
-            Agrega productos activos y asignales una Categoria Home desde el panel administrativo.
+            Agrega productos activos y asígnales una Categoría Home desde el panel administrativo.
           </p>
         </section>
       )}
@@ -523,7 +468,7 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
         <section className="panel empty-catalog">
           <h2>No hay productos disponibles</h2>
           <p className="note">
-            Agrega productos activos en esta categoria desde el panel administrativo.
+            Agrega productos activos en esta categoría desde el panel administrativo.
           </p>
         </section>
       )}
@@ -536,8 +481,10 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
             </button>
 
             <div className="ai-chat-head">
-              <span><Sparkles size={18} /> ELAN AI Botones</span>
-              <h2>{productoBase?.nombre || 'Diseña tu botón luminoso'}</h2>
+              <span>
+                <Sparkles size={18} /> ELAN AI Designer
+              </span>
+              <h2>{productoBase?.nombre || 'Solicitud de diseño técnico'}</h2>
               <p>
                 {productoBase?.precio > 0 ? `Desde ${moneyUSD(productoBase.precio)} · ` : ''}
                 {perfilActivo?.medidaBase || '60 x 60 cm'}
@@ -546,7 +493,9 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
 
             <div className="ai-chat-body">
               <div className="ai-chat-message ai-bot">
-                Sube tu logo, escribe tu idea y deja tu WhatsApp. Haré una propuesta basada únicamente en este modelo.
+                Sube logo, referencia y foto del lugar. ELAN AI generará una orden técnica
+                para que nuestro diseñador prepare un render manual y una cotización personalizada.
+                Diseños disponibles para este WhatsApp: {disponibles}.
               </div>
 
               <label className="ai-chat-field ai-chat-phone-field">
@@ -554,7 +503,7 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
                   className="ai-country-select"
                   value={formAI.paisWhatsapp}
                   onChange={(event) => actualizarFormAI('paisWhatsapp', event.target.value)}
-                  aria-label="Pais WhatsApp"
+                  aria-label="País WhatsApp"
                 >
                   {PAISES_WHATSAPP.map((pais) => (
                     <option key={pais.codigo} value={pais.codigo}>
@@ -580,13 +529,33 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
 
               <label className="ai-chat-upload">
                 <Upload size={20} />
-                {formAI.logoNombre || 'Cargar logo o imagen'}
+                {formAI.logoNombre || 'Cargar logo'}
                 <input
                   type="file"
                   accept=".png,.jpg,.jpeg,.webp,.svg,.pdf,.ai,.eps"
+                  onChange={(event) => manejarArchivoAI(event, 'logoNombre', 'logoDataUrl')}
+                />
+              </label>
+
+              <label className="ai-chat-upload">
+                <Upload size={20} />
+                {formAI.referenciaNombre || 'Cargar imagen de referencia'}
+                <input
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.webp,.svg,.pdf"
                   onChange={(event) =>
-                    actualizarFormAI('logoNombre', event.target.files?.[0]?.name || '')
+                    manejarArchivoAI(event, 'referenciaNombre', 'referenciaDataUrl')
                   }
+                />
+              </label>
+
+              <label className="ai-chat-upload">
+                <Upload size={20} />
+                {formAI.lugarNombre || 'Cargar foto del lugar'}
+                <input
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.webp"
+                  onChange={(event) => manejarArchivoAI(event, 'lugarNombre', 'lugarDataUrl')}
                 />
               </label>
 
@@ -594,44 +563,42 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
                 className="ai-chat-textarea"
                 value={formAI.idea}
                 onChange={(event) => actualizarFormAI('idea', event.target.value)}
-                placeholder="Describe tu idea. Ej: Quiero un botón elegante, dorado espejo, luz cálida y fondo transparente."
+                placeholder="Describe tu idea, medidas aproximadas, colores, ubicación, tipo de iluminación y cualquier detalle importante."
               />
 
-              <button type="button" className="ai-chat-generate" onClick={generarPropuestaAI}>
+              <button
+                type="button"
+                className="ai-chat-generate"
+                onClick={enviarSolicitudDisenoAI}
+                disabled={generandoAI}
+              >
                 <Sparkles size={20} />
-                Generar render
+                {generandoAI ? 'Enviando solicitud...' : 'Enviar solicitud de diseño'}
               </button>
 
               {resultadoAI?.bloqueado && (
                 <div className="ai-chat-result warning">
                   <h3>Límite alcanzado</h3>
-                  <p>Este WhatsApp ya usó sus 3 diseños gratuitos. Contacta a ELANVISUAL para pedido y digitalización profesional.</p>
+                  <p>
+                    Este WhatsApp ya usó sus diseños gratuitos. Contacta a ELANVISUAL para
+                    pedido, diseño profesional y cotización personalizada.
+                  </p>
                 </div>
               )}
 
               {resultadoAI && !resultadoAI.bloqueado && (
                 <div className="ai-chat-result">
-                  <h3>Render solicitado</h3>
-                  <p>La solicitud quedó guardada con el maestro ELAN AI Botones.</p>
-
-                  {resultadoAI.renderBase64 ? (
-                    <img
-                      className="ai-render-preview"
-                      src={resultadoAI.renderBase64}
-                      alt="Render generado por ELAN AI"
-                    />
-                  ) : null}
-                  {resultadoAI.renderBase64 ? (
-                    <button type="button" onClick={descargarRenderAI}>
-                      <Download size={18} />
-                      Descargar render
-                    </button>
-                  ) : null}
-
-                  <button type="button" onClick={descargarResumenAI}>
-                    <Download size={18} />
-                    Descargar resumen
-                  </button>
+                  <h3>Solicitud enviada</h3>
+                  <p>{resultadoAI.mensaje}</p>
+                  <p>
+                    Estado: <strong>{resultadoAI.estado}</strong>
+                  </p>
+                  <p>
+                    ID de solicitud: <strong>{resultadoAI.id}</strong>
+                  </p>
+                  <p>
+                    El render será preparado manualmente por diseño y se enviará por WhatsApp.
+                  </p>
                 </div>
               )}
             </div>
@@ -641,4 +608,3 @@ Esta es una propuesta conceptual generada por ELAN AI. La digitalizacion final, 
     </main>
   );
 }
-
