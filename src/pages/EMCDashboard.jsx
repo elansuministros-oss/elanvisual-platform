@@ -1,29 +1,57 @@
 ﻿import React, { useEffect, useMemo, useState } from "react";
 import {
   Boxes,
+  Building2,
+  CheckCircle2,
+  FileText,
   FileUp,
   Image,
   Layers3,
   PackageSearch,
+  RefreshCcw,
   Ruler,
   Tags,
-  Building2,
-  RefreshCcw,
 } from "lucide-react";
 import { obtenerResumenEMC } from "../services/emc/emcService";
-import { analizarArchivoEMC } from "../services/emc/emcImportService";
+import { analizarImportacionEMC } from "../services/emc/emcImportService";
+
+const proveedorInicial = {
+  nombre: "",
+};
+
+const modosImportacion = [
+  {
+    key: "catalogo_con_precios",
+    titulo: "Catálogo con precios",
+    desc: "Un solo archivo trae productos, descripciones y precios.",
+  },
+  {
+    key: "catalogo_mas_lista",
+    titulo: "Catálogo + lista de precios",
+    desc: "Catálogo por separado y precios en otro archivo.",
+  },
+  {
+    key: "solo_lista_precios",
+    titulo: "Solo lista de precios",
+    desc: "Actualiza precios o crea productos básicos.",
+  },
+];
 
 export default function EMCDashboard() {
   const [resumen, setResumen] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [analizando, setAnalizando] = useState(false);
   const [error, setError] = useState("");
-  const [texto, setTexto] = useState("");
   const [resultado, setResultado] = useState(null);
 
-  const proveedor = useMemo(
-    () => ({ nombre: "Centro de Pinturas Vargas" }),
-    []
+  const [proveedor, setProveedor] = useState(proveedorInicial);
+  const [modo, setModo] = useState("catalogo_mas_lista");
+  const [catalogoTexto, setCatalogoTexto] = useState("");
+  const [listaPrecioTexto, setListaPrecioTexto] = useState("");
+
+  const modoActual = useMemo(
+    () => modosImportacion.find((m) => m.key === modo),
+    [modo]
   );
 
   async function cargarResumen() {
@@ -49,20 +77,34 @@ export default function EMCDashboard() {
       setError("");
       setResultado(null);
 
-      if (!texto.trim()) {
-        throw new Error("Pegá primero texto extraído del catálogo o lista del proveedor.");
+      if (!proveedor.nombre.trim()) {
+        throw new Error("Escribí o seleccioná primero el proveedor.");
       }
 
-      const data = await analizarArchivoEMC({
+      if (modo === "catalogo_con_precios" && !catalogoTexto.trim()) {
+        throw new Error("Pegá el contenido del catálogo con precios.");
+      }
+
+      if (modo === "catalogo_mas_lista" && !catalogoTexto.trim() && !listaPrecioTexto.trim()) {
+        throw new Error("Pegá el contenido del catálogo y/o la lista de precios.");
+      }
+
+      if (modo === "solo_lista_precios" && !listaPrecioTexto.trim()) {
+        throw new Error("Pegá el contenido de la lista de precios.");
+      }
+
+      const data = await analizarImportacionEMC({
         proveedor,
-        texto,
-        fileName: "centro-pinturas-vargas.txt",
+        modo,
+        catalogoTexto,
+        listaPrecioTexto,
+        fileName: `${proveedor.nombre || "proveedor"}-${modo}.txt`,
         fileMime: "text/plain",
       });
 
       setResultado(data);
     } catch (err) {
-      setError(err.message || "Error analizando catálogo EMC");
+      setError(err.message || "Error analizando importación EMC");
     } finally {
       setAnalizando(false);
     }
@@ -109,7 +151,7 @@ export default function EMCDashboard() {
           </h1>
 
           <p style={{ margin: 0, color: "rgba(255,255,255,.78)", fontWeight: 650, maxWidth: 760 }}>
-            Fuente oficial para materiales, precios, proveedores, fichas técnicas, multimedia e IA operativa.
+            Importación inteligente de catálogos, listas de precios, materiales, proveedores e información técnica para IA.
           </p>
         </div>
 
@@ -142,7 +184,9 @@ export default function EMCDashboard() {
               boxShadow: "0 14px 32px rgba(15,23,42,.07)",
             }}>
               <div style={{ color: "#1E5AA8" }}>{icon}</div>
-              <b style={{ display: "block", fontSize: 28, marginTop: 8 }}>{cargando ? "…" : value}</b>
+              <b style={{ display: "block", fontSize: 28, marginTop: 8 }}>
+                {cargando ? "…" : value}
+              </b>
               <small style={{ color: "#64748b", fontWeight: 800 }}>{label}</small>
             </article>
           ))}
@@ -159,7 +203,9 @@ export default function EMCDashboard() {
           <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
             <div>
               <small style={{ color: "#64748b", fontWeight: 900 }}>IMPORTADOR INTELIGENTE</small>
-              <h2 style={{ margin: "3px 0 0", color: "#0f172a" }}>Centro de Pinturas Vargas</h2>
+              <h2 style={{ margin: "3px 0 0", color: "#0f172a" }}>
+                {proveedor.nombre || "Proveedor no seleccionado"}
+              </h2>
             </div>
 
             <button type="button" onClick={cargarResumen} style={{
@@ -175,27 +221,106 @@ export default function EMCDashboard() {
             </button>
           </div>
 
-          <p style={{ color: "#64748b", fontWeight: 700 }}>
-            Pegá aquí el texto extraído del PDF, Excel, CSV o imagen. En esta primera versión CORE analiza texto; la extracción binaria se conectará después.
-          </p>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+            gap: 12,
+            marginTop: 16,
+          }}>
+            <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
+              Proveedor
+              <input
+                value={proveedor.nombre}
+                onChange={(e) => setProveedor({ nombre: e.target.value })}
+                placeholder="Ej: Centro de Pinturas Vargas"
+                style={{
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 16,
+                  padding: 12,
+                  fontWeight: 800,
+                }}
+              />
+            </label>
 
-          <textarea
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            placeholder="Ejemplo: Pintura acrílica blanca galón C$850 + IVA..."
-            style={{
-              width: "100%",
-              minHeight: 160,
-              border: "1px solid #cbd5e1",
-              borderRadius: 18,
-              padding: 14,
-              fontSize: 14,
-              fontWeight: 650,
-              resize: "vertical",
-            }}
-          />
+            <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
+              Modo de importación
+              <select
+                value={modo}
+                onChange={(e) => setModo(e.target.value)}
+                style={{
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 16,
+                  padding: 12,
+                  fontWeight: 800,
+                  background: "#fff",
+                }}
+              >
+                {modosImportacion.map((m) => (
+                  <option key={m.key} value={m.key}>{m.titulo}</option>
+                ))}
+              </select>
+            </label>
+          </div>
 
-          <div style={{ marginTop: 12 }}>
+          <div style={{
+            marginTop: 12,
+            border: "1px solid #e2e8f0",
+            background: "#f8fafc",
+            borderRadius: 18,
+            padding: 12,
+            color: "#475569",
+            fontWeight: 750,
+          }}>
+            <CheckCircle2 size={17} /> {modoActual?.desc}
+          </div>
+
+          {modo !== "solo_lista_precios" && (
+            <div style={{ marginTop: 14 }}>
+              <h3 style={{ margin: "0 0 8px", color: "#0f172a" }}>
+                <FileText size={18} /> Catálogo de productos
+              </h3>
+              <textarea
+                value={catalogoTexto}
+                onChange={(e) => setCatalogoTexto(e.target.value)}
+                placeholder="Pegá aquí el texto extraído del catálogo: productos, descripciones, códigos, medidas, colores, usos, precios si vienen incluidos..."
+                style={{
+                  width: "100%",
+                  minHeight: 150,
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 18,
+                  padding: 14,
+                  fontSize: 14,
+                  fontWeight: 650,
+                  resize: "vertical",
+                }}
+              />
+            </div>
+          )}
+
+          {modo !== "catalogo_con_precios" && (
+            <div style={{ marginTop: 14 }}>
+              <h3 style={{ margin: "0 0 8px", color: "#0f172a" }}>
+                <FileUp size={18} /> Lista de precios
+              </h3>
+              <textarea
+                value={listaPrecioTexto}
+                onChange={(e) => setListaPrecioTexto(e.target.value)}
+                placeholder="Pegá aquí la lista de precios: códigos, productos, moneda, precio, IVA, presentación, unidad..."
+                style={{
+                  width: "100%",
+                  minHeight: 150,
+                  border: "1px solid #cbd5e1",
+                  borderRadius: 18,
+                  padding: 14,
+                  fontSize: 14,
+                  fontWeight: 650,
+                  resize: "vertical",
+                }}
+              />
+            </div>
+          )}
+
+          <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button type="button" onClick={analizar} disabled={analizando} style={{
               border: 0,
               borderRadius: 999,
@@ -206,6 +331,27 @@ export default function EMCDashboard() {
               cursor: "pointer",
             }}>
               <FileUp size={18} /> {analizando ? "Analizando..." : "Analizar con CORE"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setCatalogoTexto("");
+                setListaPrecioTexto("");
+                setResultado(null);
+                setError("");
+              }}
+              style={{
+                border: "1px solid #cbd5e1",
+                borderRadius: 999,
+                padding: "13px 18px",
+                background: "#fff",
+                color: "#0f172a",
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
+            >
+              Limpiar
             </button>
           </div>
         </section>
@@ -224,20 +370,31 @@ export default function EMCDashboard() {
               {items.length} ítems detectados
             </h2>
 
-            <div style={{ display: "grid", gap: 10 }}>
-              {items.map((item, i) => (
-                <article key={`${item.nombre}-${i}`} style={{
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 18,
-                  padding: 12,
-                  background: item.requiere_revision ? "#fff7ed" : "#f8fafc",
-                }}>
-                  <b style={{ display: "block", color: "#0f172a" }}>{item.nombre}</b>
-                  <small style={{ color: "#64748b", fontWeight: 800 }}>
-                    {item.categoria_sugerida} / {item.subcategoria_sugerida} · Unidad: {item.unidad_sugerida} · Precio: {item.precio_detectado || "Revisar"} {item.moneda_sugerida}
-                  </small>
-                </article>
-              ))}
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
+                <thead>
+                  <tr style={{ background: "#f8fafc", textAlign: "left" }}>
+                    <th style={{ padding: 10 }}>Producto</th>
+                    <th style={{ padding: 10 }}>Categoría</th>
+                    <th style={{ padding: 10 }}>Unidad</th>
+                    <th style={{ padding: 10 }}>Precio</th>
+                    <th style={{ padding: 10 }}>IVA</th>
+                    <th style={{ padding: 10 }}>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map((item, i) => (
+                    <tr key={`${item.nombre}-${i}`} style={{ borderTop: "1px solid #e2e8f0" }}>
+                      <td style={{ padding: 10, fontWeight: 900 }}>{item.nombre}</td>
+                      <td style={{ padding: 10 }}>{item.categoria_sugerida} / {item.subcategoria_sugerida}</td>
+                      <td style={{ padding: 10 }}>{item.unidad_sugerida}</td>
+                      <td style={{ padding: 10 }}>{item.precio_detectado || "Revisar"} {item.moneda_sugerida}</td>
+                      <td style={{ padding: 10 }}>{item.iva_detectado?.detectado ? "Detectado" : "Revisar"}</td>
+                      <td style={{ padding: 10 }}>{item.requiere_revision ? "Revisión" : "Listo"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         )}
