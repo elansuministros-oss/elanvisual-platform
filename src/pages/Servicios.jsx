@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+Ôªøimport React, { useMemo, useState } from 'react';
 import {
   BriefcaseBusiness,
   Brush,
@@ -17,28 +17,28 @@ import '../styles/servicios.css';
 const servicios = [
   {
     id: 'diseno',
-    titulo: 'DiseÒo',
-    subtitulo: 'Imagen visual, marca y comunicaciÛn',
+    titulo: 'Dise√±o',
+    subtitulo: 'Imagen visual, marca y comunicaci√≥n',
     descripcion:
-      'Desarrollamos identidad visual, piezas gr·ficas y soluciones de diseÒo aplicadas a negocios, productos y espacios comerciales.',
-    imagen: '/servicios/diseno.webp.png',
+      'Desarrollamos identidad visual, piezas gr√°ficas y soluciones de dise√±o aplicadas a negocios, productos y espacios comerciales.',
+    imagen: '/servicios/diseno.webp',
     icono: Brush,
     items: [
-      'DiseÒo gr·fico',
+      'Dise√±o gr√°fico',
       'Branding e identidad',
-      'DiseÒo publicitario',
-      'DiseÒo arquitectÛnico',
-      'DiseÒo de interiores',
-      'DiseÒo web y digital',
+      'Dise√±o publicitario',
+      'Dise√±o arquitect√≥nico',
+      'Dise√±o de interiores',
+      'Dise√±o web y digital',
     ],
   },
   {
     id: 'impresion-digital',
-    titulo: 'ImpresiÛn digital',
-    subtitulo: 'Gran formato y pequeÒo formato',
+    titulo: 'Impresi√≥n digital',
+    subtitulo: 'Gran formato y peque√±o formato',
     descripcion:
-      'ImpresiÛn para publicidad, comunicaciÛn comercial, eventos, promociones y materiales corporativos.',
-    imagen: '/servicios/impresion.webp.png',
+      'Impresi√≥n para publicidad, comunicaci√≥n comercial, eventos, promociones y materiales corporativos.',
+    imagen: '/servicios/impresion.webp',
     icono: Printer,
     items: [
       'Lona',
@@ -47,7 +47,7 @@ const servicios = [
       'Adhesivos',
       'Flyers',
       'Tarjetas',
-      'Men˙s',
+      'Men√∫s',
       'Carteles',
       'Invitaciones',
       'Etiquetas',
@@ -55,30 +55,30 @@ const servicios = [
   },
   {
     id: 'rotulacion',
-    titulo: 'RotulaciÛn',
-    subtitulo: 'FabricaciÛn visual para negocios',
+    titulo: 'Rotulaci√≥n',
+    subtitulo: 'Fabricaci√≥n visual para negocios',
     descripcion:
-      'Fabricamos soluciones de rotulaciÛn para fachadas, interiores, puntos de venta y espacios comerciales.',
-    imagen: '/servicios/rotulacion.webp.png',
+      'Fabricamos soluciones de rotulaci√≥n para fachadas, interiores, puntos de venta y espacios comerciales.',
+    imagen: '/servicios/rotulacion.webp',
     icono: Building2,
     items: [
       'Letras PVC',
-      'Letras acrÌlicas',
+      'Letras acr√≠licas',
       'Letras 3D',
       'Fachadas comerciales',
       'Botones luminosos',
       'Jalavistas',
-      'NeÛn LED',
-      'SeÒalizaciÛn',
+      'Ne√≥n LED',
+      'Se√±alizaci√≥n',
     ],
   },
   {
     id: 'display-pop',
     titulo: 'Display y POP',
-    subtitulo: 'ExhibiciÛn para marca y venta',
+    subtitulo: 'Exhibici√≥n para marca y venta',
     descripcion:
-      'Soluciones para ferias, promociones, eventos, puntos de venta y campaÒas comerciales.',
-    imagen: '/servicios/display.webp.png',
+      'Soluciones para ferias, promociones, eventos, puntos de venta y campa√±as comerciales.',
+    imagen: '/servicios/display.webp',
     icono: PackageOpen,
     items: [
       'Roll Up',
@@ -92,14 +92,14 @@ const servicios = [
   },
   {
     id: 'grabado-laser',
-    titulo: 'Grabado l·ser',
+    titulo: 'Grabado l√°ser',
     subtitulo: 'Detalles exclusivos y personalizados',
     descripcion:
-      'Grabado y corte l·ser sobre diferentes materiales para piezas corporativas, promocionales y decorativas.',
-    imagen: '/servicios/laser.webp.png',
+      'Grabado y corte l√°ser sobre diferentes materiales para piezas corporativas, promocionales y decorativas.',
+    imagen: '/servicios/laser.webp',
     icono: Sparkles,
     items: [
-      'AcrÌlico',
+      'Acr√≠lico',
       'Madera',
       'Cuero',
       'Metal',
@@ -113,12 +113,12 @@ const servicios = [
     titulo: 'Textil',
     subtitulo: 'Uniformes y promocionales',
     descripcion:
-      'PersonalizaciÛn textil para empresas, eventos, equipos deportivos y productos promocionales.',
-    imagen: '/servicios/textil.webp.png',
+      'Personalizaci√≥n textil para empresas, eventos, equipos deportivos y productos promocionales.',
+    imagen: '/servicios/textil.webp',
     icono: Shirt,
     items: [
-      'SublimaciÛn',
-      'SerigrafÌa',
+      'Sublimaci√≥n',
+      'Serigraf√≠a',
       'Camisetas',
       'Polos deportivos',
       'Uniformes deportivos',
@@ -129,34 +129,34 @@ const servicios = [
   {
     id: 'estructuras',
     titulo: 'Estructuras',
-    subtitulo: 'Soporte tÈcnico para rotulaciÛn',
+    subtitulo: 'Soporte t√©cnico para rotulaci√≥n',
     descripcion:
-      'Fabricamos estructuras met·licas y soportes para proyectos de rotulaciÛn, instalaciÛn y comunicaciÛn exterior.',
-    imagen: '/servicios/estructuras.webp.png',
+      'Fabricamos estructuras met√°licas y soportes para proyectos de rotulaci√≥n, instalaci√≥n y comunicaci√≥n exterior.',
+    imagen: '/servicios/estructuras.webp',
     icono: Factory,
     items: [
       'Postes',
-      'TÛtems',
+      'T√≥tems',
       'Cajillos',
-      'Marcos met·licos',
+      'Marcos met√°licos',
       'Estructuras para fachadas',
-      'InstalaciÛn',
+      'Instalaci√≥n',
     ],
   },
   {
     id: 'mobiliario',
     titulo: 'Mobiliario',
-    subtitulo: 'FabricaciÛn a medida',
+    subtitulo: 'Fabricaci√≥n a medida',
     descripcion:
-      'DiseÒamos y fabricamos muebles comerciales, exhibidores y soluciones funcionales para hogar, negocio u oficina.',
-    imagen: '/servicios/mobiliario.webp.png',
+      'Dise√±amos y fabricamos muebles comerciales, exhibidores y soluciones funcionales para hogar, negocio u oficina.',
+    imagen: '/servicios/mobiliario.webp',
     icono: Hammer,
     items: [
       'Recepciones',
       'Muebles comerciales',
       'Exhibidores',
       'Closets',
-      'MÛdulos',
+      'M√≥dulos',
       'Muebles a medida',
     ],
   },
@@ -191,8 +191,8 @@ export default function Servicios({ setPage }) {
           <h1>Soluciones visuales que impulsan tu marca</h1>
 
           <p>
-            DiseÒo, impresiÛn, rotulaciÛn, fabricaciÛn, estructuras, displays,
-            grabado l·ser, textil y mobiliario a medida para negocios.
+            Dise√±o, impresi√≥n, rotulaci√≥n, fabricaci√≥n, estructuras, displays,
+            grabado l√°ser, textil y mobiliario a medida para negocios.
           </p>
 
           <button
@@ -201,7 +201,7 @@ export default function Servicios({ setPage }) {
             onClick={() => setPage?.('cotizador')}
           >
             <BriefcaseBusiness size={20} />
-            Solicitar cotizaciÛn
+            Solicitar cotizaci√≥n
           </button>
         </div>
       </section>
@@ -210,7 +210,7 @@ export default function Servicios({ setPage }) {
         <div className="servicios-search-box">
           <Search size={20} />
           <input
-            placeholder="Buscar servicio, material o aplicaciÛn..."
+            placeholder="Buscar servicio, material o aplicaci√≥n..."
             value={busqueda}
             onChange={(event) => setBusqueda(event.target.value)}
           />
@@ -263,7 +263,7 @@ export default function Servicios({ setPage }) {
                   onClick={() => setPage?.('cotizador')}
                 >
                   <BriefcaseBusiness size={18} />
-                  Solicitar cotizaciÛn
+                  Solicitar cotizaci√≥n
                 </button>
               </div>
             </article>
@@ -275,7 +275,7 @@ export default function Servicios({ setPage }) {
         <section className="servicios-empty">
           <h2>No encontramos ese servicio</h2>
           <p>
-            Prob· buscando impresiÛn, rÛtulos, letras, display, l·ser, textil,
+            Prob√° buscando impresi√≥n, r√≥tulos, letras, display, l√°ser, textil,
             estructuras o mobiliario.
           </p>
         </section>
@@ -283,9 +283,9 @@ export default function Servicios({ setPage }) {
 
       <section className="servicios-final-cta">
         <span>ELANVISUAL</span>
-        <h2>øTenÈs un proyecto en mente?</h2>
+        <h2>¬øTen√©s un proyecto en mente?</h2>
         <p>
-          Te ayudamos a convertirlo en una soluciÛn visual fabricable, rentable
+          Te ayudamos a convertirlo en una soluci√≥n visual fabricable, rentable
           y profesional.
         </p>
 
@@ -295,9 +295,10 @@ export default function Servicios({ setPage }) {
           onClick={() => setPage?.('cotizador')}
         >
           <BriefcaseBusiness size={20} />
-          Solicitar cotizaciÛn
+          Solicitar cotizaci√≥n
         </button>
       </section>
     </main>
   );
 }
+

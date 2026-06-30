@@ -1,4 +1,4 @@
-.servicios-page{
+﻿.servicios-page{
   width:100%;
   max-width:100%;
   margin:0;
@@ -22,7 +22,7 @@
   inset:0;
   background:
     linear-gradient(90deg, rgba(8,13,24,.95) 0%, rgba(8,13,24,.82) 36%, rgba(8,13,24,.42) 68%, rgba(8,13,24,.18) 100%),
-    url('/servicios/hero-servicios.webp.png');
+    url('/servicios/hero-servicios.webp');
   background-size:cover;
   background-position:center;
 }
@@ -282,7 +282,7 @@
   .servicios-hero-bg{
     background:
       linear-gradient(0deg, rgba(8,13,24,.98) 0%, rgba(8,13,24,.82) 45%, rgba(8,13,24,.25) 100%),
-      url('/servicios/hero-servicios.webp.png');
+      url('/servicios/hero-servicios.webp');
     background-size:cover;
     background-position:center top;
   }
@@ -368,3 +368,4 @@
     border-radius:28px;
   }
 }
+
