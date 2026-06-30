@@ -41,18 +41,16 @@ export async function obtenerResumenEMC() {
   };
 }
 
+function mapearPorId(lista = []) {
+  return Object.fromEntries((lista || []).map((item) => [String(item.id), item]));
+}
+
 export async function listarItemsEMC({ busqueda = "", proveedorId = "", limite = 300 } = {}) {
   if (!supabase) throw new Error("Supabase no configurado");
 
   let query = supabase
     .from(EMC_TABLES.items)
-    .select(`
-      *,
-      categoria:elankav_catalogo_categorias(*),
-      subcategoria:elankav_catalogo_subcategorias(*),
-      marca:elankav_catalogo_marcas(*),
-      unidad:elankav_catalogo_unidades(*)
-    `)
+    .select("*")
     .order("nombre", { ascending: true })
     .limit(limite);
 
@@ -63,16 +61,32 @@ export async function listarItemsEMC({ busqueda = "", proveedorId = "", limite =
   const { data: items, error } = await query;
   if (error) throw error;
 
-  const itemIds = (items || []).map((i) => i.id);
+  const ids = (campo) => [...new Set((items || []).map((i) => i[campo]).filter(Boolean))];
+
+  const categoriaIds = ids("categoria_id");
+  const subcategoriaIds = ids("subcategoria_id");
+  const marcaIds = ids("marca_id");
+  const unidadIds = ids("unidad_id");
+  const itemIds = ids("id");
+
+  const [categoriasRes, subcategoriasRes, marcasRes, unidadesRes] = await Promise.all([
+    categoriaIds.length ? supabase.from(EMC_TABLES.categorias).select("*").in("id", categoriaIds) : { data: [] },
+    subcategoriaIds.length ? supabase.from(EMC_TABLES.subcategorias).select("*").in("id", subcategoriaIds) : { data: [] },
+    marcaIds.length ? supabase.from(EMC_TABLES.marcas).select("*").in("id", marcaIds) : { data: [] },
+    unidadIds.length ? supabase.from(EMC_TABLES.unidades).select("*").in("id", unidadIds) : { data: [] },
+  ]);
+
+  const categorias = mapearPorId(categoriasRes.data || []);
+  const subcategorias = mapearPorId(subcategoriasRes.data || []);
+  const marcas = mapearPorId(marcasRes.data || []);
+  const unidades = mapearPorId(unidadesRes.data || []);
 
   let precios = [];
+
   if (itemIds.length) {
     let preciosQuery = supabase
       .from(EMC_TABLES.proveedorItems)
-      .select(`
-        *,
-        proveedor:elankav_catalogo_proveedores(*)
-      `)
+      .select("*")
       .in("item_id", itemIds);
 
     if (proveedorId) {
@@ -84,18 +98,18 @@ export async function listarItemsEMC({ busqueda = "", proveedorId = "", limite =
   }
 
   return (items || []).map((item) => {
-    const preciosItem = precios.filter((p) => p.item_id === item.id);
+    const preciosItem = precios.filter((p) => String(p.item_id) === String(item.id));
     const precioActual = preciosItem[0] || null;
 
     return {
       ...item,
-      categoria_nombre: item.categoria?.nombre || "Sin categoría",
-      subcategoria_nombre: item.subcategoria?.nombre || "Sin subcategoría",
-      marca_nombre: item.marca?.nombre || "Sin marca",
-      unidad_nombre: item.unidad?.nombre || "Unidad",
+      categoria_nombre: categorias[String(item.categoria_id)]?.nombre || "Sin categoría",
+      subcategoria_nombre: subcategorias[String(item.subcategoria_id)]?.nombre || "Sin subcategoría",
+      marca_nombre: marcas[String(item.marca_id)]?.nombre || "Sin marca",
+      unidad_nombre: unidades[String(item.unidad_id)]?.nombre || "Unidad",
       precio_actual: precioActual?.precio ?? null,
       moneda_actual: precioActual?.moneda || "",
-      proveedor_nombre: precioActual?.proveedor?.nombre || "Sin proveedor",
+      proveedor_nombre: precioActual?.proveedor_id || "Sin proveedor",
       proveedor_id: precioActual?.proveedor_id || null,
       precios_proveedor: preciosItem,
     };
