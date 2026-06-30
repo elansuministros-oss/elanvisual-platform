@@ -76,6 +76,30 @@ const registrarUsoNumero = (whatsapp) => {
   }
 };
 
+const resolverModoVenta = (producto = {}) => {
+  const valor =
+    producto.tipoProducto ||
+    producto.modoVenta ||
+    producto.tipo_venta ||
+    producto.tipoVenta ||
+    '';
+
+  const normalizado = slugify(valor);
+
+  if (['catalogo', 'compra', 'prefabricado'].includes(normalizado)) return 'compra';
+  if (['personalizado', 'diseno', 'diseno-personalizado'].includes(normalizado)) return 'diseno';
+  if (['catalogo-personalizado', 'mixto', 'compra-diseno'].includes(normalizado)) return 'mixto';
+
+  const textoProducto = slugify(
+    `${producto.nombre || ''} ${producto.descripcion || ''} ${producto.categoria || ''}`
+  );
+
+  if (textoProducto.includes('neon') && textoProducto.includes('prefabricado')) return 'compra';
+  if (textoProducto.includes('neon')) return 'mixto';
+
+  return 'diseno';
+};
+
 export default function Tienda({ setPage }) {
   const { productos = [], categoriasHome = [], agregar, carrito = [] } = useApp();
 
@@ -204,6 +228,15 @@ export default function Tienda({ setPage }) {
     setModalAI(false);
     setProductoAI(null);
     setResultadoAI(null);
+  };
+
+  const comprarProducto = (producto) => {
+    agregar?.({
+      ...producto,
+      cantidad: 1,
+    });
+
+    setPage?.('carrito');
   };
 
   const actualizarFormAI = (campo, value) => {
@@ -424,35 +457,54 @@ export default function Tienda({ setPage }) {
 
       {categoriaActiva && (
         <div className="product-grid">
-          {productosFiltrados.map((producto) => (
-            <article className="product-card" key={producto.id}>
-              <div className="product-image-wrap">
-                <img
-                  className="product-image"
-                  src={producto.imagen}
-                  alt={producto.nombre}
-                  loading="lazy"
-                />
-              </div>
+          {productosFiltrados.map((producto) => {
+            const modoVenta = resolverModoVenta(producto);
+            const puedeComprar = ['compra', 'mixto'].includes(modoVenta);
+            const puedeSolicitarDiseno = ['diseno', 'mixto'].includes(modoVenta);
 
-              <div className="product-body">
-                <h3>{producto.nombre}</h3>
+            return (
+              <article className="product-card" key={producto.id}>
+                <div className="product-image-wrap">
+                  <img
+                    className="product-image"
+                    src={producto.imagen}
+                    alt={producto.nombre}
+                    loading="lazy"
+                  />
+                </div>
 
-                <strong className="price">
-                  {producto.precio > 0 ? `Desde ${moneyUSD(producto.precio)}` : 'Consultar'}
-                </strong>
+                <div className="product-body">
+                  <h3>{producto.nombre}</h3>
 
-                <button
-                  type="button"
-                  className="product-main-action"
-                  onClick={() => abrirAI(producto)}
-                >
-                  <PackageSearch size={18} />
-                  Solicitar diseño
-                </button>
-              </div>
-            </article>
-          ))}
+                  <strong className="price">
+                    {producto.precio > 0 ? `Desde ${moneyUSD(producto.precio)}` : 'Consultar'}
+                  </strong>
+
+                  {puedeComprar && (
+                    <button
+                      type="button"
+                      className="product-main-action"
+                      onClick={() => comprarProducto(producto)}
+                    >
+                      <ShoppingCart size={18} />
+                      Comprar
+                    </button>
+                  )}
+
+                  {puedeSolicitarDiseno && (
+                    <button
+                      type="button"
+                      className="product-main-action"
+                      onClick={() => abrirAI(producto)}
+                    >
+                      <PackageSearch size={18} />
+                      Solicitar diseño
+                    </button>
+                  )}
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
 
