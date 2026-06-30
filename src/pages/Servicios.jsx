@@ -198,7 +198,7 @@ export default function Servicios({ setPage }) {
           <button
             type="button"
             className="servicios-primary-btn"
-            onClick={() => setPage?.('cotizador')}
+            onClick={() => setPage?.('tienda')}
           >
             <BriefcaseBusiness size={20} />
             Solicitar cotización
@@ -260,7 +260,7 @@ export default function Servicios({ setPage }) {
                 <button
                   type="button"
                   className="servicios-secondary-btn"
-                  onClick={() => setPage?.('cotizador')}
+                  onClick={() => setPage?.('tienda')}
                 >
                   <BriefcaseBusiness size={18} />
                   Solicitar cotización
@@ -292,7 +292,7 @@ export default function Servicios({ setPage }) {
         <button
           type="button"
           className="servicios-primary-btn"
-          onClick={() => setPage?.('cotizador')}
+          onClick={() => setPage?.('tienda')}
         >
           <BriefcaseBusiness size={20} />
           Solicitar cotización
@@ -301,4 +301,5 @@ export default function Servicios({ setPage }) {
     </main>
   );
 }
+
 
