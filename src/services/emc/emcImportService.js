@@ -1,5 +1,61 @@
-﻿const CORE_URL =
+﻿import { supabase } from "../../lib/supabase";
+
+const CORE_URL =
   import.meta.env.VITE_ELANKAV_CORE_URL || "https://elankav-core.vercel.app";
+
+const EMC_STORAGE_BUCKET =
+  import.meta.env.VITE_EMC_STORAGE_BUCKET || "emc-importaciones";
+
+function limpiarNombreArchivo(nombre = "archivo") {
+  return String(nombre)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]/g, "-")
+    .replace(/-+/g, "-")
+    .toLowerCase();
+}
+
+function crearStoragePath({ proveedor, archivo, index = 0 }) {
+  const proveedorId = proveedor?.id || "sin-proveedor";
+  const fecha = new Date().toISOString().slice(0, 10);
+  const timestamp = Date.now();
+  const nombre = limpiarNombreArchivo(archivo?.name || `archivo-${index + 1}`);
+
+  return `emc/${proveedorId}/${fecha}/${timestamp}-${index}-${nombre}`;
+}
+
+async function subirArchivoEMC({ proveedor, archivo, index }) {
+  if (!supabase) {
+    throw new Error("Supabase no configurado.");
+  }
+
+  const storagePath = crearStoragePath({ proveedor, archivo, index });
+
+  const { error } = await supabase.storage
+    .from(EMC_STORAGE_BUCKET)
+    .upload(storagePath, archivo, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: archivo.type || "application/octet-stream",
+    });
+
+  if (error) {
+    throw new Error(`No se pudo subir ${archivo.name}: ${error.message}`);
+  }
+
+  const { data } = supabase.storage
+    .from(EMC_STORAGE_BUCKET)
+    .getPublicUrl(storagePath);
+
+  return {
+    nombre: archivo.name || `archivo-${index + 1}`,
+    mime: archivo.type || "",
+    size: archivo.size || 0,
+    bucket: EMC_STORAGE_BUCKET,
+    storage_path: storagePath,
+    public_url: data?.publicUrl || null,
+  };
+}
 
 export async function analizarImportacionEMC({
   proveedor,
@@ -26,17 +82,26 @@ export async function analizarImportacionEMC({
     throw new Error("Subí al menos un archivo PDF, Excel, CSV, TXT o imagen.");
   }
 
-  const formData = new FormData();
+  const archivosSubidos = [];
 
-  formData.append("tipo", "importar-emc");
-  formData.append("unidad", "ELANVISUAL");
-  formData.append("modo_importacion", modo);
-  formData.append("tipo_proveedor", tipoProveedor);
-  formData.append("notas", notas || "");
+  for (let index = 0; index < archivosFinales.length; index += 1) {
+    const archivoSubido = await subirArchivoEMC({
+      proveedor,
+      archivo: archivosFinales[index],
+      index,
+    });
 
-  formData.append(
-    "proveedor",
-    JSON.stringify({
+    archivosSubidos.push(archivoSubido);
+  }
+
+  const payload = {
+    tipo: "importar-emc",
+    unidad: "ELANVISUAL",
+    modo_importacion: modo,
+    tipo_proveedor: tipoProveedor,
+    notas: notas || "",
+    origen_archivo: "supabase-storage",
+    proveedor: {
       id: proveedor.id,
       nombre: proveedor.nombre || "",
       razonSocial: proveedor.razonSocial || "",
@@ -45,24 +110,14 @@ export async function analizarImportacionEMC({
       subcategorias: proveedor.subcategorias || "",
       whatsapp: proveedor.whatsapp || "",
       correo: proveedor.correo || "",
-    })
-  );
-
-  archivosFinales.forEach((archivo, index) => {
-    formData.append("archivos", archivo);
-    formData.append(
-      `archivo_meta_${index}`,
-      JSON.stringify({
-        nombre: archivo.name || `archivo-${index + 1}`,
-        mime: archivo.type || "",
-        size: archivo.size || 0,
-      })
-    );
-  });
+    },
+    archivos: archivosSubidos,
+  };
 
   const res = await fetch(`${CORE_URL}/api/elan-ai`, {
     method: "POST",
-    body: formData,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   });
 
   let json = null;
@@ -77,7 +132,7 @@ export async function analizarImportacionEMC({
     throw new Error(
       json.mensaje ||
         json.error ||
-        "No se pudo analizar la importación EMC."
+        `No se pudo analizar la importación EMC. HTTP ${res.status}`
     );
   }
 
