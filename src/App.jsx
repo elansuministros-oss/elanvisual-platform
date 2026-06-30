@@ -14,7 +14,6 @@ import ProduccionPanel from './pages/ProduccionPanel';
 import AdminPanel from './pages/AdminPanel';
 import Login from './pages/Login';
 import Contacto from './pages/Contacto';
-import Trabajos from './pages/Trabajos';
 import Seguimiento from './pages/Seguimiento';
 import MaterialesCostos from './pages/MaterialesCostos';
 import PedidosProduccion from './pages/PedidosProduccion';
@@ -62,8 +61,8 @@ export default function App() {
     if (pathInicial.startsWith('/servicios')) return 'servicios';
     if (pathInicial.startsWith('/tienda')) return 'tienda';
     if (pathInicial.startsWith('/catalogo')) return 'servicios';
-    if (pathInicial.startsWith('/trabajos')) return 'trabajos';
-    if (pathInicial.startsWith('/portafolio')) return 'trabajos';
+if (pathInicial.startsWith('/trabajos')) return 'servicios';
+if (pathInicial.startsWith('/portafolio')) return 'servicios';
     if (pathInicial.startsWith('/carrito')) return 'carrito';
     if (pathInicial.startsWith('/contacto')) return 'contacto';
     if (pathInicial.startsWith('/dashboard')) return 'dashboard';
@@ -92,7 +91,6 @@ export default function App() {
       servicios: '/servicios',
       tienda: '/tienda',
       catalogo: '/servicios',
-      trabajos: '/portafolio',
       carrito: '/carrito',
       contacto: '/contacto',
       seguimiento: '/seguimiento',
@@ -151,7 +149,6 @@ export default function App() {
       {page === 'servicios' && <Servicios setPage={ir} />}
       {page === 'tienda' && <Tienda setPage={ir} />}
       {page === 'catalogo' && <Servicios setPage={ir} />}
-      {page === 'trabajos' && <Trabajos />}
       {page === 'carrito' && <Carrito />}
       {page === 'contacto' && <Contacto />}
       {page === 'seguimiento' && <Seguimiento />}
