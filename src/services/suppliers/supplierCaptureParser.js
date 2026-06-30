@@ -1,113 +1,161 @@
-﻿export const SUPPLIER_CATEGORIES = [
-  'Impresión',
-  'Suministros',
-  'PVC / Acrílico',
-  'CNC / Láser',
-  'Metal / Estructuras',
-  'Electricidad / LED',
-  'Instalación',
-  'Transporte',
-  'Otro',
-];
-
-const reglas = [
-  { categoria: 'PVC / Acrílico', claves: ['acrilico', 'acrílico', 'pvc', 'policarbonato', 'plexi'] },
-  { categoria: 'Impresión', claves: ['lona', 'vinil', 'microperforado', 'impresion', 'impresión', 'uv', 'solvente', 'latex', 'látex'] },
-  { categoria: 'CNC / Láser', claves: ['cnc', 'laser', 'láser', 'router', 'corte'] },
-  { categoria: 'Metal / Estructuras', claves: ['metal', 'hierro', 'tubo', 'estructura', 'soldadura', 'aluminio'] },
-  { categoria: 'Electricidad / LED', claves: ['led', 'fuente', 'transformador', 'neon', 'neón', 'modulo', 'módulo'] },
-  { categoria: 'Instalación', claves: ['instala', 'instalacion', 'instalación', 'montaje', 'andamio'] },
-  { categoria: 'Transporte', claves: ['transporte', 'flete', 'envio', 'envío', 'cargo'] },
-  { categoria: 'Suministros', claves: ['suministro', 'materiales', 'ferreteria', 'ferretería', 'pintura', 'adhesivo'] },
-];
-
-const departamentos = [
+﻿const departamentos = [
   'Managua','Chinandega','León','Masaya','Granada','Carazo','Rivas','Estelí','Matagalpa',
   'Jinotega','Boaco','Chontales','Nueva Segovia','Madriz','Río San Juan','RAAN','RAAS'
 ];
 
-function limpiarTexto(valor = '') {
-  return String(valor || '').replace(/\s+/g, ' ').trim();
+const categorias = [
+  { categoria: 'PVC / Acrílico', claves: ['acrílico', 'acrilico', 'pvc', 'coroplast', 'lámina', 'lamina'] },
+  { categoria: 'Impresión', claves: ['lona', 'vinil', 'microperforado', 'impresión', 'impresion', 'sublimación', 'sublimacion'] },
+  { categoria: 'Electricidad / LED', claves: ['led', 'fuente', 'transformador', 'neón', 'neon'] },
+  { categoria: 'Displays / POP', claves: ['roller up', 'mesa degustadora', 'pluma publicitaria', 'caja de luz'] },
+  { categoria: 'Suministros para Rotulación e Impresión Digital', claves: ['3m', 'insumos', 'rotulación', 'rotulacion', 'publicitaria'] },
+];
+
+function limpiar(v = '') {
+  return String(v || '').replace(/\s+/g, ' ').trim();
 }
 
-function detectarNombre(texto = '') {
-  const limpio = limpiarTexto(texto);
-  const patrones = [
-    /(?:proveedor|empresa|negocio|tienda)\s+([A-ZÁÉÍÓÚÑ0-9][A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .&-]{2,60})/i,
-    /^([A-ZÁÉÍÓÚÑ0-9][A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .&-]{2,60})(?:\s+vende|\s+ofrece|\s+distribuye|\s+trabaja|\s+está|\s+esta)/i,
-  ];
+function extraerPorEtiqueta(texto, etiquetas = []) {
+  for (const etiqueta of etiquetas) {
+    const re = new RegExp(`${etiqueta}\\s*:\\s*([^\\.\\n]+)`, 'i');
+    const m = texto.match(re);
+    if (m?.[1]) return limpiar(m[1]);
+  }
+  return '';
+}
 
-  for (const patron of patrones) {
-    const match = limpio.match(patron);
-    if (match?.[1]) return limpiarTexto(match[1]).replace(/[.,;:]$/, '');
+function detectarNombre(texto) {
+  const porEtiqueta = extraerPorEtiqueta(texto, ['Proveedor', 'Empresa', 'Nombre comercial']);
+  if (porEtiqueta) return porEtiqueta;
+
+  const inicio = texto.match(/^([A-ZÁÉÍÓÚÑ][A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .&-]{2,45})\s+es\s+/i);
+  if (inicio?.[1]) return limpiar(inicio[1]);
+
+  const conocido = texto.match(/\b(Vargas Centro|Centro de Pintura Vargas|Play Marketing|Impresiones Vida)\b/i);
+  if (conocido?.[1]) return limpiar(conocido[1]);
+
+  return '';
+}
+
+function detectarTelefono(texto, etiqueta) {
+  const porEtiqueta = extraerPorEtiqueta(texto, [etiqueta]);
+  if (porEtiqueta) {
+    const m = porEtiqueta.match(/(?:\+?505[\s-]?)?\d{4}[\s-]?\d{4}|\d{4}[\s-]?\d{4}/);
+    if (m) return limpiar(m[0]);
+  }
+  return '';
+}
+
+function detectarPrimerTelefono(texto) {
+  const m = texto.match(/(?:\+?505[\s-]?)?\d{4}[\s-]?\d{4}|\d{4}[\s-]?\d{4}/);
+  return m ? limpiar(m[0]) : '';
+}
+
+function detectarCorreo(texto) {
+  const m = texto.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  return m ? limpiar(m[0]) : '';
+}
+
+function detectarWeb(texto) {
+  const m = texto.match(/(?:https?:\/\/)?(?:www\.)?[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  if (!m) return '';
+  const web = limpiar(m[0]);
+  return web.includes('@') ? '' : web;
+}
+
+function detectarDepartamento(texto) {
+  const normal = texto.toLowerCase();
+  return departamentos.find((d) => normal.includes(d.toLowerCase())) || 'Managua';
+}
+
+function detectarDireccion(texto) {
+  const porEtiqueta = extraerPorEtiqueta(texto, ['Dirección', 'Direccion', 'Ubicación', 'Ubicacion']);
+  if (porEtiqueta) return porEtiqueta;
+
+  const m = texto.match(/(?:ubicada|ubicado|sede principal está ubicada|sede principal esta ubicada)\s+en\s+([^\\.]+)/i);
+  return m?.[1] ? limpiar(m[1]) : '';
+}
+
+function detectarCobertura(texto) {
+  const porEtiqueta = extraerPorEtiqueta(texto, ['Cobertura', 'Zona de cobertura']);
+  if (porEtiqueta) return porEtiqueta;
+  if (/nacional/i.test(texto)) return 'Nacional';
+  return detectarDepartamento(texto);
+}
+
+function detectarCategoria(texto) {
+  const normal = texto.toLowerCase();
+
+  if (normal.includes('insumos') && (normal.includes('rotulación') || normal.includes('rotulacion') || normal.includes('impresión') || normal.includes('impresion'))) {
+    return 'Suministros para Rotulación e Impresión Digital';
   }
 
-  return limpio.split(/[.,;\n]/)[0]?.slice(0, 60) || '';
-}
-
-function detectarWhatsapp(texto = '') {
-  const match = texto.match(/(?:\+?505)?[\s-]?\d{4}[\s-]?\d{4}/);
-  return match ? match[0].replace(/\s+/g, ' ').trim() : '';
-}
-
-function detectarCorreo(texto = '') {
-  const match = texto.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
-  return match ? match[0] : '';
-}
-
-function detectarDepartamento(texto = '') {
-  const normal = texto.toLowerCase();
-  return departamentos.find((dep) => normal.includes(dep.toLowerCase())) || 'Managua';
-}
-
-function detectarCapacidades(texto = '') {
-  const normal = texto.toLowerCase();
-  const capacidades = [];
-
-  reglas.forEach((regla) => {
-    regla.claves.forEach((clave) => {
-      if (normal.includes(clave) && !capacidades.includes(clave)) {
-        capacidades.push(clave);
-      }
-    });
-  });
-
-  return capacidades.map((item) => item.charAt(0).toUpperCase() + item.slice(1));
-}
-
-function detectarCategoria(texto = '') {
-  const normal = texto.toLowerCase();
-
-  for (const regla of reglas) {
-    if (regla.claves.some((clave) => normal.includes(clave))) {
-      return regla.categoria;
-    }
+  for (const item of categorias) {
+    if (item.claves.some((c) => normal.includes(c))) return item.categoria;
   }
 
   return 'Suministros';
 }
 
+function detectarCapacidades(texto) {
+  const catalogo = [
+    'Viniles adhesivos',
+    'Lonas para impresión',
+    'PVC espumado',
+    'Coroplast',
+    'Acrílicos',
+    'Resinas',
+    'Reflectivos',
+    'Polarizados',
+    'Productos 3M',
+    'Cajas de luz',
+    'Roller Up',
+    'Mesas degustadoras',
+    'Papel de sublimación',
+    'Transfer tape',
+    'Cintas VHB',
+    'Adhesivos',
+    'Herramientas para aplicación de viniles',
+    'Materiales para publicidad exterior',
+    'Insumos para rotulación',
+    'Impresión digital'
+  ];
+
+  const normal = texto.toLowerCase();
+  return catalogo.filter((item) => normal.includes(item.toLowerCase().split(' ')[0])).join(', ');
+}
+
 export function parseSupplierCapture(texto = '') {
-  const descripcion = limpiarTexto(texto);
-  const capacidades = detectarCapacidades(descripcion);
-  const categoria = detectarCategoria(descripcion);
+  const descripcion = limpiar(texto);
+
+  const nombre = detectarNombre(descripcion);
+  const razonSocial = extraerPorEtiqueta(descripcion, ['Razón social', 'Razon social']) || '';
+  const contacto = extraerPorEtiqueta(descripcion, ['Contacto principal', 'Contacto']) || '';
+  const cargo = extraerPorEtiqueta(descripcion, ['Cargo']) || '';
+  const whatsapp = detectarTelefono(descripcion, 'WhatsApp') || detectarPrimerTelefono(descripcion);
+  const telefono = detectarTelefono(descripcion, 'Teléfono de oficina') || detectarTelefono(descripcion, 'Telefono de oficina');
+  const correo = detectarCorreo(descripcion);
+  const sitioWeb = detectarWeb(descripcion);
+  const departamento = detectarDepartamento(descripcion);
+  const direccion = detectarDireccion(descripcion);
+  const cobertura = detectarCobertura(descripcion);
 
   return {
-    nombre: detectarNombre(descripcion),
-    razonSocial: '',
+    nombre,
+    razonSocial,
     ruc: '',
-    contacto: '',
-    cargoContacto: '',
-    whatsapp: detectarWhatsapp(descripcion),
-    telefonoAlterno: '',
-    correo: detectarCorreo(descripcion),
-    sitioWeb: '',
-    direccion: '',
-    departamento: detectarDepartamento(descripcion),
-    municipio: '',
-    zonaCobertura: detectarDepartamento(descripcion),
-    categoria,
-    subcategorias: capacidades.join(', '),
+    contacto,
+    cargoContacto: cargo,
+    whatsapp,
+    telefonoAlterno: telefono,
+    correo,
+    sitioWeb,
+    direccion,
+    departamento,
+    municipio: departamento,
+    zonaCobertura: cobertura,
+    categoria: detectarCategoria(descripcion),
+    subcategorias: detectarCapacidades(descripcion),
     observaciones: descripcion,
     activo: true,
   };
