@@ -30,7 +30,7 @@ import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
 import AIStudio from './pages/AIStudio';
 import SolicitudesDisenoAI from './pages/SolicitudesDisenoAI';
-import EMCDashboard from './pages/EMCDashboard';
+import EMCImportadorAI22 from './pages/EMCImportadorAI22';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -210,9 +210,9 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       {page === 'materiales' &&
         (accesoAdmin ? <MaterialesCostos /> : <Login setPage={ir} destino="materiales" />)}
 
-      {page === 'emc' &&
-        (accesoAdmin ? <EMCDashboard /> : <Login setPage={ir} destino="admin" />)}
-
+{page === 'emc' &&
+  (accesoAdmin ? <EMCImportadorAI22 /> : <Login setPage={ir} destino="admin" />)}
+  
       {page === 'recomendadorTecnico' &&
         (accesoVentas ? <RecomendadorTecnico /> : <Login setPage={ir} destino="cotizador" />)}
 
