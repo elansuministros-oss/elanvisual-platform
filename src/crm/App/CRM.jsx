@@ -43,7 +43,7 @@ import Materiales from '../Materiales';
 import UsuariosPermisos from '../UsuariosPermisos';
 import AuditoriaCRM from '../AuditoriaCRM';
 import SolicitudesDisenoAI from '../../pages/SolicitudesDisenoAI';
-import EMCDashboard from '../../pages/EMCDashboard';
+import EMCImportadorAI22 from '../../pages/EMCImportadorAI22';
 
 export default function CRM() {
   const { usuarioActivoCRM, rolUsuarioActivoCRM, usuarioTienePermisoCRM } = useCore();
@@ -110,7 +110,7 @@ export default function CRM() {
           { id: 'produccion', label: 'Producción', icono: '', componente: <Produccion /> },
           { id: 'inventario', label: 'Inventario', icono: '', componente: <Inventario /> },
           { id: 'materiales', label: 'Materiales', icono: '', componente: <Materiales /> },
-          { id: 'emc', label: 'Catálogo Maestro EMC', icono: '', componente: <EMCDashboard /> },
+{ id: 'emc', label: 'Catálogo Maestro EMC', icono: '', componente: <EMCImportadorAI22 /> },
           { id: 'portal-produccion', label: 'Portal Producción', icono: '', componente: <PortalProduccionCRM /> },
         ],
       },
