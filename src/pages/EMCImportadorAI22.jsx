@@ -8,10 +8,14 @@ import {
   Image,
   PackageSearch,
   RefreshCcw,
+  Save,
   UploadCloud,
 } from "lucide-react";
 import { listSuppliersV2 as obtenerProveedores } from "../services/suppliers";
-import { importarEMCAI22 } from "../services/emc/emcImportAi22Service";
+import {
+  importarEMCAI22,
+  guardarResultadoEMCAI22,
+} from "../services/emc/emcImportAi22Service";
 
 const extensionesPermitidas = ".pdf,.xlsx,.xls,.csv,.txt,.png,.jpg,.jpeg,.webp";
 
@@ -62,9 +66,9 @@ export default function EMCImportadorAI22() {
   const [proveedores, setProveedores] = useState([]);
   const [proveedorId, setProveedorId] = useState("");
   const [archivos, setArchivos] = useState([]);
-  const [guardarAutomatico, setGuardarAutomatico] = useState(false);
   const [resultado, setResultado] = useState(null);
   const [cargando, setCargando] = useState(false);
+  const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
 
@@ -117,15 +121,45 @@ export default function EMCImportadorAI22() {
       const data = await importarEMCAI22({
         proveedor,
         archivos,
-        guardarAutomatico,
+        guardarAutomatico: false,
       });
 
       setResultado(data);
-      setMensaje("Importación procesada por AI-22.");
+      setMensaje("Vista previa generada. Revisá el resultado y luego guardá en EMC.");
     } catch (err) {
       setError(err.message || "No se pudo procesar la importación AI-22.");
     } finally {
       setCargando(false);
+    }
+  }
+
+  async function guardarEnEMC() {
+    if (!proveedor?.id) {
+      setError("Seleccioná un proveedor.");
+      return;
+    }
+
+    if (!resultado?.resumen?.items_detectados) {
+      setError("Primero procesá un archivo con productos detectados.");
+      return;
+    }
+
+    try {
+      setGuardando(true);
+      setError("");
+      setMensaje("Guardando productos en EMC...");
+
+      const data = await guardarResultadoEMCAI22({
+        proveedor,
+        resultado,
+      });
+
+      setResultado(data);
+      setMensaje("Productos guardados en EMC correctamente.");
+    } catch (err) {
+      setError(err.message || "No se pudo guardar en EMC.");
+    } finally {
+      setGuardando(false);
     }
   }
 
@@ -135,12 +169,12 @@ export default function EMCImportadorAI22() {
         <section style={card}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <div>
-              <small style={{ color: "#64748b", fontWeight: 900 }}>AI-22.1 NUEVO</small>
+              <small style={{ color: "#64748b", fontWeight: 900 }}>AI-22.2 NUEVO</small>
               <h1 style={{ margin: "6px 0", fontSize: 34, color: "#0f172a" }}>
                 Importador EMC AI-22
               </h1>
               <p style={{ margin: 0, color: "#475569", fontWeight: 700 }}>
-                Proveedor → Storage → CORE /api/emc-import → resultado por archivo y página.
+                Procesar → Vista previa → Guardar en EMC.
               </p>
             </div>
 
@@ -185,20 +219,10 @@ export default function EMCImportadorAI22() {
                 </option>
               ))}
             </select>
-
-            {proveedor && (
-              <div style={{ marginTop: 14, padding: 14, borderRadius: 18, background: "#f1f5f9" }}>
-                <b>{proveedor.nombre || proveedor.razonSocial || "Proveedor"}</b>
-                <div style={{ color: "#64748b", fontWeight: 700 }}>
-                  {proveedor.ruc || "Sin RUC"} · {proveedor.whatsapp || "Sin WhatsApp"}
-                </div>
-              </div>
-            )}
           </div>
 
           <div style={card}>
             <h2 style={{ marginTop: 0 }}>2. Archivos</h2>
-
             <label
               style={{
                 border: "2px dashed #94a3b8",
@@ -221,15 +245,6 @@ export default function EMCImportadorAI22() {
                 onChange={seleccionarArchivos}
                 style={{ display: "none" }}
               />
-            </label>
-
-            <label style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 14, fontWeight: 900 }}>
-              <input
-                type="checkbox"
-                checked={guardarAutomatico}
-                onChange={(e) => setGuardarAutomatico(e.target.checked)}
-              />
-              Guardar automático en EMC
             </label>
           </div>
         </section>
@@ -263,7 +278,7 @@ export default function EMCImportadorAI22() {
 
             <button
               type="button"
-              disabled={cargando}
+              disabled={cargando || guardando}
               onClick={procesar}
               style={{
                 marginTop: 16,
@@ -273,7 +288,7 @@ export default function EMCImportadorAI22() {
                 background: "#0f172a",
                 color: "#fff",
                 fontWeight: 1000,
-                cursor: cargando ? "not-allowed" : "pointer",
+                cursor: cargando || guardando ? "not-allowed" : "pointer",
                 width: "100%",
               }}
             >
@@ -292,6 +307,25 @@ export default function EMCImportadorAI22() {
               <div style={card}>Detectados<br /><b>{resultado.resumen?.items_detectados || 0}</b></div>
               <div style={card}>Guardados<br /><b>{resultado.resumen?.items_guardados || 0}</b></div>
             </div>
+
+            <button
+              type="button"
+              disabled={guardando || cargando || !resultado?.resumen?.items_detectados}
+              onClick={guardarEnEMC}
+              style={{
+                marginTop: 16,
+                border: 0,
+                borderRadius: 18,
+                padding: "14px 18px",
+                background: "#16a34a",
+                color: "#fff",
+                fontWeight: 1000,
+                cursor: guardando || cargando ? "not-allowed" : "pointer",
+                width: "100%",
+              }}
+            >
+              <Save size={18} /> {guardando ? "Guardando..." : "Guardar en EMC"}
+            </button>
 
             <h3>Páginas procesadas</h3>
             <div style={{ display: "grid", gap: 10 }}>

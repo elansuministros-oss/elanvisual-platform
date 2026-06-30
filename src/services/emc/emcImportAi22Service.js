@@ -24,6 +24,19 @@ function crearStoragePath({ proveedor, archivo, index = 0 }) {
   return `emc/ai22/${proveedorId}/${fecha}/${timestamp}-${index}-${nombre}`;
 }
 
+function proveedorPayload(proveedor = {}) {
+  return {
+    id: proveedor.id,
+    nombre: proveedor.nombre || proveedor.name || proveedor.razonSocial || "",
+    razonSocial: proveedor.razonSocial || "",
+    ruc: proveedor.ruc || "",
+    categoria: proveedor.categoria || "",
+    subcategorias: proveedor.subcategorias || "",
+    whatsapp: proveedor.whatsapp || "",
+    correo: proveedor.correo || "",
+  };
+}
+
 async function subirArchivoAI22({ proveedor, archivo, index }) {
   if (!supabase) {
     throw new Error("Supabase no configurado.");
@@ -58,6 +71,26 @@ async function subirArchivoAI22({ proveedor, archivo, index }) {
     storagePath,
     public_url: data?.publicUrl || null,
   };
+}
+
+async function postEMCImport(payload) {
+  const res = await fetch(`${CORE_URL.replace(/\/$/, "")}/api/emc-import`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json().catch(() => null);
+
+  if (!json) {
+    throw new Error("CORE respondió sin JSON válido.");
+  }
+
+  if (!res.ok || json.ok === false) {
+    throw new Error(json.error || json.mensaje || `Error CORE ${res.status}.`);
+  }
+
+  return json;
 }
 
 export async function subirArchivosEMCAI22({ proveedor, archivos = [] }) {
@@ -100,36 +133,38 @@ export async function importarEMCAI22({
     archivos,
   });
 
-  const payload = {
-    proveedor: {
-      id: proveedor.id,
-      nombre: proveedor.nombre || proveedor.name || proveedor.razonSocial || "",
-      razonSocial: proveedor.razonSocial || "",
-      ruc: proveedor.ruc || "",
-      categoria: proveedor.categoria || "",
-      subcategorias: proveedor.subcategorias || "",
-      whatsapp: proveedor.whatsapp || "",
-      correo: proveedor.correo || "",
-    },
+  return await postEMCImport({
+    proveedor: proveedorPayload(proveedor),
     archivos: archivosSubidos,
     guardar_automatico: Boolean(guardarAutomatico),
-  };
-
-  const res = await fetch(`${CORE_URL.replace(/\/$/, "")}/api/emc-import`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
   });
+}
 
-  const json = await res.json().catch(() => null);
-
-  if (!json) {
-    throw new Error("CORE respondió sin JSON válido.");
+export async function guardarResultadoEMCAI22({ proveedor, resultado } = {}) {
+  if (!proveedor?.id) {
+    throw new Error("Seleccioná un proveedor corporativo.");
   }
 
-  if (!res.ok || json.ok === false) {
-    throw new Error(json.error || json.mensaje || `Error CORE ${res.status}.`);
+  const archivos = (resultado?.resultados || [])
+    .map((archivo) => ({
+      nombre: archivo.name || archivo.nombre || "archivo",
+      name: archivo.name || archivo.nombre || "archivo",
+      mime: archivo.mime || "",
+      type: archivo.mime || "",
+      size: archivo.size || 0,
+      bucket: archivo.bucket,
+      storage_path: archivo.path,
+      storagePath: archivo.path,
+    }))
+    .filter((archivo) => archivo.bucket && archivo.storage_path);
+
+  if (!archivos.length) {
+    throw new Error("No hay archivos procesados para guardar.");
   }
 
-  return json;
+  return await postEMCImport({
+    proveedor: proveedorPayload(proveedor),
+    archivos,
+    guardar_automatico: true,
+  });
 }
