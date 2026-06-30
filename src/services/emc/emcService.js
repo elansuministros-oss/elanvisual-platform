@@ -9,7 +9,11 @@ export const EMC_TABLES = {
   multimedia: "elankav_catalogo_multimedia",
   listasPrecio: "elankav_catalogo_listas_precio",
   proveedorItems: "elankav_catalogo_proveedor_items",
+  proveedores: "elankav_catalogo_proveedores",
 };
+
+const CORE_URL =
+  import.meta.env.VITE_ELANKAV_CORE_URL || "https://elankav-core.vercel.app";
 
 export async function obtenerResumenEMC() {
   if (!supabase) throw new Error("Supabase no configurado");
@@ -37,9 +41,66 @@ export async function obtenerResumenEMC() {
   };
 }
 
+export async function listarItemsEMC({ busqueda = "", proveedorId = "", limite = 300 } = {}) {
+  if (!supabase) throw new Error("Supabase no configurado");
 
-const CORE_URL =
-  import.meta.env.VITE_ELANKAV_CORE_URL || "https://elankav-core.vercel.app";
+  let query = supabase
+    .from(EMC_TABLES.items)
+    .select(`
+      *,
+      categoria:elankav_catalogo_categorias(*),
+      subcategoria:elankav_catalogo_subcategorias(*),
+      marca:elankav_catalogo_marcas(*),
+      unidad:elankav_catalogo_unidades(*)
+    `)
+    .order("nombre", { ascending: true })
+    .limit(limite);
+
+  if (busqueda.trim()) {
+    query = query.or(`nombre.ilike.%${busqueda.trim()}%,codigo.ilike.%${busqueda.trim()}%`);
+  }
+
+  const { data: items, error } = await query;
+  if (error) throw error;
+
+  const itemIds = (items || []).map((i) => i.id);
+
+  let precios = [];
+  if (itemIds.length) {
+    let preciosQuery = supabase
+      .from(EMC_TABLES.proveedorItems)
+      .select(`
+        *,
+        proveedor:elankav_catalogo_proveedores(*)
+      `)
+      .in("item_id", itemIds);
+
+    if (proveedorId) {
+      preciosQuery = preciosQuery.eq("proveedor_id", proveedorId);
+    }
+
+    const { data, error: preciosError } = await preciosQuery;
+    if (!preciosError) precios = data || [];
+  }
+
+  return (items || []).map((item) => {
+    const preciosItem = precios.filter((p) => p.item_id === item.id);
+    const precioActual = preciosItem[0] || null;
+
+    return {
+      ...item,
+      categoria_nombre: item.categoria?.nombre || "Sin categoría",
+      subcategoria_nombre: item.subcategoria?.nombre || "Sin subcategoría",
+      marca_nombre: item.marca?.nombre || "Sin marca",
+      unidad_nombre: item.unidad?.nombre || "Unidad",
+      precio_actual: precioActual?.precio ?? null,
+      moneda_actual: precioActual?.moneda || "",
+      proveedor_nombre: precioActual?.proveedor?.nombre || "Sin proveedor",
+      proveedor_id: precioActual?.proveedor_id || null,
+      precios_proveedor: preciosItem,
+    };
+  });
+}
 
 export async function guardarImportacionEMC({ proveedor, items = [], resultado = null, notas = "" }) {
   if (!proveedor?.id) {
@@ -52,16 +113,14 @@ export async function guardarImportacionEMC({ proveedor, items = [], resultado =
 
   const res = await fetch(`${CORE_URL}/api/elan-ai`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       tipo: "guardar-emc",
       proveedor,
       items,
       resultado,
-      notas
-    })
+      notas,
+    }),
   });
 
   const json = await res.json().catch(() => null);

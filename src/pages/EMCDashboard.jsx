@@ -14,30 +14,23 @@ import {
   RefreshCcw,
   Ruler,
   Save,
+  Search,
   Tags,
   Trash2,
   UploadCloud,
 } from "lucide-react";
-import { obtenerResumenEMC, guardarImportacionEMC } from "../services/emc/emcService";
+import {
+  obtenerResumenEMC,
+  guardarImportacionEMC,
+  listarItemsEMC,
+} from "../services/emc/emcService";
 import { analizarImportacionEMC } from "../services/emc/emcImportService";
 import { listSuppliersV2 as obtenerProveedores } from "../services/suppliers";
 
 const modosImportacion = [
-  {
-    key: "catalogo_con_precios",
-    titulo: "Catálogo con precios",
-    desc: "Un solo archivo trae productos, descripciones y precios.",
-  },
-  {
-    key: "catalogo_mas_lista",
-    titulo: "Catálogo + lista de precios",
-    desc: "Catálogo por separado y precios en otro archivo.",
-  },
-  {
-    key: "solo_lista_precios",
-    titulo: "Solo lista de precios",
-    desc: "Actualiza precios o crea productos básicos.",
-  },
+  { key: "catalogo_con_precios", titulo: "Catálogo con precios", desc: "Un solo archivo trae productos, descripciones y precios." },
+  { key: "catalogo_mas_lista", titulo: "Catálogo + lista de precios", desc: "Catálogo por separado y precios en otro archivo." },
+  { key: "solo_lista_precios", titulo: "Solo lista de precios", desc: "Actualiza precios o crea productos básicos." },
 ];
 
 const tiposProveedor = [
@@ -93,6 +86,11 @@ export default function EMCDashboard() {
   const [error, setError] = useState("");
   const [resultado, setResultado] = useState(null);
 
+  const [tab, setTab] = useState("importar");
+  const [productosEMC, setProductosEMC] = useState([]);
+  const [cargandoProductos, setCargandoProductos] = useState(false);
+  const [busquedaEMC, setBusquedaEMC] = useState("");
+
   const [proveedores, setProveedores] = useState([]);
   const [proveedorId, setProveedorId] = useState("");
   const [tipoProveedor, setTipoProveedor] = useState("materiales");
@@ -105,11 +103,7 @@ export default function EMCDashboard() {
     [proveedores, proveedorId]
   );
 
-  const modoActual = useMemo(
-    () => modosImportacion.find((m) => m.key === modo),
-    [modo]
-  );
-
+  const modoActual = useMemo(() => modosImportacion.find((m) => m.key === modo), [modo]);
   const items = useMemo(() => normalizarItems(resultado), [resultado]);
 
   const cards = [
@@ -141,9 +135,32 @@ export default function EMCDashboard() {
     }
   }
 
+  async function cargarProductosEMC() {
+    try {
+      setCargandoProductos(true);
+      setError("");
+
+      const data = await listarItemsEMC({
+        busqueda: busquedaEMC,
+        proveedorId,
+        limite: 300,
+      });
+
+      setProductosEMC(data || []);
+    } catch (err) {
+      setError(err.message || "No se pudieron cargar productos EMC.");
+    } finally {
+      setCargandoProductos(false);
+    }
+  }
+
   useEffect(() => {
     cargarDatos();
   }, []);
+
+  useEffect(() => {
+    if (tab === "productos") cargarProductosEMC();
+  }, [tab, proveedorId]);
 
   function agregarArchivos(lista) {
     const nuevos = Array.from(lista || []);
@@ -202,6 +219,8 @@ export default function EMCDashboard() {
       setArchivos([]);
       setNotas("");
       await cargarDatos();
+      setTab("productos");
+      await cargarProductosEMC();
     } catch (err) {
       setError(err.message || "No se pudo guardar en EMC.");
     } finally {
@@ -242,8 +261,7 @@ export default function EMCDashboard() {
           </h1>
 
           <p style={{ margin: 0, color: "rgba(255,255,255,.78)", fontWeight: 650, maxWidth: 830 }}>
-            Administración central de proveedores, catálogos, listas de precios, productos, imágenes,
-            marcas, categorías, historial e importaciones.
+            Importación, revisión y administración visual del Catálogo Maestro.
           </p>
         </div>
 
@@ -286,413 +304,512 @@ export default function EMCDashboard() {
           ))}
         </section>
 
-        <section style={{ ...cardStyle, marginTop: 14 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-            <div>
-              <small style={{ color: "#64748b", fontWeight: 900 }}>
-                FLUJO OFICIAL EMC
-              </small>
-              <h2 style={{ margin: "3px 0 0", color: "#0f172a" }}>
-                Proveedor → Archivos → CORE → Vista previa → Guardar
-              </h2>
-              <p style={{ margin: "5px 0 0", color: "#64748b", fontWeight: 700 }}>
-                Sin pegado manual. El catálogo entra por PDF, Excel, CSV, TXT o imágenes.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={cargarDatos}
-              style={{
-                border: 0,
-                borderRadius: 999,
-                padding: "10px 13px",
-                background: "#0f172a",
-                color: "#fff",
-                fontWeight: 900,
-                cursor: "pointer",
-              }}
-            >
-              <RefreshCcw size={16} /> Actualizar
-            </button>
-          </div>
-
-          <div
+        <section style={{ ...cardStyle, marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button
+            type="button"
+            onClick={() => setTab("importar")}
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-              gap: 12,
-              marginTop: 16,
-            }}
-          >
-            <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
-              Proveedor corporativo
-              <select value={proveedorId} onChange={(e) => setProveedorId(e.target.value)} style={inputStyle}>
-                <option value="">Seleccionar proveedor</option>
-                {proveedores.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
-              Tipo de proveedor
-              <select value={tipoProveedor} onChange={(e) => setTipoProveedor(e.target.value)} style={inputStyle}>
-                {tiposProveedor.map((t) => (
-                  <option key={t.key} value={t.key}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
-              Tipo de importación
-              <select value={modo} onChange={(e) => setModo(e.target.value)} style={inputStyle}>
-                {modosImportacion.map((m) => (
-                  <option key={m.key} value={m.key}>
-                    {m.titulo}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          {proveedor && (
-            <div
-              style={{
-                marginTop: 12,
-                border: "1px solid #dbeafe",
-                background: "#eff6ff",
-                borderRadius: 18,
-                padding: 12,
-                color: "#1e3a8a",
-                fontWeight: 800,
-              }}
-            >
-              <CheckCircle2 size={17} /> {proveedor.nombre} ·{" "}
-              {proveedor.razonSocial || "Sin razón social"} · {proveedor.categoria || "Sin categoría"}
-            </div>
-          )}
-
-          <div
-            style={{
-              marginTop: 12,
-              border: "1px solid #e2e8f0",
-              background: "#f8fafc",
-              borderRadius: 18,
-              padding: 12,
-              color: "#475569",
-              fontWeight: 750,
-            }}
-          >
-            <CheckCircle2 size={17} /> {modoActual?.desc}
-          </div>
-
-          <label
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault();
-              agregarArchivos(e.dataTransfer.files);
-            }}
-            style={{
-              marginTop: 14,
-              minHeight: 170,
-              border: "2px dashed #93c5fd",
-              background: "#f8fbff",
-              borderRadius: 24,
-              padding: 18,
-              display: "grid",
-              placeItems: "center",
-              textAlign: "center",
+              border: 0,
+              borderRadius: 999,
+              padding: "12px 18px",
+              background: tab === "importar" ? "#1E5AA8" : "#e2e8f0",
+              color: tab === "importar" ? "#fff" : "#0f172a",
+              fontWeight: 900,
               cursor: "pointer",
             }}
           >
-            <input
-              type="file"
-              accept={extensionesPermitidas}
-              multiple
-              onChange={(e) => agregarArchivos(e.target.files)}
-              style={{ display: "none" }}
-            />
-            <div>
-              <UploadCloud size={42} color="#1E5AA8" />
-              <h3 style={{ margin: "10px 0 4px", color: "#0f172a" }}>
-                Subir PDF, Excel, CSV, TXT o imágenes
-              </h3>
-              <p style={{ margin: 0, color: "#64748b", fontWeight: 700 }}>
-                Arrastrá archivos aquí o tocá para seleccionarlos.
-              </p>
-            </div>
-          </label>
+            Importar
+          </button>
 
-          {!!archivos.length && (
-            <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
-              {archivos.map((archivo, index) => (
+          <button
+            type="button"
+            onClick={() => setTab("productos")}
+            style={{
+              border: 0,
+              borderRadius: 999,
+              padding: "12px 18px",
+              background: tab === "productos" ? "#1E5AA8" : "#e2e8f0",
+              color: tab === "productos" ? "#fff" : "#0f172a",
+              fontWeight: 900,
+              cursor: "pointer",
+            }}
+          >
+            Productos EMC
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              cargarDatos();
+              if (tab === "productos") cargarProductosEMC();
+            }}
+            style={{
+              border: 0,
+              borderRadius: 999,
+              padding: "12px 18px",
+              background: "#0f172a",
+              color: "#fff",
+              fontWeight: 900,
+              cursor: "pointer",
+              marginLeft: "auto",
+            }}
+          >
+            <RefreshCcw size={16} /> Actualizar
+          </button>
+        </section>
+
+        {tab === "productos" && (
+          <section style={{ ...cardStyle, marginTop: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+              <div>
+                <small style={{ color: "#64748b", fontWeight: 900 }}>PRODUCTOS GUARDADOS</small>
+                <h2 style={{ margin: "3px 0 4px", color: "#0f172a" }}>
+                  {cargandoProductos ? "Cargando..." : `${productosEMC.length} productos EMC`}
+                </h2>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "minmax(220px,1fr) minmax(220px,320px) auto",
+                gap: 10,
+                marginTop: 14,
+              }}
+            >
+              <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
+                Buscar producto
+                <input
+                  value={busquedaEMC}
+                  onChange={(e) => setBusquedaEMC(e.target.value)}
+                  placeholder="Nombre o código..."
+                  style={inputStyle}
+                />
+              </label>
+
+              <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
+                Proveedor
+                <select value={proveedorId} onChange={(e) => setProveedorId(e.target.value)} style={inputStyle}>
+                  <option value="">Todos</option>
+                  {proveedores.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                type="button"
+                onClick={cargarProductosEMC}
+                style={{
+                  alignSelf: "end",
+                  border: 0,
+                  borderRadius: 16,
+                  padding: "13px 18px",
+                  background: "#1E5AA8",
+                  color: "#fff",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                }}
+              >
+                <Search size={17} /> Buscar
+              </button>
+            </div>
+
+            <div style={{ overflowX: "auto", marginTop: 16 }}>
+              <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 8px", minWidth: 980 }}>
+                <thead>
+                  <tr style={{ color: "#64748b", fontSize: 12, textAlign: "left" }}>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Marca</th>
+                    <th>Unidad</th>
+                    <th>Proveedor</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productosEMC.map((item) => (
+                    <tr key={item.id} style={{ background: "#fff" }}>
+                      <td style={{ padding: 12, borderTopLeftRadius: 14, borderBottomLeftRadius: 14 }}>
+                        <b style={{ display: "block", color: "#0f172a" }}>{item.nombre || "Sin nombre"}</b>
+                        <small style={{ color: "#64748b", fontWeight: 800 }}>{item.codigo || "Sin código"}</small>
+                      </td>
+                      <td style={{ padding: 12 }}>
+                        <b>{item.categoria_nombre}</b>
+                        <small style={{ display: "block", color: "#64748b" }}>{item.subcategoria_nombre}</small>
+                      </td>
+                      <td style={{ padding: 12 }}>{item.marca_nombre}</td>
+                      <td style={{ padding: 12 }}>{item.unidad_nombre}</td>
+                      <td style={{ padding: 12 }}>{item.proveedor_nombre}</td>
+                      <td style={{ padding: 12, fontWeight: 900 }}>
+                        {item.precio_actual ? `${item.moneda_actual || ""} ${item.precio_actual}` : "Sin precio"}
+                      </td>
+                      <td style={{ padding: 12, borderTopRightRadius: 14, borderBottomRightRadius: 14 }}>
+                        <span
+                          style={{
+                            borderRadius: 999,
+                            padding: "6px 10px",
+                            background: item.activo === false ? "#fee2e2" : "#dcfce7",
+                            color: item.activo === false ? "#991b1b" : "#166534",
+                            fontWeight: 900,
+                            fontSize: 12,
+                          }}
+                        >
+                          {item.activo === false ? "Inactivo" : "Activo"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {!cargandoProductos && !productosEMC.length && (
+                    <tr>
+                      <td colSpan={7} style={{ padding: 18, textAlign: "center", color: "#64748b", fontWeight: 800 }}>
+                        No hay productos EMC para mostrar.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {tab === "importar" && (
+          <>
+            <section style={{ ...cardStyle, marginTop: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <div>
+                  <small style={{ color: "#64748b", fontWeight: 900 }}>FLUJO OFICIAL EMC</small>
+                  <h2 style={{ margin: "3px 0 0", color: "#0f172a" }}>
+                    Proveedor → Archivos → CORE → Vista previa → Guardar
+                  </h2>
+                  <p style={{ margin: "5px 0 0", color: "#64748b", fontWeight: 700 }}>
+                    El catálogo entra por PDF, Excel, CSV, TXT o imágenes.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+                  gap: 12,
+                  marginTop: 16,
+                }}
+              >
+                <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
+                  Proveedor corporativo
+                  <select value={proveedorId} onChange={(e) => setProveedorId(e.target.value)} style={inputStyle}>
+                    <option value="">Seleccionar proveedor</option>
+                    {proveedores.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
+                  Tipo de proveedor
+                  <select value={tipoProveedor} onChange={(e) => setTipoProveedor(e.target.value)} style={inputStyle}>
+                    {tiposProveedor.map((t) => (
+                      <option key={t.key} value={t.key}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a" }}>
+                  Tipo de importación
+                  <select value={modo} onChange={(e) => setModo(e.target.value)} style={inputStyle}>
+                    {modosImportacion.map((m) => (
+                      <option key={m.key} value={m.key}>
+                        {m.titulo}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              {proveedor && (
                 <div
-                  key={`${archivo.name}-${archivo.size}-${archivo.lastModified}`}
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 10,
-                    alignItems: "center",
-                    border: "1px solid #e2e8f0",
+                    marginTop: 12,
+                    border: "1px solid #dbeafe",
+                    background: "#eff6ff",
                     borderRadius: 18,
                     padding: 12,
-                    background: "#fff",
+                    color: "#1e3a8a",
+                    fontWeight: 800,
                   }}
                 >
-                  <div style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0 }}>
-                    <span style={{ color: "#1E5AA8" }}>{iconoArchivo(archivo)}</span>
-                    <div style={{ minWidth: 0 }}>
-                      <b style={{ display: "block", color: "#0f172a", wordBreak: "break-word" }}>
-                        {archivo.name}
-                      </b>
-                      <small style={{ color: "#64748b", fontWeight: 800 }}>
-                        {archivo.type || "Tipo no declarado"} · {formatoBytes(archivo.size)}
-                      </small>
+                  <CheckCircle2 size={17} /> {proveedor.nombre} ·{" "}
+                  {proveedor.razonSocial || "Sin razón social"} · {proveedor.categoria || "Sin categoría"}
+                </div>
+              )}
+
+              <div
+                style={{
+                  marginTop: 12,
+                  border: "1px solid #e2e8f0",
+                  background: "#f8fafc",
+                  borderRadius: 18,
+                  padding: 12,
+                  color: "#475569",
+                  fontWeight: 750,
+                }}
+              >
+                <CheckCircle2 size={17} /> {modoActual?.desc}
+              </div>
+
+              <label
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  agregarArchivos(e.dataTransfer.files);
+                }}
+                style={{
+                  marginTop: 14,
+                  minHeight: 170,
+                  border: "2px dashed #93c5fd",
+                  background: "#f8fbff",
+                  borderRadius: 24,
+                  padding: 18,
+                  display: "grid",
+                  placeItems: "center",
+                  textAlign: "center",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="file"
+                  accept={extensionesPermitidas}
+                  multiple
+                  onChange={(e) => agregarArchivos(e.target.files)}
+                  style={{ display: "none" }}
+                />
+                <div>
+                  <UploadCloud size={42} color="#1E5AA8" />
+                  <h3 style={{ margin: "10px 0 4px", color: "#0f172a" }}>
+                    Subir PDF, Excel, CSV, TXT o imágenes
+                  </h3>
+                  <p style={{ margin: 0, color: "#64748b", fontWeight: 700 }}>
+                    Arrastrá archivos aquí o tocá para seleccionarlos.
+                  </p>
+                </div>
+              </label>
+
+              {!!archivos.length && (
+                <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
+                  {archivos.map((archivo, index) => (
+                    <div
+                      key={`${archivo.name}-${archivo.size}-${archivo.lastModified}`}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        alignItems: "center",
+                        border: "1px solid #e2e8f0",
+                        borderRadius: 18,
+                        padding: 12,
+                        background: "#fff",
+                      }}
+                    >
+                      <div style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0 }}>
+                        <span style={{ color: "#1E5AA8" }}>{iconoArchivo(archivo)}</span>
+                        <div style={{ minWidth: 0 }}>
+                          <b style={{ display: "block", color: "#0f172a", wordBreak: "break-word" }}>
+                            {archivo.name}
+                          </b>
+                          <small style={{ color: "#64748b", fontWeight: 800 }}>
+                            {archivo.type || "Tipo no declarado"} · {formatoBytes(archivo.size)}
+                          </small>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => quitarArchivo(index)}
+                        style={{
+                          border: "1px solid #fecaca",
+                          background: "#fff1f2",
+                          color: "#991b1b",
+                          borderRadius: 999,
+                          padding: 9,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Trash2 size={17} />
+                      </button>
                     </div>
+                  ))}
+                </div>
+              )}
+
+              <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a", marginTop: 14 }}>
+                Notas internas para CORE
+                <textarea
+                  value={notas}
+                  onChange={(e) => setNotas(e.target.value)}
+                  placeholder="Ejemplo: lista trae precios + IVA..."
+                  style={{
+                    width: "100%",
+                    minHeight: 90,
+                    border: "1px solid #cbd5e1",
+                    borderRadius: 18,
+                    padding: 14,
+                    fontSize: 14,
+                    fontWeight: 650,
+                    resize: "vertical",
+                  }}
+                />
+              </label>
+
+              <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={analizar}
+                  disabled={analizando}
+                  style={{
+                    border: 0,
+                    borderRadius: 999,
+                    padding: "13px 18px",
+                    background: "#1E5AA8",
+                    color: "#fff",
+                    fontWeight: 900,
+                    cursor: analizando ? "not-allowed" : "pointer",
+                    opacity: analizando ? 0.75 : 1,
+                  }}
+                >
+                  <FileUp size={18} /> {analizando ? "Analizando con CORE..." : "Analizar con CORE"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setArchivos([]);
+                    setResultado(null);
+                    setNotas("");
+                    setError("");
+                  }}
+                  style={{
+                    border: "1px solid #cbd5e1",
+                    borderRadius: 999,
+                    padding: "13px 18px",
+                    background: "#fff",
+                    color: "#0f172a",
+                    fontWeight: 900,
+                    cursor: "pointer",
+                  }}
+                >
+                  Limpiar
+                </button>
+              </div>
+            </section>
+
+            {resultado && (
+              <section style={{ ...cardStyle, marginTop: 14 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                  <div>
+                    <small style={{ color: "#64748b", fontWeight: 900 }}>VISTA PREVIA EMC</small>
+                    <h2 style={{ margin: "3px 0 4px", color: "#0f172a" }}>
+                      {items.length} productos detectados
+                    </h2>
                   </div>
 
                   <button
                     type="button"
-                    onClick={() => quitarArchivo(index)}
+                    onClick={guardarEnEMC}
+                    disabled={guardando || !items.length}
                     style={{
-                      border: "1px solid #fecaca",
-                      background: "#fff1f2",
-                      color: "#991b1b",
+                      border: 0,
                       borderRadius: 999,
-                      padding: 9,
-                      cursor: "pointer",
+                      padding: "13px 18px",
+                      background: items.length ? "#16a34a" : "#94a3b8",
+                      color: "#fff",
+                      fontWeight: 900,
+                      cursor: guardando || !items.length ? "not-allowed" : "pointer",
                     }}
-                    title="Quitar archivo"
                   >
-                    <Trash2 size={17} />
+                    <Save size={18} /> {guardando ? "Guardando..." : "Guardar en EMC"}
                   </button>
                 </div>
-              ))}
-            </div>
-          )}
 
-          <label style={{ display: "grid", gap: 7, fontWeight: 900, color: "#0f172a", marginTop: 14 }}>
-            Notas internas para CORE
-            <textarea
-              value={notas}
-              onChange={(e) => setNotas(e.target.value)}
-              placeholder="Ejemplo: esta lista trae precios + IVA, revisar presentaciones por galón, separar materiales rígidos de consumibles..."
-              style={{
-                width: "100%",
-                minHeight: 90,
-                border: "1px solid #cbd5e1",
-                borderRadius: 18,
-                padding: 14,
-                fontSize: 14,
-                fontWeight: 650,
-                resize: "vertical",
-              }}
-            />
-          </label>
+                {!items.length ? (
+                  <div
+                    style={{
+                      marginTop: 14,
+                      border: "1px solid #fde68a",
+                      background: "#fffbeb",
+                      color: "#92400e",
+                      borderRadius: 18,
+                      padding: 14,
+                      fontWeight: 800,
+                    }}
+                  >
+                    CORE respondió, pero todavía no devolvió productos estructurados.
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      marginTop: 16,
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
+                      gap: 12,
+                    }}
+                  >
+                    {items.map((item, i) => {
+                      const precio = item.precio_detectado ?? item.precio ?? item.precio_sugerido ?? null;
+                      const moneda = item.moneda_sugerida || item.moneda || "USD";
 
-          <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button
-              type="button"
-              onClick={analizar}
-              disabled={analizando}
-              style={{
-                border: 0,
-                borderRadius: 999,
-                padding: "13px 18px",
-                background: "#1E5AA8",
-                color: "#fff",
-                fontWeight: 900,
-                cursor: analizando ? "not-allowed" : "pointer",
-                opacity: analizando ? 0.75 : 1,
-              }}
-            >
-              <FileUp size={18} /> {analizando ? "Analizando con CORE..." : "Analizar con CORE"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setArchivos([]);
-                setResultado(null);
-                setNotas("");
-                setError("");
-              }}
-              style={{
-                border: "1px solid #cbd5e1",
-                borderRadius: 999,
-                padding: "13px 18px",
-                background: "#fff",
-                color: "#0f172a",
-                fontWeight: 900,
-                cursor: "pointer",
-              }}
-            >
-              Limpiar
-            </button>
-          </div>
-        </section>
-
-        {resultado && (
-          <section style={{ ...cardStyle, marginTop: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-              <div>
-                <small style={{ color: "#64748b", fontWeight: 900 }}>VISTA PREVIA EMC</small>
-                <h2 style={{ margin: "3px 0 4px", color: "#0f172a" }}>
-                  {items.length} productos detectados
-                </h2>
-                <p style={{ margin: 0, color: "#64748b", fontWeight: 700 }}>
-                  Revisar antes de guardar en el Catálogo Maestro.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={guardarEnEMC}
-                disabled={guardando || !items.length}
-                style={{
-                  border: 0,
-                  borderRadius: 999,
-                  padding: "13px 18px",
-                  background: items.length ? "#16a34a" : "#94a3b8",
-                  color: "#fff",
-                  fontWeight: 900,
-                  cursor: guardando || !items.length ? "not-allowed" : "pointer",
-                }}
-              >
-                <Save size={18} /> {guardando ? "Guardando..." : "Guardar en EMC"}
-              </button>
-            </div>
-
-            {!items.length ? (
-              <div
-                style={{
-                  marginTop: 14,
-                  border: "1px solid #fde68a",
-                  background: "#fffbeb",
-                  color: "#92400e",
-                  borderRadius: 18,
-                  padding: 14,
-                  fontWeight: 800,
-                }}
-              >
-                CORE respondió, pero todavía no devolvió productos estructurados.
-              </div>
-            ) : (
-              <div
-                style={{
-                  marginTop: 16,
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
-                  gap: 12,
-                }}
-              >
-                {items.map((item, i) => {
-                  const foto =
-                    item.foto_url ||
-                    item.imagen_url ||
-                    item.url_imagen ||
-                    item.multimedia_url ||
-                    "";
-
-                  const precio =
-                    item.precio_detectado ??
-                    item.precio ??
-                    item.precio_sugerido ??
-                    null;
-
-                  const moneda =
-                    item.moneda_sugerida ||
-                    item.moneda ||
-                    "USD";
-
-                  return (
-                    <article
-                      key={`${item.codigo || item.nombre || "item"}-${i}`}
-                      style={{
-                        border: "1px solid #e2e8f0",
-                        borderRadius: 22,
-                        overflow: "hidden",
-                        background: "#fff",
-                        boxShadow: "0 12px 28px rgba(15,23,42,.06)",
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: 150,
-                          background: "#f1f5f9",
-                          display: "grid",
-                          placeItems: "center",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {foto ? (
-                          <img
-                            src={foto}
-                            alt={item.nombre || "Producto EMC"}
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
-                        ) : (
-                          <Image size={42} color="#94a3b8" />
-                        )}
-                      </div>
-
-                      <div style={{ padding: 14 }}>
-                        <small style={{ color: "#64748b", fontWeight: 900 }}>
-                          {item.codigo || item.sku || `EMC-${String(i + 1).padStart(4, "0")}`}
-                        </small>
-
-                        <h3 style={{ margin: "5px 0 8px", color: "#0f172a", lineHeight: 1.15 }}>
-                          {item.nombre || "Producto sin nombre"}
-                        </h3>
-
-                        <p style={{ margin: 0, color: "#475569", fontWeight: 750 }}>
-                          Marca: {item.marca_sugerida || item.marca || "Sin marca"}
-                        </p>
-                        <p style={{ margin: "4px 0 0", color: "#475569", fontWeight: 750 }}>
-                          Categoría: {item.categoria_sugerida || item.categoria || "General"}
-                        </p>
-                        <p style={{ margin: "4px 0 0", color: "#475569", fontWeight: 750 }}>
-                          Proveedor: {item.proveedor_sugerido || proveedor?.nombre || "Sin proveedor"}
-                        </p>
-
-                        <div
+                      return (
+                        <article
+                          key={`${item.codigo || item.nombre || "item"}-${i}`}
                           style={{
-                            marginTop: 12,
-                            display: "flex",
-                            justifyContent: "space-between",
-                            gap: 8,
-                            alignItems: "center",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: 22,
+                            overflow: "hidden",
+                            background: "#fff",
+                            boxShadow: "0 12px 28px rgba(15,23,42,.06)",
                           }}
                         >
-                          <b style={{ color: "#0f172a", fontSize: 20 }}>
-                            {precio ? `${moneda} ${precio}` : "Revisar precio"}
-                          </b>
+                          <div style={{ padding: 14 }}>
+                            <small style={{ color: "#64748b", fontWeight: 900 }}>
+                              {item.codigo || item.sku || `EMC-${String(i + 1).padStart(4, "0")}`}
+                            </small>
 
-                          <span
-                            style={{
-                              borderRadius: 999,
-                              padding: "6px 9px",
-                              background: item.requiere_revision ? "#fff7ed" : "#ecfdf5",
-                              color: item.requiere_revision ? "#9a3412" : "#166534",
-                              fontWeight: 900,
-                              fontSize: 12,
-                            }}
-                          >
-                            {item.requiere_revision ? "Revisión" : "Listo"}
-                          </span>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
+                            <h3 style={{ margin: "5px 0 8px", color: "#0f172a", lineHeight: 1.15 }}>
+                              {item.nombre || "Producto sin nombre"}
+                            </h3>
+
+                            <p style={{ margin: 0, color: "#475569", fontWeight: 750 }}>
+                              Marca: {item.marca_sugerida || item.marca || "Sin marca"}
+                            </p>
+                            <p style={{ margin: "4px 0 0", color: "#475569", fontWeight: 750 }}>
+                              Categoría: {item.categoria_sugerida || item.categoria || "General"}
+                            </p>
+                            <p style={{ margin: "4px 0 0", color: "#475569", fontWeight: 750 }}>
+                              Proveedor: {item.proveedor_sugerido || proveedor?.nombre || "Sin proveedor"}
+                            </p>
+
+                            <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", gap: 8 }}>
+                              <b style={{ color: "#0f172a", fontSize: 20 }}>
+                                {precio ? `${moneda} ${precio}` : "Revisar precio"}
+                              </b>
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
             )}
-          </section>
+          </>
         )}
       </section>
     </main>
