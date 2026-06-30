@@ -6,16 +6,13 @@ import {
   CheckCircle2,
   Factory,
   Hammer,
-  MonitorSmartphone,
   PackageOpen,
   Printer,
   Search,
   Shirt,
   Sparkles,
-  Trophy,
 } from 'lucide-react';
-
-const texto = (value) => String(value || '').trim();
+import '../styles/servicios.css';
 
 const servicios = [
   {
@@ -24,6 +21,7 @@ const servicios = [
     subtitulo: 'Imagen visual, marca y comunicación',
     descripcion:
       'Desarrollamos identidad visual, piezas gráficas y soluciones de diseño aplicadas a negocios, productos y espacios comerciales.',
+    imagen: '/servicios/diseno.webp',
     icono: Brush,
     items: [
       'Diseño gráfico',
@@ -40,6 +38,7 @@ const servicios = [
     subtitulo: 'Gran formato y pequeño formato',
     descripcion:
       'Impresión para publicidad, comunicación comercial, eventos, promociones y materiales corporativos.',
+    imagen: '/servicios/impresion.webp',
     icono: Printer,
     items: [
       'Lona',
@@ -60,6 +59,7 @@ const servicios = [
     subtitulo: 'Fabricación visual para negocios',
     descripcion:
       'Fabricamos soluciones de rotulación para fachadas, interiores, puntos de venta y espacios comerciales.',
+    imagen: '/servicios/rotulacion.webp',
     icono: Building2,
     items: [
       'Letras PVC',
@@ -78,6 +78,7 @@ const servicios = [
     subtitulo: 'Exhibición para marca y venta',
     descripcion:
       'Soluciones para ferias, promociones, eventos, puntos de venta y campañas comerciales.',
+    imagen: '/servicios/display.webp',
     icono: PackageOpen,
     items: [
       'Roll Up',
@@ -95,6 +96,7 @@ const servicios = [
     subtitulo: 'Detalles exclusivos y personalizados',
     descripcion:
       'Grabado y corte láser sobre diferentes materiales para piezas corporativas, promocionales y decorativas.',
+    imagen: '/servicios/laser.webp',
     icono: Sparkles,
     items: [
       'Acrílico',
@@ -112,6 +114,7 @@ const servicios = [
     subtitulo: 'Uniformes y promocionales',
     descripcion:
       'Personalización textil para empresas, eventos, equipos deportivos y productos promocionales.',
+    imagen: '/servicios/textil.webp',
     icono: Shirt,
     items: [
       'Sublimación',
@@ -129,6 +132,7 @@ const servicios = [
     subtitulo: 'Soporte técnico para rotulación',
     descripcion:
       'Fabricamos estructuras metálicas y soportes para proyectos de rotulación, instalación y comunicación exterior.',
+    imagen: '/servicios/estructuras.webp',
     icono: Factory,
     items: [
       'Postes',
@@ -145,6 +149,7 @@ const servicios = [
     subtitulo: 'Fabricación a medida',
     descripcion:
       'Diseñamos y fabricamos muebles comerciales, exhibidores y soluciones funcionales para hogar, negocio u oficina.',
+    imagen: '/servicios/mobiliario.webp',
     icono: Hammer,
     items: [
       'Recepciones',
@@ -173,11 +178,13 @@ export default function Servicios({ setPage }) {
   }, [busqueda]);
 
   return (
-    <main className="catalog-page">
-      <section className="store-ai-banner">
-        <div className="store-ai-copy">
-          <span className="store-ai-badge">
-            <BriefcaseBusiness size={15} />
+    <main className="servicios-page">
+      <section className="servicios-hero">
+        <div className="servicios-hero-bg" />
+
+        <div className="servicios-hero-content">
+          <span className="servicios-badge">
+            <BriefcaseBusiness size={16} />
             NUESTROS SERVICIOS
           </span>
 
@@ -188,32 +195,20 @@ export default function Servicios({ setPage }) {
             grabado láser, textil y mobiliario a medida para negocios.
           </p>
 
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18 }}>
-            <button
-              type="button"
-              className="product-main-action"
-              onClick={() => setPage?.('cotizador')}
-              style={{ width: 'auto', paddingInline: 24 }}
-            >
-              <BriefcaseBusiness size={18} />
-              Solicitar cotización
-            </button>
-
-            <button
-              type="button"
-              className="filter-label"
-              onClick={() => setPage?.('portafolio')}
-            >
-              <MonitorSmartphone size={18} />
-              Ver portafolio
-            </button>
-          </div>
+          <button
+            type="button"
+            className="servicios-primary-btn"
+            onClick={() => setPage?.('cotizador')}
+          >
+            <BriefcaseBusiness size={20} />
+            Solicitar cotización
+          </button>
         </div>
       </section>
 
-      <section className="catalog-tools">
-        <div className="search-box">
-          <Search size={18} />
+      <section className="servicios-search-section">
+        <div className="servicios-search-box">
+          <Search size={20} />
           <input
             placeholder="Buscar servicio, material o aplicación..."
             value={busqueda}
@@ -222,51 +217,54 @@ export default function Servicios({ setPage }) {
         </div>
       </section>
 
-      <section className="product-grid">
-        {lista.map((servicio) => {
+      <section className="servicios-list">
+        {lista.map((servicio, index) => {
           const Icono = servicio.icono;
+          const invertido = index % 2 !== 0;
 
           return (
-            <article className="product-card" key={servicio.id}>
-              <div className="product-body">
-                <span className="store-ai-badge" style={{ width: 'fit-content' }}>
+            <article
+              className={`servicio-block ${invertido ? 'servicio-block-invertido' : ''}`}
+              key={servicio.id}
+            >
+              <div className="servicio-media">
+                <img
+                  src={servicio.imagen}
+                  alt={servicio.titulo}
+                  loading="lazy"
+                  onError={(event) => {
+                    event.currentTarget.src = '/productos/portada-visual.png';
+                  }}
+                />
+              </div>
+
+              <div className="servicio-content">
+                <span className="servicios-badge servicio-badge">
                   <Icono size={18} />
                   {servicio.subtitulo}
                 </span>
 
-                <h3>{servicio.titulo}</h3>
+                <h2>{servicio.titulo}</h2>
 
                 <p>{servicio.descripcion}</p>
 
-                <div style={{ display: 'grid', gap: 8, marginTop: 16 }}>
+                <div className="servicio-items">
                   {servicio.items.map((item) => (
-                    <span
-                      key={item}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        color: '#111827',
-                        fontWeight: 800,
-                      }}
-                    >
-                      <CheckCircle2 size={16} />
+                    <span key={item}>
+                      <CheckCircle2 size={17} />
                       {item}
                     </span>
                   ))}
                 </div>
 
-                <div className="product-footer" style={{ marginTop: 20 }}>
-                  <button type="button" onClick={() => setPage?.('portafolio')}>
-                    <Trophy size={16} />
-                    Ver trabajos
-                  </button>
-
-                  <button type="button" onClick={() => setPage?.('cotizador')}>
-                    <BriefcaseBusiness size={16} />
-                    Cotizar
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="servicios-secondary-btn"
+                  onClick={() => setPage?.('cotizador')}
+                >
+                  <BriefcaseBusiness size={18} />
+                  Solicitar cotización
+                </button>
               </div>
             </article>
           );
@@ -274,14 +272,32 @@ export default function Servicios({ setPage }) {
       </section>
 
       {lista.length === 0 && (
-        <section className="panel empty-catalog">
+        <section className="servicios-empty">
           <h2>No encontramos ese servicio</h2>
-          <p className="note">
+          <p>
             Probá buscando impresión, rótulos, letras, display, láser, textil,
             estructuras o mobiliario.
           </p>
         </section>
       )}
+
+      <section className="servicios-final-cta">
+        <span>ELANVISUAL</span>
+        <h2>¿Tenés un proyecto en mente?</h2>
+        <p>
+          Te ayudamos a convertirlo en una solución visual fabricable, rentable
+          y profesional.
+        </p>
+
+        <button
+          type="button"
+          className="servicios-primary-btn"
+          onClick={() => setPage?.('cotizador')}
+        >
+          <BriefcaseBusiness size={20} />
+          Solicitar cotización
+        </button>
+      </section>
     </main>
   );
 }
