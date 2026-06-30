@@ -36,3 +36,39 @@ export async function obtenerResumenEMC() {
     listasPrecio: count(6),
   };
 }
+
+
+const CORE_URL =
+  import.meta.env.VITE_ELANKAV_CORE_URL || "https://elankav-core.vercel.app";
+
+export async function guardarImportacionEMC({ proveedor, items = [], resultado = null, notas = "" }) {
+  if (!proveedor?.id) {
+    throw new Error("Seleccioná un proveedor antes de guardar en EMC.");
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new Error("No hay productos detectados para guardar.");
+  }
+
+  const res = await fetch(`${CORE_URL}/api/elan-ai`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      tipo: "guardar-emc",
+      proveedor,
+      items,
+      resultado,
+      notas
+    })
+  });
+
+  const json = await res.json().catch(() => null);
+
+  if (!res.ok || json?.ok === false) {
+    throw new Error(json?.error || json?.mensaje || "No se pudo guardar en EMC.");
+  }
+
+  return json;
+}

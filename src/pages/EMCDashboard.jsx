@@ -18,7 +18,7 @@ import {
   Trash2,
   UploadCloud,
 } from "lucide-react";
-import { obtenerResumenEMC } from "../services/emc/emcService";
+import { obtenerResumenEMC, guardarImportacionEMC } from "../services/emc/emcService";
 import { analizarImportacionEMC } from "../services/emc/emcImportService";
 import { listSuppliersV2 as obtenerProveedores } from "../services/suppliers";
 
@@ -190,7 +190,18 @@ export default function EMCDashboard() {
     try {
       setGuardando(true);
       setError("");
-      throw new Error("Guardar en EMC será conectado al reconstruir emcService.js.");
+
+      await guardarImportacionEMC({
+        proveedor,
+        items,
+        resultado,
+        notas,
+      });
+
+      setResultado(null);
+      setArchivos([]);
+      setNotas("");
+      await cargarDatos();
     } catch (err) {
       setError(err.message || "No se pudo guardar en EMC.");
     } finally {
