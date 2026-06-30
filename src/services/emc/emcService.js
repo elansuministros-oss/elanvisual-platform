@@ -139,9 +139,17 @@ export async function guardarImportacionEMC({ proveedor, items = [], resultado =
 
   const json = await res.json().catch(() => null);
 
-  if (!res.ok || json?.ok === false) {
-    throw new Error(json?.error || json?.mensaje || "No se pudo guardar en EMC.");
-  }
+ if (!res.ok || json?.ok === false) {
+  const primerError = Array.isArray(json?.errores) && json.errores.length
+    ? json.errores[0]
+    : null;
+
+  const detalle = primerError
+    ? `${primerError.item || "Item"}: ${primerError.error || "Error sin detalle"}`
+    : json?.error || json?.mensaje || "No se pudo guardar en EMC.";
+
+  throw new Error(detalle);
+}
 
   return json;
 }
