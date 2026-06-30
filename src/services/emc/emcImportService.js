@@ -49,7 +49,9 @@ async function subirArchivoEMC({ proveedor, archivo, index }) {
 
   return {
     nombre: archivo.name || `archivo-${index + 1}`,
+    originalFilename: archivo.name || `archivo-${index + 1}`,
     mime: archivo.type || "",
+    mimetype: archivo.type || "",
     size: archivo.size || 0,
     bucket: EMC_STORAGE_BUCKET,
     storage_path: storagePath,
@@ -114,17 +116,15 @@ export async function analizarImportacionEMC({
     archivos: archivosSubidos,
   };
 
-  const res = await fetch(`${CORE_URL}/api/elan-ai`, {
+  const res = await fetch(`${CORE_URL.replace(/\/$/, "")}/api/elan-ai`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
 
-  let json = null;
+  const json = await res.json().catch(() => null);
 
-  try {
-    json = await res.json();
-  } catch {
+  if (!json) {
     throw new Error("CORE respondió sin JSON válido.");
   }
 
@@ -138,3 +138,7 @@ export async function analizarImportacionEMC({
 
   return json;
 }
+
+export const importarEMC = analizarImportacionEMC;
+export const procesarImportacionEMC = analizarImportacionEMC;
+export const importarCatalogoEMC = analizarImportacionEMC;
