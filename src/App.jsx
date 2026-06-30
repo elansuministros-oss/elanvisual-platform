@@ -21,7 +21,7 @@ import PedidosProduccion from './pages/PedidosProduccion';
 import OrdenTrabajo from './pages/OrdenTrabajo';
 import DashboardERP from './pages/DashboardERP';
 import MiCuenta from './pages/MiCuenta';
-import ProveedoresCostos from './pages/ProveedoresCostos';
+import ProveedoresHub from './pages/ProveedoresHub';
 import RedProveedoresIA from './pages/RedProveedoresIA';
 import InventarioInteligente from './pages/InventarioInteligente';
 import BibliotecaTecnica from './pages/BibliotecaTecnica';
@@ -161,7 +161,7 @@ export default function App() {
         (accesoAdmin ? <InventarioInteligente /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'proveedores' &&
-        (accesoAdmin ? <ProveedoresCostos /> : <Login setPage={ir} destino="admin" />)}
+        (accesoAdmin ? <ProveedoresHub /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'redProveedoresIA' &&
         (accesoAdmin ? <RedProveedoresIA /> : <Login setPage={ir} destino="admin" />)}
