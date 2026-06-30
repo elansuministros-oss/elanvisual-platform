@@ -2,7 +2,7 @@
 import { productosIniciales } from '../data/productos';
 import { resumenCarrito } from '../lib/calculos';
 import { supabase } from '../lib/supabase';
-import { obtenerProveedores } from '../services/supplierHubService';
+import { listSuppliersV2 as obtenerProveedores } from '../services/suppliers';
 import { unirPedidos } from '../services/pedidos/pedidosMapper';
 import { cargarPedidosElanvisual } from '../services/pedidos/queries/pedidosQueryService';
 import { insertarPedidoElanvisual, actualizarPedidoElanvisual, eliminarPedidoElanvisual } from '../services/pedidos/commands/pedidosCommandService';
@@ -2062,6 +2062,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 

@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { obtenerResumenEMC } from "../services/emc/emcService";
 import { analizarImportacionEMC } from "../services/emc/emcImportService";
-import { obtenerProveedores } from "../services/supplierHubService";
+import { listSuppliersV2 as obtenerProveedores } from "../services/suppliers";
 
 const modosImportacion = [
   {
