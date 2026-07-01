@@ -10,7 +10,6 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { listarMaterialesCotizadorDesdeEMC } from '../services/emc/emcMaterialesCotizadorService';
 import { useApp } from '../context/AppContext';
 
 const POLITICA = {
@@ -93,7 +92,7 @@ function crearLinea({ nombre, tipo, unidad, cantidad, material }) {
     unidad: material?.unidad || unidad,
     cantidad: Math.max(Number(cantidad || 1), 0),
     costoUnitario: costoMaterial(material),
-    origen: material ? material.origen || 'EMC' : 'Regla interna',
+    origen: material ? 'Material Master' : 'Regla interna',
   };
 }
 
@@ -310,11 +309,15 @@ export default function CotizadorDirecto({ setPage }) {
   useEffect(() => {
     const cargar = async () => {
       const [mat, tin] = await Promise.all([
-        listarMaterialesCotizadorDesdeEMC(),
+        supabase.from('materiales_master').select('*').order('categoria'),
         supabase.from('tintas_master').select('*').order('nombre'),
       ]);
 
-      setMateriales(Array.isArray(mat) ? mat : []);
+      if (mat.error) {
+        setMensaje(`No se pudo cargar Material Master: ${mat.error.message}`);
+      }
+
+      setMateriales(mat.data || []);
       setTintas(tin.data || []);
 
       const { data: clientesData, error: clientesError } = await supabase
@@ -576,7 +579,7 @@ export default function CotizadorDirecto({ setPage }) {
     const sinCosto = nuevas.filter((l) => n(l.costoUnitario) <= 0);
     setMensaje(
       sinCosto.length
-        ? `Atención: ${sinCosto.length} elemento(s) necesitan costo en Catálogo EMC.`
+        ? `Atención: ${sinCosto.length} elemento(s) necesitan costo en Material Master.`
         : 'Ítem calculado correctamente.'
     );
   };
