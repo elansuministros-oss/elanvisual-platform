@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Building2,
   Menu,
@@ -53,7 +53,7 @@ export default function Header({ page, setPage }) {
     ['cotizador', 'Cotizador', <Calculator size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['produccion', 'Produccin', <Factory size={24} />],
-    ['materiales', 'Inventario', <PackageSearch size={24} />],
+    ['emc', 'Inventario EMC', <PackageSearch size={24} />],
     ['proveedores', 'Proveedores', <Users size={24} />],
     ['finanzas', 'Finanzas', <WalletCards size={24} />],
     ['reportes', 'Reportes', <BarChart3 size={24} />],
@@ -168,6 +168,7 @@ export default function Header({ page, setPage }) {
     </>
   );
 }
+
 
 
 
