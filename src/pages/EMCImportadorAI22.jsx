@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
@@ -15,7 +15,9 @@ import { listSuppliersV2 as obtenerProveedores } from "../services/suppliers";
 import {
   importarEMCAI22,
   guardarResultadoEMCAI22,
+  listarProductosGuardadosAI22,
 } from "../services/emc/emcImportAi22Service";
+import ProveedorCatalogoAI22 from "../components/emc/ProveedorCatalogoAI22";
 
 const extensionesPermitidas = ".pdf,.xlsx,.xls,.csv,.txt,.png,.jpg,.jpeg,.webp";
 
@@ -67,8 +69,10 @@ export default function EMCImportadorAI22() {
   const [proveedorId, setProveedorId] = useState("");
   const [archivos, setArchivos] = useState([]);
   const [resultado, setResultado] = useState(null);
+  const [productosGuardados, setProductosGuardados] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [consultando, setConsultando] = useState(false);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
 
@@ -97,26 +101,21 @@ export default function EMCImportadorAI22() {
     const lista = Array.from(evento.target.files || []);
     setArchivos(lista);
     setResultado(null);
+    setProductosGuardados([]);
     setMensaje("");
     setError("");
   }
 
   async function procesar() {
-    if (!proveedor?.id) {
-      setError("Seleccioná un proveedor.");
-      return;
-    }
-
-    if (!archivos.length) {
-      setError("Seleccioná al menos un archivo.");
-      return;
-    }
+    if (!proveedor?.id) return setError("Seleccioná un proveedor.");
+    if (!archivos.length) return setError("Seleccioná al menos un archivo.");
 
     try {
       setCargando(true);
       setError("");
       setMensaje("Subiendo archivos y procesando en CORE AI-22...");
       setResultado(null);
+      setProductosGuardados([]);
 
       const data = await importarEMCAI22({
         proveedor,
@@ -133,15 +132,24 @@ export default function EMCImportadorAI22() {
     }
   }
 
-  async function guardarEnEMC() {
-    if (!proveedor?.id) {
-      setError("Seleccioná un proveedor.");
-      return;
-    }
+  async function consultarGuardados() {
+    if (!proveedor?.id) return;
 
+    try {
+      setConsultando(true);
+      const data = await listarProductosGuardadosAI22({ proveedor, limite: 50 });
+      setProductosGuardados(data);
+    } catch (err) {
+      setError(err.message || "No se pudo validar lo guardado.");
+    } finally {
+      setConsultando(false);
+    }
+  }
+
+  async function guardarEnEMC() {
+    if (!proveedor?.id) return setError("Seleccioná un proveedor.");
     if (!resultado?.resumen?.items_detectados) {
-      setError("Primero procesá un archivo con productos detectados.");
-      return;
+      return setError("Primero procesá un archivo con productos detectados.");
     }
 
     try {
@@ -149,13 +157,13 @@ export default function EMCImportadorAI22() {
       setError("");
       setMensaje("Guardando productos en EMC...");
 
-      const data = await guardarResultadoEMCAI22({
-        proveedor,
-        resultado,
-      });
-
+      const data = await guardarResultadoEMCAI22({ proveedor, resultado });
       setResultado(data);
-      setMensaje("Productos guardados en EMC correctamente.");
+
+      const guardados = await listarProductosGuardadosAI22({ proveedor, limite: 50 });
+      setProductosGuardados(guardados);
+
+      setMensaje("Productos guardados en EMC correctamente. Validación cargada.");
     } catch (err) {
       setError(err.message || "No se pudo guardar en EMC.");
     } finally {
@@ -167,33 +175,13 @@ export default function EMCImportadorAI22() {
     <div style={{ padding: 24, background: "#f8fafc", minHeight: "100vh" }}>
       <div style={{ maxWidth: 1280, margin: "0 auto", display: "grid", gap: 18 }}>
         <section style={card}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-            <div>
-              <small style={{ color: "#64748b", fontWeight: 900 }}>AI-22.2 NUEVO</small>
-              <h1 style={{ margin: "6px 0", fontSize: 34, color: "#0f172a" }}>
-                Importador EMC AI-22
-              </h1>
-              <p style={{ margin: 0, color: "#475569", fontWeight: 700 }}>
-                Procesar → Vista previa → Guardar en EMC.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={cargarProveedores}
-              style={{
-                border: "1px solid #cbd5e1",
-                borderRadius: 16,
-                padding: "12px 16px",
-                background: "#fff",
-                fontWeight: 900,
-                cursor: "pointer",
-                height: 48,
-              }}
-            >
-              <RefreshCcw size={16} /> Recargar
-            </button>
-          </div>
+          <small style={{ color: "#64748b", fontWeight: 900 }}>AI-22.3 NUEVO</small>
+          <h1 style={{ margin: "6px 0", fontSize: 34, color: "#0f172a" }}>
+            Importador EMC AI-22
+          </h1>
+          <p style={{ margin: 0, color: "#475569", fontWeight: 700 }}>
+            Procesar → Vista previa → Guardar → Validar productos guardados.
+          </p>
         </section>
 
         {error && (
@@ -219,6 +207,10 @@ export default function EMCImportadorAI22() {
                 </option>
               ))}
             </select>
+
+            <button type="button" onClick={cargarProveedores} style={{ ...input, marginTop: 12, cursor: "pointer" }}>
+              <RefreshCcw size={16} /> Recargar proveedores
+            </button>
           </div>
 
           <div style={card}>
@@ -238,13 +230,7 @@ export default function EMCImportadorAI22() {
               <UploadCloud size={38} />
               <b>Seleccionar PDF, Excel, imagen, CSV o TXT</b>
               <small style={{ color: "#64748b", fontWeight: 800 }}>{extensionesPermitidas}</small>
-              <input
-                type="file"
-                multiple
-                accept={extensionesPermitidas}
-                onChange={seleccionarArchivos}
-                style={{ display: "none" }}
-              />
+              <input type="file" multiple accept={extensionesPermitidas} onChange={seleccionarArchivos} style={{ display: "none" }} />
             </label>
           </div>
         </section>
@@ -254,44 +240,14 @@ export default function EMCImportadorAI22() {
             <h2 style={{ marginTop: 0 }}>Archivos seleccionados</h2>
             <div style={{ display: "grid", gap: 10 }}>
               {archivos.map((archivo, index) => (
-                <div
-                  key={`${archivo.name}-${index}`}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    padding: 12,
-                    borderRadius: 16,
-                    background: "#f8fafc",
-                    border: "1px solid #e2e8f0",
-                    fontWeight: 800,
-                  }}
-                >
-                  <span style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                    {iconoArchivo(archivo)}
-                    {archivo.name}
-                  </span>
+                <div key={`${archivo.name}-${index}`} style={{ display: "flex", justifyContent: "space-between", padding: 12, borderRadius: 16, background: "#f8fafc", border: "1px solid #e2e8f0", fontWeight: 800 }}>
+                  <span style={{ display: "flex", gap: 10, alignItems: "center" }}>{iconoArchivo(archivo)} {archivo.name}</span>
                   <span>{formatoBytes(archivo.size)}</span>
                 </div>
               ))}
             </div>
 
-            <button
-              type="button"
-              disabled={cargando || guardando}
-              onClick={procesar}
-              style={{
-                marginTop: 16,
-                border: 0,
-                borderRadius: 18,
-                padding: "14px 18px",
-                background: "#0f172a",
-                color: "#fff",
-                fontWeight: 1000,
-                cursor: cargando || guardando ? "not-allowed" : "pointer",
-                width: "100%",
-              }}
-            >
+            <button type="button" disabled={cargando || guardando} onClick={procesar} style={{ marginTop: 16, border: 0, borderRadius: 18, padding: "14px 18px", background: "#0f172a", color: "#fff", fontWeight: 1000, cursor: cargando || guardando ? "not-allowed" : "pointer", width: "100%" }}>
               <PackageSearch size={18} /> {cargando ? "Procesando..." : "Procesar con AI-22"}
             </button>
           </section>
@@ -308,37 +264,14 @@ export default function EMCImportadorAI22() {
               <div style={card}>Guardados<br /><b>{resultado.resumen?.items_guardados || 0}</b></div>
             </div>
 
-            <button
-              type="button"
-              disabled={guardando || cargando || !resultado?.resumen?.items_detectados}
-              onClick={guardarEnEMC}
-              style={{
-                marginTop: 16,
-                border: 0,
-                borderRadius: 18,
-                padding: "14px 18px",
-                background: "#16a34a",
-                color: "#fff",
-                fontWeight: 1000,
-                cursor: guardando || cargando ? "not-allowed" : "pointer",
-                width: "100%",
-              }}
-            >
+            <button type="button" disabled={guardando || cargando || !resultado?.resumen?.items_detectados} onClick={guardarEnEMC} style={{ marginTop: 16, border: 0, borderRadius: 18, padding: "14px 18px", background: "#16a34a", color: "#fff", fontWeight: 1000, cursor: guardando || cargando ? "not-allowed" : "pointer", width: "100%" }}>
               <Save size={18} /> {guardando ? "Guardando..." : "Guardar en EMC"}
             </button>
 
             <h3>Páginas procesadas</h3>
             <div style={{ display: "grid", gap: 10 }}>
               {paginas.map((pagina, index) => (
-                <div
-                  key={index}
-                  style={{
-                    padding: 14,
-                    borderRadius: 18,
-                    background: pagina.ok === false ? "#fef2f2" : "#f8fafc",
-                    border: "1px solid #e2e8f0",
-                  }}
-                >
+                <div key={index} style={{ padding: 14, borderRadius: 18, background: pagina.ok === false ? "#fef2f2" : "#f8fafc", border: "1px solid #e2e8f0" }}>
                   <b>{pagina.archivo}</b> · Página {pagina.pagina}
                   <div style={{ color: "#64748b", fontWeight: 800 }}>
                     Detectados: {pagina.items_detectados || 0} · Guardados: {pagina.items_guardados || 0}
@@ -349,6 +282,56 @@ export default function EMCImportadorAI22() {
             </div>
           </section>
         )}
+
+        {proveedor && (
+          <section style={card}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+              <div>
+                <h2 style={{ margin: 0 }}>Validación EMC guardado</h2>
+                <p style={{ margin: "6px 0 0", color: "#64748b", fontWeight: 800 }}>
+                  Últimos productos guardados para este proveedor.
+                </p>
+              </div>
+              <button type="button" onClick={consultarGuardados} disabled={consultando} style={{ border: 0, borderRadius: 16, padding: "12px 16px", background: "#2563eb", color: "#fff", fontWeight: 900, cursor: "pointer" }}>
+                {consultando ? "Consultando..." : "Validar guardados"}
+              </button>
+            </div>
+
+            <div style={{ marginTop: 16, overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+                <thead>
+                  <tr style={{ textAlign: "left", color: "#475569" }}>
+                    <th style={{ padding: 10, borderBottom: "1px solid #e2e8f0" }}>Código</th>
+                    <th style={{ padding: 10, borderBottom: "1px solid #e2e8f0" }}>Producto</th>
+                    <th style={{ padding: 10, borderBottom: "1px solid #e2e8f0" }}>Precio</th>
+                    <th style={{ padding: 10, borderBottom: "1px solid #e2e8f0" }}>Moneda</th>
+                    <th style={{ padding: 10, borderBottom: "1px solid #e2e8f0" }}>Página</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productosGuardados.map((item) => (
+                    <tr key={item.id || `${item.nombre}-${item.pagina}`}>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9", fontWeight: 800 }}>{item.codigo_proveedor || item.codigo || "-"}</td>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9", fontWeight: 800 }}>{item.nombre || item.descripcion || "Producto EMC"}</td>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.precio ?? "-"}</td>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.moneda || "-"}</td>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.pagina || "-"}</td>
+                    </tr>
+                  ))}
+                  {!productosGuardados.length && (
+                    <tr>
+                      <td colSpan="5" style={{ padding: 18, color: "#64748b", fontWeight: 800, textAlign: "center" }}>
+                        Aún no hay productos cargados en la validación.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {proveedor && <ProveedorCatalogoAI22 proveedor={proveedor} />}
       </div>
     </div>
   );

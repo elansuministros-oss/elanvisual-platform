@@ -6,6 +6,8 @@ const CORE_URL =
 const EMC_STORAGE_BUCKET =
   import.meta.env.VITE_EMC_STORAGE_BUCKET || "emc-importaciones";
 
+const EMC_PROVEEDOR_ITEMS_TABLE = "elankav_catalogo_proveedor_items";
+
 function limpiarNombreArchivo(nombre = "archivo") {
   return String(nombre)
     .normalize("NFD")
@@ -167,4 +169,27 @@ export async function guardarResultadoEMCAI22({ proveedor, resultado } = {}) {
     archivos,
     guardar_automatico: true,
   });
+}
+
+export async function listarProductosGuardadosAI22({ proveedor, limite = 50 } = {}) {
+  if (!supabase) {
+    throw new Error("Supabase no configurado.");
+  }
+
+  if (!proveedor?.id) {
+    throw new Error("Seleccioná un proveedor corporativo.");
+  }
+
+  const { data, error } = await supabase
+    .from(EMC_PROVEEDOR_ITEMS_TABLE)
+    .select("*")
+    .eq("proveedor_id", proveedor.id)
+    .order("created_at", { ascending: false })
+    .limit(limite);
+
+  if (error) {
+    throw new Error(`No se pudo consultar lo guardado: ${error.message}`);
+  }
+
+  return Array.isArray(data) ? data : [];
 }
