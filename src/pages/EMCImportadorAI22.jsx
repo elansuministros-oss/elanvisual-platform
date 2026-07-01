@@ -311,11 +311,11 @@ export default function EMCImportadorAI22() {
                 <tbody>
                   {productosGuardados.map((item) => (
                     <tr key={item.id || `${item.nombre}-${item.pagina}`}>
-                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9", fontWeight: 800 }}>{item.codigo_proveedor || item.codigo || "-"}</td>
-                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9", fontWeight: 800 }}>{item.nombre || item.descripcion || "Producto EMC"}</td>
-                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.precio ?? "-"}</td>
-                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.moneda || "-"}</td>
-                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.pagina || "-"}</td>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9", fontWeight: 800 }}>{item.codigo_catalogo || item.codigo_proveedor || item.codigo || "-"}</td>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9", fontWeight: 800 }}>{item.nombre_catalogo || item.nombre || item.descripcion || "Producto EMC"}</td>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.precio_lista ?? item.costo_unitario ?? "-"}</td>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.moneda || item.moneda_precio || "NIO"}</td>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.pagina || item.observaciones || "-"}</td>
                     </tr>
                   ))}
                   {!productosGuardados.length && (
@@ -331,7 +331,7 @@ export default function EMCImportadorAI22() {
           </section>
         )}
 
-        {proveedor && <ProveedorCatalogoAI22 proveedor={proveedor} />}
+        {proveedor && <ProveedorCatalogoAI22 key={`${proveedor.id}-${productosGuardados.length}-${resultado?.resumen?.items_guardados || 0}`} proveedor={proveedor} />}
       </div>
     </div>
   );
