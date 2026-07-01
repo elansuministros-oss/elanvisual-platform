@@ -1,4 +1,4 @@
-import { AIAssistantProvider } from './ai/AIAssistantProvider';
+﻿import { AIAssistantProvider } from './ai/AIAssistantProvider';
 import AIFloatingButton from './ai/AIFloatingButton';
 import AIAssistantPanel from './ai/AIAssistantPanel';
 import ClientesCRM from './crm/Clientes';
@@ -15,6 +15,7 @@ import AdminPanel from './pages/AdminPanel';
 import Login from './pages/Login';
 import Contacto from './pages/Contacto';
 import Seguimiento from './pages/Seguimiento';
+import MaterialesCostos from './pages/MaterialesCostos';
 import PedidosProduccion from './pages/PedidosProduccion';
 import OrdenTrabajo from './pages/OrdenTrabajo';
 import DashboardERP from './pages/DashboardERP';
@@ -44,7 +45,7 @@ export default function App() {
     if (pathInicial.startsWith('/login')) return 'login';
     if (pathInicial.startsWith('/admin')) return 'admin';
     if (pathInicial.startsWith('/produccion')) return 'produccion';
-    if (pathInicial.startsWith('/materiales')) return 'emc';
+    if (pathInicial.startsWith('/materiales')) return 'materiales';
     if (pathInicial.startsWith('/biblioteca-tecnica')) return 'bibliotecaTecnica';
     if (pathInicial.startsWith('/cotizador-ai')) return 'cotizadorAI';
     if (pathInicial.startsWith('/cotizador-visual')) return 'cotizadorVisual';
@@ -99,7 +100,7 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       clientes: '/clientes',
       admin: '/admin',
       produccion: '/produccion',
-      materiales: '/emc',
+      materiales: '/materiales',
       emc: '/emc',
       bibliotecaTecnica: '/biblioteca-tecnica',
       cotizador: '/cotizador',
@@ -206,7 +207,8 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       {page === 'admin' &&
         (accesoAdmin ? <AdminPanel /> : <Login setPage={ir} destino="admin" />)}
 
-      
+      {page === 'materiales' &&
+        (accesoAdmin ? <MaterialesCostos /> : <Login setPage={ir} destino="materiales" />)}
 
 {page === 'emc' &&
   (accesoAdmin ? <EMCImportadorAI22 /> : <Login setPage={ir} destino="admin" />)}
@@ -243,4 +245,3 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
     </AIAssistantProvider>
   );
 }
-
