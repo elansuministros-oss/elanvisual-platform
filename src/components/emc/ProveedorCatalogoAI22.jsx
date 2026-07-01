@@ -4,7 +4,7 @@ import { listarProductosGuardadosAI22 } from "../../services/emc/emcImportAi22Se
 function dinero(valor) {
   const n = Number(valor || 0);
   if (!n) return "Sin precio";
-  return `C$ ${n.toLocaleString("es-NI", { minimumFractionDigits: 2 })}`;
+  return `USD ${n.toLocaleString("es-NI", { minimumFractionDigits: 2 })}`;
 }
 
 export default function ProveedorCatalogoAI22({ proveedor }) {
@@ -124,7 +124,7 @@ export default function ProveedorCatalogoAI22({ proveedor }) {
 
                 <div style={footer}>
                   <strong style={price}>
-                    {dinero(item.precio_final || item.precio_lista || item.costo_unitario)}
+                   {dinero(item.precio_lista || item.costo_unitario)}
                   </strong>
                   <span style={item.activo === false ? inactive : active}>
                     {item.activo === false ? "Inactivo" : "Activo"}
