@@ -62,6 +62,58 @@ const money = (v) =>
 
 const num = (v) => Number(v || 0);
 
+const normalizar = (v = "") =>
+  String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+
+const nombreEMC = (item = {}) =>
+  item.nombre_catalogo || item.nombre || item.descripcion || item.codigo_catalogo || "";
+
+const precioEMC = (item = {}) =>
+  Number(item.precio_final || item.precio_lista || item.costo_unitario || item.costo || 0);
+
+const proveedorEMC = (item = {}) =>
+  item.proveedor_nombre || item.proveedor || item.nombre_proveedor || item.proveedor_id || "";
+
+const proveedoresDelMaterial = (material, materiales = [], emcItems = []) => {
+  const nombreBase = normalizar(material.nombre);
+
+  const manuales = materiales.filter((m) =>
+    normalizar(m.nombre) === nombreBase && m.proveedor
+  );
+
+  const emc = emcItems
+    .filter((item) => {
+      const n = normalizar(nombreEMC(item));
+      return n && nombreBase && (n === nombreBase || n.includes(nombreBase) || nombreBase.includes(n));
+    })
+    .map((item) => ({
+      ...item,
+      proveedor: proveedorEMC(item),
+      costo_real: precioEMC(item),
+      costo_compra: precioEMC(item),
+    }));
+
+  return [...manuales, ...emc].filter((x) => x.proveedor);
+};
+
+const costoOperativo = (items = []) => {
+  const precios = items
+    .map((m) => Number(m.costo_real || m.costo_compra || 0))
+    .filter((n) => Number.isFinite(n) && n > 0)
+    .sort((a, b) => a - b);
+
+  if (!precios.length) return 0;
+
+  const mid = Math.floor(precios.length / 2);
+  return precios.length % 2 ? precios[mid] : (precios[mid - 1] + precios[mid]) / 2;
+};
+
+const contarProveedoresUnicos = (items = []) =>
+  new Set(items.map((x) => String(x.proveedor || "").trim()).filter(Boolean)).size;
+
+const proveedorPrincipal = (material, proveedores = []) =>
+  material.proveedor || proveedores.find((x) => x.proveedor)?.proveedor || "Sin proveedor";
+
 function calcularCostoReal(form) {
   const costo = num(form.costo_compra);
   const iva = num(form.iva);
@@ -88,6 +140,7 @@ export default function MaterialesCostos() {
   const [tintas, setTintas] = useState([]);
   const [combinaciones, setCombinaciones] = useState([]);
   const [detalles, setDetalles] = useState([]);
+  const [emcItems, setEmcItems] = useState([]);
 
   const [materialForm, setMaterialForm] = useState(inicialMaterial);
   const [tintaForm, setTintaForm] = useState(inicialTinta);
@@ -105,17 +158,19 @@ export default function MaterialesCostos() {
   const costoPreview = useMemo(() => calcularCostoReal(materialForm), [materialForm]);
 
   const cargarTodo = async () => {
-    const [mat, tin, com, det] = await Promise.all([
-      supabase.from('materiales_master').select('*').order('categoria'),
-      supabase.from('tintas_master').select('*').order('nombre'),
-      supabase.from('combinaciones_master').select('*').order('categoria'),
-      supabase.from('combinaciones_detalle').select('*'),
-    ]);
+    const [mat, tin, com, det, emc] = await Promise.all([
+  supabase.from('materiales_master').select('*').order('categoria'),
+  supabase.from('tintas_master').select('*').order('nombre'),
+  supabase.from('combinaciones_master').select('*').order('categoria'),
+  supabase.from('combinaciones_detalle').select('*'),
+  supabase.from('elankav_catalogo_proveedor_items').select('*').limit(2000),
+]);
 
     if (!mat.error) setMateriales(mat.data || []);
     if (!tin.error) setTintas(tin.data || []);
     if (!com.error) setCombinaciones(com.data || []);
     if (!det.error) setDetalles(det.data || []);
+    if (!emc.error) setEmcItems(emc.data || []);
   };
 
   useEffect(() => {
@@ -123,17 +178,29 @@ export default function MaterialesCostos() {
   }, []);
 
   const listaMateriales = useMemo(() => {
-    const q = busqueda.toLowerCase();
-    return materiales.filter((m) =>
-      `${m.nombre} ${m.categoria} ${m.marca} ${m.proveedor}`.toLowerCase().includes(q)
-    );
-  }, [materiales, busqueda]);
+    const q = normalizar(busqueda);
+
+    return materiales.filter((m) => {
+      const relacionados = proveedoresDelMaterial(m, materiales, emcItems);
+      const texto = normalizar([
+        m.nombre,
+        m.categoria,
+        m.marca,
+        m.proveedor,
+        m.unidad_compra,
+        m.notas,
+        ...relacionados.map((x) => x.proveedor),
+      ].join(" "));
+
+      return !q || texto.includes(q);
+    });
+  }, [materiales, emcItems, busqueda]);
 
   const materialesParaCombo = useMemo(() => {
-    const q = busquedaMaterialCombo.toLowerCase();
+    const q = normalizar(busquedaMaterialCombo);
     return materiales
       .filter((m) => m.activo)
-      .filter((m) => `${m.nombre} ${m.categoria} ${m.marca}`.toLowerCase().includes(q))
+      .filter((m) => normalizar(`${m.nombre} ${m.categoria} ${m.marca}`).includes(q))
       .slice(0, 10);
   }, [materiales, busquedaMaterialCombo]);
 
@@ -320,22 +387,31 @@ export default function MaterialesCostos() {
 
           <section className="mm3-card">
             <div className="title"><Search size={20} /><h2>Materiales</h2></div>
-            <input placeholder="Buscar..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+            <input placeholder="Buscar por nombre, categoria, marca, proveedor, unidad o notas..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
 
             <div className="list">
-              {listaMateriales.map((m) => (
-                <article className="row" key={m.id}>
-                  <div>
-                    <h3>{m.nombre}</h3>
-                    <p>{m.categoria} · {m.unidad_compra}</p>
-                    <span>{money(m.costo_real)}</span>
-                  </div>
-                  <div className="actions">
-                    <button className="btn-edit" onClick={() => editarMaterial(m)}>Editar</button>
-                    <button className="btn-delete" onClick={() => eliminar('materiales_master', m.id)}>Eliminar</button>
-                  </div>
-                </article>
-              ))}
+              {listaMateriales.map((m) => {
+                const proveedores = proveedoresDelMaterial(m, materiales, emcItems);
+                const totalProveedores = contarProveedoresUnicos(proveedores) || (m.proveedor ? 1 : 0);
+                const operativo = costoOperativo(proveedores.length ? proveedores : [m]);
+
+                return (
+                  <article className="row" key={m.id}>
+                    <div>
+                      <h3>{m.nombre}</h3>
+                      <p><b>Categoria:</b> {m.categoria || 'Sin categoria'} · <b>Unidad:</b> {m.unidad_compra || 'Sin unidad'}</p>
+                      <p><b>Marca:</b> {m.marca || 'Sin marca'}</p>
+                      <p><b>Proveedor principal:</b> {proveedorPrincipal(m, proveedores)}</p>
+                      <p><b>Proveedores asociados:</b> {totalProveedores}</p>
+                      <span>Costo operativo: {money(operativo)}</span>
+                    </div>
+                    <div className="actions">
+                      <button className="btn-edit" onClick={() => editarMaterial(m)}>Editar</button>
+                      <button className="btn-delete" onClick={() => eliminar('materiales_master', m.id)}>Eliminar</button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </section>
         </section>
@@ -493,6 +569,3 @@ export default function MaterialesCostos() {
     </main>
   );
 }
-
-
-
