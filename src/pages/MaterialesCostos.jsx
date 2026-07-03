@@ -65,19 +65,134 @@ const num = (v) => Number(v || 0);
 const normalizar = (v = "") =>
   String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
+const valorTexto = (...valores) =>
+  valores.find((v) => v !== null && v !== undefined && String(v).trim() !== "") || "";
+
+const valorNumero = (...valores) => {
+  const encontrado = valores.find((v) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n > 0;
+  });
+
+  return Number(encontrado || 0);
+};
+
 const nombreEMC = (item = {}) =>
-  item.nombre_catalogo || item.nombre || item.descripcion || item.codigo_catalogo || "";
+  valorTexto(
+    item.nombre_catalogo,
+    item.nombre,
+    item.descripcion,
+    item.codigo_catalogo,
+    item.item_nombre,
+    item.catalogo_nombre,
+    item.elankav_catalogo_items?.nombre_catalogo,
+    item.elankav_catalogo_items?.nombre,
+    item.elankav_catalogo_items?.descripcion,
+    item.elankav_catalogo_items?.codigo_catalogo
+  );
 
 const precioEMC = (item = {}) =>
-  Number(item.precio_final || item.precio_lista || item.costo_unitario || item.costo || 0);
+  valorNumero(
+    item.precio_final,
+    item.precio_lista,
+    item.costo_unitario,
+    item.costo,
+    item.precio,
+    item.precio_unitario,
+    item.elankav_catalogo_items?.precio_final,
+    item.elankav_catalogo_items?.precio_lista,
+    item.elankav_catalogo_items?.costo_unitario,
+    item.elankav_catalogo_items?.costo
+  );
 
 const proveedorEMC = (item = {}) =>
-  item.proveedor_nombre || item.proveedor || item.nombre_proveedor || item.proveedor_id || "";
+  valorTexto(
+    item.proveedor_nombre,
+    item.nombre_proveedor,
+    item.proveedor,
+    item.proveedores?.nombre_comercial,
+    item.proveedores?.nombre,
+    item.elankav_proveedores?.nombre_comercial,
+    item.elankav_proveedores?.nombre
+  );
+
+const nombreRelacion = (valor) => {
+  if (!valor) return "";
+  if (typeof valor === "string") return valor;
+  return valor.nombre || valor.nombre_catalogo || valor.descripcion || valor.titulo || "";
+};
+
+const normalizarCategoria = (valor = "") => {
+  const n = normalizar(valor);
+  const encontrada = categorias.find((cat) => normalizar(cat) === n || n.includes(normalizar(cat)));
+  return encontrada || String(valor || "VINILES").toUpperCase();
+};
+
+const normalizarUnidad = (valor = "") => {
+  const n = normalizar(valor);
+  const encontrada = unidades.find((u) => normalizar(u) === n || n.includes(normalizar(u)));
+  return encontrada || valor || "Unidad";
+};
+
+const extraerMedida = (item = {}, campo) => {
+  const directos = {
+    ancho: [item.ancho, item.ancho_m, item.ancho_cm, item.medida_ancho],
+    largo: [item.largo, item.largo_m, item.largo_cm, item.medida_largo],
+  };
+
+  const directo = valorNumero(...(directos[campo] || []));
+  if (directo) return directo;
+
+  const medidas = item.medidas || item.dimension || item.dimensiones || item.elankav_catalogo_items?.medidas || "";
+  if (!medidas) return "";
+
+  const texto = String(medidas).replace(",", ".");
+  const match = texto.match(/(\d+(\.\d+)?)\s*[x×]\s*(\d+(\.\d+)?)/i);
+  if (!match) return "";
+
+  return campo === "ancho" ? Number(match[1]) : Number(match[3]);
+};
+
+const adaptarItemEMCAMaterialMaster = (item = {}, index = 0) => {
+  const itemBase = item.elankav_catalogo_items || item.item || {};
+  const categoria = nombreRelacion(item.elankav_catalogo_categorias) || item.categoria_nombre || item.categoria || itemBase.categoria || itemBase.categoria_nombre;
+  const subcategoria = nombreRelacion(item.elankav_catalogo_subcategorias) || item.subcategoria_nombre || item.subcategoria || itemBase.subcategoria || itemBase.subcategoria_nombre;
+  const marca = nombreRelacion(item.elankav_catalogo_marcas) || item.marca_nombre || item.marca || itemBase.marca || itemBase.marca_nombre;
+  const unidad = nombreRelacion(item.elankav_catalogo_unidades) || item.unidad_nombre || item.unidad || item.unidad_compra || itemBase.unidad || itemBase.unidad_nombre;
+
+  const costoCompra = precioEMC(item);
+  const iva = item.iva ?? item.porcentaje_iva ?? item.impuesto ?? itemBase.iva ?? itemBase.porcentaje_iva ?? 15;
+  const ancho = extraerMedida(item, "ancho") || extraerMedida(itemBase, "ancho");
+  const largo = extraerMedida(item, "largo") || extraerMedida(itemBase, "largo");
+
+  return {
+    id: item.id || item.proveedor_item_id || item.item_id || item.catalogo_item_id || `emc-${index}`,
+    emc_item_id: item.item_id || item.catalogo_item_id || itemBase.id || item.id,
+    emc_proveedor_item_id: item.id || item.proveedor_item_id,
+    tipo: item.tipo || itemBase.tipo || "Material",
+    categoria: normalizarCategoria(categoria || subcategoria),
+    subcategoria: subcategoria || "",
+    nombre: nombreEMC(item),
+    marca: marca || "",
+    proveedor: proveedorEMC(item),
+    unidad_compra: normalizarUnidad(unidad),
+    ancho: ancho || "",
+    largo: largo || "",
+    costo_compra: costoCompra,
+    iva: Number(iva || 0),
+    desperdicio_recargo: Number(item.desperdicio_recargo || item.recargo || itemBase.desperdicio_recargo || 10),
+    costo_real: costoCompra,
+    activo: item.activo ?? itemBase.activo ?? true,
+    notas: valorTexto(item.notas, item.observaciones, itemBase.notas, itemBase.observaciones),
+    moneda: valorTexto(item.moneda, itemBase.moneda),
+    _origen: "EMC",
+  };
+};
 
 const proveedoresDelMaterial = (material, materiales = [], emcItems = []) => {
   const nombreBase = normalizar(material.nombre);
 
-  const manuales = materiales.filter((m) =>
+  const relacionados = materiales.filter((m) =>
     normalizar(m.nombre) === nombreBase && m.proveedor
   );
 
@@ -86,14 +201,10 @@ const proveedoresDelMaterial = (material, materiales = [], emcItems = []) => {
       const n = normalizar(nombreEMC(item));
       return n && nombreBase && (n === nombreBase || n.includes(nombreBase) || nombreBase.includes(n));
     })
-    .map((item) => ({
-      ...item,
-      proveedor: proveedorEMC(item),
-      costo_real: precioEMC(item),
-      costo_compra: precioEMC(item),
-    }));
+    .map((item, index) => adaptarItemEMCAMaterialMaster(item, index))
+    .filter((item) => item.proveedor);
 
-  return [...manuales, ...emc].filter((x) => x.proveedor);
+  return [...relacionados, ...emc].filter((x) => x.proveedor);
 };
 
 const costoOperativo = (items = []) => {
@@ -158,19 +269,34 @@ export default function MaterialesCostos() {
   const costoPreview = useMemo(() => calcularCostoReal(materialForm), [materialForm]);
 
   const cargarTodo = async () => {
-    const [mat, tin, com, det, emc] = await Promise.all([
-  supabase.from('materiales_master').select('*').order('categoria'),
-  supabase.from('tintas_master').select('*').order('nombre'),
-  supabase.from('combinaciones_master').select('*').order('categoria'),
-  supabase.from('combinaciones_detalle').select('*'),
-  supabase.from('elankav_catalogo_proveedor_items').select('*').limit(2000),
-]);
+    const [emc, tin, com, det] = await Promise.all([
+      supabase
+        .from('elankav_catalogo_proveedor_items')
+        .select(`
+          *,
+          elankav_catalogo_items:item_id (
+            *,
+            elankav_catalogo_categorias:categoria_id (*),
+            elankav_catalogo_subcategorias:subcategoria_id (*),
+            elankav_catalogo_marcas:marca_id (*),
+            elankav_catalogo_unidades:unidad_id (*)
+          )
+        `)
+        .limit(2000),
+      supabase.from('tintas_master').select('*').order('nombre'),
+      supabase.from('combinaciones_master').select('*').order('categoria'),
+      supabase.from('combinaciones_detalle').select('*'),
+    ]);
 
-    if (!mat.error) setMateriales(mat.data || []);
+    if (!emc.error) {
+      const emcData = emc.data || [];
+      setEmcItems(emcData);
+      setMateriales(emcData.map((item, index) => adaptarItemEMCAMaterialMaster(item, index)));
+    }
+
     if (!tin.error) setTintas(tin.data || []);
     if (!com.error) setCombinaciones(com.data || []);
     if (!det.error) setDetalles(det.data || []);
-    if (!emc.error) setEmcItems(emc.data || []);
   };
 
   useEffect(() => {
@@ -185,6 +311,7 @@ export default function MaterialesCostos() {
       const texto = normalizar([
         m.nombre,
         m.categoria,
+        m.subcategoria,
         m.marca,
         m.proveedor,
         m.unidad_compra,
@@ -207,19 +334,37 @@ export default function MaterialesCostos() {
   const guardarMaterial = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      ...materialForm,
-      ancho: num(materialForm.ancho),
-      largo: num(materialForm.largo),
-      costo_compra: num(materialForm.costo_compra),
+    const payloadProveedorItem = {
+      precio_lista: num(materialForm.costo_compra),
+      costo_unitario: num(materialForm.costo_compra),
       iva: num(materialForm.iva),
-      desperdicio_recargo: num(materialForm.desperdicio_recargo),
-      costo_real: calcularCostoReal(materialForm),
+      activo: materialForm.activo,
+      notas: materialForm.notas,
     };
 
-    const res = editMaterial
-      ? await supabase.from('materiales_master').update(payload).eq('id', editMaterial)
-      : await supabase.from('materiales_master').insert(payload);
+    const payloadItem = {
+      nombre: materialForm.nombre,
+      descripcion: materialForm.nombre,
+      activo: materialForm.activo,
+      notas: materialForm.notas,
+    };
+
+    let res;
+
+    if (editMaterial) {
+      const actual = materiales.find((m) => m.id === editMaterial);
+
+      if (actual?.emc_item_id) {
+        await supabase.from('elankav_catalogo_items').update(payloadItem).eq('id', actual.emc_item_id);
+      }
+
+      res = await supabase
+        .from('elankav_catalogo_proveedor_items')
+        .update(payloadProveedorItem)
+        .eq('id', actual?.emc_proveedor_item_id || editMaterial);
+    } else {
+      res = await supabase.from('elankav_catalogo_items').insert(payloadItem);
+    }
 
     if (res.error) return alert('No se pudo guardar material.');
     setMaterialForm(inicialMaterial);
@@ -281,7 +426,20 @@ export default function MaterialesCostos() {
 
   const eliminar = async (tabla, id) => {
     if (!confirm('Eliminar registro?')) return;
-    const { error } = await supabase.from(tabla).delete().eq('id', id);
+
+    const actual = tabla === 'materiales_master'
+      ? materiales.find((m) => m.id === id)
+      : null;
+
+    const tablaFinal = tabla === 'materiales_master'
+      ? 'elankav_catalogo_proveedor_items'
+      : tabla;
+
+    const idFinal = tabla === 'materiales_master'
+      ? actual?.emc_proveedor_item_id || id
+      : id;
+
+    const { error } = await supabase.from(tablaFinal).delete().eq('id', idFinal);
     if (error) return alert('No se pudo eliminar.');
     cargarTodo();
   };
