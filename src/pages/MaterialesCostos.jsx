@@ -269,35 +269,46 @@ export default function MaterialesCostos() {
   const costoPreview = useMemo(() => calcularCostoReal(materialForm), [materialForm]);
 
   const cargarTodo = async () => {
-    const [emc, tin, com, det] = await Promise.all([
-      supabase
-        .from('elankav_catalogo_proveedor_items')
-        .select(`
-          *,
-          elankav_catalogo_items:item_id (
-            *,
-            elankav_catalogo_categorias:categoria_id (*),
-            elankav_catalogo_subcategorias:subcategoria_id (*),
-            elankav_catalogo_marcas:marca_id (*),
-            elankav_catalogo_unidades:unidad_id (*)
-          )
-        `)
-        .limit(2000),
-      supabase.from('tintas_master').select('*').order('nombre'),
-      supabase.from('combinaciones_master').select('*').order('categoria'),
-      supabase.from('combinaciones_detalle').select('*'),
-    ]);
+  const [items, proveedorItems, cats, subs, marcas, unids, tin, com, det] = await Promise.all([
+    supabase.from('elankav_catalogo_items').select('*').limit(2000),
+    supabase.from('elankav_catalogo_proveedor_items').select('*').limit(2000),
+    supabase.from('elankav_catalogo_categorias').select('*'),
+    supabase.from('elankav_catalogo_subcategorias').select('*'),
+    supabase.from('elankav_catalogo_marcas').select('*'),
+    supabase.from('elankav_catalogo_unidades').select('*'),
+    supabase.from('tintas_master').select('*').order('nombre'),
+    supabase.from('combinaciones_master').select('*').order('categoria'),
+    supabase.from('combinaciones_detalle').select('*'),
+  ]);
 
-    if (!emc.error) {
-      const emcData = emc.data || [];
-      setEmcItems(emcData);
-      setMateriales(emcData.map((item, index) => adaptarItemEMCAMaterialMaster(item, index)));
-    }
+  const itemMap = new Map((items.data || []).map((x) => [x.id, x]));
+  const catMap = new Map((cats.data || []).map((x) => [x.id, x]));
+  const subMap = new Map((subs.data || []).map((x) => [x.id, x]));
+  const marcaMap = new Map((marcas.data || []).map((x) => [x.id, x]));
+  const unidadMap = new Map((unids.data || []).map((x) => [x.id, x]));
 
-    if (!tin.error) setTintas(tin.data || []);
-    if (!com.error) setCombinaciones(com.data || []);
-    if (!det.error) setDetalles(det.data || []);
-  };
+  const emcData = (proveedorItems.data || []).map((pi) => {
+    const item = itemMap.get(pi.item_id || pi.catalogo_item_id || pi.catalogo_id) || {};
+
+    return {
+      ...pi,
+      elankav_catalogo_items: {
+        ...item,
+        elankav_catalogo_categorias: catMap.get(item.categoria_id) || null,
+        elankav_catalogo_subcategorias: subMap.get(item.subcategoria_id) || null,
+        elankav_catalogo_marcas: marcaMap.get(item.marca_id) || null,
+        elankav_catalogo_unidades: unidadMap.get(item.unidad_id) || null,
+      },
+    };
+  });
+
+  setEmcItems(emcData);
+  setMateriales(emcData.map((item, index) => adaptarItemEMCAMaterialMaster(item, index)));
+
+  if (!tin.error) setTintas(tin.data || []);
+  if (!com.error) setCombinaciones(com.data || []);
+  if (!det.error) setDetalles(det.data || []);
+};
 
   useEffect(() => {
     if (supabase) cargarTodo();
