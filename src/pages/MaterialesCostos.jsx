@@ -1,274 +1,321 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Lock, RefreshCw, Search } from 'lucide-react';
+﻿import { useEffect, useMemo, useState } from 'react';
+import { CheckCircle2, Edit3, Lock, PackagePlus, Search, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 
-const normalizar = (v = '') =>
-  String(v || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim();
+const tipos = ['Material', 'Articulo', 'Servicio'];
+const categorias = [
+  'VINILES',
+  'LAMINADOS',
+  'LONAS',
+  'PVC',
+  'ACRILICOS',
+  'COROPLAS',
+  'BACKLIT',
+  'MICROPERFORADO',
+  'DISPLAY',
+  'ACCESORIOS',
+  'SERVICIOS',
+  'ESTRUCTURAS',
+  'ILUMINACION',
+];
 
-const pick = (obj = {}, keys = [], fallback = '') => {
-  for (const key of keys) {
-    const value = obj?.[key];
-    if (value !== undefined && value !== null && String(value).trim() !== '') return value;
-  }
-  return fallback;
+const unidades = ['Rollo', 'Lamina', 'Unidad', 'Metro lineal', 'm2', 'Servicio'];
+
+const inicialMaterial = {
+  tipo: 'Material',
+  categoria: 'VINILES',
+  nombre: '',
+  marca: '',
+  proveedor: '',
+  unidad_compra: 'Rollo',
+  ancho: '',
+  largo: '',
+  costo_compra: '',
+  iva: 15,
+  desperdicio_recargo: 10,
+  activo: true,
+  notas: '',
 };
 
-const toArray = (value) => (Array.isArray(value) ? value : []);
-const sameId = (a, b) => String(a || '') === String(b || '');
-
-const detectarMoneda = (row = {}, campoPrecio = '') => {
-  const raw = pick(row, ['moneda', 'currency', 'divisa', 'tipo_moneda', 'moneda_precio', 'precio_moneda'], '');
-  const m = normalizar(raw);
-
-  if (campoPrecio.toLowerCase().endsWith('_usd') || m.includes('usd') || m.includes('dolar')) return 'USD';
-  if (campoPrecio.toLowerCase().endsWith('_nio') || m.includes('nio') || m.includes('cordoba') || m === 'c$') return 'NIO';
-
-  return 'NIO';
+const inicialTinta = {
+  nombre: 'Ecosolvente',
+  costo_m2: 1.5,
+  activo: true,
+  notas: '',
 };
 
-const formatMoney = (valor = 0, moneda = 'NIO') =>
+const inicialCombinacion = {
+  categoria: 'VINILES',
+  nombre: '',
+  estado: 'borrador',
+  activo: true,
+  notas: '',
+};
+
+const money = (v) =>
   new Intl.NumberFormat('es-NI', {
     style: 'currency',
-    currency: moneda === 'USD' ? 'USD' : 'NIO',
+    currency: 'USD',
     minimumFractionDigits: 2,
-  }).format(Number(valor || 0));
+  }).format(Number(v || 0));
 
-const precioDesdeRegistro = (row = {}) => {
-  const campos = [
-    'precio_operativo_nio',
-    'precio_final_nio',
-    'precio_lista_nio',
-    'costo_unitario_nio',
-    'precio_operativo_usd',
-    'precio_final_usd',
-    'precio_lista_usd',
-    'costo_unitario_usd',
-    'precio_operativo',
-    'precio_final',
-    'precio_lista',
-    'precio_unitario',
-    'costo_unitario',
-    'costo_compra',
-    'costo',
-    'precio',
-  ];
+const num = (v) => Number(v || 0);
 
-  for (const campo of campos) {
-    const value = row?.[campo];
-    const numero = Number(value);
-    if (Number.isFinite(numero) && numero > 0) {
-      return {
-        valor: numero,
-        moneda: detectarMoneda(row, campo),
-        campo,
-      };
-    }
-  }
+const normalizar = (v = "") =>
+  String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
 
-  return { valor: 0, moneda: detectarMoneda(row), campo: '' };
+const nombreEMC = (item = {}) =>
+  item.nombre_catalogo || item.nombre || item.descripcion || item.codigo_catalogo || "";
+
+const precioEMC = (item = {}) =>
+  Number(item.precio_final || item.precio_lista || item.costo_unitario || item.costo || 0);
+
+const proveedorEMC = (item = {}) =>
+  item.proveedor_nombre || item.proveedor || item.nombre_proveedor || item.proveedor_id || "";
+
+const proveedoresDelMaterial = (material, materiales = [], emcItems = []) => {
+  const nombreBase = normalizar(material.nombre);
+
+  const manuales = materiales.filter((m) =>
+    normalizar(m.nombre) === nombreBase && m.proveedor
+  );
+
+  const emc = emcItems
+    .filter((item) => {
+      const n = normalizar(nombreEMC(item));
+      return n && nombreBase && (n === nombreBase || n.includes(nombreBase) || nombreBase.includes(n));
+    })
+    .map((item) => ({
+      ...item,
+      proveedor: proveedorEMC(item),
+      costo_real: precioEMC(item),
+      costo_compra: precioEMC(item),
+    }));
+
+  return [...manuales, ...emc].filter((x) => x.proveedor);
 };
 
-const mediana = (values = []) => {
-  const nums = values
-    .map(Number)
+const costoOperativo = (items = []) => {
+  const precios = items
+    .map((m) => Number(m.costo_real || m.costo_compra || 0))
     .filter((n) => Number.isFinite(n) && n > 0)
     .sort((a, b) => a - b);
 
-  if (!nums.length) return 0;
-  const mid = Math.floor(nums.length / 2);
-  return nums.length % 2 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2;
+  if (!precios.length) return 0;
+
+  const mid = Math.floor(precios.length / 2);
+  return precios.length % 2 ? precios[mid] : (precios[mid - 1] + precios[mid]) / 2;
 };
 
-const precioOperativoPorMoneda = (precios = []) => {
-  const validos = precios.filter((p) => Number.isFinite(Number(p.valor)) && Number(p.valor) > 0);
-  const nio = validos.filter((p) => p.moneda === 'NIO').map((p) => p.valor);
-  const usd = validos.filter((p) => p.moneda === 'USD').map((p) => p.valor);
+const contarProveedoresUnicos = (items = []) =>
+  new Set(items.map((x) => String(x.proveedor || "").trim()).filter(Boolean)).size;
 
-  return {
-    nio: mediana(nio),
-    usd: mediana(usd),
-    tieneNio: nio.length > 0,
-    tieneUsd: usd.length > 0,
-    cantidadNio: nio.length,
-    cantidadUsd: usd.length,
-    mixto: nio.length > 0 && usd.length > 0,
-  };
-};
+const proveedorPrincipal = (material, proveedores = []) =>
+  material.proveedor || proveedores.find((x) => x.proveedor)?.proveedor || "Sin proveedor";
 
-const mostrarPrecioOperativo = (precio = {}) => {
-  const partes = [];
-  if (precio.tieneNio) partes.push(formatMoney(precio.nio, 'NIO'));
-  if (precio.tieneUsd) partes.push(formatMoney(precio.usd, 'USD'));
-  return partes.length ? partes.join(' / ') : 'Sin precio';
-};
+function calcularCostoReal(form) {
+  const costo = num(form.costo_compra);
+  const iva = num(form.iva);
+  const extra = num(form.desperdicio_recargo);
+  const ancho = num(form.ancho);
+  const largo = num(form.largo);
 
-const estadoItem = (item = {}) => {
-  if (item.activo === false) return 'Inactivo';
-  return String(pick(item, ['estado', 'estatus'], 'Activo')).toUpperCase();
-};
+  const costoIva = costo * (1 + iva / 100);
+  const costoFinal = costoIva * (1 + extra / 100);
+
+  if (['Rollo', 'Lamina'].includes(form.unidad_compra) && ancho > 0 && largo > 0) {
+    return costoFinal / (ancho * largo);
+  }
+
+  return costoFinal;
+}
 
 export default function MaterialesCostos() {
   const { usuario } = useApp();
   const esAdmin = usuario?.rol === 'admin';
 
-  const [items, setItems] = useState([]);
-  const [proveedorItems, setProveedorItems] = useState([]);
-  const [proveedoresCatalogo, setProveedoresCatalogo] = useState([]);
-  const [categorias, setCategorias] = useState([]);
-  const [subcategorias, setSubcategorias] = useState([]);
-  const [marcas, setMarcas] = useState([]);
-  const [unidades, setUnidades] = useState([]);
+  const [tab, setTab] = useState('materiales');
+  const [materiales, setMateriales] = useState([]);
+  const [tintas, setTintas] = useState([]);
+  const [combinaciones, setCombinaciones] = useState([]);
+  const [detalles, setDetalles] = useState([]);
+  const [emcItems, setEmcItems] = useState([]);
+
+  const [materialForm, setMaterialForm] = useState(inicialMaterial);
+  const [tintaForm, setTintaForm] = useState(inicialTinta);
+  const [comboForm, setComboForm] = useState(inicialCombinacion);
+
+  const [editMaterial, setEditMaterial] = useState(null);
+  const [editTinta, setEditTinta] = useState(null);
+  const [editCombo, setEditCombo] = useState(null);
+
   const [busqueda, setBusqueda] = useState('');
-  const [seleccionado, setSeleccionado] = useState(null);
-  const [cargando, setCargando] = useState(false);
-  const [errorCarga, setErrorCarga] = useState('');
+  const [busquedaMaterialCombo, setBusquedaMaterialCombo] = useState('');
+  const [materialSeleccionado, setMaterialSeleccionado] = useState(null);
+  const [cantidadCombo, setCantidadCombo] = useState(1);
 
-  const cargarEMC = async () => {
-    setCargando(true);
-    setErrorCarga('');
+  const costoPreview = useMemo(() => calcularCostoReal(materialForm), [materialForm]);
 
-    const [itemsRes, proveedorItemsRes, proveedoresRes, categoriasRes, subcategoriasRes, marcasRes, unidadesRes] =
-      await Promise.all([
-        supabase.from('elankav_catalogo_items').select('*').limit(5000),
-        supabase.from('elankav_catalogo_proveedor_items').select('*').limit(5000),
-        supabase.from('elankav_catalogo_proveedores').select('*').limit(1000),
-        supabase.from('elankav_catalogo_categorias').select('*').limit(1000),
-        supabase.from('elankav_catalogo_subcategorias').select('*').limit(1000),
-        supabase.from('elankav_catalogo_marcas').select('*').limit(1000),
-        supabase.from('elankav_catalogo_unidades').select('*').limit(1000),
-      ]);
+  const cargarTodo = async () => {
+    const [mat, tin, com, det, emc] = await Promise.all([
+  supabase.from('materiales_master').select('*').order('categoria'),
+  supabase.from('tintas_master').select('*').order('nombre'),
+  supabase.from('combinaciones_master').select('*').order('categoria'),
+  supabase.from('combinaciones_detalle').select('*'),
+  supabase.from('elankav_catalogo_proveedor_items').select('*').limit(2000),
+]);
 
-    const erroresCriticos = [itemsRes, proveedorItemsRes, categoriasRes, subcategoriasRes, marcasRes, unidadesRes]
-      .map((res) => res.error?.message)
-      .filter(Boolean);
-
-    if (erroresCriticos.length) setErrorCarga(erroresCriticos.join(' | '));
-
-    setItems(toArray(itemsRes.data));
-    setProveedorItems(toArray(proveedorItemsRes.data));
-    setProveedoresCatalogo(toArray(proveedoresRes.data));
-    setCategorias(toArray(categoriasRes.data));
-    setSubcategorias(toArray(subcategoriasRes.data));
-    setMarcas(toArray(marcasRes.data));
-    setUnidades(toArray(unidadesRes.data));
-    setCargando(false);
+    if (!mat.error) setMateriales(mat.data || []);
+    if (!tin.error) setTintas(tin.data || []);
+    if (!com.error) setCombinaciones(com.data || []);
+    if (!det.error) setDetalles(det.data || []);
+    if (!emc.error) setEmcItems(emc.data || []);
   };
 
   useEffect(() => {
-    if (supabase) cargarEMC();
+    if (supabase) cargarTodo();
   }, []);
-
-  const buscarCatalogo = (lista, id) => {
-    const found = lista.find((x) => sameId(x.id, id) || sameId(x.codigo, id) || sameId(x.slug, id));
-    return found ? pick(found, ['nombre', 'descripcion', 'titulo', 'razon_social', 'empresa', 'codigo'], '') : '';
-  };
-
-  const nombreItem = (item = {}) =>
-    pick(item, ['nombre', 'nombre_catalogo', 'descripcion', 'producto', 'material', 'codigo_catalogo', 'codigo'], 'Sin nombre');
-
-  const categoriaItem = (item = {}) =>
-    pick(item, ['categoria_nombre', 'categoria'], '') ||
-    buscarCatalogo(categorias, pick(item, ['categoria_id', 'id_categoria'], '')) ||
-    'General';
-
-  const subcategoriaItem = (item = {}) =>
-    pick(item, ['subcategoria_nombre', 'subcategoria'], '') ||
-    buscarCatalogo(subcategorias, pick(item, ['subcategoria_id', 'id_subcategoria'], '')) ||
-    'Sin clasificar';
-
-  const marcaItem = (item = {}) =>
-    pick(item, ['marca_nombre', 'marca'], '') || buscarCatalogo(marcas, pick(item, ['marca_id', 'id_marca'], '')) || 'Sin marca';
-
-  const unidadItem = (item = {}) =>
-    pick(item, ['unidad_nombre', 'unidad', 'unidad_compra', 'unidad_medida'], '') ||
-    buscarCatalogo(unidades, pick(item, ['unidad_id', 'id_unidad'], '')) ||
-    'Unidad';
-
-  const proveedorNombre = (p = {}) => {
-    const directo = pick(p, ['proveedor_nombre', 'nombre_proveedor', 'proveedor', 'supplier_name', 'empresa'], '');
-    if (directo) return directo;
-
-    const proveedorId = pick(p, ['proveedor_id', 'supplier_id', 'id_proveedor'], '');
-    return buscarCatalogo(proveedoresCatalogo, proveedorId) || (proveedorId ? `Proveedor ${String(proveedorId).slice(0, 8)}` : 'Sin proveedor');
-  };
-
-  const proveedoresPorItem = (item = {}) => {
-    const itemId = item.id;
-    const codigo = pick(item, ['codigo', 'codigo_catalogo', 'sku', 'referencia'], '');
-    const nombre = normalizar(nombreItem(item));
-
-    return proveedorItems.filter((p) => {
-      const pItemId = pick(p, ['item_id', 'catalogo_item_id', 'producto_id', 'material_id'], '');
-      const pCodigo = pick(p, ['codigo_item', 'codigo_catalogo', 'sku', 'referencia'], '');
-      const pNombre = normalizar(pick(p, ['nombre_item', 'nombre_catalogo', 'nombre', 'descripcion'], ''));
-
-      return (
-        sameId(pItemId, itemId) ||
-        (codigo && sameId(pCodigo, codigo)) ||
-        (nombre && pNombre && (pNombre === nombre || pNombre.includes(nombre) || nombre.includes(pNombre)))
-      );
-    });
-  };
-
-  const materialVM = (item = {}) => {
-    const proveedores = proveedoresPorItem(item);
-    const preciosProveedor = proveedores.map((p) => ({ ...precioDesdeRegistro(p), proveedor: proveedorNombre(p) }));
-    const precioBase = precioDesdeRegistro(item);
-    const precios = preciosProveedor.length ? preciosProveedor : [precioBase];
-    const operativo = precioOperativoPorMoneda(precios);
-    const proveedoresUnicos = [...new Set(proveedores.map(proveedorNombre).filter(Boolean))];
-
-    return {
-      id: item.id || pick(item, ['codigo_catalogo', 'codigo', 'sku'], nombreItem(item)),
-      nombre: nombreItem(item),
-      categoria: categoriaItem(item),
-      subcategoria: subcategoriaItem(item),
-      marca: marcaItem(item),
-      unidad: unidadItem(item),
-      proveedores,
-      proveedoresUnicos,
-      proveedorPrincipal: proveedoresUnicos[0] || pick(item, ['proveedor_nombre', 'proveedor'], 'Sin proveedor'),
-      precioOperativo: operativo,
-      precioDetalle: precios,
-      estado: estadoItem(item),
-      origen: 'EMC',
-      multiProveedor: proveedoresUnicos.length > 1,
-    };
-  };
 
   const listaMateriales = useMemo(() => {
     const q = normalizar(busqueda);
-    return items
-      .map(materialVM)
-      .filter((m) => {
-        const texto = normalizar([
-          m.nombre,
-          m.categoria,
-          m.subcategoria,
-          m.marca,
-          m.unidad,
-          m.estado,
-          m.origen,
-          m.proveedorPrincipal,
-          ...m.proveedoresUnicos,
-        ].join(' '));
-        return !q || texto.includes(q);
-      })
-      .sort((a, b) => a.nombre.localeCompare(b.nombre));
-  }, [items, proveedorItems, proveedoresCatalogo, categorias, subcategorias, marcas, unidades, busqueda]);
+
+    return materiales.filter((m) => {
+      const relacionados = proveedoresDelMaterial(m, materiales, emcItems);
+      const texto = normalizar([
+        m.nombre,
+        m.categoria,
+        m.marca,
+        m.proveedor,
+        m.unidad_compra,
+        m.notas,
+        ...relacionados.map((x) => x.proveedor),
+      ].join(" "));
+
+      return !q || texto.includes(q);
+    });
+  }, [materiales, emcItems, busqueda]);
+
+  const materialesParaCombo = useMemo(() => {
+    const q = normalizar(busquedaMaterialCombo);
+    return materiales
+      .filter((m) => m.activo)
+      .filter((m) => normalizar(`${m.nombre} ${m.categoria} ${m.marca}`).includes(q))
+      .slice(0, 10);
+  }, [materiales, busquedaMaterialCombo]);
+
+  const guardarMaterial = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      ...materialForm,
+      ancho: num(materialForm.ancho),
+      largo: num(materialForm.largo),
+      costo_compra: num(materialForm.costo_compra),
+      iva: num(materialForm.iva),
+      desperdicio_recargo: num(materialForm.desperdicio_recargo),
+      costo_real: calcularCostoReal(materialForm),
+    };
+
+    const res = editMaterial
+      ? await supabase.from('materiales_master').update(payload).eq('id', editMaterial)
+      : await supabase.from('materiales_master').insert(payload);
+
+    if (res.error) return alert('No se pudo guardar material.');
+    setMaterialForm(inicialMaterial);
+    setEditMaterial(null);
+    cargarTodo();
+  };
+
+  const guardarTinta = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      ...tintaForm,
+      costo_m2: num(tintaForm.costo_m2),
+    };
+
+    const res = editTinta
+      ? await supabase.from('tintas_master').update(payload).eq('id', editTinta)
+      : await supabase.from('tintas_master').insert(payload);
+
+    if (res.error) return alert('No se pudo guardar tinta.');
+    setTintaForm(inicialTinta);
+    setEditTinta(null);
+    cargarTodo();
+  };
+
+  const guardarCombo = async (e) => {
+    e.preventDefault();
+
+    const payload = comboForm;
+
+    const res = editCombo
+      ? await supabase.from('combinaciones_master').update(payload).eq('id', editCombo)
+      : await supabase.from('combinaciones_master').insert(payload).select().single();
+
+    if (res.error) return alert('No se pudo guardar combinacion.');
+
+    if (!editCombo && res.data?.id) setEditCombo(res.data.id);
+
+    setComboForm(inicialCombinacion);
+    cargarTodo();
+  };
+
+  const agregarDetalle = async () => {
+    if (!editCombo) return alert('Primero guarda o edita una combinacion.');
+    if (!materialSeleccionado) return alert('Selecciona un material.');
+
+    const { error } = await supabase.from('combinaciones_detalle').insert({
+      combinacion_id: editCombo,
+      material_id: materialSeleccionado.id,
+      cantidad: num(cantidadCombo) || 1,
+    });
+
+    if (error) return alert('No se pudo agregar material.');
+    setMaterialSeleccionado(null);
+    setBusquedaMaterialCombo('');
+    setCantidadCombo(1);
+    cargarTodo();
+  };
+
+  const eliminar = async (tabla, id) => {
+    if (!confirm('Eliminar registro?')) return;
+    const { error } = await supabase.from(tabla).delete().eq('id', id);
+    if (error) return alert('No se pudo eliminar.');
+    cargarTodo();
+  };
+
+  const editarMaterial = (m) => {
+    setMaterialForm({ ...inicialMaterial, ...m });
+    setEditMaterial(m.id);
+    setTab('materiales');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const editarTinta = (t) => {
+    setTintaForm({ ...inicialTinta, ...t });
+    setEditTinta(t.id);
+    setTab('tintas');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const editarComboFn = (c) => {
+    setComboForm({ ...inicialCombinacion, ...c });
+    setEditCombo(c.id);
+    setTab('combinaciones');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const detallesCombo = detalles.filter((d) => d.combinacion_id === editCombo);
 
   if (!esAdmin) {
     return (
       <main className="mm3-page">
         <section className="mm3-card center">
-          <Lock size={36} />
+          <Lock size={42} />
           <h1>Acceso restringido</h1>
-          <p>Material Master V3 es solo para administración.</p>
+          <p>Material Master V3 es solo para administracion.</p>
         </section>
       </main>
     );
@@ -276,126 +323,248 @@ export default function MaterialesCostos() {
 
   return (
     <main className="mm3-page">
-      <section className="mm3-card mm3-toolbar">
-        <div className="mm3-head">
-          <div>
-            <span>Material Master V3 · EMC</span>
-            <h1>Catálogo operativo EMC</h1>
-            <p>Vista de verificación. Moneda real por registro: C$ y USD sin conversión automática.</p>
-          </div>
-          <button type="button" className="secondary" onClick={cargarEMC} disabled={cargando}>
-            <RefreshCw size={16} /> {cargando ? 'Cargando...' : 'Recargar'}
-          </button>
-        </div>
-
-        <div className="searchbox">
-          <Search size={18} />
-          <input
-            placeholder="Buscar lona, vinil, acrílico, marca, categoría, unidad o proveedor..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-        </div>
-
-        {errorCarga && <div className="error">Error EMC: {errorCarga}</div>}
-        <div className="result">Registros visibles: <b>{listaMateriales.length}</b> · Fuente: <b>EMC</b> · Moneda: <b>según catálogo</b></div>
+      <section className="mm3-hero">
+        <span>ELANVISUAL</span>
+        <h1>Material Master V3</h1>
+        <p>Materiales, tintas y combinaciones aprobadas.</p>
       </section>
 
-      <section className="mm3-grid">
-        <section className="mm3-card">
-          <div className="section-title">Listado compacto EMC</div>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Material</th>
-                  <th>Categoría</th>
-                  <th>Marca</th>
-                  <th>Unidad</th>
-                  <th>Proveedor</th>
-                  <th>Precio operativo</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {listaMateriales.map((m) => (
-                  <tr
-                    key={m.id}
-                    className={seleccionado?.id === m.id ? 'selected' : ''}
-                    onClick={() => setSeleccionado(m)}
-                  >
-                    <td className="name">{m.nombre}</td>
-                    <td>{m.categoria}<small>{m.subcategoria}</small></td>
-                    <td>{m.marca}</td>
-                    <td>{m.unidad}</td>
-                    <td>{m.proveedorPrincipal}<small>{m.proveedoresUnicos.length || 0} proveedor(es)</small></td>
-                    <td className="price">
-                      {mostrarPrecioOperativo(m.precioOperativo)}
-                      {m.precioOperativo.mixto && <small>Mixto C$ / USD</small>}
-                    </td>
-                    <td>{m.estado}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {!listaMateriales.length && <div className="empty">No hay materiales EMC para esa búsqueda.</div>}
-          </div>
-        </section>
+      <nav className="mm3-tabs">
+        <button onClick={() => setTab('materiales')} className={tab === 'materiales' ? 'active' : ''}>Materiales</button>
+        <button onClick={() => setTab('tintas')} className={tab === 'tintas' ? 'active' : ''}>Tintas</button>
+        <button onClick={() => setTab('combinaciones')} className={tab === 'combinaciones' ? 'active' : ''}>Combinaciones</button>
+      </nav>
 
-        <aside className="mm3-card">
-          <div className="section-title">Ficha</div>
-          {seleccionado ? (
-            <div className="detail">
-              <label>Nombre</label><div>{seleccionado.nombre}</div>
-              <label>Categoría</label><div>{seleccionado.categoria}</div>
-              <label>Subcategoría</label><div>{seleccionado.subcategoria}</div>
-              <label>Marca</label><div>{seleccionado.marca}</div>
-              <label>Unidad</label><div>{seleccionado.unidad}</div>
-              <label>Proveedor principal</label><div>{seleccionado.proveedorPrincipal}</div>
-              <label>Proveedor(es)</label><div>{seleccionado.proveedoresUnicos.join(', ') || 'Sin proveedor asociado'}</div>
-              <label>Precio operativo</label><div>{mostrarPrecioOperativo(seleccionado.precioOperativo)}</div>
-              <label>Detalle de moneda</label>
-              <div>
-                C$: {seleccionado.precioOperativo.cantidadNio} precio(s) · USD: {seleccionado.precioOperativo.cantidadUsd} precio(s)
-              </div>
-              <label>Estado</label><div>{seleccionado.estado}</div>
-              <label>Origen</label><div>{seleccionado.origen}</div>
+      {tab === 'materiales' && (
+        <section className="mm3-grid">
+          <form className="mm3-card" onSubmit={guardarMaterial}>
+            <div className="title"><PackagePlus size={20} /><h2>{editMaterial ? 'Editar material' : 'Nuevo material'}</h2></div>
+
+            <input placeholder="Nombre" value={materialForm.nombre} onChange={(e) => setMaterialForm({ ...materialForm, nombre: e.target.value })} required />
+
+            <div className="two">
+              <select value={materialForm.tipo} onChange={(e) => setMaterialForm({ ...materialForm, tipo: e.target.value })}>
+                {tipos.map((x) => <option key={x}>{x}</option>)}
+              </select>
+              <select value={materialForm.categoria} onChange={(e) => setMaterialForm({ ...materialForm, categoria: e.target.value })}>
+                {categorias.map((x) => <option key={x}>{x}</option>)}
+              </select>
             </div>
-          ) : (
-            <div className="empty">Seleccioná un material.</div>
-          )}
-        </aside>
-      </section>
+
+            <div className="two">
+              <input placeholder="Marca" value={materialForm.marca || ''} onChange={(e) => setMaterialForm({ ...materialForm, marca: e.target.value })} />
+              <input placeholder="Proveedor" value={materialForm.proveedor || ''} onChange={(e) => setMaterialForm({ ...materialForm, proveedor: e.target.value })} />
+            </div>
+
+            <select value={materialForm.unidad_compra} onChange={(e) => setMaterialForm({ ...materialForm, unidad_compra: e.target.value })}>
+              {unidades.map((x) => <option key={x}>{x}</option>)}
+            </select>
+
+            <div className="two">
+              <input type="number" step="0.01" placeholder="Ancho" value={materialForm.ancho} onChange={(e) => setMaterialForm({ ...materialForm, ancho: e.target.value })} />
+              <input type="number" step="0.01" placeholder="Largo" value={materialForm.largo} onChange={(e) => setMaterialForm({ ...materialForm, largo: e.target.value })} />
+            </div>
+
+            <div className="two">
+              <input type="number" step="0.01" placeholder="Costo compra" value={materialForm.costo_compra} onChange={(e) => setMaterialForm({ ...materialForm, costo_compra: e.target.value })} />
+              <input type="number" step="0.01" placeholder="IVA %" value={materialForm.iva} onChange={(e) => setMaterialForm({ ...materialForm, iva: e.target.value })} />
+            </div>
+
+            <input
+              type="number"
+              step="0.01"
+              placeholder={['Rollo', 'Lamina'].includes(materialForm.unidad_compra) ? 'Desperdicio %' : 'Recargo %'}
+              value={materialForm.desperdicio_recargo}
+              onChange={(e) => setMaterialForm({ ...materialForm, desperdicio_recargo: e.target.value })}
+            />
+
+            <textarea placeholder="Notas" value={materialForm.notas || ''} onChange={(e) => setMaterialForm({ ...materialForm, notas: e.target.value })} />
+
+            <div className="result">Costo real: <b>{money(costoPreview)}</b></div>
+
+            <button className="primary" type="submit"><CheckCircle2 size={18} /> Guardar</button>
+          </form>
+
+          <section className="mm3-card">
+            <div className="title"><Search size={20} /><h2>Materiales</h2></div>
+            <input placeholder="Buscar por nombre, categoria, marca, proveedor, unidad o notas..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+
+            <div className="list">
+              {listaMateriales.map((m) => {
+                const proveedores = proveedoresDelMaterial(m, materiales, emcItems);
+                const totalProveedores = contarProveedoresUnicos(proveedores) || (m.proveedor ? 1 : 0);
+                const operativo = costoOperativo(proveedores.length ? proveedores : [m]);
+
+                return (
+                  <article className="row" key={m.id}>
+                    <div>
+                      <h3>{m.nombre}</h3>
+                      <p><b>Categoria:</b> {m.categoria || 'Sin categoria'} · <b>Unidad:</b> {m.unidad_compra || 'Sin unidad'}</p>
+                      <p><b>Marca:</b> {m.marca || 'Sin marca'}</p>
+                      <p><b>Proveedor principal:</b> {proveedorPrincipal(m, proveedores)}</p>
+                      <p><b>Proveedores asociados:</b> {totalProveedores}</p>
+                      <span>Costo operativo: {money(operativo)}</span>
+                    </div>
+                    <div className="actions">
+                      <button className="btn-edit" onClick={() => editarMaterial(m)}>Editar</button>
+                      <button className="btn-delete" onClick={() => eliminar('materiales_master', m.id)}>Eliminar</button>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        </section>
+      )}
+
+      {tab === 'tintas' && (
+        <section className="mm3-grid">
+          <form className="mm3-card" onSubmit={guardarTinta}>
+            <div className="title"><PackagePlus size={20} /><h2>{editTinta ? 'Editar tinta' : 'Nueva tinta'}</h2></div>
+            <input placeholder="Nombre" value={tintaForm.nombre} onChange={(e) => setTintaForm({ ...tintaForm, nombre: e.target.value })} required />
+            <input type="number" step="0.01" placeholder="Costo m2" value={tintaForm.costo_m2} onChange={(e) => setTintaForm({ ...tintaForm, costo_m2: e.target.value })} />
+            <textarea placeholder="Notas" value={tintaForm.notas || ''} onChange={(e) => setTintaForm({ ...tintaForm, notas: e.target.value })} />
+            <button className="primary" type="submit"><CheckCircle2 size={18} /> Guardar</button>
+          </form>
+
+          <section className="mm3-card">
+            <div className="title"><Search size={20} /><h2>Tintas</h2></div>
+            <div className="list">
+              {tintas.map((t) => (
+                <article className="row" key={t.id}>
+                  <div>
+                    <h3>{t.nombre}</h3>
+                    <p>Costo m2</p>
+                    <span>{money(t.costo_m2)}</span>
+                  </div>
+                  <div className="actions">
+                    <button onClick={() => editarTinta(t)}><Edit3 size={15} /></button>
+                    <button onClick={() => eliminar('tintas_master', t.id)}><Trash2 size={15} /></button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </section>
+      )}
+
+      {tab === 'combinaciones' && (
+        <section className="mm3-grid">
+          <form className="mm3-card" onSubmit={guardarCombo}>
+            <div className="title"><PackagePlus size={20} /><h2>{editCombo ? 'Editar combinacion' : 'Nueva combinacion'}</h2></div>
+
+            <select value={comboForm.categoria} onChange={(e) => setComboForm({ ...comboForm, categoria: e.target.value })}>
+              {categorias.map((x) => <option key={x}>{x}</option>)}
+            </select>
+
+            <input placeholder="Nombre combinacion" value={comboForm.nombre} onChange={(e) => setComboForm({ ...comboForm, nombre: e.target.value })} required />
+
+            <select value={comboForm.estado} onChange={(e) => setComboForm({ ...comboForm, estado: e.target.value })}>
+              <option value="borrador">Borrador</option>
+              <option value="aprobado">Aprobado</option>
+              <option value="inactivo">Inactivo</option>
+            </select>
+
+            <textarea placeholder="Notas" value={comboForm.notas || ''} onChange={(e) => setComboForm({ ...comboForm, notas: e.target.value })} />
+
+            <button className="primary" type="submit"><CheckCircle2 size={18} /> Guardar combinacion</button>
+
+            {editCombo && (
+              <div className="combo-box">
+                <h3>Agregar material</h3>
+                <input placeholder="Buscar material..." value={busquedaMaterialCombo} onChange={(e) => setBusquedaMaterialCombo(e.target.value)} />
+
+                <div className="mini-scroll">
+                  {materialesParaCombo.map((m) => (
+                    <button type="button" key={m.id} onClick={() => setMaterialSeleccionado(m)}>
+                      {m.nombre}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="selected">
+                  {materialSeleccionado ? materialSeleccionado.nombre : 'Sin material seleccionado'}
+                </div>
+
+                <input type="number" step="0.01" value={cantidadCombo} onChange={(e) => setCantidadCombo(e.target.value)} />
+
+                <button type="button" className="secondary" onClick={agregarDetalle}>Agregar a combinacion</button>
+
+                <div className="added">
+                  {detallesCombo.map((d) => {
+                    const mat = materiales.find((m) => m.id === d.material_id);
+                    return (
+                      <p key={d.id}>
+                        {mat?.nombre || 'Material'} x {d.cantidad}
+                        <button type="button" onClick={() => eliminar('combinaciones_detalle', d.id)}>Eliminar</button>
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </form>
+
+          <section className="mm3-card">
+            <div className="title"><Search size={20} /><h2>Combinaciones</h2></div>
+            <div className="list">
+              {combinaciones.map((c) => (
+                <article className="row" key={c.id}>
+                  <div>
+                    <h3>{c.nombre}</h3>
+                    <p>{c.categoria} · {c.estado}</p>
+                  </div>
+                  <div className="actions">
+                    <button onClick={() => editarComboFn(c)}><Edit3 size={15} /></button>
+                    <button onClick={() => eliminar('combinaciones_master', c.id)}><Trash2 size={15} /></button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </section>
+      )}
 
       <style>{`
-        .mm3-page{min-height:100vh;background:#f4f6fb;padding:10px;display:grid;gap:10px;font-family:Inter,system-ui,sans-serif;color:#0f172a}
-        .mm3-card{background:white;border-radius:16px;padding:12px;box-shadow:0 8px 20px rgba(15,23,42,.06)}
-        .mm3-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
-        .mm3-head span{font-size:10px;font-weight:900;color:#b48722;letter-spacing:.06em;text-transform:uppercase}
-        .mm3-head h1{margin:2px 0;font-size:20px;line-height:1.1}
-        .mm3-head p{margin:0;color:#64748b;font-size:12px;font-weight:800}
-        .secondary{border:0;border-radius:12px;padding:10px 14px;background:#111827;color:white;font-weight:900;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;white-space:nowrap}
-        .searchbox{margin-top:10px;border:1px solid #dbe3ef;border-radius:12px;padding:0 10px;display:flex;align-items:center;gap:8px;background:#fff}
-        .searchbox input{width:100%;border:0;outline:0;padding:11px 0;font-size:14px;background:white;font-weight:800}
-        .result{margin-top:8px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:9px;font-size:13px;font-weight:900}
-        .error{margin-top:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:12px;padding:9px;font-size:13px;font-weight:900}
-        .mm3-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:10px;align-items:start}
-        .section-title{font-size:15px;font-weight:950;margin-bottom:8px}
-        .table-wrap{max-height:560px;overflow:auto;border:1px solid #e5e7eb;border-radius:12px}
-        table{width:100%;border-collapse:collapse;font-size:12px;background:white}
-        th{position:sticky;top:0;background:#f8fafc;border-bottom:1px solid #e5e7eb;text-align:left;padding:8px;font-size:11px;text-transform:uppercase;color:#475569;z-index:1}
-        td{border-bottom:1px solid #eef2f7;padding:8px;vertical-align:top;font-weight:800;color:#334155}
-        tr{cursor:pointer}
-        tr:hover,.selected{background:#f8fafc}
-        .name{font-weight:950;color:#0f172a;min-width:220px}
-        .price{font-weight:950;color:#0f172a;white-space:nowrap}
-        small{display:block;color:#64748b;font-size:10px;font-weight:800;margin-top:2px}
-        .detail{display:grid;gap:5px}
-        .detail label{font-size:10px;font-weight:950;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
-        .detail div{border:1px solid #e5e7eb;border-radius:10px;padding:8px;background:#f8fafc;font-size:12px;font-weight:900;color:#111827;word-break:break-word}
-        .empty{border:1px dashed #cbd5e1;border-radius:12px;padding:14px;text-align:center;color:#64748b;font-weight:900;background:#f8fafc;font-size:13px}
+        .mm3-page{min-height:100vh;background:#f4f6fb;padding:14px;display:grid;gap:14px}
+        .mm3-hero,.mm3-card{background:white;border-radius:22px;padding:16px;box-shadow:0 12px 28px rgba(15,23,42,.08)}
+        .mm3-hero span{font-size:11px;font-weight:900;color:#b48722}
+        .mm3-hero h1{margin:6px 0;font-size:28px}
+        .mm3-hero p{margin:0;color:#64748b;font-weight:700}
+        .mm3-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+        .mm3-tabs button{border:0;border-radius:16px;padding:13px;background:white;color:#111827;font-weight:900}
+        .mm3-tabs .active{background:#111827;color:white}
+        .mm3-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+        .title{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+        .title h2{font-size:18px;margin:0}
+        input,select,textarea{width:100%;border:1px solid #dbe3ef;border-radius:15px;padding:12px;margin-bottom:10px;font-size:15px;background:white}
+        textarea{min-height:72px;resize:vertical}
+        .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .primary,.secondary{width:100%;border:0;border-radius:16px;padding:13px;background:#111827;color:white;font-weight:900;display:flex;align-items:center;justify-content:center;gap:8px}
+        .secondary{background:#334155;margin-top:8px}
+        .result{background:#f8fafc;border:1px solid #e5e7eb;border-radius:16px;padding:12px;margin-bottom:10px;font-weight:900}
+        .list{display:grid;gap:8px;max-height:560px;min-height:280px;overflow-y:auto;padding-right:4px;background:#fff}
+        .row{border:1px solid #e5e7eb;border-radius:15px;padding:10px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+        .row h3{margin:0;font-size:14px}
+        .row p{margin:3px 0;color:#64748b;font-size:12px;font-weight:800}
+        .row span{font-size:12px;font-weight:900}
+        .actions{display:flex;gap:8px}
+        .actions button{min-width:90px;height:38px;border:0;border-radius:12px;font-size:12px;font-weight:900;color:#fff;cursor:pointer}.btn-edit{background:#0f766e}.btn-delete{background:#b91c1c}
+        .combo-box{margin-top:14px;border:1px solid #e5e7eb;border-radius:18px;padding:12px;background:#f8fafc}
+        .combo-box h3{margin:0 0 10px}
+        .mini-scroll{max-height:310px;overflow-y:auto;display:grid;gap:6px;margin-bottom:8px}
+        .mini-scroll button{text-align:left;border:1px solid #e5e7eb;background:white;border-radius:12px;padding:10px;font-weight:800}
+        .selected{background:white;border:1px dashed #cbd5e1;border-radius:12px;padding:10px;margin-bottom:8px;font-weight:900}
+        .added p{display:flex;justify-content:space-between;gap:8px;background:white;border-radius:12px;padding:8px;margin:6px 0;font-size:12px;font-weight:900}
+        .added button{border:0;background:#991b1b;color:white;border-radius:10px;padding:5px 8px;font-size:11px}
         .center{text-align:center;max-width:420px;margin:40px auto}
-        @media(max-width:950px){.mm3-grid{grid-template-columns:1fr}.mm3-head{align-items:flex-start}.table-wrap{max-height:460px}}
+        @media(max-width:850px){
+          .mm3-grid,.two{grid-template-columns:1fr}
+          .mm3-page{padding:10px}
+          .mm3-hero h1{font-size:24px}
+          .mm3-card{padding:13px}
+          .list{max-height:420px}
+        }
       `}</style>
     </main>
   );
