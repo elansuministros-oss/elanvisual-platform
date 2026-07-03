@@ -53,10 +53,13 @@ const inicialCombinacion = {
   notas: '',
 };
 
-const money = (v) =>
+const monedaEMC = (item = {}) =>
+  String(item.moneda || item.currency || item.divisa || item.elankav_catalogo_items?.moneda || '').trim().toUpperCase();
+
+const money = (v, moneda = 'USD') =>
   new Intl.NumberFormat('es-NI', {
     style: 'currency',
-    currency: 'USD',
+    currency: moneda === 'NIO' || moneda === 'C$' || moneda === 'CORDOBA' || moneda === 'CORDOBAS' ? 'NIO' : 'USD',
     minimumFractionDigits: 2,
   }).format(Number(v || 0));
 
@@ -184,7 +187,7 @@ const adaptarItemEMCAMaterialMaster = (item = {}, index = 0) => {
     costo_real: costoCompra,
     activo: item.activo ?? itemBase.activo ?? true,
     notas: valorTexto(item.notas, item.observaciones, itemBase.notas, itemBase.observaciones),
-    moneda: valorTexto(item.moneda, itemBase.moneda),
+   moneda: monedaEMC({ ...item, elankav_catalogo_items: itemBase }) || 'NIO',
     _origen: "EMC",
   };
 };
@@ -572,7 +575,7 @@ export default function MaterialesCostos() {
                       <p><b>Marca:</b> {m.marca || 'Sin marca'}</p>
                       <p><b>Proveedor principal:</b> {proveedorPrincipal(m, proveedores)}</p>
                       <p><b>Proveedores asociados:</b> {totalProveedores}</p>
-                      <span>Costo operativo: {money(operativo)}</span>
+                      <span>Costo operativo: {money(operativo, m.moneda)}</span>
                     </div>
                     <div className="actions">
                       <button className="btn-edit" onClick={() => editarMaterial(m)}>Editar</button>
