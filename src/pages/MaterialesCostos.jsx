@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Edit3, Lock, PackagePlus, Search, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
@@ -62,38 +62,15 @@ const money = (v) =>
 
 const num = (v) => Number(v || 0);
 
-const normalizar = (v = "") =>
-  String(v || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+const normalizar = (v = '') =>
+  String(v).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
 
-const nombreEMC = (item = {}) =>
-  item.nombre_catalogo || item.nombre || item.descripcion || item.codigo_catalogo || "";
+const claveMaterial = (m = {}) =>
+  `${normalizar(m.nombre)}|${normalizar(m.categoria)}|${normalizar(m.unidad_compra)}`;
 
-const precioEMC = (item = {}) =>
-  Number(item.precio_final || item.precio_lista || item.costo_unitario || item.costo || 0);
-
-const proveedorEMC = (item = {}) =>
-  item.proveedor_nombre || item.proveedor || item.nombre_proveedor || item.proveedor_id || "";
-
-const proveedoresDelMaterial = (material, materiales = [], emcItems = []) => {
-  const nombreBase = normalizar(material.nombre);
-
-  const manuales = materiales.filter((m) =>
-    normalizar(m.nombre) === nombreBase && m.proveedor
-  );
-
-  const emc = emcItems
-    .filter((item) => {
-      const n = normalizar(nombreEMC(item));
-      return n && nombreBase && (n === nombreBase || n.includes(nombreBase) || nombreBase.includes(n));
-    })
-    .map((item) => ({
-      ...item,
-      proveedor: proveedorEMC(item),
-      costo_real: precioEMC(item),
-      costo_compra: precioEMC(item),
-    }));
-
-  return [...manuales, ...emc].filter((x) => x.proveedor);
+const proveedoresDelMaterial = (material, materiales = []) => {
+  const clave = claveMaterial(material);
+  return materiales.filter((m) => claveMaterial(m) === clave && m.proveedor);
 };
 
 const costoOperativo = (items = []) => {
@@ -107,12 +84,6 @@ const costoOperativo = (items = []) => {
   const mid = Math.floor(precios.length / 2);
   return precios.length % 2 ? precios[mid] : (precios[mid - 1] + precios[mid]) / 2;
 };
-
-const contarProveedoresUnicos = (items = []) =>
-  new Set(items.map((x) => String(x.proveedor || "").trim()).filter(Boolean)).size;
-
-const proveedorPrincipal = (material, proveedores = []) =>
-  material.proveedor || proveedores.find((x) => x.proveedor)?.proveedor || "Sin proveedor";
 
 function calcularCostoReal(form) {
   const costo = num(form.costo_compra);
@@ -140,7 +111,6 @@ export default function MaterialesCostos() {
   const [tintas, setTintas] = useState([]);
   const [combinaciones, setCombinaciones] = useState([]);
   const [detalles, setDetalles] = useState([]);
-  const [emcItems, setEmcItems] = useState([]);
 
   const [materialForm, setMaterialForm] = useState(inicialMaterial);
   const [tintaForm, setTintaForm] = useState(inicialTinta);
@@ -158,19 +128,17 @@ export default function MaterialesCostos() {
   const costoPreview = useMemo(() => calcularCostoReal(materialForm), [materialForm]);
 
   const cargarTodo = async () => {
-    const [mat, tin, com, det, emc] = await Promise.all([
-  supabase.from('materiales_master').select('*').order('categoria'),
-  supabase.from('tintas_master').select('*').order('nombre'),
-  supabase.from('combinaciones_master').select('*').order('categoria'),
-  supabase.from('combinaciones_detalle').select('*'),
-  supabase.from('elankav_catalogo_proveedor_items').select('*').limit(2000),
-]);
+    const [mat, tin, com, det] = await Promise.all([
+      supabase.from('materiales_master').select('*').order('categoria'),
+      supabase.from('tintas_master').select('*').order('nombre'),
+      supabase.from('combinaciones_master').select('*').order('categoria'),
+      supabase.from('combinaciones_detalle').select('*'),
+    ]);
 
     if (!mat.error) setMateriales(mat.data || []);
     if (!tin.error) setTintas(tin.data || []);
     if (!com.error) setCombinaciones(com.data || []);
     if (!det.error) setDetalles(det.data || []);
-    if (!emc.error) setEmcItems(emc.data || []);
   };
 
   useEffect(() => {
@@ -179,22 +147,10 @@ export default function MaterialesCostos() {
 
   const listaMateriales = useMemo(() => {
     const q = normalizar(busqueda);
-
-    return materiales.filter((m) => {
-      const relacionados = proveedoresDelMaterial(m, materiales, emcItems);
-      const texto = normalizar([
-        m.nombre,
-        m.categoria,
-        m.marca,
-        m.proveedor,
-        m.unidad_compra,
-        m.notas,
-        ...relacionados.map((x) => x.proveedor),
-      ].join(" "));
-
-      return !q || texto.includes(q);
-    });
-  }, [materiales, emcItems, busqueda]);
+    return materiales.filter((m) =>
+      normalizar(`${m.nombre} ${m.categoria} ${m.marca} ${m.proveedor} ${m.unidad_compra} ${m.notas}`).includes(q)
+    );
+  }, [materiales, busqueda]);
 
   const materialesParaCombo = useMemo(() => {
     const q = normalizar(busquedaMaterialCombo);
@@ -391,8 +347,8 @@ export default function MaterialesCostos() {
 
             <div className="list">
               {listaMateriales.map((m) => {
-                const proveedores = proveedoresDelMaterial(m, materiales, emcItems);
-                const totalProveedores = contarProveedoresUnicos(proveedores) || (m.proveedor ? 1 : 0);
+                const proveedores = proveedoresDelMaterial(m, materiales);
+                const totalProveedores = proveedores.length || (m.proveedor ? 1 : 0);
                 const operativo = costoOperativo(proveedores.length ? proveedores : [m]);
 
                 return (
@@ -401,7 +357,7 @@ export default function MaterialesCostos() {
                       <h3>{m.nombre}</h3>
                       <p><b>Categoria:</b> {m.categoria || 'Sin categoria'} · <b>Unidad:</b> {m.unidad_compra || 'Sin unidad'}</p>
                       <p><b>Marca:</b> {m.marca || 'Sin marca'}</p>
-                      <p><b>Proveedor principal:</b> {proveedorPrincipal(m, proveedores)}</p>
+                      <p><b>Proveedor principal:</b> {m.proveedor || 'Sin proveedor'}</p>
                       <p><b>Proveedores asociados:</b> {totalProveedores}</p>
                       <span>Costo operativo: {money(operativo)}</span>
                     </div>
