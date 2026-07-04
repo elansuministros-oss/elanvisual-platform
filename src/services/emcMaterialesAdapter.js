@@ -4,11 +4,16 @@
   }
 
   const [itemsRes, proveedorItemsRes] = await Promise.all([
-    supabase.from('elankav_catalogo_items').select('*').limit(5000),
     supabase
-      .from('elankav_catalogo_proveedor_items')
-      .select('*, elankav_catalogo_listas_precio(moneda)')
-      .limit(5000)
+  .from('elankav_catalogo_items')
+  .select(`
+    *,
+    elankav_catalogo_categorias(nombre),
+    elankav_catalogo_subcategorias(nombre),
+    elankav_catalogo_marcas(nombre),
+    elankav_catalogo_unidades(nombre)
+  `)
+  .limit(5000),
   ]);
 
   if (itemsRes.error) return { data: [], error: itemsRes.error };
@@ -52,11 +57,37 @@
         codigo: item.codigo_catalogo || item.codigo || item.sku || '',
         nombre,
         descripcion: item.descripcion || nombre,
-        categoria: item.categoria || item.categoria_nombre || 'EMC',
-        subcategoria: item.subcategoria || item.subcategoria_nombre || '',
-        marca: item.marca || item.marca_nombre || '',
-        unidad: item.unidad || item.unidad_nombre || item.unidad_compra || 'unidad',
-        unidad_compra: item.unidad_compra || item.unidad || item.unidad_nombre || 'unidad',
+        categoria:
+  item.elankav_catalogo_categorias?.nombre ||
+  item.categoria ||
+  item.categoria_nombre ||
+  'EMC',
+
+subcategoria:
+  item.elankav_catalogo_subcategorias?.nombre ||
+  item.subcategoria ||
+  item.subcategoria_nombre ||
+  '',
+
+marca:
+  item.elankav_catalogo_marcas?.nombre ||
+  item.marca ||
+  item.marca_nombre ||
+  '',
+
+unidad:
+  item.elankav_catalogo_unidades?.nombre ||
+  item.unidad ||
+  item.unidad_nombre ||
+  item.unidad_compra ||
+  'm2',
+
+unidad_compra:
+  item.elankav_catalogo_unidades?.nombre ||
+  item.unidad_compra ||
+  item.unidad ||
+  item.unidad_nombre ||
+  'm2',
         precio_base_usd: precio,
         precio_total_usd: precio,
         costo_unitario: precio,
