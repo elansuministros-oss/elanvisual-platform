@@ -184,7 +184,7 @@ function armarLineasAutomaticas(form, materiales, tintas) {
   const ia = inferir(form);
   const lineas = [];
 
-  cconst lona = buscar(materiales, ['lona banner', 'lona', 'banner'], form.descripcion);
+const lona = buscar(materiales, ['lona banner', 'lona', 'banner'], form.descripcion);
 const vinil = buscar(materiales, ['vinil', 'adhesivo', 'microperforado'], form.descripcion);
 const pvc = buscar(materiales, ['pvc'], form.descripcion);
   const acrilico = buscar(materiales, ['acrilico', 'acrilico']);
