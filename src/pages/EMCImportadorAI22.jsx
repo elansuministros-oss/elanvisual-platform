@@ -315,7 +315,7 @@ export default function EMCImportadorAI22() {
                       <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9", fontWeight: 800 }}>{item.nombre_catalogo || item.nombre || item.descripcion || "Producto EMC"}</td>
                       <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.precio_lista ?? item.costo_unitario ?? "-"}</td>
                       <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.moneda || item.moneda_precio || "NIO"}</td>
-                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.pagina || item.observaciones || "-"}</td>
+                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9" }}>{item.pagina || "-"}</td>
                     </tr>
                   ))}
                   {!productosGuardados.length && (
