@@ -58,13 +58,34 @@ const costoMaterial = (m) =>
 
 function textoMaterial(m) {
   return limpiar(
-    `${m?.nombre || ''} ${m?.categoria || ''} ${m?.descripcion || ''} ${m?.unidad || ''}`
+    `${m?.tipo || ''} ${m?.categoria || ''} ${m?.nombre || ''} ${m?.marca || ''} ${m?.proveedor || ''} ${m?.unidad_compra || ''} ${m?.notas || ''}`
   );
 }
 
-function buscar(lista, palabras) {
-  const keys = palabras.map(limpiar);
-  return (lista || []).find((m) => keys.some((k) => textoMaterial(m).includes(k)));
+function buscar(lista, palabras, descripcion = '') {
+  const keys = palabras.map(limpiar).filter(Boolean);
+  const textoPedido = limpiar(descripcion);
+  const tokensPedido = textoPedido.split(/\s+/).filter((t) => t.length >= 3);
+
+  const candidatos = (lista || [])
+    .map((m) => {
+      const texto = textoMaterial(m);
+      let puntos = 0;
+
+      keys.forEach((k) => {
+        if (texto.includes(k)) puntos += 10;
+      });
+
+      tokensPedido.forEach((token) => {
+        if (texto.includes(token)) puntos += 5;
+      });
+
+      return { material: m, puntos };
+    })
+    .filter((x) => x.puntos > 0)
+    .sort((a, b) => b.puntos - a.puntos);
+
+  return candidatos[0]?.material || null;
 }
 
 function inferir(form) {
@@ -89,7 +110,7 @@ function crearLinea({ nombre, tipo, unidad, cantidad, material }) {
     id: `linea-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     nombre: material?.nombre || nombre,
     tipo,
-    unidad: material?.unidad || unidad,
+    unidad: material?.unidad || material?.unidad_compra || unidad,
     cantidad: Math.max(Number(cantidad || 1), 0),
     costoUnitario: costoMaterial(material),
     origen: material ? 'Material Master' : 'Regla interna',
@@ -105,18 +126,16 @@ function armarLineasAutomaticas(form, materiales, tintas) {
   const ia = inferir(form);
   const lineas = [];
 
-  const lona = buscar(materiales, ['lona banner', 'lona', 'banner']);
-  const vinil = buscar(materiales, ['vinil', 'adhesivo', 'microperforado']);
-  const pvc = buscar(materiales, ['pvc']);
-  const acrilico = buscar(materiales, ['acrilico', 'acrílico']);
-  const acm = buscar(materiales, ['acm', 'alucobond']);
-  const tubo = buscar(materiales, ['tubo', 'metal', 'poste']);
-  const led = buscar(materiales, ['led']);
-  const fuente = buscar(materiales, ['fuente']);
-  const instalacion = buscar(materiales, ['instalacion', 'instalación', 'mano de obra', 'montaje']);
-  const tornillo = buscar(materiales, ['tornillo', 'silicon', 'sellador', 'remache']);
-  const tintaSeleccionada = (tintas || []).find((t) => String(t.id) === String(form.tintaId));
-  const tinta = tintaSeleccionada || null;
+  const lona = buscar(materiales, ['lona banner', 'lona', 'banner'], form.descripcion);
+const vinil = buscar(materiales, ['vinil', 'adhesivo', 'microperforado'], form.descripcion);
+const pvc = buscar(materiales, ['pvc'], form.descripcion);
+const acrilico = buscar(materiales, ['acrilico', 'acrílico'], form.descripcion);
+const acm = buscar(materiales, ['acm', 'alucobond'], form.descripcion);
+const tubo = buscar(materiales, ['tubo', 'metal', 'poste'], form.descripcion);
+const led = buscar(materiales, ['led'], form.descripcion);
+const fuente = buscar(materiales, ['fuente'], form.descripcion);
+const instalacion = buscar(materiales, ['instalacion', 'instalación', 'mano de obra', 'montaje'], form.descripcion);
+const tornillo = buscar(materiales, ['tornillo', 'silicon', 'sellador', 'remache'], form.descripcion);
 
   if (ia.lona) {
     lineas.push(
@@ -236,7 +255,7 @@ function armarLineasAutomaticas(form, materiales, tintas) {
     );
   }
   if (lineas.length === 0) {
-    const principal = buscar(materiales, ['lona', 'vinil', 'pvc', 'acrilico', 'acrílico', 'acm']) || materiales[0];
+const principal = buscar(materiales, ['lona', 'vinil', 'pvc', 'acrilico', 'acrílico', 'acm'], form.descripcion) || materiales[0];
 
     lineas.push(
       crearLinea({
