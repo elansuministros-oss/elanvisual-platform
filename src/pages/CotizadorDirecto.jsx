@@ -108,11 +108,16 @@ function inferir(form) {
 function crearLinea({ nombre, tipo, unidad, cantidad, material }) {
   return {
     id: `linea-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    materialId: material?.id || null,
     nombre: material?.nombre || nombre,
     tipo,
+    categoria: material?.categoria || '',
+    marca: material?.marca || '',
+    proveedor: material?.proveedor || '',
     unidad: material?.unidad || material?.unidad_compra || unidad,
     cantidad: Math.max(Number(cantidad || 1), 0),
     costoUnitario: costoMaterial(material),
+    costoTotal: Math.max(Number(cantidad || 1), 0) * costoMaterial(material),
     origen: material ? 'Material Master' : 'Regla interna',
   };
 }
@@ -1180,14 +1185,23 @@ export default function CotizadorDirecto({ setPage }) {
         </div>
 
         {lineasPreview.length === 0 ? (
-          <p className="muted">Al calcular un ítem se mostrarán aquí las categorías detectadas.</p>
-        ) : (
-          <div className="chips">
-            {lineasPreview.map((l) => (
-              <span key={l.id}>{l.tipo}</span>
-            ))}
-          </div>
-        )}
+  <p className="muted">Al calcular un ítem se mostrarán aquí las categorías detectadas.</p>
+) : (
+  <div className="trazabilidad-box">
+    {lineasPreview.map((l) => (
+      <article key={l.id} className="trazabilidad-item">
+        <strong>{l.tipo}</strong>
+        <p><b>Material:</b> {l.nombre}</p>
+        <p><b>Categoría:</b> {l.categoria || '-'}</p>
+        <p><b>Marca:</b> {l.marca || '-'}</p>
+        <p><b>Proveedor:</b> {l.proveedor || '-'}</p>
+        <p><b>Unidad:</b> {l.unidad}</p>
+        <p><b>Cantidad:</b> {Number(l.cantidad || 0).toFixed(2)}</p>
+        <p><b>Origen:</b> {l.origen}</p>
+      </article>
+    ))}
+  </div>
+)}
 
         <p className="muted">No se muestran costos internos al vendedor. Solo categorías detectadas.</p>
       </section>
@@ -2035,6 +2049,30 @@ export default function CotizadorDirecto({ setPage }) {
           cursor:pointer;
         }
 
+
+        .trazabilidad-box{
+  display:grid;
+  gap:10px;
+}
+
+.trazabilidad-item{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  padding:14px;
+}
+
+.trazabilidad-item strong{
+  display:block;
+  color:#0f2f5f;
+  margin-bottom:8px;
+}
+
+.trazabilidad-item p{
+  margin:4px 0;
+  color:#334155;
+  font-size:14px;
+}
         @media(max-width:900px){
           .cot-directo{
             padding:14px;
