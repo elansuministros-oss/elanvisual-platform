@@ -692,39 +692,39 @@ const nuevo = {
   };
 
   const calcularPreview = () => {
-  if (!campoCompleto(form.descripcion)) {
-    setMensaje('Escribi la descripcion del item para poder calcular.');
-    return;
-  }
+    if (!campoCompleto(form.descripcion)) {
+      setMensaje('Escribi la descripcion del item para poder calcular.');
+      return;
+    }
 
-  const requiereTinta = inferir(form).impresion;
-  const tintaDefault = tintas?.[0]?.id || '';
+    const requiereTinta = inferir(form).impresion;
+    if (requiereTinta && !form.tintaId) {
+      setMensaje('Selecciona el tipo de tinta / impresion para calcular el precio.');
+      return;
+    }
 
-  if (requiereTinta && !form.tintaId && !tintaDefault) {
-    setMensaje('No hay tintas cargadas para calcular impresion.');
-    return;
-  }
+    const nuevas = armarLineasAutomaticas(form, materiales, tintas);
+    setLineasPreview(nuevas);
 
-  const formCalculo = {
-    ...form,
-    tintaId: form.tintaId || tintaDefault,
+    const sinCosto = nuevas.filter((l) => n(l.costoUnitario) <= 0);
+    setMensaje(
+      sinCosto.length
+        ? `Atencion: ${sinCosto.length} elemento(s) necesitan costo en Material Master.`
+        : 'item calculado correctamente.'
+    );
   };
 
-  const nuevas = armarLineasAutomaticas(formCalculo, materiales, tintas);
-  setLineasPreview(nuevas);
-
-  const sinCosto = nuevas.filter((l) => n(l.costoUnitario) <= 0);
-  setMensaje(
-    sinCosto.length
-      ? `Calculado con ${nuevas.length} linea(s). ${sinCosto.length} linea(s) sin costo.`
-      : `Calculado con ${nuevas.length} linea(s).`
+  const preview = useMemo(
+    () => resumenItem(lineasPreview, form.precioElegido),
+    [lineasPreview, form.precioElegido]
   );
-};
-const agregarItem = () => {
-  if (!lineasPreview.length && !productoSeleccionado) {
-    setMensaje('Primero calcula el item antes de agregarlo.');
-    return;
-  }
+
+  const agregarItem = () => {
+    if (!lineasPreview.length && !productoSeleccionado) {
+      setMensaje('Primero calcula el item con IA o selecciona un producto registrado.');
+      return;
+    }
+
     const precioProducto = Number(productoSeleccionado?.precio || productoSeleccionado?.precio_total_usd || 0);
 
     const resumenFinal = productoSeleccionado
