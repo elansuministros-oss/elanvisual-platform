@@ -1185,23 +1185,28 @@ export default function CotizadorDirecto({ setPage }) {
         </div>
 
         {lineasPreview.length === 0 ? (
-  <p className="muted">Al calcular un ítem se mostrarán aquí las categorías detectadas.</p>
+  <p className="muted">Al calcular un ítem se mostrará aquí la trazabilidad técnica.</p>
 ) : (
   <div className="trazabilidad-box">
     {lineasPreview.map((l) => (
       <article key={l.id} className="trazabilidad-item">
         <strong>{l.tipo}</strong>
-        <p><b>Material:</b> {l.nombre}</p>
+
+        <p><b>Material seleccionado:</b> {l.nombre || '-'}</p>
         <p><b>Categoría:</b> {l.categoria || '-'}</p>
         <p><b>Marca:</b> {l.marca || '-'}</p>
         <p><b>Proveedor:</b> {l.proveedor || '-'}</p>
-        <p><b>Unidad:</b> {l.unidad}</p>
-        <p><b>Cantidad:</b> {Number(l.cantidad || 0).toFixed(2)}</p>
-        <p><b>Origen:</b> {l.origen}</p>
+        <p><b>Unidad:</b> {l.unidad || '-'}</p>
+        <p><b>Cantidad calculada:</b> {Number(l.cantidad || 0).toFixed(2)}</p>
+        <p><b>Costo unitario interno:</b> {moneyUSD(l.costoUnitario || 0)}</p>
+        <p><b>Costo total interno:</b> {moneyUSD(l.costoTotal || 0)}</p>
+        <p><b>Origen:</b> {l.origen || '-'}</p>
       </article>
     ))}
   </div>
 )}
+
+<p className="muted">Vista interna. Esta información no aparece en el PDF del cliente.</p>
 
         <p className="muted">No se muestran costos internos al vendedor. Solo categorías detectadas.</p>
       </section>
@@ -2066,6 +2071,30 @@ export default function CotizadorDirecto({ setPage }) {
   display:block;
   color:#0f2f5f;
   margin-bottom:8px;
+}
+
+.trazabilidad-item p{
+  margin:4px 0;
+  color:#334155;
+  font-size:14px;
+}
+  .trazabilidad-box{
+  display:grid;
+  gap:10px;
+}
+
+.trazabilidad-item{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  padding:14px;
+}
+
+.trazabilidad-item strong{
+  display:block;
+  color:#0f2f5f;
+  margin-bottom:8px;
+  font-size:15px;
 }
 
 .trazabilidad-item p{
