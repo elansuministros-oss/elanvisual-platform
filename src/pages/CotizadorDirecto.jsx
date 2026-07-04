@@ -1257,7 +1257,6 @@ export default function CotizadorDirecto({ setPage }) {
 
 <p className="muted">Vista interna. Esta información no aparece en el PDF del cliente.</p>
 
-        <p className="muted">No se muestran costos internos al vendedor. Solo categorías detectadas.</p>
       </section>
 
       <section className="print-area">
