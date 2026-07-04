@@ -10,6 +10,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { cargarMaterialesEMC } from '../services/emcMaterialesAdapter';
 import { useApp } from '../context/AppContext';
 
 const POLITICA = {
@@ -333,7 +334,7 @@ export default function CotizadorDirecto({ setPage }) {
   useEffect(() => {
     const cargar = async () => {
       const [mat, tin] = await Promise.all([
-        supabase.from('materiales_master').select('*').order('categoria'),
+        cargarMaterialesEMC(supabase),
         supabase.from('tintas_master').select('*').order('nombre'),
       ]);
 
@@ -2267,5 +2268,6 @@ export default function CotizadorDirecto({ setPage }) {
     </main>
   );
 }
+
 
 

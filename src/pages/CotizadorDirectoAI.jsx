@@ -10,6 +10,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { cargarMaterialesEMC } from '../services/emcMaterialesAdapter';
 import { useApp } from '../context/AppContext';
 
 const POLITICA = {
@@ -423,7 +424,7 @@ const productosFiltrados = useMemo(() => {
   useEffect(() => {
     const cargar = async () => {
       const [mat, tin, prod] = await Promise.all([
-        supabase.from('materiales_master_v2').select('*').order('categoria'),
+        cargarMaterialesEMC(supabase),
         supabase.from('tintas_master').select('*').order('nombre'),
         supabase.from('productos_registrados').select('*').eq('activo', true).order('nombre'),
       ]);
@@ -2362,6 +2363,7 @@ cantidad: 1,
     </main>
   );
 }
+
 
 
 

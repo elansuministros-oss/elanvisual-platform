@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
+import { cargarMaterialesEMC } from '../services/emcMaterialesAdapter';
 
 const STORAGE_CLIENTES = 'elanvisual_cotizador_clientes_v1';
 
@@ -856,3 +857,4 @@ ${item.nota ? `Nota: ${item.nota}` : ''}`;
     </main>
   );
 }
+
