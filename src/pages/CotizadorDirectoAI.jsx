@@ -78,14 +78,23 @@ function inferir(form) {
 }
 
 function crearLinea({ nombre, tipo, unidad, cantidad, material }) {
+  const cantidadCalculada = Math.max(Number(cantidad || 1), 0);
+  const costoUnitarioCalculado = costoMaterial(material);
+
   return {
     id: `linea-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    materialId: material?.id || null,
     nombre: material?.nombre || nombre,
     tipo,
-    unidad: material?.unidad || unidad,
-    cantidad: Math.max(Number(cantidad || 1), 0),
-    costoUnitario: costoMaterial(material),
+    categoria: material?.categoria || '',
+    marca: material?.marca || '',
+    proveedor: material?.proveedor || '',
+    unidad: material?.unidad || material?.unidad_compra || unidad,
+    cantidad: cantidadCalculada,
+    costoUnitario: costoUnitarioCalculado,
+    costoTotal: cantidadCalculada * costoUnitarioCalculado,
     origen: material ? 'Material Master' : 'Regla interna',
+    material: material || null,
   };
 }
 
@@ -1233,26 +1242,42 @@ cantidad: 1,
       </section>
 
       <section className="cd-card no-print">
-        <div className="cd-title">
-          <ImagePlus size={20} />
-          <h2>items cargados en cotizacion</h2>
-        </div>
+  <div className="cd-title">
+    <h2>Validacion interna IA</h2>
+  </div>
 
-        {items.length === 0 && <p className="empty">Todavia no hay items agregados.</p>}
+  {items.length === 0 ? (
+    <p className="muted">Agrega un item a la cotizacion para ver la trazabilidad tecnica.</p>
+  ) : (
+    <div className="trazabilidad-box">
+      {items.map((item, idx) => (
+        <article className="trazabilidad-item" key={item.id}>
+          <strong>ITEM {idx + 1}</strong>
 
-        <div className="items">
-          {items.map((item, idx) => (
-            <article className="item" key={item.id}>
-              <b>{idx + 1}</b>
-              <span>{item.descripcion}</span>
-              <strong>{money(item.resumen.venta)}</strong>
-              <button type="button" onClick={() => eliminarItem(item.id)}>
-                <Trash2 size={16} />
-              </button>
-            </article>
+          <p><b>Descripcion:</b> {item.descripcion}</p>
+          <p><b>Precio venta:</b> {money(item.resumen?.venta || 0)}</p>
+
+          {(item.lineas || []).map((l) => (
+            <div className="trazabilidad-linea" key={l.id}>
+              <p><b>Tipo:</b> {l.tipo || '-'}</p>
+              <p><b>Material seleccionado:</b> {l.nombre || '-'}</p>
+              <p><b>Categoria:</b> {l.categoria || '-'}</p>
+              <p><b>Marca:</b> {l.marca || '-'}</p>
+              <p><b>Proveedor:</b> {l.proveedor || '-'}</p>
+              <p><b>Unidad:</b> {l.unidad || '-'}</p>
+              <p><b>Cantidad calculada:</b> {Number(l.cantidad || 0).toFixed(2)}</p>
+              <p><b>Costo unitario interno:</b> {money(l.costoUnitario || 0)}</p>
+              <p><b>Costo total interno:</b> {money(l.costoTotal || 0)}</p>
+              <p><b>Origen:</b> {l.origen || '-'}</p>
+            </div>
           ))}
-        </div>
-      </section>
+        </article>
+      ))}
+    </div>
+  )}
+
+  <p className="muted">Vista interna. Esta informacion no aparece en el PDF del cliente.</p>
+</section>
 
       <section className="cd-card no-print">
         <div className="cd-title">
@@ -2113,6 +2138,36 @@ cantidad: 1,
           cursor:pointer;
         }
 
+        .trazabilidad-box{
+  display:grid;
+  gap:12px;
+}
+
+.trazabilidad-item{
+  background:#f8fafc;
+  border:1px solid #e2e8f0;
+  border-radius:16px;
+  padding:14px;
+}
+
+.trazabilidad-item strong{
+  display:block;
+  color:#0f2f5f;
+  margin-bottom:10px;
+  font-size:15px;
+}
+
+.trazabilidad-item p{
+  margin:4px 0;
+  color:#334155;
+  font-size:14px;
+}
+
+.trazabilidad-linea{
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid #dbe3ef;
+}
         @media(max-width:900px){
           .cot-directo{
             padding:14px;
