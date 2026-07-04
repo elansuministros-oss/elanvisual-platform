@@ -140,11 +140,10 @@ export default function CotizadorVisual() {
   const cargarMateriales = async () => {
     try {
       setCargandoMateriales(true);
-      const { data, error } = await supabase
-        .from('materiales')
-        .select('*')
-        .eq('activo', true)
-        .order('categoria', { ascending: true });
+      const { data, error } = await cargarMaterialesEMC(supabase);
+
+if (error) throw error;
+setMateriales((data || []).map(adaptarMaterial));
 
       if (error) throw error;
       setMateriales((data || []).map(adaptarMaterial));
