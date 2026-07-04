@@ -54,7 +54,16 @@ const inicialCombinacion = {
 };
 
 const monedaEMC = (item = {}) =>
-  String(item.moneda || item.currency || item.divisa || item.elankav_catalogo_items?.moneda || '').trim().toUpperCase();
+  String(
+    item.moneda ||
+    item.currency ||
+    item.divisa ||
+    item.elankav_catalogo_listas_precio?.moneda ||
+    item.elankav_catalogo_items?.moneda ||
+    ''
+  )
+    .trim()
+    .toUpperCase();
 
 const money = (v, moneda = 'USD') =>
   new Intl.NumberFormat('es-NI', {
@@ -274,7 +283,10 @@ export default function MaterialesCostos() {
   const cargarTodo = async () => {
   const [items, proveedorItems, cats, subs, marcas, unids, tin, com, det] = await Promise.all([
     supabase.from('elankav_catalogo_items').select('*').limit(2000),
-    supabase.from('elankav_catalogo_proveedor_items').select('*').limit(2000),
+    supabase
+      .from('elankav_catalogo_proveedor_items')
+      .select('*, elankav_catalogo_listas_precio(moneda)')
+      .limit(2000),
     supabase.from('elankav_catalogo_categorias').select('*'),
     supabase.from('elankav_catalogo_subcategorias').select('*'),
     supabase.from('elankav_catalogo_marcas').select('*'),
