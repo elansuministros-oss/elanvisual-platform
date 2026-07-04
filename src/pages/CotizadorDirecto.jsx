@@ -615,16 +615,24 @@ export default function CotizadorDirecto({ setPage }) {
     }
 
     const nuevo = {
-      id: `item-${Date.now()}`,
-      descripcion: form.descripcion,
-      ancho: form.ancho,
-      alto: form.alto,
-      cantidad: form.cantidad,
-      precioElegido: form.precioElegido,
-      lineas: lineasPreview,
-      resumen: preview,
-      archivos: form.archivos,
-    };
+  id: `item-${Date.now()}`,
+  descripcion: form.descripcion,
+  ancho: form.ancho,
+  alto: form.alto,
+  cantidad: form.cantidad,
+  precioElegido: form.precioElegido,
+  lineas: lineasPreview,
+  sistemaSeleccionado: lineasPreview.map((l) => ({
+    nombre: l.nombre,
+    tipo: l.tipo,
+    unidad: l.unidad,
+    cantidad: l.cantidad,
+    costoUnitario: l.costoUnitario,
+    origen: l.origen,
+  })),
+  resumen: preview,
+  archivos: form.archivos,
+};
 
     setItems((prev) => [...prev, nuevo]);
     setLineasPreview([]);
