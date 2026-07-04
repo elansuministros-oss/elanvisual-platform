@@ -35,7 +35,7 @@ const limpiar = (v) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
-const costoMaterial = (m) =>
+const costoBaseMaterial = (m) =>
   n(
     m?.costo_real ??
       m?.costo ??
@@ -49,15 +49,88 @@ const costoMaterial = (m) =>
       0
   );
 
+const unidadNormalizada = (v) => limpiar(v).replace('²', '2');
+
+const esUnidadArea = (unidad) => {
+  const u = unidadNormalizada(unidad);
+  return u.includes('m2') || u.includes('metro cuadrado');
+};
+
+const esUnidadLineal = (unidad) => {
+  const u = unidadNormalizada(unidad);
+  return u.includes('metro lineal') || u === 'ml' || u.includes('metro');
+};
+
+const areaPresentacion = (m) => {
+  const ancho = n(m?.ancho);
+  const largo = n(m?.largo);
+  return ancho > 0 && largo > 0 ? ancho * largo : 0;
+};
+
+const metrosLinealesPresentacion = (m) => {
+  const unidad = unidadNormalizada(`${m?.unidad_compra || ''} ${m?.nombre || ''}`);
+  const largo = n(m?.largo);
+
+  if (largo <= 0) return 0;
+
+  if (unidad.includes('yd') || unidad.includes('yarda')) {
+    return largo * 0.9144;
+  }
+
+  return largo;
+};
+
+const costoMaterial = (m, unidadConsumo = '') => {
+  const base = costoBaseMaterial(m);
+  const unidadCompra = unidadNormalizada(m?.unidad_compra || m?.unidad || '');
+
+  if (base <= 0) return 0;
+
+  if (esUnidadArea(unidadConsumo)) {
+    const area = areaPresentacion(m);
+    if (area > 0 && (unidadCompra.includes('rollo') || unidadCompra.includes('lamina'))) {
+      return base / area;
+    }
+  }
+
+  if (esUnidadLineal(unidadConsumo)) {
+    const metros = metrosLinealesPresentacion(m);
+    if (metros > 0) return base / metros;
+  }
+
+  return base;
+};
+
 function textoMaterial(m) {
   return limpiar(
-    `${m?.nombre || ''} ${m?.categoria || ''} ${m?.descripcion || ''} ${m?.unidad || ''}`
+    `${m?.tipo || ''} ${m?.categoria || ''} ${m?.nombre || ''} ${m?.marca || ''} ${m?.proveedor || ''} ${m?.descripcion || ''} ${m?.unidad || ''} ${m?.unidad_compra || ''} ${m?.notas || ''}`
   );
 }
 
-function buscar(lista, palabras) {
-  const keys = palabras.map(limpiar);
-  return (lista || []).find((m) => keys.some((k) => textoMaterial(m).includes(k)));
+function buscar(lista, palabras, descripcion = '') {
+  const keys = palabras.map(limpiar).filter(Boolean);
+  const textoPedido = limpiar(descripcion);
+  const tokensPedido = textoPedido.split(/\s+/).filter((t) => t.length >= 3);
+
+  const candidatos = (lista || [])
+    .map((m) => {
+      const texto = textoMaterial(m);
+      let puntos = 0;
+
+      keys.forEach((k) => {
+        if (texto.includes(k)) puntos += 10;
+      });
+
+      tokensPedido.forEach((token) => {
+        if (texto.includes(token)) puntos += 5;
+      });
+
+      return { material: m, puntos };
+    })
+    .filter((x) => x.puntos > 0)
+    .sort((a, b) => b.puntos - a.puntos);
+
+  return candidatos[0]?.material || null;
 }
 
 function inferir(form) {
@@ -79,7 +152,8 @@ function inferir(form) {
 
 function crearLinea({ nombre, tipo, unidad, cantidad, material }) {
   const cantidadCalculada = Math.max(Number(cantidad || 1), 0);
-  const costoUnitarioCalculado = costoMaterial(material);
+  const costoUnitarioCalculado = costoMaterial(material, unidad);
+  const unidadCompra = material?.unidad_compra || material?.unidad || '';
 
   return {
     id: `linea-${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -89,12 +163,15 @@ function crearLinea({ nombre, tipo, unidad, cantidad, material }) {
     categoria: material?.categoria || '',
     marca: material?.marca || '',
     proveedor: material?.proveedor || '',
-    unidad: material?.unidad || material?.unidad_compra || unidad,
+    unidad,
+    unidadCompra,
+    anchoPresentacion: material?.ancho || null,
+    largoPresentacion: material?.largo || null,
     cantidad: cantidadCalculada,
     costoUnitario: costoUnitarioCalculado,
     costoTotal: cantidadCalculada * costoUnitarioCalculado,
+    costoCompraOriginal: costoBaseMaterial(material),
     origen: material ? 'Material Master' : 'Regla interna',
-    material: material || null,
   };
 }
 
@@ -107,9 +184,9 @@ function armarLineasAutomaticas(form, materiales, tintas) {
   const ia = inferir(form);
   const lineas = [];
 
-  const lona = buscar(materiales, ['lona banner', 'lona', 'banner']);
-  const vinil = buscar(materiales, ['vinil', 'adhesivo', 'microperforado']);
-  const pvc = buscar(materiales, ['pvc']);
+  cconst lona = buscar(materiales, ['lona banner', 'lona', 'banner'], form.descripcion);
+const vinil = buscar(materiales, ['vinil', 'adhesivo', 'microperforado'], form.descripcion);
+const pvc = buscar(materiales, ['pvc'], form.descripcion);
   const acrilico = buscar(materiales, ['acrilico', 'acrilico']);
   const acm = buscar(materiales, ['acm', 'alucobond']);
   const tubo = buscar(materiales, ['tubo', 'metal', 'poste']);
