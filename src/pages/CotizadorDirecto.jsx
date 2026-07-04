@@ -1181,7 +1181,56 @@ export default function CotizadorDirecto({ setPage }) {
 
       <section className="cd-card no-print">
         <div className="cd-title">
-          <h2>Validación interna IA</h2>
+          {items.length === 0 ? (
+  <p className="muted">
+    Agregá un ítem para visualizar la trazabilidad técnica.
+  </p>
+) : (
+  <div className="trazabilidad-box">
+
+    {items.map((item, index) => (
+      <article key={item.id} className="trazabilidad-item">
+
+        <strong>
+          ITEM {index + 1}
+        </strong>
+
+        <p>
+          <b>Descripción:</b> {item.descripcion}
+        </p>
+
+        {item.sistemaSeleccionado?.map((s, i) => (
+
+          <div
+            key={i}
+            style={{
+              marginTop:12,
+              paddingTop:12,
+              borderTop:'1px solid #ddd'
+            }}
+          >
+
+            <p><b>Tipo:</b> {s.tipo}</p>
+
+            <p><b>Material:</b> {s.nombre}</p>
+
+            <p><b>Unidad:</b> {s.unidad}</p>
+
+            <p><b>Cantidad:</b> {Number(s.cantidad).toFixed(2)}</p>
+
+            <p><b>Costo Unitario:</b> {moneyUSD(s.costoUnitario)}</p>
+
+            <p><b>Origen:</b> {s.origen}</p>
+
+          </div>
+
+        ))}
+
+      </article>
+    ))}
+
+  </div>
+)}
         </div>
 
         {lineasPreview.length === 0 ? (
