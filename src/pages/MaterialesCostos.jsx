@@ -591,6 +591,7 @@ export default function MaterialesCostos() {
                       <p><b>Marca:</b> {m.marca || 'Sin marca'}</p>
                       <p><b>Proveedor principal:</b> {proveedorPrincipal(m, proveedores)}</p>
                       <p><b>Proveedores asociados:</b> {totalProveedores}</p>
+                      <p><b>Estado calidad:</b> {m.estado_calidad || 'PENDIENTE_REVISION'}</p>
                       <span>Costo operativo: {money(operativo, m.moneda)}</span>
                     </div>
                     <div className="actions">
