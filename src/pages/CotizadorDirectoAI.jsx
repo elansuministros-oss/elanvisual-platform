@@ -1277,26 +1277,6 @@ cantidad: 1,
             </>
           )}
 
-<div className="items-operativos no-print">
-  {items.length === 0 ? (
-    <p className="muted">No hay items agregados.</p>
-  ) : (
-    items.map((item, idx) => (
-      <article className="item-operativo" key={item.id}>
-        <div>
-          <strong>ITEM {idx + 1}</strong>
-          <p>{item.descripcion}</p>
-          <span>{money(item.resumen?.venta || 0)}</span>
-        </div>
-
-        <button type="button" onClick={() => eliminarItem(item.id)}>
-          Eliminar
-        </button>
-      </article>
-    ))
-  )}
-</div>
-
           <div className="total-box">
             <p>
               <span>Subtotal</span>
@@ -1339,25 +1319,61 @@ cantidad: 1,
         </section>
       </section>
 
-<section className="cd-card no-print">
+      <section className="cd-card no-print">
   <div className="cd-title">
     <h2>Validacion interna IA</h2>
   </div>
 
   {items.length === 0 ? (
-    <p className="muted">Agrega un item para ver la trazabilidad.</p>
+    <p className="muted">Agrega un item a la cotizacion para ver la trazabilidad tecnica.</p>
   ) : (
-    <div className="chips">
+    <div className="trazabilidad-box">
       {items.map((item, idx) => (
-        <span key={item.id}>
-          ITEM {idx + 1} · {money(item.resumen?.venta || 0)} · {(item.lineas || []).length} linea(s)
-        </span>
+        <article className="trazabilidad-item" key={item.id}>
+          <strong>ITEM {idx + 1}</strong>
+
+          <p><b>Descripcion:</b> {item.descripcion}</p>
+          <p><b>Precio venta:</b> {money(item.resumen?.venta || 0)}</p>
+
+          {(item.lineas || []).map((l) => (
+            <div className="trazabilidad-linea" key={l.id}>
+              <p><b>Tipo:</b> {l.tipo || '-'}</p>
+              <p><b>Material seleccionado:</b> {l.nombre || '-'}</p>
+              <p><b>Categoria:</b> {l.categoria || '-'}</p>
+              <p><b>Marca:</b> {l.marca || '-'}</p>
+              <p><b>Proveedor:</b> {l.proveedor || '-'}</p>
+              <p><b>Unidad:</b> {l.unidad || '-'}</p>
+              <p><b>Cantidad calculada:</b> {Number(l.cantidad || 0).toFixed(2)}</p>
+              <p><b>Costo unitario interno:</b> {money(l.costoUnitario || 0)}</p>
+              <p><b>Costo total interno:</b> {money(l.costoTotal || 0)}</p>
+              <p><b>Origen:</b> {l.origen || '-'}</p>
+            </div>
+          ))}
+        </article>
       ))}
     </div>
   )}
 
-  <p className="muted">Vista interna compacta. No aparece en PDF.</p>
+  <p className="muted">Vista interna. Esta informacion no aparece en el PDF del cliente.</p>
 </section>
+
+      <section className="cd-card no-print">
+        <div className="cd-title">
+          <h2>Validacion interna IA</h2>
+        </div>
+
+        {lineasPreview.length === 0 ? (
+          <p className="muted">Al calcular un item se mostraran aqui las categorias detectadas.</p>
+        ) : (
+          <div className="chips">
+            {lineasPreview.map((l) => (
+              <span key={l.id}>{l.tipo}</span>
+            ))}
+          </div>
+        )}
+
+        <p className="muted">No se muestran costos internos al vendedor. Solo categorias detectadas.</p>
+      </section>
 
       <section className="print-area">
         <div className="ev-quote-sheet">
@@ -2342,13 +2358,6 @@ cantidad: 1,
             margin-top:30px;
             color:#64748b;
           }
-
-          .items-operativos{display:grid;gap:8px;margin:12px 0}
-.item-operativo{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid #e5e7eb;background:#f8fafc;border-radius:14px;padding:10px}
-.item-operativo p{margin:3px 0;color:#334155;font-weight:700;font-size:13px;line-height:1.25;max-height:34px;overflow:hidden}
-.item-operativo span{font-weight:950;color:#111827}
-.item-operativo button{border:0;background:#fee2e2;color:#991b1b;border-radius:12px;padding:9px 12px;font-weight:950}
-
         }
       `}</style>
     </main>
