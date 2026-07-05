@@ -511,7 +511,12 @@ const productosFiltrados = useMemo(() => {
       supabase.from('productos_registrados').select('*').eq('activo', true).order('nombre'),
     ]);
 
-    setTintas(tin.data || []);
+    const tintasData = Array.isArray(tin.data) ? tin.data : [];
+
+console.log('DEBUG tintas_master respuesta', tin);
+console.log('DEBUG tintas cargadas', tintasData.length, tintasData);
+
+setTintas(tintasData);
     setProductosRegistrados(prod.data || []);
 
     const { data: clientesData, error: clientesError } = await supabase
