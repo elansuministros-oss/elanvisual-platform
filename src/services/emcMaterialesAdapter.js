@@ -1,20 +1,24 @@
-﻿export async function cargarMaterialesEMC(supabase) {
+export async function cargarMaterialesEMC(supabase) {
   if (!supabase) {
     return { data: [], error: new Error('Supabase no configurado') };
   }
 
   const [itemsRes, proveedorItemsRes] = await Promise.all([
     supabase
-  .from('elankav_catalogo_items')
-  .select(`
-    *,
-    elankav_catalogo_categorias(nombre),
-    elankav_catalogo_subcategorias(nombre),
-    elankav_catalogo_marcas(nombre),
-    elankav_catalogo_unidades(nombre)
-  `)
-  .limit(5000),
+      .from('elankav_catalogo_items')
+      .select('*')
+      .limit(5000),
+
+    supabase
+      .from('elankav_catalogo_proveedor_items')
+      .select('*')
+      .limit(5000),
   ]);
+
+  console.log('DEBUG EMC itemsRes', itemsRes);
+  console.log('DEBUG EMC items count', itemsRes.data?.length || 0);
+  console.log('DEBUG EMC proveedorItemsRes', proveedorItemsRes);
+  console.log('DEBUG EMC proveedor items count', proveedorItemsRes.data?.length || 0);
 
   if (itemsRes.error) return { data: [], error: itemsRes.error };
   if (proveedorItemsRes.error) return { data: [], error: proveedorItemsRes.error };
@@ -24,6 +28,7 @@
   (proveedorItemsRes.data || []).forEach((p) => {
     const itemId = p.item_id || p.catalogo_item_id || p.elankav_catalogo_item_id;
     if (!itemId) return;
+
     if (!proveedoresPorItem.has(itemId)) proveedoresPorItem.set(itemId, []);
     proveedoresPorItem.get(itemId).push(p);
   });
@@ -57,48 +62,38 @@
         codigo: item.codigo_catalogo || item.codigo || item.sku || '',
         nombre,
         descripcion: item.descripcion || nombre,
-        categoria:
-  item.elankav_catalogo_categorias?.nombre ||
-  item.categoria ||
-  item.categoria_nombre ||
-  'EMC',
 
-subcategoria:
-  item.elankav_catalogo_subcategorias?.nombre ||
-  item.subcategoria ||
-  item.subcategoria_nombre ||
-  '',
+        categoria: item.categoria || item.categoria_nombre || 'EMC',
+        subcategoria: item.subcategoria || item.subcategoria_nombre || '',
+        marca: item.marca || item.marca_nombre || '',
 
-marca:
-  item.elankav_catalogo_marcas?.nombre ||
-  item.marca ||
-  item.marca_nombre ||
-  '',
+        unidad:
+          item.unidad ||
+          item.unidad_nombre ||
+          item.unidad_compra ||
+          'm2',
 
-unidad:
-  item.elankav_catalogo_unidades?.nombre ||
-  item.unidad ||
-  item.unidad_nombre ||
-  item.unidad_compra ||
-  'm2',
+        unidad_compra:
+          item.unidad_compra ||
+          item.unidad ||
+          item.unidad_nombre ||
+          'm2',
 
-unidad_compra:
-  item.elankav_catalogo_unidades?.nombre ||
-  item.unidad_compra ||
-  item.unidad ||
-  item.unidad_nombre ||
-  'm2',
+        ancho: item.ancho || item.ancho_m || item.medida_ancho || '',
+        largo: item.largo || item.largo_m || item.medida_largo || '',
+
         precio_base_usd: precio,
         precio_total_usd: precio,
         costo_unitario: precio,
         costo: precio,
         precio_lista: precio,
         precio_final: precio,
-        moneda: prov?.elankav_catalogo_listas_precio?.moneda || item.moneda || 'NIO',
+
+        moneda: prov?.moneda || item.moneda || 'NIO',
         proveedor_item: prov,
         origen: 'EMC',
         fuente: 'elankav_catalogo_*',
-        key: `${item.id}-${prov?.id || index}`
+        key: `${item.id}-${prov?.id || index}`,
       };
     });
   });

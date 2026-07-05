@@ -10,7 +10,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { cargarMaterialesEMC } from '../services/emcMaterialesAdapter';
+
 import { useApp } from '../context/AppContext';
 
 const POLITICA = {
@@ -36,19 +36,27 @@ const limpiar = (v) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '');
 
-const costoBaseMaterial = (m) =>
-  n(
-    m?.costo_real ??
-      m?.costo ??
-      m?.precio ??
-      m?.precio_unitario ??
-      m?.costo_unitario ??
-      m?.costo_m2 ??
-      m?.precio_total_usd ??
-      m?.precio_base_usd ??
-      m?.precio_venta_1x ??
-      0
+const costoBaseMaterial = (m) => {
+  const valores = [
+    m?.costo_real,
+    m?.precio_final,
+    m?.precio_lista,
+    m?.costo_unitario,
+    m?.precio,
+    m?.precio_unitario,
+    m?.costo_m2,
+    m?.precio_total_usd,
+    m?.precio_base_usd,
+    m?.precio_venta_1x,
+    m?.costo,
+  ];
+
+  return (
+    valores
+      .map((v) => Number(v))
+      .find((v) => Number.isFinite(v) && v > 0) || 0
   );
+};
 
 const unidadNormalizada = (v) => limpiar(v).replace('²', '2');
 
@@ -108,9 +116,17 @@ function textoMaterial(m) {
   );
 }
 
+function limpiarDescripcionTecnica(valor = '') {
+  return limpiar(valor)
+    .replace(/\d+(\.\d+)?\s*[x×]\s*\d+(\.\d+)?/gi, ' ')
+    .replace(/\d+(\.\d+)?\s*(cm|cms|centimetros|centimetro|m|mt|mts|metro|metros)/gi, ' ')
+    .replace(/\d+(\.\d+)?\s*m2/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 function buscar(lista, palabras, descripcion = '') {
   const keys = palabras.map(limpiar).filter(Boolean);
-  const textoPedido = limpiar(descripcion);
+  const textoPedido = limpiarDescripcionTecnica(descripcion);
   const tokensPedido = textoPedido.split(/\s+/).filter((t) => t.length >= 3);
 
   const candidatos = (lista || [])
@@ -135,7 +151,7 @@ function buscar(lista, palabras, descripcion = '') {
 }
 
 function inferir(form) {
-  const t = limpiar(form.descripcion);
+  const t = limpiarDescripcionTecnica(form.descripcion);
 
   return {
     impresion: /impres|lona|vinil|banner|micro|uv|solvente|ecosolvente/.test(t),
@@ -186,7 +202,34 @@ function armarLineasAutomaticas(form, materiales, tintas) {
   const lineas = [];
 
 const lona = buscar(materiales, ['lona banner', 'lona', 'banner'], form.descripcion);
-const vinil = buscar(materiales, ['vinil', 'adhesivo', 'microperforado'], form.descripcion);
+const vinil =
+  buscar(
+    materiales,
+    [
+      'vinil promoplus',
+      'promoplus',
+      'blanco brillante',
+      'goma blanca',
+      'goma gris',
+      'vinil adhesivo',
+      'adhesivo vinil',
+      'vinil',
+      'adhesivo',
+      'microperforado',
+    ],
+    form.descripcion
+  ) ||
+  (materiales || []).find((m) => {
+    const texto = textoMaterial(m);
+    const desc = limpiarDescripcionTecnica(form.descripcion);
+
+    if (!texto.includes('vinil')) return false;
+    if (desc.includes('goma gris') && texto.includes('goma gris')) return true;
+    if (desc.includes('goma blanca') && texto.includes('goma blanca')) return true;
+    if (texto.includes('promoplus')) return true;
+
+    return false;
+  });
 const pvc = buscar(materiales, ['pvc'], form.descripcion);
   const acrilico = buscar(materiales, ['acrilico', 'acrilico']);
   const acm = buscar(materiales, ['acm', 'alucobond']);
@@ -347,13 +390,28 @@ function campoCompleto(valor) {
   return String(valor || '').trim().length > 0;
 }
 
+async function calcularConAI23(payload) {
+  const res = await fetch('https://elankav-core.vercel.app/api/elan-ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tipo: 'cotizar-ai23',
+      ...payload,
+    }),
+  });
+
+  return res.json();
+}
+
 export default function CotizadorDirectoAI({ setPage }) {
   const { configuracion, productos = [] } = useApp();
   const [materiales, setMateriales] = useState([]);
+  const { inventarioReal = [] } = useApp();
   const [productosRegistrados, setProductosRegistrados] = useState([]);
   const [tintas, setTintas] = useState([]);
   const [mensaje, setMensaje] = useState('');
   const [lineasPreview, setLineasPreview] = useState([]);
+  const [previewAI23, setPreviewAI23] = useState(null);
   const [items, setItems] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [cotizacionEdicion, setCotizacionEdicion] = useState(null);
@@ -422,37 +480,37 @@ const productosFiltrados = useMemo(() => {
   });
 
   useEffect(() => {
-    const cargar = async () => {
-      const [mat, tin, prod] = await Promise.all([
-        cargarMaterialesEMC(supabase),
-        supabase.from('tintas_master').select('*').order('nombre'),
-        supabase.from('productos_registrados').select('*').eq('activo', true).order('nombre'),
-      ]);
+  const cargar = async () => {
+    const inventarioCotizador = Array.isArray(inventarioReal)
+      ? inventarioReal.map(normalizarInventarioParaCotizador)
+      : [];
 
-      if (mat.error) {
-        setMensaje(`No se pudo cargar Material Master: ${mat.error.message}`);
-      }
+    setMateriales(inventarioCotizador);
 
-      setMateriales(mat.data || []);
-      setTintas(tin.data || []);
-      setProductosRegistrados(prod.data || []);
+    const [tin, prod] = await Promise.all([
+      supabase.from('tintas_master').select('*').order('nombre'),
+      supabase.from('productos_registrados').select('*').eq('activo', true).order('nombre'),
+    ]);
 
-      const { data: clientesData, error: clientesError } = await supabase
-        .from('clientes')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(200);
+    setTintas(tin.data || []);
+    setProductosRegistrados(prod.data || []);
 
-      if (!clientesError) {
-        setClientes(clientesData || []);
-      } else {
-        const localClientes = JSON.parse(localStorage.getItem('elanvision_clientes') || '[]');
-        setClientes(localClientes);
-      }
-    };
+    const { data: clientesData, error: clientesError } = await supabase
+      .from('clientes')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200);
 
-    cargar();
-  }, []);
+    if (!clientesError) {
+      setClientes(clientesData || []);
+    } else {
+      const localClientes = JSON.parse(localStorage.getItem('elanvision_clientes') || '[]');
+      setClientes(localClientes);
+    }
+  };
+
+  cargar();
+}, [inventarioReal]);
 
   useEffect(() => {
     const cargarCotizacionEdicion = async () => {
@@ -691,7 +749,7 @@ const nuevo = {
     }));
   };
 
-  const calcularPreview = () => {
+  const calcularPreview = async () => {
     if (!campoCompleto(form.descripcion)) {
       setMensaje('Escribi la descripcion del item para poder calcular.');
       return;
@@ -703,8 +761,78 @@ const nuevo = {
       return;
     }
 
+    const ancho = Number(form.ancho || 0);
+const alto = Number(form.alto || 0);
+const cantidad = Number(form.cantidad || 0);
+
+if (ancho <= 0 || alto <= 0 || cantidad <= 0) {
+  setMensaje('Ancho, alto y cantidad deben ser mayores que cero.');
+  return;
+}
+    console.log('DEBUG materiales antes de buscar', materiales.length);
+
+    if (!materiales.length) {
+      setMensaje('Material Master / EMC no cargo materiales. No se puede cotizar con AI-23.');
+      return;
+    }
+
     const nuevas = armarLineasAutomaticas(form, materiales, tintas);
+    console.log('DEBUG materiales total:', materiales.length);
+
+console.log(
+  'DEBUG materiales vinil:',
+  materiales
+    .filter((m) => textoMaterial(m).includes('vinil') || textoMaterial(m).includes('adhesivo') || textoMaterial(m).includes('promoplus'))
+    .slice(0, 20)
+    .map((m) => ({
+      id: m.id,
+      nombre: m.nombre,
+      categoria: m.categoria,
+      unidad: m.unidad,
+      unidad_compra: m.unidad_compra,
+      ancho: m.ancho,
+      largo: m.largo,
+      costo: m.costo,
+      costo_unitario: m.costo_unitario,
+      precio_lista: m.precio_lista,
+      precio_final: m.precio_final,
+      moneda: m.moneda,
+      origen: m.origen,
+    }))
+);
+    const componentes = nuevas.map((l) => ({
+  nombre: l.nombre,
+  tipo: l.tipo,
+  unidad: l.unidad,
+  cantidad: Number(l.cantidad || 0),
+  costo_unitario: Number(l.costoUnitario || 0),
+}));
+
+const ai23 = await calcularConAI23({
+  componentes,
+  moneda: 'NIO',
+  margen_porcentaje:
+    form.precioElegido === 'minimo'
+      ? 100
+      : form.precioElegido === 'objetivo'
+        ? 200
+        : 150,
+});
     setLineasPreview(nuevas);
+
+    if (ai23?.ok) {
+  setPreviewAI23({
+    costo: Number(ai23.resumen?.costo_base || 0),
+    minimo: Number(ai23.resumen?.costo_base || 0) * POLITICA.minimo,
+    recomendado: Number(ai23.resumen?.total || 0),
+    objetivo: Number(ai23.resumen?.costo_base || 0) * POLITICA.objetivo,
+    venta: Number(ai23.resumen?.total || 0),
+    fuente: 'AI-23',
+    raw: ai23,
+  });
+} else {
+  setPreviewAI23(null);
+}
 
     const sinCosto = nuevas.filter((l) => n(l.costoUnitario) <= 0);
     setMensaje(
@@ -714,10 +842,10 @@ const nuevo = {
     );
   };
 
-  const preview = useMemo(
-    () => resumenItem(lineasPreview, form.precioElegido),
-    [lineasPreview, form.precioElegido]
-  );
+ const preview = useMemo(() => {
+  if (previewAI23) return previewAI23;
+  return resumenItem(lineasPreview, form.precioElegido);
+}, [lineasPreview, form.precioElegido, previewAI23]);
 
   const agregarItem = () => {
     if (!lineasPreview.length && !productoSeleccionado) {
@@ -751,6 +879,7 @@ const nuevo = {
 
     setItems((prev) => [...prev, nuevo]);
     setLineasPreview([]);
+    setPreviewAI23(null);
     setProductoSeleccionado(null);
     setBusquedaProducto('');
     setForm((prev) => ({
