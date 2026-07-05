@@ -1,0 +1,6 @@
+﻿
+src\lib\calculos.js:7: const descuentoMonto=subtotal*(descuentoPorcentaje/100);
+src\pages\Home.jsx:150:            href={`https://wa.me/${normalizarWhatsApp(configuracion.whatsapp)}`}
+src\pages\PedidosProduccion.jsx:737:    onClick={()=>window.location.href='/'}
+
+

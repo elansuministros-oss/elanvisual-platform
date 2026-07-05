@@ -1,0 +1,2149 @@
+﻿
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\adapters\catalogoMaestroAdapter.js =====
+
+src\adapters\catalogoMaestroAdapter.js:1:import { CATALOGO_TIPOS } from '../models/catalogoMaestro';
+src\adapters\catalogoMaestroAdapter.js:3:export function normalizarItemCatalogo(item = {}) {
+src\adapters\catalogoMaestroAdapter.js:7:    tipo: item.tipo || CATALOGO_TIPOS.MATERIAL,
+src\adapters\catalogoMaestroAdapter.js:13:    origen: item.origen || 'EMC',
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\ai\AIAssistantPanel.jsx =====
+src\ai\AIAssistantPanel.jsx:1:import React, { useState } from "react";
+src\ai\AIAssistantPanel.jsx:2:import { useAIAssistant } from "./AIAssistantProvider";
+src\ai\AIAssistantPanel.jsx:3:import {
+src\ai\AIAssistantPanel.jsx:6:} from "../services/aiTemporalService";
+src\ai\AIAssistantPanel.jsx:7:import "./AIAssistant.css";
+src\ai\AIAssistantPanel.jsx:20:        "Hola. Soy ELAN AI. Puedo ayudarte con señalización, impresión, materiales, proveedores, cotización preliminar y análisis de 
+imágenes.",
+src\ai\AIAssistantPanel.jsx:205:              accept=".jpg,.jpeg,.png,.svg,.pdf"
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\ai\AIAssistantProvider.jsx =====
+src\ai\AIAssistantProvider.jsx:1:import React, {
+src\ai\AIAssistantProvider.jsx:7:} from "react";
+src\ai\AIAssistantProvider.jsx:9:import {
+src\ai\AIAssistantProvider.jsx:13:} from "./aiContextStore";
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\ai\aiContextStore.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\ai\AIFloatingButton.jsx =====
+src\ai\AIFloatingButton.jsx:1:import React from "react";
+src\ai\AIFloatingButton.jsx:2:import { useAIAssistant } from "./AIAssistantProvider";
+src\ai\AIFloatingButton.jsx:3:import "./AIAssistant.css";
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\admin\CategoriasHomePanel.jsx =====
+src\components\admin\CategoriasHomePanel.jsx:1:import React, { useMemo, useState } from 'react';
+src\components\admin\CategoriasHomePanel.jsx:2:import { Eye, EyeOff, ImagePlus, Pencil, Save, Trash2, X } from 'lucide-react';
+src\components\admin\CategoriasHomePanel.jsx:3:import { useApp } from '../../context/AppContext';
+src\components\admin\CategoriasHomePanel.jsx:4:import { supabase } from '../../lib/supabase';
+src\components\admin\CategoriasHomePanel.jsx:83:    if (!supabase) return;
+src\components\admin\CategoriasHomePanel.jsx:85:    const { data } = await supabase
+src\components\admin\CategoriasHomePanel.jsx:93:    await supabase.from(APP_STATE_TABLE).upsert(
+src\components\admin\CategoriasHomePanel.jsx:156:      alert('No se pudo guardar la categoria en Supabase.');
+src\components\admin\CategoriasHomePanel.jsx:192:        Este modulo guarda directo en estado, localStorage y APP_STATE Supabase.
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\admin\Usuarios20Panel.jsx =====
+src\components\admin\Usuarios20Panel.jsx:1:import React, { useMemo, useState } from 'react';
+src\components\admin\Usuarios20Panel.jsx:2:import { ShieldCheck, Pencil, Trash2, Eye, EyeOff, KeyRound, Copy, Sparkles, AlertTriangle, CheckCircle2 } from 'lucide-react';
+src\components\admin\Usuarios20Panel.jsx:3:import { useApp } from '../../context/AppContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\emc\ProveedorCatalogoAI22.jsx =====
+src\components\emc\ProveedorCatalogoAI22.jsx:1:import React, { useEffect, useMemo, useState } from "react";
+src\components\emc\ProveedorCatalogoAI22.jsx:2:import { listarProductosGuardadosAI22 } from "../../services/emc/emcImportAi22Service";
+src\components\emc\ProveedorCatalogoAI22.jsx:109:                  {(item.nombre_catalogo || "EMC").slice(0, 2)}
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\ot\index.js =====
+src\components\ot\index.js:1:export { default as OTResumen } from './OTResumen';
+src\components\ot\index.js:2:export { default as OTComercial } from './OTComercial';
+src\components\ot\index.js:3:export { default as OTCompras } from './OTCompras';
+src\components\ot\index.js:4:export { default as OTProduccion } from './OTProduccion';
+src\components\ot\index.js:5:export { default as OTCostos } from './OTCostos';
+src\components\ot\index.js:6:export { default as OTRentabilidad } from './OTRentabilidad';
+src\components\ot\index.js:7:export { default as OTDocumentos } from './OTDocumentos';
+src\components\ot\index.js:8:export { default as OTIA } from './OTIA';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\ot\OTComercial.jsx =====
+src\components\ot\OTComercial.jsx:1:import usePagosOT from '../../hooks/ot/usePagosOT';
+src\components\ot\OTComercial.jsx:48:          <p>El pagado real sale del historial guardado en Supabase.</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\ot\OTCompras.jsx =====
+src\components\ot\OTCompras.jsx:1:import useComprasOT from '../../hooks/ot/useComprasOT';
+src\components\ot\OTCompras.jsx:2:import { money } from '../../hooks/ot/useOrdenTrabajo';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\ot\OTCostos.jsx =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\ot\OTDocumentos.jsx =====
+src\components\ot\OTDocumentos.jsx:5:      <p>Recibos, PDF, archivos técnicos y soportes.</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\ot\OTIA.jsx =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\ot\OTProduccion.jsx =====
+src\components\ot\OTProduccion.jsx:5:      <p>Proceso, materiales, instalación y estado productivo.</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\ot\OTRentabilidad.jsx =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\ot\OTResumen.jsx =====
+src\components\ot\OTResumen.jsx:1:import useOrdenTrabajo, { money } from '../../hooks/ot/useOrdenTrabajo';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\Header.jsx =====
+src\components\Header.jsx:1:import React, { useState } from 'react';
+src\components\Header.jsx:2:import {
+src\components\Header.jsx:21:} from 'lucide-react';
+src\components\Header.jsx:22:import { useApp } from '../context/AppContext';
+src\components\Header.jsx:53:    ['cotizador', 'Cotizador', <Calculator size={24} />],
+src\components\Header.jsx:56:    ['materiales', 'Inventario', <PackageSearch size={24} />],
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\HorizontalCarousel.jsx =====
+src\components\HorizontalCarousel.jsx:1:import React from 'react';
+src\components\HorizontalCarousel.jsx:2:import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\ImageUploader.jsx =====
+src\components\ImageUploader.jsx:1:import React, { useEffect, useState } from 'react';
+src\components\ImageUploader.jsx:2:import { supabase } from '../lib/supabase';
+src\components\ImageUploader.jsx:4:const BUCKET = import.meta.env.VITE_SUPABASE_BUCKET || 'elanvisual';
+src\components\ImageUploader.jsx:37:    if (!supabase) {
+src\components\ImageUploader.jsx:38:      setMensaje('Supabase no está configurado.');
+src\components\ImageUploader.jsx:44:      setMensaje('Subiendo imagen a Supabase...');
+src\components\ImageUploader.jsx:50:      const { error: uploadError } = await supabase.storage
+src\components\ImageUploader.jsx:60:      const { data } = supabase.storage.from(BUCKET).getPublicUrl(ruta);
+src\components\ImageUploader.jsx:70:      setMensaje('No se pudo subir la imagen a Supabase.');
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\MediaLibrary.jsx =====
+src\components\MediaLibrary.jsx:1:import React, { useState } from 'react';
+src\components\MediaLibrary.jsx:2:import ImageUploader from './ImageUploader';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\components\ProductCard.jsx =====
+src\components\ProductCard.jsx:1:import React from 'react';
+src\components\ProductCard.jsx:2:import { ShoppingCart, Ruler } from 'lucide-react';
+src\components\ProductCard.jsx:3:import { formatoC$ } from '../lib/calculos';
+src\components\ProductCard.jsx:4:import { useApp } from '../context/AppContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\config\branding.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\context\AppContext.jsx =====
+src\context\AppContext.jsx:1:import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+src\context\AppContext.jsx:2:import { productosIniciales } from '../data/productos';
+src\context\AppContext.jsx:3:import { resumenCarrito } from '../lib/calculos';
+src\context\AppContext.jsx:4:import { supabase } from '../lib/supabase';
+src\context\AppContext.jsx:5:import { listSuppliersV2 as obtenerProveedores } from '../services/suppliers';
+src\context\AppContext.jsx:6:import { unirPedidos } from '../services/pedidos/pedidosMapper';
+src\context\AppContext.jsx:7:import { cargarPedidosElanvisual } from '../services/pedidos/queries/pedidosQueryService';
+src\context\AppContext.jsx:8:import { insertarPedidoElanvisual, actualizarPedidoElanvisual, eliminarPedidoElanvisual } from 
+'../services/pedidos/commands/pedidosCommandService';
+src\context\AppContext.jsx:9:import { codigoVendedorElanvisual, obtenerReferenciaVendedorElanvisual, crearComisionInicialElanvisual } from 
+'../services/pedidos/pedidosFactory';
+src\context\AppContext.jsx:396:  const [supabaseListo, setSupabaseListo] = useState(false);
+src\context\AppContext.jsx:419:  especialidad: 'Impresión Digital Gran Formato, Impresión Digital Láser, Corte CNC, Corte PVC, Corte Acrílico, Corte MDF, Corte ACM, Lonas, 
+Vinil Adhesivo, Vinil Microperforado, Roll Up, Material POP, Señalización, Producción Publicitaria, Fabricación de piezas para rotulación',
+src\context\AppContext.jsx:444:  const [inventarioReal, setInventarioReal] = useState(() => leerStorage('elanvisual_inventario_real', []));
+src\context\AppContext.jsx:478:  // AI-09.5: pedidos ya no se persisten en localStorage; fuente oficial: Supabase pedidos_elanvisual.
+src\context\AppContext.jsx:479:  // Usuarios migrados a Supabase
+src\context\AppContext.jsx:480:  // AI-10H: proveedores se leen desde Supplier Hub / Supabase, no localStorage.
+src\context\AppContext.jsx:483:  useEffect(() => guardarStorage('elanvisual_inventario_real', inventarioReal), [inventarioReal]);
+src\context\AppContext.jsx:510:      if (!supabase) {
+src\context\AppContext.jsx:516:        const { data, error } = await supabase
+src\context\AppContext.jsx:563:          await supabase.from(APP_STATE_TABLE).upsert(
+src\context\AppContext.jsx:588:    if (!supabase || !estadoCompartidoCargado) return;
+src\context\AppContext.jsx:603:        const { error } = await supabase.from(APP_STATE_TABLE).upsert(
+src\context\AppContext.jsx:645:    const cargarDatosSupabase = async () => {
+src\context\AppContext.jsx:646:      if (!supabase) {
+src\context\AppContext.jsx:647:        setSupabaseListo(false);
+src\context\AppContext.jsx:652:        const { data: usersData, error: usersError } = await supabase
+src\context\AppContext.jsx:701:        setSupabaseListo(true);
+src\context\AppContext.jsx:703:        console.error('Error cargando datos desde Supabase:', error);
+src\context\AppContext.jsx:704:        setSupabaseListo(false);
+src\context\AppContext.jsx:708:    cargarDatosSupabase();
+src\context\AppContext.jsx:915:    if (supabase) {
+src\context\AppContext.jsx:919:            console.error('Error guardando solicitud en Supabase:', error);
+src\context\AppContext.jsx:921:              'La solicitud fue creada y el WhatsApp sali, pero no se pudo guardar en Supabase. Revis la tabla pedidos.'
+src\context\AppContext.jsx:1073:              nota: 'Pedido operativo creado desde Cotizador Visual.',
+src\context\AppContext.jsx:1088:    if (supabase && esUuid(pedidoActualizado.id)) {
+src\context\AppContext.jsx:1092:            console.error('Error actualizando solicitud en Supabase:', error);
+src\context\AppContext.jsx:1093:            window.alert('No se pudo actualizar la solicitud en Supabase: ' + (error.message || error.details || error.code || 'Error 
+desconocido'));
+src\context\AppContext.jsx:1105:    if (supabase && esUuid(id)) {
+src\context\AppContext.jsx:1109:            console.error('Error eliminando pedido en Supabase:', error);
+src\context\AppContext.jsx:1115:            window.alert('No se pudo eliminar el pedido en Supabase.');
+src\context\AppContext.jsx:1276:      supabaseListo,
+src\context\AppContext.jsx:1313:    if (supabase) {
+src\context\AppContext.jsx:1314:      supabase
+src\context\AppContext.jsx:1321:            console.error('Error creando usuario en Supabase:', error);
+src\context\AppContext.jsx:1323:            window.alert('No se pudo guardar el usuario en Supabase. Revis duplicados.');
+src\context\AppContext.jsx:1361:    if (supabase && esUuid(usuarioActualizado.id)) {
+src\context\AppContext.jsx:1369:      supabase
+src\context\AppContext.jsx:1375:            console.error('Error actualizando usuario en Supabase:', error);
+src\context\AppContext.jsx:1376:            window.alert('No se pudo actualizar el usuario en Supabase.');
+src\context\AppContext.jsx:1394:    if (supabase && esUuid(id)) {
+src\context\AppContext.jsx:1395:      supabase
+src\context\AppContext.jsx:1401:            console.error('Error eliminando usuario en Supabase:', error);
+src\context\AppContext.jsx:1402:            window.alert('No se pudo eliminar el usuario en Supabase.');
+src\context\AppContext.jsx:1548:  const areaInventario = (item = {}) => {
+src\context\AppContext.jsx:1556:  const crearInventarioReal = (datos) => {
+src\context\AppContext.jsx:1557:    const area = areaInventario(datos);
+src\context\AppContext.jsx:1573:          nota: datos.observaciones || 'Entrada de inventario.',
+src\context\AppContext.jsx:1578:    setInventarioReal((prev) => [nuevo, ...prev]);
+src\context\AppContext.jsx:1582:  const actualizarInventarioReal = (itemActualizado) => {
+src\context\AppContext.jsx:1583:    setInventarioReal((prev) =>
+src\context\AppContext.jsx:1603:  const eliminarInventarioReal = (id) => setInventarioReal((prev) => prev.filter((i) => i.id !== id));
+src\context\AppContext.jsx:1605:  const reservarInventarioReal = ({ id, ancho, largo, cantidad = 1, ot = '', nota = '' }) => {
+src\context\AppContext.jsx:1606:    setInventarioReal((prev) =>
+src\context\AppContext.jsx:1623:  const liberarReservaInventarioReal = (id) => {
+src\context\AppContext.jsx:1624:    setInventarioReal((prev) =>
+src\context\AppContext.jsx:1641:  const consumirInventarioReal = ({ id, ancho, largo, cantidad = 1, ot = '', nota = '' }) => {
+src\context\AppContext.jsx:1642:    setInventarioReal((prev) => {
+src\context\AppContext.jsx:1649:      const areaOriginal = areaInventario(item);
+src\context\AppContext.jsx:1682:          origen: `Retazo de ${item.material}`,
+src\context\AppContext.jsx:1781:  costoInventario = 0,
+src\context\AppContext.jsx:1790:    Number(costoInventario) +
+src\context\AppContext.jsx:1802:    costoInventario,
+src\context\AppContext.jsx:2036:        inventarioReal,
+src\context\AppContext.jsx:2037:        crearInventarioReal,
+src\context\AppContext.jsx:2038:        actualizarInventarioReal,
+src\context\AppContext.jsx:2039:        eliminarInventarioReal,
+src\context\AppContext.jsx:2040:        reservarInventarioReal,
+src\context\AppContext.jsx:2041:        consumirInventarioReal,
+src\context\AppContext.jsx:2042:        liberarReservaInventarioReal,
+src\context\AppContext.jsx:2056:        supabaseListo,
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\core\contactos\ContactosProvider.jsx =====
+src\core\contactos\ContactosProvider.jsx:1:export { CoreProvider } from '../context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\core\context\CoreContext.jsx =====
+src\core\context\CoreContext.jsx:1:import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+src\core\context\CoreContext.jsx:37:  { id: 'inventario', label: 'Inventario', grupo: 'Operacion' },
+src\core\context\CoreContext.jsx:38:  { id: 'materiales', label: 'Materiales', grupo: 'Operacion' },
+src\core\context\CoreContext.jsx:129:    descripcion: 'Ã“rdenes de trabajo, produccion, inventario y materiales.',
+src\core\context\CoreContext.jsx:130:    permisos: ['dashboard', 'notificaciones', 'ordenes', 'produccion', 'inventario', 'materiales'],
+src\core\context\CoreContext.jsx:273:  const [inventario, setInventario] = useState(() =>
+src\core\context\CoreContext.jsx:274:    leerStorage('elankav_inventario', [])
+src\core\context\CoreContext.jsx:277:  const [materiales, setMateriales] = useState(() =>
+src\core\context\CoreContext.jsx:278:    leerStorage('elankav_materiales', [])
+src\core\context\CoreContext.jsx:323:  useEffect(() => guardarStorage('elankav_inventario', inventario), [inventario]);
+src\core\context\CoreContext.jsx:324:  useEffect(() => guardarStorage('elankav_materiales', materiales), [materiales]);
+src\core\context\CoreContext.jsx:1046:  const crearInventario = (datos) => {
+src\core\context\CoreContext.jsx:1047:    const registro = crearRegistro('inventario', datos);
+src\core\context\CoreContext.jsx:1048:    setInventario((prev) => [registro, ...prev]);
+src\core\context\CoreContext.jsx:1050:      modulo: 'Inventario',
+src\core\context\CoreContext.jsx:1054:      entidadTipo: 'inventario',
+src\core\context\CoreContext.jsx:1060:  const actualizarInventario = (id, datos) => {
+src\core\context\CoreContext.jsx:1061:    setInventario((prev) => actualizarLista(prev, id, datos));
+src\core\context\CoreContext.jsx:1063:      modulo: 'Inventario',
+src\core\context\CoreContext.jsx:1067:      entidadTipo: 'inventario',
+src\core\context\CoreContext.jsx:1072:  const eliminarInventario = (id) => {
+src\core\context\CoreContext.jsx:1073:    const registro = inventario.find((item) => item.id === id);
+src\core\context\CoreContext.jsx:1074:    setInventario((prev) => eliminarDeLista(prev, id));
+src\core\context\CoreContext.jsx:1076:      modulo: 'Inventario',
+src\core\context\CoreContext.jsx:1080:      entidadTipo: 'inventario',
+src\core\context\CoreContext.jsx:1085:  const crearMaterial = (datos) => {
+src\core\context\CoreContext.jsx:1086:    const registro = crearRegistro('material', datos);
+src\core\context\CoreContext.jsx:1087:    setMateriales((prev) => [registro, ...prev]);
+src\core\context\CoreContext.jsx:1089:      modulo: 'Materiales',
+src\core\context\CoreContext.jsx:1093:      entidadTipo: 'material',
+src\core\context\CoreContext.jsx:1099:  const actualizarMaterial = (id, datos) => {
+src\core\context\CoreContext.jsx:1100:    setMateriales((prev) => actualizarLista(prev, id, datos));
+src\core\context\CoreContext.jsx:1102:      modulo: 'Materiales',
+src\core\context\CoreContext.jsx:1106:      entidadTipo: 'material',
+src\core\context\CoreContext.jsx:1111:  const eliminarMaterial = (id) => {
+src\core\context\CoreContext.jsx:1112:    const registro = materiales.find((item) => item.id === id);
+src\core\context\CoreContext.jsx:1113:    setMateriales((prev) => eliminarDeLista(prev, id));
+src\core\context\CoreContext.jsx:1115:      modulo: 'Materiales',
+src\core\context\CoreContext.jsx:1119:      entidadTipo: 'material',
+src\core\context\CoreContext.jsx:1430:    inventario.forEach((item) => {
+src\core\context\CoreContext.jsx:1438:            id: `inventario-${item.id}`,
+src\core\context\CoreContext.jsx:1439:            tipo: 'Inventario bajo',
+src\core\context\CoreContext.jsx:1441:            titulo: cantidad <= 0 ? 'Inventario agotado' : 'Inventario bajo',
+src\core\context\CoreContext.jsx:1442:            detalle: `${item.nombre || item.material || item.codigo || item.id} - existencia ${cantidad}${minimo > 0 ? ` / minimo 
+${minimo}` : ''}`,
+src\core\context\CoreContext.jsx:1443:            modulo: 'Inventario',
+src\core\context\CoreContext.jsx:1446:            entidadTipo: 'inventario',
+src\core\context\CoreContext.jsx:1447:            accionSugerida: 'Reponer inventario',
+src\core\context\CoreContext.jsx:1462:  }, [compras, cuentasPorCobrar, cuentasPorPagar, inventario, notificacionesCRM, ordenesTrabajo, produccion]);
+src\core\context\CoreContext.jsx:1702:      inventario,
+src\core\context\CoreContext.jsx:1703:      materiales,
+src\core\context\CoreContext.jsx:1785:      crearInventario,
+src\core\context\CoreContext.jsx:1786:      actualizarInventario,
+src\core\context\CoreContext.jsx:1787:      eliminarInventario,
+src\core\context\CoreContext.jsx:1789:      crearMaterial,
+src\core\context\CoreContext.jsx:1790:      actualizarMaterial,
+src\core\context\CoreContext.jsx:1791:      eliminarMaterial,
+src\core\context\CoreContext.jsx:1830:      inventario,
+src\core\context\CoreContext.jsx:1831:      materiales,
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\core\crm\CRMProvider.jsx =====
+src\core\crm\CRMProvider.jsx:1:export { CoreProvider } from '../context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\core\empresas\EmpresasProvider.jsx =====
+src\core\empresas\EmpresasProvider.jsx:1:export { CoreProvider } from '../context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\core\usuarios\UsuariosProvider.jsx =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\App\CRM.jsx =====
+src\crm\App\CRM.jsx:1:import React, { useEffect, useMemo, useState } from 'react';
+src\crm\App\CRM.jsx:2:import { useCore } from '../../core/context/CoreContext';
+src\crm\App\CRM.jsx:4:import DashboardCRM from '../DashboardCRM';
+src\crm\App\CRM.jsx:5:import NotificacionesCRM from '../NotificacionesCRM';
+src\crm\App\CRM.jsx:6:import CentroWhatsApp from '../CentroWhatsApp';
+src\crm\App\CRM.jsx:7:import DashboardGerencial from '../DashboardGerencial';
+src\crm\App\CRM.jsx:8:import AutomatizacionesCRM from '../AutomatizacionesCRM';
+src\crm\App\CRM.jsx:9:import CRMComercialAvanzado from '../CRMComercialAvanzado';
+src\crm\App\CRM.jsx:10:import MetasKPIs from '../MetasKPIs';
+src\crm\App\CRM.jsx:11:import CalendarioCorporativo from '../CalendarioCorporativo';
+src\crm\App\CRM.jsx:12:import DocumentosCorporativos from '../DocumentosCorporativos';
+src\crm\App\CRM.jsx:13:import PortalClienteCRM from '../PortalClienteCRM';
+src\crm\App\CRM.jsx:14:import PortalProduccionCRM from '../PortalProduccionCRM';
+src\crm\App\CRM.jsx:15:import AppMovilCRM from '../AppMovilCRM';
+src\crm\App\CRM.jsx:16:import ElanAI from '../ElanAI';
+src\crm\App\CRM.jsx:17:import Empresas from '../Empresas';
+src\crm\App\CRM.jsx:18:import Contactos from '../Contactos';
+src\crm\App\CRM.jsx:19:import Clientes from '../Clientes';
+src\crm\App\CRM.jsx:20:import Proveedores from '../Proveedores';
+src\crm\App\CRM.jsx:21:import Compras from '../Compras';
+src\crm\App\CRM.jsx:22:import CuentasPorPagar from '../CuentasPorPagar';
+src\crm\App\CRM.jsx:23:import CuentasPorCobrar from '../CuentasPorCobrar';
+src\crm\App\CRM.jsx:24:import FlujoCaja from '../FlujoCaja';
+src\crm\App\CRM.jsx:25:import SeguimientoCRM from '../SeguimientoCRM';
+src\crm\App\CRM.jsx:26:import Vendedores from '../Vendedores';
+src\crm\App\CRM.jsx:27:import AliadosComerciales from '../AliadosComerciales';
+src\crm\App\CRM.jsx:28:import ReportesCRM from '../ReportesCRM';
+src\crm\App\CRM.jsx:29:import FiscalCRM from '../FiscalCRM';
+src\crm\App\CRM.jsx:30:import CentroUtilidades from '../CentroUtilidades';
+src\crm\App\CRM.jsx:31:import EstadoFinanciero from '../EstadoFinanciero';
+src\crm\App\CRM.jsx:32:import ExportadorCRMCentral from '../ExportadorCRMCentral';
+src\crm\App\CRM.jsx:34:import Pedidos from '../Pedidos';
+src\crm\App\CRM.jsx:35:import Produccion from '../Produccion';
+src\crm\App\CRM.jsx:36:import Cobros from '../Cobros';
+src\crm\App\CRM.jsx:37:import Comisiones from '../Comisiones';
+src\crm\App\CRM.jsx:39:import Cotizaciones from '../Cotizaciones';
+src\crm\App\CRM.jsx:40:import OrdenesTrabajo from '../OrdenesTrabajo';
+src\crm\App\CRM.jsx:41:import Inventario from '../Inventario';
+src\crm\App\CRM.jsx:42:import Materiales from '../Materiales';
+src\crm\App\CRM.jsx:43:import UsuariosPermisos from '../UsuariosPermisos';
+src\crm\App\CRM.jsx:44:import AuditoriaCRM from '../AuditoriaCRM';
+src\crm\App\CRM.jsx:45:import SolicitudesDisenoAI from '../../pages/SolicitudesDisenoAI';
+src\crm\App\CRM.jsx:46:import EMCImportadorAI22 from '../../pages/EMCImportadorAI22';
+src\crm\App\CRM.jsx:111:          { id: 'inventario', label: 'Inventario', icono: '', componente: <Inventario /> },
+src\crm\App\CRM.jsx:112:          { id: 'materiales', label: 'Materiales', icono: '', componente: <Materiales /> },
+src\crm\App\CRM.jsx:113:{ id: 'emc', label: 'Catálogo Maestro EMC', icono: '', componente: <EMCImportadorAI22 /> },
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\AliadosComerciales.jsx =====
+src\crm\AliadosComerciales.jsx:1:import React from 'react';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\AppMovilCRM.jsx =====
+src\crm\AppMovilCRM.jsx:1:import React from 'react';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\AuditoriaCRM.jsx =====
+src\crm\AuditoriaCRM.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\AuditoriaCRM.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\AutomatizacionesCRM.jsx =====
+src\crm\AutomatizacionesCRM.jsx:1:import React, { useMemo } from 'react';
+src\crm\AutomatizacionesCRM.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\AutomatizacionesCRM.jsx:47:  const { cuentasPorCobrar = [], cuentasPorPagar = [], ordenesTrabajo = [], produccion = [], inventario = [] } = useCore();
+src\crm\AutomatizacionesCRM.jsx:53:    ...inventario.filter(i => numero(i.stock) <= numero(i.stockMinimo || i.minimo)).map(i => ({ tipo:'Inventario bajo', detalle: i.nombre 
+|| i.material || i.id, prioridad:'Media' })),
+src\crm\AutomatizacionesCRM.jsx:54:  ], [cuentasPorCobrar, cuentasPorPagar, ordenesTrabajo, produccion, inventario]);
+src\crm\AutomatizacionesCRM.jsx:57:    <h2>Automatizaciones Corporativas</h2><p style={{ color: '#6b7280' }}>Reglas operativas sugeridas por el sistema segun cobros, pagos, 
+ordenes, produccion e inventario.</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\CalendarioCorporativo.jsx =====
+src\crm\CalendarioCorporativo.jsx:1:import React, { useMemo } from 'react';
+src\crm\CalendarioCorporativo.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\CentroUtilidades.jsx =====
+src\crm\CentroUtilidades.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\CentroUtilidades.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\CentroUtilidades.jsx:73:    numero(item.costoMateriales) +
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\CentroWhatsApp.jsx =====
+src\crm\CentroWhatsApp.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\CentroWhatsApp.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\CentroWhatsApp.jsx:24:    'Displays y material POP',
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Clientes.jsx =====
+src\crm\Clientes.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Clientes.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\Clientes.jsx:3:import {
+src\crm\Clientes.jsx:11:} from '../services/permisosCRM';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Cobros.jsx =====
+src\crm\Cobros.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Cobros.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Comisiones.jsx =====
+src\crm\Comisiones.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Comisiones.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Compras.jsx =====
+src\crm\Compras.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Compras.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\Compras.jsx:63:const CATEGORIAS = ['Materiales', 'Mano de obra', 'Transporte', 'Servicios', 'Herramientas', 'Gasto operativo', 'Otro'];
+src\crm\Compras.jsx:78:  categoria: 'Materiales',
+src\crm\Compras.jsx:134:      categoria: form.categoria || 'Materiales',
+src\crm\Compras.jsx:160:      categoria: item.categoria || 'Materiales',
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Contactos.jsx =====
+src\crm\Contactos.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Contactos.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Cotizaciones.jsx =====
+src\crm\Cotizaciones.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Cotizaciones.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\CRMComercialAvanzado.jsx =====
+src\crm\CRMComercialAvanzado.jsx:1:import React, { useMemo } from 'react';
+src\crm\CRMComercialAvanzado.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\CuentasPorCobrar.jsx =====
+src\crm\CuentasPorCobrar.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\CuentasPorCobrar.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\CuentasPorPagar.jsx =====
+src\crm\CuentasPorPagar.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\CuentasPorPagar.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\DashboardCRM.jsx =====
+src\crm\DashboardCRM.jsx:1:import React, { useMemo } from 'react';
+src\crm\DashboardCRM.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\DashboardCRM.jsx:138:    inventario = [],
+src\crm\DashboardCRM.jsx:139:    materiales = [],
+src\crm\DashboardCRM.jsx:155:    inventario.length +
+src\crm\DashboardCRM.jsx:156:    materiales.length +
+src\crm\DashboardCRM.jsx:360:    { titulo: 'Inventario', valor: inventario.length, icono: '', area: 'Inventario' },
+src\crm\DashboardCRM.jsx:361:    { titulo: 'Materiales', valor: materiales.length, icono: '', area: 'Inventario' },
+src\crm\DashboardCRM.jsx:409:    ...inventario.map((item) => ({ ...item, modulo: 'Inventario', icono: '' })),
+src\crm\DashboardCRM.jsx:410:    ...materiales.map((item) => ({ ...item, modulo: 'Material', icono: '' })),
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\DashboardGerencial.jsx =====
+src\crm\DashboardGerencial.jsx:1:import React, { useMemo } from 'react';
+src\crm\DashboardGerencial.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\DocumentosCorporativos.jsx =====
+src\crm\DocumentosCorporativos.jsx:1:import React, { useEffect, useState } from 'react';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\ElanAI.jsx =====
+src\crm\ElanAI.jsx:1:import React, { useMemo } from 'react';
+src\crm\ElanAI.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Empresas.jsx =====
+src\crm\Empresas.jsx:1:import React, { useState } from 'react';
+src\crm\Empresas.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\EstadoFinanciero.jsx =====
+src\crm\EstadoFinanciero.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\EstadoFinanciero.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\EstadoFinanciero.jsx:73:    numero(item.costoMateriales) +
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\ExportadorCRMCentral.jsx =====
+src\crm\ExportadorCRMCentral.jsx:1:import React, { useMemo } from 'react';
+src\crm\ExportadorCRMCentral.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\ExportadorCRMCentral.jsx:156:      inventario: asegurarArray(core.inventario),
+src\crm\ExportadorCRMCentral.jsx:157:      materiales: asegurarArray(core.materiales),
+src\crm\ExportadorCRMCentral.jsx:175:      inventario: datosCRMCentral.inventario.length,
+src\crm\ExportadorCRMCentral.jsx:176:      materiales: datosCRMCentral.materiales.length,
+src\crm\ExportadorCRMCentral.jsx:271:          <span style={estilos.itemLista}>Inventario: {resumen.inventario}</span>
+src\crm\ExportadorCRMCentral.jsx:272:          <span style={estilos.itemLista}>Materiales: {resumen.materiales}</span>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\FiscalCRM.jsx =====
+src\crm\FiscalCRM.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\FiscalCRM.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\FlujoCaja.jsx =====
+src\crm\FlujoCaja.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\FlujoCaja.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Inventario.jsx =====
+src\crm\Inventario.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Inventario.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\Inventario.jsx:4:const CATEGORIAS = ['Material', 'Producto terminado', 'Herramienta', 'Insumo', 'Equipo', 'Otro'];
+src\crm\Inventario.jsx:25:  categoria: 'Material',
+src\crm\Inventario.jsx:41:export default function Inventario() {
+src\crm\Inventario.jsx:43:    inventario,
+src\crm\Inventario.jsx:44:    crearInventario,
+src\crm\Inventario.jsx:45:    actualizarInventario,
+src\crm\Inventario.jsx:46:    eliminarInventario,
+src\crm\Inventario.jsx:54:    return inventario.reduce(
+src\crm\Inventario.jsx:72:  }, [inventario]);
+src\crm\Inventario.jsx:77:    if (!texto) return inventario;
+src\crm\Inventario.jsx:79:    return inventario.filter((item) =>
+src\crm\Inventario.jsx:85:  }, [inventario, busqueda]);
+src\crm\Inventario.jsx:108:    const valorInventario = existencia * costoPromedio;
+src\crm\Inventario.jsx:124:      valorInventario,
+src\crm\Inventario.jsx:129:      actualizarInventario(editandoId, datos);
+src\crm\Inventario.jsx:131:      crearInventario(datos);
+src\crm\Inventario.jsx:152:    eliminarInventario(id);
+src\crm\Inventario.jsx:160:          <h2>Inventario</h2>
+src\crm\Inventario.jsx:161:          <p>Existencias, entradas, salidas, costo promedio y valor real del inventario.</p>
+src\crm\Inventario.jsx:175:          <span>Valor inventario</span>
+src\crm\Inventario.jsx:185:        <h3>{editandoId ? 'Editar inventario' : 'Nuevo item de inventario'}</h3>
+src\crm\Inventario.jsx:313:            <h3>Listado de inventario</h3>
+src\crm\Inventario.jsx:319:            placeholder="Buscar inventario..."
+src\crm\Inventario.jsx:377:                  <td colSpan="10">No hay items de inventario registrados.</td>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Materiales.jsx =====
+src\crm\Materiales.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Materiales.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\Materiales.jsx:54:export default function Materiales() {
+src\crm\Materiales.jsx:56:    materiales,
+src\crm\Materiales.jsx:57:    crearMaterial,
+src\crm\Materiales.jsx:58:    actualizarMaterial,
+src\crm\Materiales.jsx:59:    eliminarMaterial,
+src\crm\Materiales.jsx:67:    return materiales.reduce(
+src\crm\Materiales.jsx:84:  }, [materiales]);
+src\crm\Materiales.jsx:89:    if (!texto) return materiales;
+src\crm\Materiales.jsx:91:    return materiales.filter((item) =>
+src\crm\Materiales.jsx:97:  }, [materiales, busqueda]);
+src\crm\Materiales.jsx:149:      valorInventario: stock * costoPromedio,
+src\crm\Materiales.jsx:154:      actualizarMaterial(editandoId, datos);
+src\crm\Materiales.jsx:156:      crearMaterial(datos);
+src\crm\Materiales.jsx:177:    eliminarMaterial(id);
+src\crm\Materiales.jsx:185:          <h2>Materiales</h2>
+src\crm\Materiales.jsx:192:          <span>Materiales</span>
+src\crm\Materiales.jsx:206:        <h3>{editandoId ? 'Editar material' : 'Nuevo material'}</h3>
+src\crm\Materiales.jsx:323:            <button type="submit">{editandoId ? 'Actualizar material' : 'Crear material'}</button>
+src\crm\Materiales.jsx:336:            <h3>Listado de materiales</h3>
+src\crm\Materiales.jsx:342:            placeholder="Buscar material..."
+src\crm\Materiales.jsx:351:                <th>Material</th>
+src\crm\Materiales.jsx:403:                  <td colSpan="10">No hay materiales registrados.</td>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\MetasKPIs.jsx =====
+src\crm\MetasKPIs.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\MetasKPIs.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\NotificacionesCRM.jsx =====
+src\crm\NotificacionesCRM.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\NotificacionesCRM.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\NotificacionesCRM.jsx:304:        <p>Centro automatico de alertas para cobros, pagos, produccion, ordenes, compras e inventario.</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\OrdenesTrabajo.jsx =====
+src\crm\OrdenesTrabajo.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\OrdenesTrabajo.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\OrdenesTrabajo.jsx:32:  const materiales = numero(datos.costoMateriales);
+src\crm\OrdenesTrabajo.jsx:38:  const costoTotal = materiales + manoObra + transporte + instalacion + otros;
+src\crm\OrdenesTrabajo.jsx:74:  materiales: '',
+src\crm\OrdenesTrabajo.jsx:76:  costoMateriales: '',
+src\crm\OrdenesTrabajo.jsx:224:      materiales: form.materiales.trim(),
+src\crm\OrdenesTrabajo.jsx:229:      costoMateriales: numero(form.costoMateriales),
+src\crm\OrdenesTrabajo.jsx:256:      costoMateriales: item.costoMateriales ?? '',
+src\crm\OrdenesTrabajo.jsx:367:            Materiales
+src\crm\OrdenesTrabajo.jsx:368:            <input name="costoMateriales" type="number" step="0.01" value={form.costoMateriales} onChange={cambiar} />
+src\crm\OrdenesTrabajo.jsx:444:            Materiales previstos
+src\crm\OrdenesTrabajo.jsx:445:            <textarea name="materiales" value={form.materiales} onChange={cambiar} />
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Pedidos.jsx =====
+src\crm\Pedidos.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Pedidos.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\PortalClienteCRM.jsx =====
+src\crm\PortalClienteCRM.jsx:1:import React from 'react';
+src\crm\PortalClienteCRM.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\PortalProduccionCRM.jsx =====
+src\crm\PortalProduccionCRM.jsx:1:import React from 'react';
+src\crm\PortalProduccionCRM.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\PortalProduccionCRM.jsx:34:    materiales = [],
+src\crm\PortalProduccionCRM.jsx:35:    inventario = [],
+src\crm\PortalProduccionCRM.jsx:57:          <strong>Materiales</strong>
+src\crm\PortalProduccionCRM.jsx:58:          <h3>{materiales.length}</h3>
+src\crm\PortalProduccionCRM.jsx:62:          <strong>Inventario</strong>
+src\crm\PortalProduccionCRM.jsx:63:          <h3>{inventario.length}</h3>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Produccion.jsx =====
+src\crm\Produccion.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Produccion.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\Produccion.jsx:32:  const materiales = numero(datos.costoMateriales);
+src\crm\Produccion.jsx:38:  const costoTotal = materiales + manoObra + transporte + instalacion + otros;
+src\crm\Produccion.jsx:69:  material: '',
+src\crm\Produccion.jsx:70:  materiales: '',
+src\crm\Produccion.jsx:78:  costoMateriales: '',
+src\crm\Produccion.jsx:174:            costoMateriales: '',
+src\crm\Produccion.jsx:201:          materiales: ordenSeleccionada.materiales || prev.materiales,
+src\crm\Produccion.jsx:203:          costoMateriales: ordenSeleccionada.costoMateriales || prev.costoMateriales,
+src\crm\Produccion.jsx:234:      material: formulario.material.trim(),
+src\crm\Produccion.jsx:235:      materiales: formulario.materiales.trim(),
+src\crm\Produccion.jsx:241:      costoMateriales: numero(formulario.costoMateriales),
+src\crm\Produccion.jsx:269:      costoMateriales: orden.costoMateriales ?? '',
+src\crm\Produccion.jsx:380:            Costo materiales
+src\crm\Produccion.jsx:381:            <input name="costoMateriales" type="number" step="0.01" value={formulario.costoMateriales} onChange={cambiarFormulario} />
+src\crm\Produccion.jsx:449:            Materiales usados
+src\crm\Produccion.jsx:450:            <textarea name="materiales" value={formulario.materiales} onChange={cambiarFormulario} />
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Proveedores.jsx =====
+src\crm\Proveedores.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Proveedores.jsx:2:import { useCore } from '../core/context/CoreContext';
+src\crm\Proveedores.jsx:13:  'Materiales de rotulacion',
+src\crm\Proveedores.jsx:43:    categoria: 'Materiales de rotulacion',
+src\crm\Proveedores.jsx:64:      categoria: 'Materiales de rotulacion',
+src\crm\Proveedores.jsx:113:      categoria: item.categoria || 'Materiales de rotulacion',
+src\crm\Proveedores.jsx:148:          <p>Registro de proveedores para compras, inventario, costos y cuentas por pagar de ELANKAV GROUP.</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\ReportesCRM.jsx =====
+src\crm\ReportesCRM.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\ReportesCRM.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\SeguimientoCRM.jsx =====
+src\crm\SeguimientoCRM.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\SeguimientoCRM.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\UsuariosPermisos.jsx =====
+src\crm\UsuariosPermisos.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\UsuariosPermisos.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\crm\Vendedores.jsx =====
+src\crm\Vendedores.jsx:1:import React, { useMemo, useState } from 'react';
+src\crm\Vendedores.jsx:2:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\data\aiProductProfiles.js =====
+src\data\aiProductProfiles.js:29:        materiales: ['acrílico transparente', 'relieve en acrílico', 'corte láser', 'vinil frost opcional'],
+src\data\aiProductProfiles.js:41:        materiales: ['impresión full color', 'vinil impreso', 'acrílico transparente', 'relieve en corte láser'],
+src\data\aiProductProfiles.js:53:        materiales: ['impresión UV', 'acrílico de alta calidad', 'corte láser', 'acabados personalizados'],
+src\data\aiProductProfiles.js:64:          'Botón completamente personalizado que combina materiales, volúmenes, texturas y técnicas de fabricación para una pieza única de 
+alta presencia visual.',
+src\data\aiProductProfiles.js:66:        materiales: ['acrílico', 'PVC', 'MDF', 'ACM', 'madera', 'impresión UV', 'corte CNC', 'corte láser', 'LED'],
+src\data\aiProductProfiles.js:124:Si el cliente pide más tamaño, más iluminación, más volumen o materiales superiores, responde: "Precio sujeto a revisión técnica".
+src\data\aiProductProfiles.js:127:MATERIALES PERMITIDOS
+src\data\aiProductProfiles.js:128:Puedes usar únicamente materiales fabricables por ELANVISUAL:
+src\data\aiProductProfiles.js:173:- Con materiales físicos creíbles.
+src\data\aiProductProfiles.js:177:No uses escenarios fantasiosos, neones exagerados, formas imposibles ni materiales irreales.
+src\data\aiProductProfiles.js:189:- PDF.
+src\data\aiProductProfiles.js:201:- Materiales sugeridos.
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\data\productos.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\data\recetasConstructivasBase.js =====
+src\data\recetasConstructivasBase.js:13:      { nombre: "ACM", tipo: "Material", unidad: "m2", formula: "area", keywords: ["acm", "alucobond"] },
+src\data\recetasConstructivasBase.js:29:      { nombre: "Lona impresa", tipo: "Material", unidad: "m2", formula: "area", keywords: ["lona"] },
+src\data\recetasConstructivasBase.js:45:      { nombre: "Acrílico lechoso", tipo: "Material", unidad: "m2", formula: "area_x_factor", factor: 2, keywords: ["acrilico", 
+"lechoso"] },
+src\data\recetasConstructivasBase.js:63:      { nombre: "PVC 10 mm", tipo: "Material", unidad: "m2", formula: "area", keywords: ["pvc", "10"] },
+src\data\recetasConstructivasBase.js:64:      { nombre: "Vinil o acabado superficial", tipo: "Material", unidad: "m2", formula: "area", keywords: ["vinil"] },
+src\data\recetasConstructivasBase.js:79:      { nombre: "Acrílico", tipo: "Material", unidad: "m2", formula: "area", keywords: ["acrilico"] },
+src\data\recetasConstructivasBase.js:80:      { nombre: "PVC base", tipo: "Material", unidad: "m2", formula: "area", keywords: ["pvc"] },
+src\data\recetasConstructivasBase.js:95:      { nombre: "Acrílico", tipo: "Material", unidad: "m2", formula: "area", keywords: ["acrilico"] },
+src\data\recetasConstructivasBase.js:96:      { nombre: "PVC / ACM respaldo", tipo: "Material", unidad: "m2", formula: "area", keywords: ["pvc", "acm"] },
+src\data\recetasConstructivasBase.js:111:      { nombre: "Vinil", tipo: "Material", unidad: "m2", formula: "area", keywords: ["vinil"] },
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\data\recomendaciones.js =====
+src\data\recomendaciones.js:11:    materiales: ["PVC 6 mm / 10 mm", "Vinil impreso o corte", "Acrílico decorativo opcional"],
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\data\rpiProveedorPiloto.js =====
+src\data\rpiProveedorPiloto.js:46:  materiales: '',
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\hooks\ot\useComprasOT.js =====
+src\hooks\ot\useComprasOT.js:1:import { useMemo, useState } from 'react';
+src\hooks\ot\useComprasOT.js:2:import {
+src\hooks\ot\useComprasOT.js:10:} from '../../services/ot/comprasService';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\hooks\ot\useOrdenTrabajo.js =====
+src\hooks\ot\useOrdenTrabajo.js:1:import {
+src\hooks\ot\useOrdenTrabajo.js:12:} from '../../services/ot/ordenTrabajoService';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\hooks\ot\usePagosOT.js =====
+src\hooks\ot\usePagosOT.js:1:import { useMemo, useState } from 'react';
+src\hooks\ot\usePagosOT.js:2:import {
+src\hooks\ot\usePagosOT.js:5:} from '../../services/finanzas';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\lib\calculos.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\lib\supabase.js =====
+src\lib\supabase.js:1:import { createClient } from '@supabase/supabase-js';
+src\lib\supabase.js:3:const url = import.meta.env.VITE_SUPABASE_URL?.trim();
+src\lib\supabase.js:4:const key = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim();
+src\lib\supabase.js:6:export const supabase = url && key ? createClient(url, key) : null;
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\models\catalogoMaestro.js =====
+src\models\catalogoMaestro.js:3:  MATERIAL: 'MATERIAL',
+src\models\catalogoMaestro.js:11:  RECETA_AI23: 'RECETA_AI23',
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\AdminPanel.jsx =====
+src\pages\AdminPanel.jsx:1:import React, { useMemo, useState } from 'react';
+src\pages\AdminPanel.jsx:2:import Usuarios20Panel from '../components/admin/Usuarios20Panel';
+src\pages\AdminPanel.jsx:3:import CategoriasHomePanel from '../components/admin/CategoriasHomePanel';
+src\pages\AdminPanel.jsx:4:import {
+src\pages\AdminPanel.jsx:19:} from 'lucide-react';
+src\pages\AdminPanel.jsx:20:import { useApp } from '../context/AppContext';
+src\pages\AdminPanel.jsx:21:import MediaLibrary from '../components/MediaLibrary';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\AIStudio.jsx =====
+src\pages\AIStudio.jsx:1:import React, { useEffect, useMemo, useState } from 'react';
+src\pages\AIStudio.jsx:2:import { supabase } from '../lib/supabase';
+src\pages\AIStudio.jsx:3:import { useApp } from '../context/AppContext';
+src\pages\AIStudio.jsx:4:import { esAdminCRM, filtrarRegistrosCRM, obtenerFirmaVendedor } from '../services/permisosCRM';
+src\pages\AIStudio.jsx:5:import { prepararArchivosTemporalesAI, construirResumenArchivosTemporales } from '../services/aiTemporalService';
+src\pages\AIStudio.jsx:6:import { cargarMemoriaOperativaElan } from '../services/memoriaOperativaElan';
+src\pages\AIStudio.jsx:7:import { crearSolicitudesCostosFaltantes } from '../services/solicitudesCostosService';
+src\pages\AIStudio.jsx:8:import { ejecutarAccionIA } from '../services/ai/aiDispatcher';
+src\pages\AIStudio.jsx:9:import '../styles/AIStudio.css';
+src\pages\AIStudio.jsx:42:function guardarBorradorCotizadorAI06C(memoriaOperativa = null, proyectoActivo = null) {
+src\pages\AIStudio.jsx:44:  if (!paquete?.puede_enviar_cotizador) return false;
+src\pages\AIStudio.jsx:52:    estado: 'borrador_ai_cotizador',
+src\pages\AIStudio.jsx:99:    if (!supabase) {
+src\pages\AIStudio.jsx:100:      setError('Supabase no estÃ¡ configurado.');
+src\pages\AIStudio.jsx:104:    const { data, error: err } = await supabase
+src\pages\AIStudio.jsx:121:    if (!supabase || !proyectoId) return;
+src\pages\AIStudio.jsx:122:    const { data, error: err } = await supabase
+src\pages\AIStudio.jsx:146:    if (!supabase) return setError('Supabase no estÃ¡ configurado.');
+src\pages\AIStudio.jsx:156:    const { data, error: err } = await supabase
+src\pages\AIStudio.jsx:180:    const { data, error: err } = await supabase
+src\pages\AIStudio.jsx:365:      await supabase
+src\pages\AIStudio.jsx:436:      const { data: Cotización, error: err } = await supabase
+src\pages\AIStudio.jsx:444:      await supabase
+src\pages\AIStudio.jsx:525:            <p>{proyectoActivo?.tipo_proyecto || 'Conversación guardada en Supabase'}</p>
+src\pages\AIStudio.jsx:589:                accept=".jpg,.jpeg,.png,.svg,.pdf"
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\BibliotecaTecnica.jsx =====
+src\pages\BibliotecaTecnica.jsx:1:import { useEffect, useMemo, useState } from 'react';
+src\pages\BibliotecaTecnica.jsx:2:import { CheckCircle2, Edit3, PlusCircle, Search, Trash2 } from 'lucide-react';
+src\pages\BibliotecaTecnica.jsx:3:import { supabase } from '../lib/supabase';
+src\pages\BibliotecaTecnica.jsx:4:import { sembrarBibliotecaTecnicaBase } from '../services/sembrarBibliotecaTecnica';
+src\pages\BibliotecaTecnica.jsx:33:  tipo_componente: 'Material',
+src\pages\BibliotecaTecnica.jsx:37:  material_id: '',
+src\pages\BibliotecaTecnica.jsx:69:  const [materiales, setMateriales] = useState([]);
+src\pages\BibliotecaTecnica.jsx:87:      const res = await sembrarBibliotecaTecnicaBase(supabase);
+src\pages\BibliotecaTecnica.jsx:100:      supabase.from('biblioteca_tecnica').select('*').order('nombre'),
+src\pages\BibliotecaTecnica.jsx:101:      supabase.from('biblioteca_componentes').select('*').order('orden'),
+src\pages\BibliotecaTecnica.jsx:102:      supabase.from('materiales_master').select('*').order('categoria'),
+src\pages\BibliotecaTecnica.jsx:103:      supabase.from('combinaciones_master').select('*').order('categoria'),
+src\pages\BibliotecaTecnica.jsx:104:      supabase.from('tecnologias_impresion').select('*').order('nombre'),
+src\pages\BibliotecaTecnica.jsx:105:      supabase.from('solicitudes_costos').select('*').order('creado_en', { ascending: false }),
+src\pages\BibliotecaTecnica.jsx:110:    if (!mat.error) setMateriales(mat.data || []);
+src\pages\BibliotecaTecnica.jsx:156:      ? await supabase.from('biblioteca_tecnica').update(payload).eq('id', editBiblioteca)
+src\pages\BibliotecaTecnica.jsx:157:      : await supabase.from('biblioteca_tecnica').insert(payload);
+src\pages\BibliotecaTecnica.jsx:173:      material_id: formComponente.material_id || null,
+src\pages\BibliotecaTecnica.jsx:180:      ? await supabase.from('biblioteca_componentes').update(payload).eq('id', editComponente)
+src\pages\BibliotecaTecnica.jsx:181:      : await supabase.from('biblioteca_componentes').insert(payload);
+src\pages\BibliotecaTecnica.jsx:204:      material_id: c.material_id || '',
+src\pages\BibliotecaTecnica.jsx:215:    const { error } = await supabase.from(tabla).delete().eq('id', id);
+src\pages\BibliotecaTecnica.jsx:220:  const materialNombre = (id) => materiales.find((m) => m.id === id)?.nombre || '';
+src\pages\BibliotecaTecnica.jsx:304:                <option>Material</option>
+src\pages\BibliotecaTecnica.jsx:332:              <option value="material">Material</option>
+src\pages\BibliotecaTecnica.jsx:337:            {formComponente.tipo_referencia === 'material' && (
+src\pages\BibliotecaTecnica.jsx:338:              <select value={formComponente.material_id} onChange={(e) => setFormComponente({ ...formComponente, material_id: 
+e.target.value })}>
+src\pages\BibliotecaTecnica.jsx:339:                <option value="">Seleccionar material</option>
+src\pages\BibliotecaTecnica.jsx:340:                {materiales.map((m) => <option key={m.id} value={m.id}>{m.categoria} · {m.nombre} · {money(m.costo_real)}</option>)}
+src\pages\BibliotecaTecnica.jsx:385:                      {c.tipo_referencia === 'material' && materialNombre(c.material_id)}
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\CapturaInteligente.jsx =====
+src\pages\CapturaInteligente.jsx:1:import React, { useEffect, useMemo, useState } from 'react';
+src\pages\CapturaInteligente.jsx:2:import { Save, Search, Users, Truck, UserPlus } from 'lucide-react';
+src\pages\CapturaInteligente.jsx:3:import { supabase } from '../lib/supabase';
+src\pages\CapturaInteligente.jsx:4:import { useApp } from '../context/AppContext';
+src\pages\CapturaInteligente.jsx:168:    if (!supabase) return;
+src\pages\CapturaInteligente.jsx:171:      supabase.from('clientes').select('*').order('created_at', { ascending: false }).limit(50),
+src\pages\CapturaInteligente.jsx:176:        supabase.from('proveedores').select('*').order('created_at', { ascending: false }).limit(50),
+src\pages\CapturaInteligente.jsx:177:        supabase.from('vendedores').select('*').order('created_at', { ascending: false }).limit(50)
+src\pages\CapturaInteligente.jsx:196:    if (!supabase) return alert('Supabase no está configurado.');
+src\pages\CapturaInteligente.jsx:221:        ? await supabase.from('clientes').update(payloadCliente).eq('id', editandoId)
+src\pages\CapturaInteligente.jsx:222:        : await supabase.from('clientes').insert(payloadCliente);
+src\pages\CapturaInteligente.jsx:230:      setMensaje(modoEdicion ? 'Cliente actualizado en Supabase.' : 'Cliente guardado en Supabase.');
+src\pages\CapturaInteligente.jsx:247:        ? await supabase.from('proveedores').update(payloadProveedor).eq('id', editandoId)
+src\pages\CapturaInteligente.jsx:248:        : await supabase.from('proveedores').insert(payloadProveedor);
+src\pages\CapturaInteligente.jsx:256:      setMensaje(modoEdicion ? 'Proveedor actualizado en Supabase.' : 'Proveedor guardado en Supabase.');
+src\pages\CapturaInteligente.jsx:279:        ? await supabase.from('vendedores').update(payloadVendedor).eq('id', editandoId)
+src\pages\CapturaInteligente.jsx:280:        : await supabase.from('vendedores').insert(payloadVendedor);
+src\pages\CapturaInteligente.jsx:288:      setMensaje(modoEdicion ? 'Vendedor actualizado en Supabase.' : 'Vendedor guardado en Supabase.');
+src\pages\CapturaInteligente.jsx:317:    if (!supabase) return alert('Supabase no está configurado.');
+src\pages\CapturaInteligente.jsx:322:    const { error } = await supabase.from(tabla).delete().eq('id', registro.id);
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\Carrito.jsx =====
+src\pages\Carrito.jsx:1:import React, { useMemo, useState } from 'react';
+src\pages\Carrito.jsx:2:import { ClipboardList, CreditCard, Send, Trash2 } from 'lucide-react';
+src\pages\Carrito.jsx:3:import { useApp } from '../context/AppContext';
+src\pages\Carrito.jsx:352:                placeholder="Descripcion del proyecto: tipo de rotulo, material, ubicacion, uso, instalacion, referencia visual..."
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\Contacto.jsx =====
+src\pages\Contacto.jsx:1:import React from 'react';
+src\pages\Contacto.jsx:2:import { Mail, MessageCircle, Phone } from 'lucide-react';
+src\pages\Contacto.jsx:3:import { useApp } from '../context/AppContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\Contactos.jsx =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx =====
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:1:import { useEffect, useMemo, useRef, useState } from 'react';
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:2:import {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:10:} from 'lucide-react';
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:11:import { supabase } from '../lib/supabase';
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:12:import { useApp } from '../context/AppContext';
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:38:    const { data, error } = await supabase
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:121:    const { error } = await supabase
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:268:    await supabase
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:285:  const editarEnCotizador = (cotizacion) => {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:293:    window.location.href = '/cotizador';
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:317:        <span>ELANVISIÓN · COTIZADOR INTELIGENTE</span>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:472:              onClick={() => editarEnCotizador(cotizacionActiva)}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:475:              Editar en Cotizador
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:610:              <p>□ Materiales revisados</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\CotizacionesInteligentes.jsx =====
+src\pages\CotizacionesInteligentes.jsx:1:import { useEffect, useMemo, useRef, useState } from 'react';
+src\pages\CotizacionesInteligentes.jsx:2:import {
+src\pages\CotizacionesInteligentes.jsx:10:} from 'lucide-react';
+src\pages\CotizacionesInteligentes.jsx:11:import { supabase } from '../lib/supabase';
+src\pages\CotizacionesInteligentes.jsx:12:import { useApp } from '../context/AppContext';
+src\pages\CotizacionesInteligentes.jsx:38:    const { data, error } = await supabase
+src\pages\CotizacionesInteligentes.jsx:121:    const { error } = await supabase
+src\pages\CotizacionesInteligentes.jsx:268:    await supabase
+src\pages\CotizacionesInteligentes.jsx:285:  const editarEnCotizador = (cotizacion) => {
+src\pages\CotizacionesInteligentes.jsx:291:    window.location.href = `/cotizador?id=${cotizacion.id}`;
+src\pages\CotizacionesInteligentes.jsx:315:        <span>ELANVISIÓN · COTIZADOR INTELIGENTE</span>
+src\pages\CotizacionesInteligentes.jsx:470:              onClick={() => editarEnCotizador(cotizacionActiva)}
+src\pages\CotizacionesInteligentes.jsx:473:              Editar en Cotizador
+src\pages\CotizacionesInteligentes.jsx:608:              <p>□ Materiales revisados</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\CotizadorDirecto.CI17.BACKUP.jsx =====
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1:import React, { useEffect, useMemo, useState } from 'react';
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:2:import {
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:11:} from 'lucide-react';
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:12:import { supabase } from '../lib/supabase';
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:13:import { useApp } from '../context/AppContext';
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:38:const costoMaterial = (m) =>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:49:function textoMaterial(m) {
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:57:  return (lista || []).find((m) => keys.some((k) => textoMaterial(m).includes(k)));
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:77:function crearLinea({ nombre, tipo, unidad, cantidad, material }) {
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:80:    nombre: material?.nombre || nombre,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:82:    unidad: material?.unidad || unidad,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:84:    costoUnitario: costoMaterial(material),
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:85:    origen: material ? 'Material Master' : 'Regla interna',
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:89:function armarLineasAutomaticas(form, materiales, tintas) {
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:98:  const lona = buscar(materiales, ['lona banner', 'lona', 'banner']);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:99:  const vinil = buscar(materiales, ['vinil', 'adhesivo', 'microperforado']);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:100:  const pvc = buscar(materiales, ['pvc']);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:101:  const acrilico = buscar(materiales, ['acrilico', 'acrílico']);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:102:  const acm = buscar(materiales, ['acm', 'alucobond']);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:103:  const tubo = buscar(materiales, ['tubo', 'metal', 'poste']);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:104:  const led = buscar(materiales, ['led']);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:105:  const fuente = buscar(materiales, ['fuente']);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:106:  const instalacion = buscar(materiales, ['instalacion', 'instalación', 'mano de obra', 'montaje']);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:107:  const tornillo = buscar(materiales, ['tornillo', 'silicon', 'sellador', 'remache']);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:118:        material: lona,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:130:        material: vinil,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:142:        material: tinta,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:151:        tipo: 'Material base',
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:154:        material: pvc,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:163:        tipo: 'Material base',
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:166:        material: acrilico,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:178:        material: acm,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:190:        material: tubo,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:202:        material: led,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:212:        material: fuente,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:224:        material: instalacion || tornillo,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:229:    const principal = buscar(materiales, ['lona', 'vinil', 'pvc', 'acrilico', 'acrílico', 'acm']) || materiales[0];
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:233:        nombre: 'Material principal detectado',
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:234:        tipo: 'Material',
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:237:        material: principal,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:260:export default function CotizadorDirecto({ setPage }) {
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:262:  const [materiales, setMateriales] = useState([]);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:295:        supabase.from('materiales_master').select('*').order('categoria'),
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:296:        supabase.from('tintas_master').select('*').order('nombre'),
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:300:        setMensaje(`No se pudo cargar Material Master: ${mat.error.message}`);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:303:      setMateriales(mat.data || []);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:306:      const { data: clientesData, error: clientesError } = await supabase
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:373:  const guardarClienteSupabase = async () => {
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:374:    if (!supabase) return false;
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:387:      origen: 'CotizadorDirecto',
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:395:        actualizadoDesde: 'CotizadorDirecto',
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:402:        const { data: existente, error: buscarError } = await supabase
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:412:          const { error } = await supabase
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:422:      const { error } = await supabase.from('clientes').insert(dataCliente);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:427:      console.error('Error guardando cliente en Supabase:', error);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:462:    const nuevas = armarLineasAutomaticas(form, materiales, tintas);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:468:        ? `Atención: ${sinCosto.length} elemento(s) necesitan costo en Material Master.`
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:550:    const clienteSupabaseOk = await guardarClienteSupabase();
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:555:      origen: 'CotizadorDirecto',
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:565:    if (!supabase) {
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:566:      setMensaje('Cotización guardada localmente. Supabase no disponible.');
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:571:      const { error } = await supabase.from('pedidos').insert({
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:583:        console.error('Error guardando cotización directa en Supabase:', error);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:584:        setMensaje('Cotización guardada localmente. No se pudo guardar en Supabase.');
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:588:      setMensaje(clienteSupabaseOk ? 'Cotización y cliente guardados en Supabase.' : 'Cotización guardada en Supabase. 
+Cliente pendiente de sincronizar.');
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:592:      setMensaje('Cotización guardada localmente. Supabase no disponible.');
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:603:      Android/iOS pueden bloquear el diálogo, mostrar blanco o no ofrecer guardar PDF.
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:632:    const tituloPDF = `Cotizacion-ELANVISION-${Date.now()}`;
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:641:          <title>${tituloPDF}</title>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:693:        <span>ELANVISIÓN · Cotizador Directo</span>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:840:            Cargar imágenes, PDF o referencias opcionales
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:841:            <input type="file" multiple accept="image/*,.pdf,.xlsx,.xls,.csv" onChange={manejarArchivos} />
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1006:            Descargar / Imprimir PDF
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1187:            <p>Materiales sujetos a disponibilidad.</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\CotizadorDirecto.jsx =====
+src\pages\CotizadorDirecto.jsx:1:import React, { useEffect, useMemo, useState } from 'react';
+src\pages\CotizadorDirecto.jsx:2:import {
+src\pages\CotizadorDirecto.jsx:11:} from 'lucide-react';
+src\pages\CotizadorDirecto.jsx:12:import { supabase } from '../lib/supabase';
+src\pages\CotizadorDirecto.jsx:13:import { cargarMaterialesEMC } from '../services/emcMaterialesAdapter';
+src\pages\CotizadorDirecto.jsx:14:import { useApp } from '../context/AppContext';
+src\pages\CotizadorDirecto.jsx:49:const costoMaterial = (m) =>
+src\pages\CotizadorDirecto.jsx:60:function textoMaterial(m) {
+src\pages\CotizadorDirecto.jsx:73:      const texto = textoMaterial(m);
+src\pages\CotizadorDirecto.jsx:84:      return { material: m, puntos };
+src\pages\CotizadorDirecto.jsx:89:  return candidatos[0]?.material || null;
+src\pages\CotizadorDirecto.jsx:109:function crearLinea({ nombre, tipo, unidad, cantidad, material }) {
+src\pages\CotizadorDirecto.jsx:112:    materialId: material?.id || null,
+src\pages\CotizadorDirecto.jsx:113:    nombre: material?.nombre || nombre,
+src\pages\CotizadorDirecto.jsx:115:    categoria: material?.categoria || '',
+src\pages\CotizadorDirecto.jsx:116:    marca: material?.marca || '',
+src\pages\CotizadorDirecto.jsx:117:    proveedor: material?.proveedor || '',
+src\pages\CotizadorDirecto.jsx:118:    unidad: material?.unidad || material?.unidad_compra || unidad,
+src\pages\CotizadorDirecto.jsx:120:    costoUnitario: costoMaterial(material),
+src\pages\CotizadorDirecto.jsx:121:    costoTotal: Math.max(Number(cantidad || 1), 0) * costoMaterial(material),
+src\pages\CotizadorDirecto.jsx:122:    origen: material ? 'Material Master' : 'Regla interna',
+src\pages\CotizadorDirecto.jsx:126:function armarLineasAutomaticas(form, materiales, tintas) {
+src\pages\CotizadorDirecto.jsx:135:  const lona = buscar(materiales, ['lona banner', 'lona', 'banner'], form.descripcion);
+src\pages\CotizadorDirecto.jsx:136:const vinil = buscar(materiales, ['vinil', 'adhesivo', 'microperforado'], form.descripcion);
+src\pages\CotizadorDirecto.jsx:137:const pvc = buscar(materiales, ['pvc'], form.descripcion);
+src\pages\CotizadorDirecto.jsx:138:const acrilico = buscar(materiales, ['acrilico', 'acrílico'], form.descripcion);
+src\pages\CotizadorDirecto.jsx:139:const acm = buscar(materiales, ['acm', 'alucobond'], form.descripcion);
+src\pages\CotizadorDirecto.jsx:140:const tubo = buscar(materiales, ['tubo', 'metal', 'poste'], form.descripcion);
+src\pages\CotizadorDirecto.jsx:141:const led = buscar(materiales, ['led'], form.descripcion);
+src\pages\CotizadorDirecto.jsx:142:const fuente = buscar(materiales, ['fuente'], form.descripcion);
+src\pages\CotizadorDirecto.jsx:143:const instalacion = buscar(materiales, ['instalacion', 'instalación', 'mano de obra', 'montaje'], form.descripcion);
+src\pages\CotizadorDirecto.jsx:144:const tornillo = buscar(materiales, ['tornillo', 'silicon', 'sellador', 'remache'], form.descripcion);
+src\pages\CotizadorDirecto.jsx:153:        material: lona,
+src\pages\CotizadorDirecto.jsx:165:        material: vinil,
+src\pages\CotizadorDirecto.jsx:177:        material: tinta,
+src\pages\CotizadorDirecto.jsx:186:        tipo: 'Material base',
+src\pages\CotizadorDirecto.jsx:189:        material: pvc,
+src\pages\CotizadorDirecto.jsx:198:        tipo: 'Material base',
+src\pages\CotizadorDirecto.jsx:201:        material: acrilico,
+src\pages\CotizadorDirecto.jsx:213:        material: acm,
+src\pages\CotizadorDirecto.jsx:225:        material: tubo,
+src\pages\CotizadorDirecto.jsx:237:        material: led,
+src\pages\CotizadorDirecto.jsx:247:        material: fuente,
+src\pages\CotizadorDirecto.jsx:259:        material: instalacion || tornillo,
+src\pages\CotizadorDirecto.jsx:264:const principal = buscar(materiales, ['lona', 'vinil', 'pvc', 'acrilico', 'acrílico', 'acm'], form.descripcion) || materiales[0];
+src\pages\CotizadorDirecto.jsx:268:        nombre: 'Material principal detectado',
+src\pages\CotizadorDirecto.jsx:269:        tipo: 'Material',
+src\pages\CotizadorDirecto.jsx:272:        material: principal,
+src\pages\CotizadorDirecto.jsx:295:export default function CotizadorDirecto({ setPage }) {
+src\pages\CotizadorDirecto.jsx:298:  const [materiales, setMateriales] = useState([]);
+src\pages\CotizadorDirecto.jsx:337:        cargarMaterialesEMC(supabase),
+src\pages\CotizadorDirecto.jsx:338:        supabase.from('tintas_master').select('*').order('nombre'),
+src\pages\CotizadorDirecto.jsx:342:        setMensaje(`No se pudo cargar Material Master: ${mat.error.message}`);
+src\pages\CotizadorDirecto.jsx:345:      setMateriales(mat.data || []);
+src\pages\CotizadorDirecto.jsx:348:      const { data: clientesData, error: clientesError } = await supabase
+src\pages\CotizadorDirecto.jsx:367:      if (!cotizacionIdEdicion || !supabase) return;
+src\pages\CotizadorDirecto.jsx:371:      const { data, error } = await supabase
+src\pages\CotizadorDirecto.jsx:512:  const guardarClienteSupabase = async () => {
+src\pages\CotizadorDirecto.jsx:513:    if (!supabase) return false;
+src\pages\CotizadorDirecto.jsx:526:      origen: 'CotizadorDirecto',
+src\pages\CotizadorDirecto.jsx:534:        actualizadoDesde: 'CotizadorDirecto',
+src\pages\CotizadorDirecto.jsx:541:        const { data: existente, error: buscarError } = await supabase
+src\pages\CotizadorDirecto.jsx:551:          const { error } = await supabase
+src\pages\CotizadorDirecto.jsx:561:      const { error } = await supabase.from('clientes').insert(dataCliente);
+src\pages\CotizadorDirecto.jsx:566:      console.error('Error guardando cliente en Supabase:', error);
+src\pages\CotizadorDirecto.jsx:601:    const nuevas = armarLineasAutomaticas(form, materiales, tintas);
+src\pages\CotizadorDirecto.jsx:607:        ? `Atención: ${sinCosto.length} elemento(s) necesitan costo en Material Master.`
+src\pages\CotizadorDirecto.jsx:697:    const clienteSupabaseOk = await guardarClienteSupabase();
+src\pages\CotizadorDirecto.jsx:702:      origen: 'CotizadorDirecto',
+src\pages\CotizadorDirecto.jsx:712:    if (!supabase) {
+src\pages\CotizadorDirecto.jsx:713:      setMensaje('Cotización guardada localmente. Supabase no disponible.');
+src\pages\CotizadorDirecto.jsx:718:      const { error } = await supabase.from('pedidos').insert({
+src\pages\CotizadorDirecto.jsx:730:        console.error('Error guardando cotización directa en Supabase:', error);
+src\pages\CotizadorDirecto.jsx:731:        setMensaje('Cotización guardada localmente. No se pudo guardar en Supabase.');
+src\pages\CotizadorDirecto.jsx:735:      setMensaje(clienteSupabaseOk ? 'Cotización y cliente guardados en Supabase.' : 'Cotización guardada en Supabase. Cliente pendiente 
+de sincronizar.');
+src\pages\CotizadorDirecto.jsx:739:      setMensaje('Cotización guardada localmente. Supabase no disponible.');
+src\pages\CotizadorDirecto.jsx:750:      Android/iOS pueden bloquear el diálogo, mostrar blanco o no ofrecer guardar PDF.
+src\pages\CotizadorDirecto.jsx:779:    const tituloPDF = `Cotizacion-ELANVISION-${Date.now()}`;
+src\pages\CotizadorDirecto.jsx:788:          <title>${tituloPDF}</title>
+src\pages\CotizadorDirecto.jsx:840:        <span>ELANVISIÓN · Cotizador Directo</span>
+src\pages\CotizadorDirecto.jsx:987:            Cargar imágenes, PDF o referencias opcionales
+src\pages\CotizadorDirecto.jsx:988:            <input type="file" multiple accept="image/*,.pdf,.xlsx,.xls,.csv" onChange={manejarArchivos} />
+src\pages\CotizadorDirecto.jsx:1154:            Descargar / Imprimir PDF
+src\pages\CotizadorDirecto.jsx:1216:            <p><b>Material:</b> {s.nombre}</p>
+src\pages\CotizadorDirecto.jsx:1245:        <p><b>Material seleccionado:</b> {l.nombre || '-'}</p>
+src\pages\CotizadorDirecto.jsx:1259:<p className="muted">Vista interna. Esta información no aparece en el PDF del cliente.</p>
+src\pages\CotizadorDirecto.jsx:1399:            <p>Materiales sujetos a disponibilidad.</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\CotizadorDirectoAI.jsx =====
+src\pages\CotizadorDirectoAI.jsx:1:import React, { useEffect, useMemo, useState } from 'react';
+src\pages\CotizadorDirectoAI.jsx:2:import {
+src\pages\CotizadorDirectoAI.jsx:11:} from 'lucide-react';
+src\pages\CotizadorDirectoAI.jsx:12:import { supabase } from '../lib/supabase';
+src\pages\CotizadorDirectoAI.jsx:14:import { useApp } from '../context/AppContext';
+src\pages\CotizadorDirectoAI.jsx:39:const costoBaseMaterial = (m) => {
+src\pages\CotizadorDirectoAI.jsx:92:const costoMaterial = (m, unidadConsumo = '') => {
+src\pages\CotizadorDirectoAI.jsx:93:  const base = costoBaseMaterial(m);
+src\pages\CotizadorDirectoAI.jsx:113:function textoMaterial(m) {
+src\pages\CotizadorDirectoAI.jsx:134:      const texto = textoMaterial(m);
+src\pages\CotizadorDirectoAI.jsx:145:      return { material: m, puntos };
+src\pages\CotizadorDirectoAI.jsx:150:  return candidatos[0]?.material || null;
+src\pages\CotizadorDirectoAI.jsx:170:function crearLinea({ nombre, tipo, unidad, cantidad, material }) {
+src\pages\CotizadorDirectoAI.jsx:172:  const costoUnitarioCalculado = costoMaterial(material, unidad);
+src\pages\CotizadorDirectoAI.jsx:173:  const unidadCompra = material?.unidad_compra || material?.unidad || '';
+src\pages\CotizadorDirectoAI.jsx:177:    materialId: material?.id || null,
+src\pages\CotizadorDirectoAI.jsx:178:    nombre: material?.nombre || nombre,
+src\pages\CotizadorDirectoAI.jsx:180:    categoria: material?.categoria || '',
+src\pages\CotizadorDirectoAI.jsx:181:    marca: material?.marca || '',
+src\pages\CotizadorDirectoAI.jsx:182:    proveedor: material?.proveedor || '',
+src\pages\CotizadorDirectoAI.jsx:185:    anchoPresentacion: material?.ancho || null,
+src\pages\CotizadorDirectoAI.jsx:186:    largoPresentacion: material?.largo || null,
+src\pages\CotizadorDirectoAI.jsx:190:    costoCompraOriginal: costoBaseMaterial(material),
+src\pages\CotizadorDirectoAI.jsx:191:    origen: material ? 'Material Master' : 'Regla interna',
+src\pages\CotizadorDirectoAI.jsx:195:function armarLineasAutomaticas(form, materiales, tintas) {
+src\pages\CotizadorDirectoAI.jsx:204:const lona = buscar(materiales, ['lona banner', 'lona', 'banner'], form.descripcion);
+src\pages\CotizadorDirectoAI.jsx:207:    materiales,
+src\pages\CotizadorDirectoAI.jsx:222:  (materiales || []).find((m) => {
+src\pages\CotizadorDirectoAI.jsx:223:    const texto = textoMaterial(m);
+src\pages\CotizadorDirectoAI.jsx:233:const pvc = buscar(materiales, ['pvc'], form.descripcion);
+src\pages\CotizadorDirectoAI.jsx:234:  const acrilico = buscar(materiales, ['acrilico', 'acrilico']);
+src\pages\CotizadorDirectoAI.jsx:235:  const acm = buscar(materiales, ['acm', 'alucobond']);
+src\pages\CotizadorDirectoAI.jsx:236:  const tubo = buscar(materiales, ['tubo', 'metal', 'poste']);
+src\pages\CotizadorDirectoAI.jsx:237:  const led = buscar(materiales, ['led']);
+src\pages\CotizadorDirectoAI.jsx:238:  const fuente = buscar(materiales, ['fuente']);
+src\pages\CotizadorDirectoAI.jsx:239:  const instalacion = buscar(materiales, ['instalacion', 'instalacion', 'mano de obra', 'montaje']);
+src\pages\CotizadorDirectoAI.jsx:240:  const tornillo = buscar(materiales, ['tornillo', 'silicon', 'sellador', 'remache']);
+src\pages\CotizadorDirectoAI.jsx:251:        material: lona,
+src\pages\CotizadorDirectoAI.jsx:263:        material: vinil,
+src\pages\CotizadorDirectoAI.jsx:285:      material: {
+src\pages\CotizadorDirectoAI.jsx:303:        tipo: 'Material base',
+src\pages\CotizadorDirectoAI.jsx:306:        material: pvc,
+src\pages\CotizadorDirectoAI.jsx:315:        tipo: 'Material base',
+src\pages\CotizadorDirectoAI.jsx:318:        material: acrilico,
+src\pages\CotizadorDirectoAI.jsx:330:        material: acm,
+src\pages\CotizadorDirectoAI.jsx:342:        material: tubo,
+src\pages\CotizadorDirectoAI.jsx:354:        material: led,
+src\pages\CotizadorDirectoAI.jsx:364:        material: fuente,
+src\pages\CotizadorDirectoAI.jsx:376:        material: instalacion || tornillo,
+src\pages\CotizadorDirectoAI.jsx:381:    const principal = buscar(materiales, ['lona', 'vinil', 'pvc', 'acrilico', 'acrilico', 'acm']) || materiales[0];
+src\pages\CotizadorDirectoAI.jsx:385:        nombre: 'Material principal detectado',
+src\pages\CotizadorDirectoAI.jsx:386:        tipo: 'Material',
+src\pages\CotizadorDirectoAI.jsx:389:        material: principal,
+src\pages\CotizadorDirectoAI.jsx:412:async function calcularConAI23(payload) {
+src\pages\CotizadorDirectoAI.jsx:417:      tipo: 'cotizar-ai23',
+src\pages\CotizadorDirectoAI.jsx:425:export default function CotizadorDirectoAI({ setPage }) {
+src\pages\CotizadorDirectoAI.jsx:427:  const [materiales, setMateriales] = useState([]);
+src\pages\CotizadorDirectoAI.jsx:428:  const { inventarioReal = [] } = useApp();
+src\pages\CotizadorDirectoAI.jsx:434:  setMensaje(`No se pudo cargar tintas desde Inventario / Material Master: ${tin.error.message}`);
+src\pages\CotizadorDirectoAI.jsx:440:  const [previewAI23, setPreviewAI23] = useState(null);
+src\pages\CotizadorDirectoAI.jsx:453:  const desdeSupabase = Array.isArray(productosRegistrados)
+src\pages\CotizadorDirectoAI.jsx:459:  [...desdeSupabase, ...desdeContexto].forEach((p) => {
+src\pages\CotizadorDirectoAI.jsx:510:    const inventarioCotizador = Array.isArray(inventarioReal)
+src\pages\CotizadorDirectoAI.jsx:511:      ? inventarioReal.map(normalizarInventarioParaCotizador)
+src\pages\CotizadorDirectoAI.jsx:514:    setMateriales(inventarioCotizador);
+src\pages\CotizadorDirectoAI.jsx:517:      supabase.from('tintas_master').select('*').order('nombre'),
+src\pages\CotizadorDirectoAI.jsx:518:      supabase.from('productos_registrados').select('*').eq('activo', true).order('nombre'),
+src\pages\CotizadorDirectoAI.jsx:529:    const { data: clientesData, error: clientesError } = await supabase
+src\pages\CotizadorDirectoAI.jsx:544:}, [inventarioReal]);
+src\pages\CotizadorDirectoAI.jsx:548:      if (!cotizacionIdEdicion || !supabase) return;
+src\pages\CotizadorDirectoAI.jsx:552:      const { data, error } = await supabase
+src\pages\CotizadorDirectoAI.jsx:706:  const guardarClienteSupabase = async () => {
+src\pages\CotizadorDirectoAI.jsx:707:    if (!supabase) return false;
+src\pages\CotizadorDirectoAI.jsx:720:      origen: 'CotizadorDirecto',
+src\pages\CotizadorDirectoAI.jsx:728:        actualizadoDesde: 'CotizadorDirecto',
+src\pages\CotizadorDirectoAI.jsx:735:        const { data: existente, error: buscarError } = await supabase
+src\pages\CotizadorDirectoAI.jsx:745:          const { error } = await supabase
+src\pages\CotizadorDirectoAI.jsx:755:      const { error } = await supabase.from('clientes').insert(dataCliente);
+src\pages\CotizadorDirectoAI.jsx:760:      console.error('Error guardando cliente en Supabase:', error);
+src\pages\CotizadorDirectoAI.jsx:803:    console.log('DEBUG materiales antes de buscar', materiales.length);
+src\pages\CotizadorDirectoAI.jsx:805:    if (!materiales.length) {
+src\pages\CotizadorDirectoAI.jsx:806:      setMensaje('Material Master / EMC no cargo materiales. No se puede cotizar con AI-23.');
+src\pages\CotizadorDirectoAI.jsx:810:    const nuevas = armarLineasAutomaticas(form, materiales, tintas);
+src\pages\CotizadorDirectoAI.jsx:811:    console.log('DEBUG materiales total:', materiales.length);
+src\pages\CotizadorDirectoAI.jsx:814:  'DEBUG materiales vinil:',
+src\pages\CotizadorDirectoAI.jsx:815:  materiales
+src\pages\CotizadorDirectoAI.jsx:816:    .filter((m) => textoMaterial(m).includes('vinil') || textoMaterial(m).includes('adhesivo') || 
+textoMaterial(m).includes('promoplus'))
+src\pages\CotizadorDirectoAI.jsx:842:const ai23 = await calcularConAI23({
+src\pages\CotizadorDirectoAI.jsx:854:    if (ai23?.ok) {
+src\pages\CotizadorDirectoAI.jsx:855:  setPreviewAI23({
+src\pages\CotizadorDirectoAI.jsx:856:    costo: Number(ai23.resumen?.costo_base || 0),
+src\pages\CotizadorDirectoAI.jsx:857:    minimo: Number(ai23.resumen?.costo_base || 0) * POLITICA.minimo,
+src\pages\CotizadorDirectoAI.jsx:858:    recomendado: Number(ai23.resumen?.total || 0),
+src\pages\CotizadorDirectoAI.jsx:859:    objetivo: Number(ai23.resumen?.costo_base || 0) * POLITICA.objetivo,
+src\pages\CotizadorDirectoAI.jsx:860:    venta: Number(ai23.resumen?.total || 0),
+src\pages\CotizadorDirectoAI.jsx:861:    fuente: 'AI-23',
+src\pages\CotizadorDirectoAI.jsx:862:    raw: ai23,
+src\pages\CotizadorDirectoAI.jsx:865:  setPreviewAI23(null);
+src\pages\CotizadorDirectoAI.jsx:871:        ? `Atencion: ${sinCosto.length} elemento(s) necesitan costo en Material Master.`
+src\pages\CotizadorDirectoAI.jsx:877:  if (previewAI23) return previewAI23;
+src\pages\CotizadorDirectoAI.jsx:879:}, [lineasPreview, form.precioElegido, previewAI23]);
+src\pages\CotizadorDirectoAI.jsx:913:    setPreviewAI23(null);
+src\pages\CotizadorDirectoAI.jsx:967:    const clienteSupabaseOk = await guardarClienteSupabase();
+src\pages\CotizadorDirectoAI.jsx:972:      origen: 'CotizadorDirecto',
+src\pages\CotizadorDirectoAI.jsx:982:    if (!supabase) {
+src\pages\CotizadorDirectoAI.jsx:983:      setMensaje('Cotizacion guardada localmente. Supabase no disponible.');
+src\pages\CotizadorDirectoAI.jsx:988:      const { error } = await supabase.from('pedidos').insert({
+src\pages\CotizadorDirectoAI.jsx:1000:        console.error('Error guardando cotizacion directa en Supabase:', error);
+src\pages\CotizadorDirectoAI.jsx:1001:        setMensaje('Cotizacion guardada localmente. No se pudo guardar en Supabase.');
+src\pages\CotizadorDirectoAI.jsx:1005:      setMensaje(clienteSupabaseOk ? 'Cotizacion y cliente guardados en Supabase.' : 'Cotizacion guardada en Supabase. Cliente 
+pendiente de sincronizar.');
+src\pages\CotizadorDirectoAI.jsx:1009:      setMensaje('Cotizacion guardada localmente. Supabase no disponible.');
+src\pages\CotizadorDirectoAI.jsx:1020:      Android/iOS pueden bloquear el dialogo, mostrar blanco o no ofrecer guardar PDF.
+src\pages\CotizadorDirectoAI.jsx:1049:    const tituloPDF = `Cotizacion-ELANVISION-${Date.now()}`;
+src\pages\CotizadorDirectoAI.jsx:1058:          <title>${tituloPDF}</title>
+src\pages\CotizadorDirectoAI.jsx:1110:        <span>ELANVISION - Cotizador Directo</span>
+src\pages\CotizadorDirectoAI.jsx:1309:            Cargar imagenes, PDF o referencias opcionales
+src\pages\CotizadorDirectoAI.jsx:1310:            <input type="file" multiple accept="image/*,.pdf,.xlsx,.xls,.csv" onChange={manejarArchivos} />
+src\pages\CotizadorDirectoAI.jsx:1475:            Descargar / Imprimir PDF
+src\pages\CotizadorDirectoAI.jsx:1501:              <p><b>Material seleccionado:</b> {l.nombre || '-'}</p>
+src\pages\CotizadorDirectoAI.jsx:1517:  <p className="muted">Vista interna. Esta informacion no aparece en el PDF del cliente.</p>
+src\pages\CotizadorDirectoAI.jsx:1672:            <p>Materiales sujetos a disponibilidad.</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\CotizadorVisual.jsx =====
+src\pages\CotizadorVisual.jsx:1:import { useEffect, useMemo, useState } from 'react';
+src\pages\CotizadorVisual.jsx:2:import {
+src\pages\CotizadorVisual.jsx:14:} from 'lucide-react';
+src\pages\CotizadorVisual.jsx:15:import { useApp } from '../context/AppContext';
+src\pages\CotizadorVisual.jsx:16:import { supabase } from '../lib/supabase';
+src\pages\CotizadorVisual.jsx:17:import { cargarMaterialesEMC } from '../services/emcMaterialesAdapter';
+src\pages\CotizadorVisual.jsx:19:const STORAGE_CLIENTES = 'elanvisual_cotizador_clientes_v1';
+src\pages\CotizadorVisual.jsx:85:  materialId: '',
+src\pages\CotizadorVisual.jsx:97:function adaptarMaterial(row) {
+src\pages\CotizadorVisual.jsx:118:export default function CotizadorVisual() {
+src\pages\CotizadorVisual.jsx:121:  const [materiales, setMateriales] = useState([]);
+src\pages\CotizadorVisual.jsx:122:  const [cargandoMateriales, setCargandoMateriales] = useState(false);
+src\pages\CotizadorVisual.jsx:140:  const cargarMateriales = async () => {
+src\pages\CotizadorVisual.jsx:142:      setCargandoMateriales(true);
+src\pages\CotizadorVisual.jsx:143:      const { data, error } = await cargarMaterialesEMC(supabase);
+src\pages\CotizadorVisual.jsx:146:setMateriales((data || []).map(adaptarMaterial));
+src\pages\CotizadorVisual.jsx:149:      setMateriales((data || []).map(adaptarMaterial));
+src\pages\CotizadorVisual.jsx:151:      console.error('Error cargando materiales:', error);
+src\pages\CotizadorVisual.jsx:152:      alert('No se pudieron cargar materiales desde Supabase.');
+src\pages\CotizadorVisual.jsx:154:      setCargandoMateriales(false);
+src\pages\CotizadorVisual.jsx:159:    cargarMateriales();
+src\pages\CotizadorVisual.jsx:162:  const materialesActivos = useMemo(
+src\pages\CotizadorVisual.jsx:163:    () => materiales.filter((m) => m && m.activo !== false && (m.descripcion || m.nombre || m.categoria)),
+src\pages\CotizadorVisual.jsx:164:    [materiales]
+src\pages\CotizadorVisual.jsx:168:    () => [...new Set(materialesActivos.map((m) => m.categoria).filter(Boolean))],
+src\pages\CotizadorVisual.jsx:169:    [materialesActivos]
+src\pages\CotizadorVisual.jsx:175:        materialesActivos
+src\pages\CotizadorVisual.jsx:181:    [materialesActivos, itemForm.categoria]
+src\pages\CotizadorVisual.jsx:186:    return materialesActivos.filter((m) => {
+src\pages\CotizadorVisual.jsx:193:  }, [materialesActivos, itemForm.categoria, busquedaProducto]);
+src\pages\CotizadorVisual.jsx:195:  const materialSeleccionado =
+src\pages\CotizadorVisual.jsx:196:    materialesActivos.find((m) => m.id === itemForm.materialId) ||
+src\pages\CotizadorVisual.jsx:201:    if (!materialSeleccionado) return;
+src\pages\CotizadorVisual.jsx:206:          ? String(prev.costoInstalacionM2 || materialSeleccionado.costoInstalacionM2 || '')
+src\pages\CotizadorVisual.jsx:209:  }, [materialSeleccionado]);
+src\pages\CotizadorVisual.jsx:221:    if (materialSeleccionado?.tipoCalculo === 'unidad') return cantidad;
+src\pages\CotizadorVisual.jsx:222:    if (materialSeleccionado?.tipoCalculo === 'metro_lineal' || materialSeleccionado?.tipoCalculo === 'lineal') {
+src\pages\CotizadorVisual.jsx:226:  }, [itemForm.ancho, itemForm.alto, itemForm.cantidad, materialSeleccionado]);
+src\pages\CotizadorVisual.jsx:228:  const costoTinta = (material, tinta) => {
+src\pages\CotizadorVisual.jsx:229:    if (!material) return 0;
+src\pages\CotizadorVisual.jsx:230:    return num(material.costosTinta?.[tinta] ?? costosTintaDefault[tinta]);
+src\pages\CotizadorVisual.jsx:233:  const precioTarifa = (material, tarifa, tinta) => {
+src\pages\CotizadorVisual.jsx:234:    if (!material) return 0;
+src\pages\CotizadorVisual.jsx:237:      return num(material.tarifaD || material.precioAprobado || material.precioVenta || material.tarifaC);
+src\pages\CotizadorVisual.jsx:240:    const tarifaGuardada = num(material[`tarifa${tarifa}`] || material[`precio${tarifa}`]);
+src\pages\CotizadorVisual.jsx:241:    const costoMaterial = num(material.precioBase || material.costoMaterialSinTinta || material.costo);
+src\pages\CotizadorVisual.jsx:243:    if (costoMaterial > 0) {
+src\pages\CotizadorVisual.jsx:244:      const costoProduccion = (costoMaterial + costoTinta(material, tinta)) * 1.1;
+src\pages\CotizadorVisual.jsx:248:    return tarifaGuardada || num(material.precioVenta);
+src\pages\CotizadorVisual.jsx:252:    if (!materialSeleccionado || areaItem <= 0) return [];
+src\pages\CotizadorVisual.jsx:257:      const precioUnitario = precioTarifa(materialSeleccionado, tarifa, itemForm.tinta);
+src\pages\CotizadorVisual.jsx:259:      const descuentoPermitido = Math.min(num(itemForm.descuento), num(materialSeleccionado.descuentoMaximo || 20));
+src\pages\CotizadorVisual.jsx:271:  }, [materialSeleccionado, areaItem, itemForm.tinta, itemForm.descuento, usuario?.rol]);
+src\pages\CotizadorVisual.jsx:337:    if (!materialSeleccionado) return;
+src\pages\CotizadorVisual.jsx:345:    const precioUnitario = precioTarifa(materialSeleccionado, itemForm.tarifa, itemForm.tinta);
+src\pages\CotizadorVisual.jsx:347:    const descuentoPermitido = Math.min(num(itemForm.descuento), num(materialSeleccionado.descuentoMaximo || 20));
+src\pages\CotizadorVisual.jsx:353:      materialId: materialSeleccionado.id,
+src\pages\CotizadorVisual.jsx:354:      descripcion: materialSeleccionado.descripcion || materialSeleccionado.nombre || 'Material sin nombre',
+src\pages\CotizadorVisual.jsx:357:      categoria: materialSeleccionado.categoria || '',
+src\pages\CotizadorVisual.jsx:358:      subcategoria: materialSeleccionado.subcategoria || '',
+src\pages\CotizadorVisual.jsx:359:      tipoCalculo: materialSeleccionado.tipoCalculo || 'm2',
+src\pages\CotizadorVisual.jsx:377:      const instalacionM2 = num(itemForm.costoInstalacionM2 || materialSeleccionado.costoInstalacionM2);
+src\pages\CotizadorVisual.jsx:542:      <main className="cotizador-page">
+src\pages\CotizadorVisual.jsx:543:        <section className="cotizador-lock">
+src\pages\CotizadorVisual.jsx:546:          <p>Este cotizador es solo para administracion y vendedores.</p>
+src\pages\CotizadorVisual.jsx:553:    <main className="cotizador-page">
+src\pages\CotizadorVisual.jsx:554:      <section className="cotizador-hero">
+src\pages\CotizadorVisual.jsx:555:        <span>ELANVISUAL - COTIZADOR V3</span>
+src\pages\CotizadorVisual.jsx:556:        <h1>Cotizador Visual</h1>
+src\pages\CotizadorVisual.jsx:557:        <p>Material, tinta, medidas, instalacion, transporte e IVA.</p>
+src\pages\CotizadorVisual.jsx:561:        <section className="cotizador-card">
+src\pages\CotizadorVisual.jsx:599:        <section className="cotizador-card">
+src\pages\CotizadorVisual.jsx:615:      <section className="cotizador-grid">
+src\pages\CotizadorVisual.jsx:616:        <form className="cotizador-card" onSubmit={agregarItem}>
+src\pages\CotizadorVisual.jsx:622:          {cargandoMateriales && <div className="empty">Cargando materiales desde Supabase...</div>}
+src\pages\CotizadorVisual.jsx:627:              <select value={itemForm.categoria} onChange={(e) => setItemForm((p) => ({ ...p, categoria: e.target.value, subcategoria: '', 
+materialId: '' }))}>
+src\pages\CotizadorVisual.jsx:639:                  const material = productosFiltrados.find((m) => m.subcategoria === valor);
+src\pages\CotizadorVisual.jsx:643:                    materialId: material?.id || '',
+src\pages\CotizadorVisual.jsx:662:          {materialSeleccionado && (
+src\pages\CotizadorVisual.jsx:664:              <strong>{materialSeleccionado.descripcion || materialSeleccionado.nombre}</strong>
+src\pages\CotizadorVisual.jsx:665:              <span>{materialSeleccionado.categoria} - {materialSeleccionado.subcategoria} - {materialSeleccionado.tipoCalculo}</span>
+src\pages\CotizadorVisual.jsx:695:            <label>Ancho m<input type="number" step="0.01" value={itemForm.ancho} disabled={materialSeleccionado?.tipoCalculo === 
+'unidad'} onChange={(e) => actualizarItem('ancho', e.target.value)} /></label>
+src\pages\CotizadorVisual.jsx:696:            <label>Alto m<input type="number" step="0.01" value={itemForm.alto} disabled={materialSeleccionado?.tipoCalculo === 'unidad'} 
+onChange={(e) => actualizarItem('alto', e.target.value)} /></label>
+src\pages\CotizadorVisual.jsx:724:        <section className="cotizador-card">
+src\pages\CotizadorVisual.jsx:794:        .cotizador-page{padding:14px;display:grid;gap:14px;background:#f4f6fb;min-height:100vh}
+src\pages\CotizadorVisual.jsx:795:        .cotizador-hero,.cotizador-card,.cotizador-lock{background:#fff;border-radius:24px;padding:18px;box-shadow:0 14px 35px 
+rgba(15,23,42,.08)}
+src\pages\CotizadorVisual.jsx:796:        .cotizador-hero span{font-size:12px;font-weight:950;color:#b48722;text-transform:uppercase}
+src\pages\CotizadorVisual.jsx:797:        .cotizador-hero h1{margin:8px 0;font-size:30px;color:#111827;line-height:1}
+src\pages\CotizadorVisual.jsx:798:        .cotizador-hero p{margin:0;color:#64748b;line-height:1.45;font-weight:700}
+src\pages\CotizadorVisual.jsx:799:        .app-grid,.cotizador-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+src\pages\CotizadorVisual.jsx:845:        .cotizador-lock{text-align:center;margin:40px auto;max-width:420px}
+src\pages\CotizadorVisual.jsx:847:          .cotizador-page{padding:12px;gap:12px}
+src\pages\CotizadorVisual.jsx:848:          .app-grid,.cotizador-grid,.two,.tarifas-grid{grid-template-columns:1fr}
+src\pages\CotizadorVisual.jsx:849:          .cotizador-hero h1{font-size:27px}
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\DashboardERP.jsx =====
+src\pages\DashboardERP.jsx:1:import React, { useMemo, useState } from 'react';
+src\pages\DashboardERP.jsx:2:import {
+src\pages\DashboardERP.jsx:21:} from 'lucide-react';
+src\pages\DashboardERP.jsx:22:import { useApp } from '../context/AppContext';
+src\pages\DashboardERP.jsx:311:      key: 'inventario',
+src\pages\DashboardERP.jsx:312:      title: 'Inventario',
+src\pages\DashboardERP.jsx:314:      desc: 'EMC / materiales',
+src\pages\DashboardERP.jsx:373:          <MiniAction icon={<Calculator size={20} />} title="Cotizador Visual V2" desc="Cotización por medidas y materiales." onClick={() => 
+setPage('cotizador')} />
+src\pages\DashboardERP.jsx:390:    if (area === 'inventario') {
+src\pages\DashboardERP.jsx:393:          <MiniAction icon={<PackageSearch size={20} />} title="Catálogo Maestro EMC" desc="Materiales, precios, proveedores e IA." 
+onClick={() => setPage('emc')} />
+src\pages\DashboardERP.jsx:394:          <MiniAction icon={<Calculator size={20} />} title="Consumo cotizable" desc="Relación material → venta → OT." onClick={() => 
+setPage('cotizador')} />
+src\pages\DashboardERP.jsx:489:            Centro ejecutivo móvil para ventas, pedidos, producción, CRM, inventario y control administrativo.
+src\pages\DashboardERP.jsx:517:          <QuickAction primary icon={<Calculator size={22} />} title="Nueva Cotización" desc="Abrir cotizador" onClick={() => 
+setPage('cotizador')} />
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\EMCDashboard.jsx =====
+src\pages\EMCDashboard.jsx:1:import React, { useEffect, useMemo, useState } from "react";
+src\pages\EMCDashboard.jsx:2:import {
+src\pages\EMCDashboard.jsx:21:} from "lucide-react";
+src\pages\EMCDashboard.jsx:22:import {
+src\pages\EMCDashboard.jsx:23:  obtenerResumenEMC,
+src\pages\EMCDashboard.jsx:24:  guardarImportacionEMC,
+src\pages\EMCDashboard.jsx:25:  listarItemsEMC,
+src\pages\EMCDashboard.jsx:26:} from "../services/emc/emcService";
+src\pages\EMCDashboard.jsx:27:import { analizarImportacionEMC } from "../services/emc/emcImportService";
+src\pages\EMCDashboard.jsx:28:import { listSuppliersV2 as obtenerProveedores } from "../services/suppliers";
+src\pages\EMCDashboard.jsx:37:  { key: "materiales", label: "Materiales" },
+src\pages\EMCDashboard.jsx:42:const extensionesPermitidas = ".pdf,.xlsx,.xls,.csv,.txt,.png,.jpg,.jpeg,.webp";
+src\pages\EMCDashboard.jsx:72:  if (tipo.includes("pdf") || nombre.endsWith(".pdf")) return <FileText size={20} />;
+src\pages\EMCDashboard.jsx:81:export default function EMCDashboard() {
+src\pages\EMCDashboard.jsx:90:  const [productosEMC, setProductosEMC] = useState([]);
+src\pages\EMCDashboard.jsx:92:  const [busquedaEMC, setBusquedaEMC] = useState("");
+src\pages\EMCDashboard.jsx:96:  const [tipoProveedor, setTipoProveedor] = useState("materiales");
+src\pages\EMCDashboard.jsx:125:        obtenerResumenEMC(),
+src\pages\EMCDashboard.jsx:132:      setError(err.message || "No se pudo cargar EMC.");
+src\pages\EMCDashboard.jsx:138:  async function cargarProductosEMC() {
+src\pages\EMCDashboard.jsx:143:      const data = await listarItemsEMC({
+src\pages\EMCDashboard.jsx:144:        busqueda: busquedaEMC,
+src\pages\EMCDashboard.jsx:149:      setProductosEMC(data || []);
+src\pages\EMCDashboard.jsx:151:      setError(err.message || "No se pudieron cargar productos EMC.");
+src\pages\EMCDashboard.jsx:162:    if (tab === "productos") cargarProductosEMC();
+src\pages\EMCDashboard.jsx:190:      const data = await analizarImportacionEMC({
+src\pages\EMCDashboard.jsx:200:      setError(err.message || "Error analizando importación EMC.");
+src\pages\EMCDashboard.jsx:206:  async function guardarEnEMC() {
+src\pages\EMCDashboard.jsx:211:      await guardarImportacionEMC({
+src\pages\EMCDashboard.jsx:223:      await cargarProductosEMC();
+src\pages\EMCDashboard.jsx:225:      setError(err.message || "No se pudo guardar en EMC.");
+src\pages\EMCDashboard.jsx:260:            Catálogo Maestro EMC
+src\pages\EMCDashboard.jsx:337:            Productos EMC
+src\pages\EMCDashboard.jsx:344:              if (tab === "productos") cargarProductosEMC();
+src\pages\EMCDashboard.jsx:367:                  {cargandoProductos ? "Cargando..." : `${productosEMC.length} productos EMC`}
+src\pages\EMCDashboard.jsx:383:                  value={busquedaEMC}
+src\pages\EMCDashboard.jsx:384:                  onChange={(e) => setBusquedaEMC(e.target.value)}
+src\pages\EMCDashboard.jsx:404:                onClick={cargarProductosEMC}
+src\pages\EMCDashboard.jsx:434:                  {productosEMC.map((item) => (
+src\pages\EMCDashboard.jsx:467:                  {!cargandoProductos && !productosEMC.length && (
+src\pages\EMCDashboard.jsx:470:                        No hay productos EMC para mostrar.
+src\pages\EMCDashboard.jsx:485:                  <small style={{ color: "#64748b", fontWeight: 900 }}>FLUJO OFICIAL EMC</small>
+src\pages\EMCDashboard.jsx:490:                    El catálogo entra por PDF, Excel, CSV, TXT o imágenes.
+src\pages\EMCDashboard.jsx:598:                    Subir PDF, Excel, CSV, TXT o imágenes
+src\pages\EMCDashboard.jsx:718:                    <small style={{ color: "#64748b", fontWeight: 900 }}>VISTA PREVIA EMC</small>
+src\pages\EMCDashboard.jsx:726:                    onClick={guardarEnEMC}
+src\pages\EMCDashboard.jsx:738:                    <Save size={18} /> {guardando ? "Guardando..." : "Guardar en EMC"}
+src\pages\EMCDashboard.jsx:782:                              {item.codigo || item.sku || `EMC-${String(i + 1).padStart(4, "0")}`}
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\EMCImportadorAI22.jsx =====
+src\pages\EMCImportadorAI22.jsx:1:import React, { useEffect, useMemo, useState } from "react";
+src\pages\EMCImportadorAI22.jsx:2:import {
+src\pages\EMCImportadorAI22.jsx:13:} from "lucide-react";
+src\pages\EMCImportadorAI22.jsx:14:import { listSuppliersV2 as obtenerProveedores } from "../services/suppliers";
+src\pages\EMCImportadorAI22.jsx:15:import {
+src\pages\EMCImportadorAI22.jsx:16:  importarEMCAI22,
+src\pages\EMCImportadorAI22.jsx:17:  guardarResultadoEMCAI22,
+src\pages\EMCImportadorAI22.jsx:19:} from "../services/emc/emcImportAi22Service";
+src\pages\EMCImportadorAI22.jsx:20:import ProveedorCatalogoAI22 from "../components/emc/ProveedorCatalogoAI22";
+src\pages\EMCImportadorAI22.jsx:22:const extensionesPermitidas = ".pdf,.xlsx,.xls,.csv,.txt,.png,.jpg,.jpeg,.webp";
+src\pages\EMCImportadorAI22.jsx:53:  if (tipo.includes("pdf") || nombre.endsWith(".pdf")) return <FileText size={20} />;
+src\pages\EMCImportadorAI22.jsx:67:export default function EMCImportadorAI22() {
+src\pages\EMCImportadorAI22.jsx:120:      const data = await importarEMCAI22({
+src\pages\EMCImportadorAI22.jsx:127:      setMensaje("Vista previa generada. Revisá el resultado y luego guardá en EMC.");
+src\pages\EMCImportadorAI22.jsx:149:  async function guardarEnEMC() {
+src\pages\EMCImportadorAI22.jsx:158:      setMensaje("Guardando productos en EMC...");
+src\pages\EMCImportadorAI22.jsx:160:      const data = await guardarResultadoEMCAI22({ proveedor, resultado });
+src\pages\EMCImportadorAI22.jsx:166:      setMensaje("Productos guardados en EMC correctamente. Validación cargada.");
+src\pages\EMCImportadorAI22.jsx:168:      setError(err.message || "No se pudo guardar en EMC.");
+src\pages\EMCImportadorAI22.jsx:180:            Importador EMC AI-22
+src\pages\EMCImportadorAI22.jsx:231:              <b>Seleccionar PDF, Excel, imagen, CSV o TXT</b>
+src\pages\EMCImportadorAI22.jsx:267:            <button type="button" disabled={guardando || cargando || !resultado?.resumen?.items_detectados} onClick={guardarEnEMC} 
+style={{ marginTop: 16, border: 0, borderRadius: 18, padding: "14px 18px", background: "#16a34a", color: "#fff", fontWeight: 1000, cursor: guardando || cargando ? 
+"not-allowed" : "pointer", width: "100%" }}>
+src\pages\EMCImportadorAI22.jsx:268:              <Save size={18} /> {guardando ? "Guardando..." : "Guardar en EMC"}
+src\pages\EMCImportadorAI22.jsx:290:                <h2 style={{ margin: 0 }}>Validación EMC guardado</h2>
+src\pages\EMCImportadorAI22.jsx:315:                      <td style={{ padding: 10, borderBottom: "1px solid #f1f5f9", fontWeight: 800 }}>{item.nombre_catalogo || 
+item.nombre || item.descripcion || "Producto EMC"}</td>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\EMCInventario.jsx =====
+src\pages\EMCInventario.jsx:1:import React, { useEffect, useMemo, useState } from "react";
+src\pages\EMCInventario.jsx:2:import { supabase } from "../lib/supabase";
+src\pages\EMCInventario.jsx:3:import ProveedorCatalogoAI22 from "../components/emc/ProveedorCatalogoAI22";
+src\pages\EMCInventario.jsx:5:export default function EMCInventario() {
+src\pages\EMCInventario.jsx:14:      const { data, error } = await supabase
+src\pages\EMCInventario.jsx:32:        <small style={{ fontWeight: 900, color: "#2563eb" }}>CAT�LOGO MAESTRO EMC</small>
+src\pages\EMCInventario.jsx:33:        <h1 style={{ margin: "8px 0", fontSize: 36 }}>Inventario EMC</h1>
+src\pages\EMCInventario.jsx:35:          Productos guardados desde el Cat�logo Maestro EMC por proveedor.
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\Home.jsx =====
+src\pages\Home.jsx:1:import React, { useEffect, useMemo, useState } from 'react';
+src\pages\Home.jsx:2:import { Factory } from 'lucide-react';
+src\pages\Home.jsx:3:import { useApp } from '../context/AppContext';
+src\pages\Home.jsx:142:        <p>Medidas, materiales, fabricacion e instalacion desde un solo flujo.</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\InventarioInteligente.jsx =====
+src\pages\InventarioInteligente.jsx:1:import React, { useMemo, useState } from 'react';
+src\pages\InventarioInteligente.jsx:2:import { Boxes, ClipboardCheck, Layers3, PlusCircle, Search, Trash2 } from 'lucide-react';
+src\pages\InventarioInteligente.jsx:3:import { useApp } from '../context/AppContext';
+src\pages\InventarioInteligente.jsx:11:  material: '',
+src\pages\InventarioInteligente.jsx:56:export default function InventarioInteligente() {
+src\pages\InventarioInteligente.jsx:60:    inventarioReal = [],
+src\pages\InventarioInteligente.jsx:61:    crearInventarioReal,
+src\pages\InventarioInteligente.jsx:62:    eliminarInventarioReal,
+src\pages\InventarioInteligente.jsx:63:    reservarInventarioReal,
+src\pages\InventarioInteligente.jsx:64:    consumirInventarioReal,
+src\pages\InventarioInteligente.jsx:65:    liberarReservaInventarioReal,
+src\pages\InventarioInteligente.jsx:77:    return inventarioReal.filter((i) => {
+src\pages\InventarioInteligente.jsx:78:      const texto = `${i.material} ${i.categoria} ${i.tipo} ${i.proveedorNombre} ${i.ubicacion} ${i.estado}`.toLowerCase();
+src\pages\InventarioInteligente.jsx:81:  }, [inventarioReal, busqueda, filtro]);
+src\pages\InventarioInteligente.jsx:84:    return inventarioReal.reduce((acc, item) => {
+src\pages\InventarioInteligente.jsx:93:  }, [inventarioReal]);
+src\pages\InventarioInteligente.jsx:99:    if (!form.material.trim()) return alert('Indicá material.');
+src\pages\InventarioInteligente.jsx:102:    crearInventarioReal({
+src\pages\InventarioInteligente.jsx:115:    if (!consumo.itemId) return alert('Seleccioná inventario.');
+src\pages\InventarioInteligente.jsx:116:    const item = inventarioReal.find((i) => i.id === consumo.itemId);
+src\pages\InventarioInteligente.jsx:119:    reservarInventarioReal({
+src\pages\InventarioInteligente.jsx:132:    if (!consumo.itemId) return alert('Seleccioná inventario.');
+src\pages\InventarioInteligente.jsx:133:    const item = inventarioReal.find((i) => i.id === consumo.itemId);
+src\pages\InventarioInteligente.jsx:136:    consumirInventarioReal({
+src\pages\InventarioInteligente.jsx:150:      <main className="inventario-page">
+src\pages\InventarioInteligente.jsx:151:        <section className="inventario-card lock">
+src\pages\InventarioInteligente.jsx:154:          <p>Inventario real, retazos y costos internos son solo para administración.</p>
+src\pages\InventarioInteligente.jsx:161:    <main className="inventario-page">
+src\pages\InventarioInteligente.jsx:162:      <section className="inventario-hero">
+src\pages\InventarioInteligente.jsx:163:        <span>ELANVISUAL · INVENTARIO REAL</span>
+src\pages\InventarioInteligente.jsx:164:        <h1>Inventario Inteligente</h1>
+src\pages\InventarioInteligente.jsx:177:      <section className="inventario-grid">
+src\pages\InventarioInteligente.jsx:178:        <form className="inventario-card" onSubmit={guardar}>
+src\pages\InventarioInteligente.jsx:179:          <h2><PlusCircle size={20}/> Entrada inventario</h2>
+src\pages\InventarioInteligente.jsx:181:          <label>Material<input value={form.material} onChange={(e)=>actualizar('material', e.target.value)} placeholder="PVC 3mm, 
+acrílico 3mm, roll up..." /></label>
+src\pages\InventarioInteligente.jsx:214:        <section className="inventario-card">
+src\pages\InventarioInteligente.jsx:217:          <label>Inventario<select value={consumo.itemId} onChange={(e)=>setConsumo({...consumo,itemId:e.target.value})}>
+src\pages\InventarioInteligente.jsx:219:            {inventarioReal.filter((i)=>i.estado !== 'Consumido').map((i)=><option key={i.id} value={i.id}>{i.material} · {i.tipo} · 
+{i.estado}</option>)}
+src\pages\InventarioInteligente.jsx:238:      <section className="inventario-card">
+src\pages\InventarioInteligente.jsx:240:          <div className="search-box"><Search size={18}/><input value={busqueda} onChange={(e)=>setBusqueda(e.target.value)} 
+placeholder="Buscar material, proveedor, estado..." /></div>
+src\pages\InventarioInteligente.jsx:248:      <section className="inventario-list">
+src\pages\InventarioInteligente.jsx:254:            <article className={`inventario-card inv-item estado-${String(item.estado).toLowerCase()}`} key={item.id}>
+src\pages\InventarioInteligente.jsx:258:                  <h2>{item.material}</h2>
+src\pages\InventarioInteligente.jsx:261:                <button className="danger-btn mini" onClick={()=>eliminarInventarioReal(item.id)}><Trash2 size={16}/></button>
+src\pages\InventarioInteligente.jsx:278:                <button className="secondary-btn" type="button" onClick={()=>liberarReservaInventarioReal(item.id)}>
+src\pages\InventarioInteligente.jsx:295:        .inventario-page{padding:14px;display:grid;gap:14px;background:#f4f6fb;min-height:100vh}
+src\pages\InventarioInteligente.jsx:296:        .inventario-hero,.inventario-card,.inv-stats div{background:#fff;border-radius:24px;padding:18px;box-shadow:0 14px 35px 
+rgba(15,23,42,.08)}
+src\pages\InventarioInteligente.jsx:297:        .inventario-hero span,.inv-head span{font-size:12px;font-weight:950;color:#b48722;text-transform:uppercase}
+src\pages\InventarioInteligente.jsx:298:        .inventario-hero h1{margin:8px 0;font-size:30px;color:#111827}.inventario-hero p{margin:0;color:#64748b;font-weight:800}
+src\pages\InventarioInteligente.jsx:300:        .inventario-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+src\pages\InventarioInteligente.jsx:307:        .inventario-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+src\pages\InventarioInteligente.jsx:313:        
+@media(max-width:900px){.inv-stats,.inventario-grid,.two,.three,.tools{grid-template-columns:1fr}.inventario-page{padding-bottom:90px}}
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\Login.jsx =====
+src\pages\Login.jsx:1:import React, { useState } from 'react';
+src\pages\Login.jsx:2:import { LockKeyhole, ShieldCheck, Building2 } from 'lucide-react';
+src\pages\Login.jsx:3:import { useApp } from '../context/AppContext';
+src\pages\Login.jsx:4:import { useCore } from '../core/context/CoreContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\MaterialesCostos.jsx =====
+src\pages\MaterialesCostos.jsx:1:import { useEffect, useMemo, useState } from 'react';
+src\pages\MaterialesCostos.jsx:2:import { CheckCircle2, Edit3, Lock, PackagePlus, Search, Trash2 } from 'lucide-react';
+src\pages\MaterialesCostos.jsx:3:import { useApp } from '../context/AppContext';
+src\pages\MaterialesCostos.jsx:4:import { supabase } from '../lib/supabase';
+src\pages\MaterialesCostos.jsx:6:const tipos = ['Material', 'Articulo', 'Servicio'];
+src\pages\MaterialesCostos.jsx:25:const inicialMaterial = {
+src\pages\MaterialesCostos.jsx:26:  tipo: 'Material',
+src\pages\MaterialesCostos.jsx:56:const monedaEMC = (item = {}) =>
+src\pages\MaterialesCostos.jsx:92:const nombreEMC = (item = {}) =>
+src\pages\MaterialesCostos.jsx:106:const precioEMC = (item = {}) =>
+src\pages\MaterialesCostos.jsx:120:const proveedorEMC = (item = {}) =>
+src\pages\MaterialesCostos.jsx:168:const adaptarItemEMCAMaterialMaster = (item = {}, index = 0) => {
+src\pages\MaterialesCostos.jsx:175:  const costoCompra = precioEMC(item);
+src\pages\MaterialesCostos.jsx:181:    id: item.id || item.proveedor_item_id || item.item_id || item.catalogo_item_id || `emc-${index}`,
+src\pages\MaterialesCostos.jsx:182:    emc_item_id: item.item_id || item.catalogo_item_id || itemBase.id || item.id,
+src\pages\MaterialesCostos.jsx:183:    emc_proveedor_item_id: item.id || item.proveedor_item_id,
+src\pages\MaterialesCostos.jsx:184:    tipo: item.tipo || itemBase.tipo || "Material",
+src\pages\MaterialesCostos.jsx:191:    nombre: nombreEMC(item),
+src\pages\MaterialesCostos.jsx:193:    proveedor: proveedorEMC(item),
+src\pages\MaterialesCostos.jsx:203:   moneda: monedaEMC({ ...item, elankav_catalogo_items: itemBase }) || 'NIO',
+src\pages\MaterialesCostos.jsx:204:    _origen: "EMC",
+src\pages\MaterialesCostos.jsx:208:const proveedoresDelMaterial = (material, materiales = [], emcItems = []) => {
+src\pages\MaterialesCostos.jsx:209:  const nombreBase = normalizar(material.nombre);
+src\pages\MaterialesCostos.jsx:211:  const relacionados = materiales.filter((m) =>
+src\pages\MaterialesCostos.jsx:215:  const emc = emcItems
+src\pages\MaterialesCostos.jsx:217:      const n = normalizar(nombreEMC(item));
+src\pages\MaterialesCostos.jsx:220:    .map((item, index) => adaptarItemEMCAMaterialMaster(item, index))
+src\pages\MaterialesCostos.jsx:223:  return [...relacionados, ...emc].filter((x) => x.proveedor);
+src\pages\MaterialesCostos.jsx:241:const proveedorPrincipal = (material, proveedores = []) =>
+src\pages\MaterialesCostos.jsx:242:  material.proveedor || proveedores.find((x) => x.proveedor)?.proveedor || "Sin proveedor";
+src\pages\MaterialesCostos.jsx:261:export default function MaterialesCostos() {
+src\pages\MaterialesCostos.jsx:265:  const [tab, setTab] = useState('materiales');
+src\pages\MaterialesCostos.jsx:266:  const [materiales, setMateriales] = useState([]);
+src\pages\MaterialesCostos.jsx:270:  const [emcItems, setEmcItems] = useState([]);
+src\pages\MaterialesCostos.jsx:272:  const [materialForm, setMaterialForm] = useState(inicialMaterial);
+src\pages\MaterialesCostos.jsx:276:  const [editMaterial, setEditMaterial] = useState(null);
+src\pages\MaterialesCostos.jsx:281:  const [busquedaMaterialCombo, setBusquedaMaterialCombo] = useState('');
+src\pages\MaterialesCostos.jsx:282:  const [materialSeleccionado, setMaterialSeleccionado] = useState(null);
+src\pages\MaterialesCostos.jsx:285:  const costoPreview = useMemo(() => calcularCostoReal(materialForm), [materialForm]);
+src\pages\MaterialesCostos.jsx:289:    supabase.from('elankav_catalogo_items').select('*').limit(2000),
+src\pages\MaterialesCostos.jsx:290:    supabase
+src\pages\MaterialesCostos.jsx:294:    supabase.from('elankav_catalogo_categorias').select('*'),
+src\pages\MaterialesCostos.jsx:295:    supabase.from('elankav_catalogo_subcategorias').select('*'),
+src\pages\MaterialesCostos.jsx:296:    supabase.from('elankav_catalogo_marcas').select('*'),
+src\pages\MaterialesCostos.jsx:297:    supabase.from('elankav_catalogo_unidades').select('*'),
+src\pages\MaterialesCostos.jsx:298:    supabase.from('tintas_master').select('*').order('nombre'),
+src\pages\MaterialesCostos.jsx:299:    supabase.from('combinaciones_master').select('*').order('categoria'),
+src\pages\MaterialesCostos.jsx:300:    supabase.from('combinaciones_detalle').select('*'),
+src\pages\MaterialesCostos.jsx:309:  const emcData = (proveedorItems.data || []).map((pi) => {
+src\pages\MaterialesCostos.jsx:324:  setEmcItems(emcData);
+src\pages\MaterialesCostos.jsx:325:  setMateriales(emcData.map((item, index) => adaptarItemEMCAMaterialMaster(item, index)));
+src\pages\MaterialesCostos.jsx:333:    if (supabase) cargarTodo();
+src\pages\MaterialesCostos.jsx:336:  const listaMateriales = useMemo(() => {
+src\pages\MaterialesCostos.jsx:339:    return materiales.filter((m) => {
+src\pages\MaterialesCostos.jsx:340:      const relacionados = proveedoresDelMaterial(m, materiales, emcItems);
+src\pages\MaterialesCostos.jsx:354:  }, [materiales, emcItems, busqueda]);
+src\pages\MaterialesCostos.jsx:356:  const materialesParaCombo = useMemo(() => {
+src\pages\MaterialesCostos.jsx:357:    const q = normalizar(busquedaMaterialCombo);
+src\pages\MaterialesCostos.jsx:358:    return materiales
+src\pages\MaterialesCostos.jsx:362:  }, [materiales, busquedaMaterialCombo]);
+src\pages\MaterialesCostos.jsx:364:  const guardarMaterial = async (e) => {
+src\pages\MaterialesCostos.jsx:368:      precio_lista: num(materialForm.costo_compra),
+src\pages\MaterialesCostos.jsx:369:      costo_unitario: num(materialForm.costo_compra),
+src\pages\MaterialesCostos.jsx:370:      iva: num(materialForm.iva),
+src\pages\MaterialesCostos.jsx:371:      activo: materialForm.activo,
+src\pages\MaterialesCostos.jsx:372:      notas: materialForm.notas,
+src\pages\MaterialesCostos.jsx:376:      nombre: materialForm.nombre,
+src\pages\MaterialesCostos.jsx:377:      descripcion: materialForm.nombre,
+src\pages\MaterialesCostos.jsx:378:      activo: materialForm.activo,
+src\pages\MaterialesCostos.jsx:379:      notas: materialForm.notas,
+src\pages\MaterialesCostos.jsx:384:    if (editMaterial) {
+src\pages\MaterialesCostos.jsx:385:      const actual = materiales.find((m) => m.id === editMaterial);
+src\pages\MaterialesCostos.jsx:387:      if (actual?.emc_item_id) {
+src\pages\MaterialesCostos.jsx:388:        await supabase.from('elankav_catalogo_items').update(payloadItem).eq('id', actual.emc_item_id);
+src\pages\MaterialesCostos.jsx:391:      res = await supabase
+src\pages\MaterialesCostos.jsx:394:        .eq('id', actual?.emc_proveedor_item_id || editMaterial);
+src\pages\MaterialesCostos.jsx:396:      res = await supabase.from('elankav_catalogo_items').insert(payloadItem);
+src\pages\MaterialesCostos.jsx:399:    if (res.error) return alert('No se pudo guardar material.');
+src\pages\MaterialesCostos.jsx:400:    setMaterialForm(inicialMaterial);
+src\pages\MaterialesCostos.jsx:401:    setEditMaterial(null);
+src\pages\MaterialesCostos.jsx:414:      ? await supabase.from('tintas_master').update(payload).eq('id', editTinta)
+src\pages\MaterialesCostos.jsx:415:      : await supabase.from('tintas_master').insert(payload);
+src\pages\MaterialesCostos.jsx:429:      ? await supabase.from('combinaciones_master').update(payload).eq('id', editCombo)
+src\pages\MaterialesCostos.jsx:430:      : await supabase.from('combinaciones_master').insert(payload).select().single();
+src\pages\MaterialesCostos.jsx:442:    if (!materialSeleccionado) return alert('Selecciona un material.');
+src\pages\MaterialesCostos.jsx:444:    const { error } = await supabase.from('combinaciones_detalle').insert({
+src\pages\MaterialesCostos.jsx:446:      material_id: materialSeleccionado.id,
+src\pages\MaterialesCostos.jsx:450:    if (error) return alert('No se pudo agregar material.');
+src\pages\MaterialesCostos.jsx:451:    setMaterialSeleccionado(null);
+src\pages\MaterialesCostos.jsx:452:    setBusquedaMaterialCombo('');
+src\pages\MaterialesCostos.jsx:460:    const actual = tabla === 'materiales_master'
+src\pages\MaterialesCostos.jsx:461:      ? materiales.find((m) => m.id === id)
+src\pages\MaterialesCostos.jsx:464:    const tablaFinal = tabla === 'materiales_master'
+src\pages\MaterialesCostos.jsx:468:    const idFinal = tabla === 'materiales_master'
+src\pages\MaterialesCostos.jsx:469:      ? actual?.emc_proveedor_item_id || id
+src\pages\MaterialesCostos.jsx:472:    const { error } = await supabase.from(tablaFinal).delete().eq('id', idFinal);
+src\pages\MaterialesCostos.jsx:477:  const editarMaterial = (m) => {
+src\pages\MaterialesCostos.jsx:478:    setMaterialForm({ ...inicialMaterial, ...m });
+src\pages\MaterialesCostos.jsx:479:    setEditMaterial(m.id);
+src\pages\MaterialesCostos.jsx:480:    setTab('materiales');
+src\pages\MaterialesCostos.jsx:506:          <p>Material Master V3 es solo para administracion.</p>
+src\pages\MaterialesCostos.jsx:516:        <h1>Material Master V3</h1>
+src\pages\MaterialesCostos.jsx:517:        <p>Materiales, tintas y combinaciones aprobadas.</p>
+src\pages\MaterialesCostos.jsx:521:        <button onClick={() => setTab('materiales')} className={tab === 'materiales' ? 'active' : ''}>Materiales</button>
+src\pages\MaterialesCostos.jsx:526:      {tab === 'materiales' && (
+src\pages\MaterialesCostos.jsx:528:          <form className="mm3-card" onSubmit={guardarMaterial}>
+src\pages\MaterialesCostos.jsx:529:            <div className="title"><PackagePlus size={20} /><h2>{editMaterial ? 'Editar material' : 'Nuevo material'}</h2></div>
+src\pages\MaterialesCostos.jsx:531:            <input placeholder="Nombre" value={materialForm.nombre} onChange={(e) => setMaterialForm({ ...materialForm, nombre: 
+e.target.value })} required />
+src\pages\MaterialesCostos.jsx:534:              <select value={materialForm.tipo} onChange={(e) => setMaterialForm({ ...materialForm, tipo: e.target.value })}>
+src\pages\MaterialesCostos.jsx:537:              <select value={materialForm.categoria} onChange={(e) => setMaterialForm({ ...materialForm, categoria: e.target.value })}>
+src\pages\MaterialesCostos.jsx:543:              <input placeholder="Marca" value={materialForm.marca || ''} onChange={(e) => setMaterialForm({ ...materialForm, marca: 
+e.target.value })} />
+src\pages\MaterialesCostos.jsx:544:              <input placeholder="Proveedor" value={materialForm.proveedor || ''} onChange={(e) => setMaterialForm({ ...materialForm, 
+proveedor: e.target.value })} />
+src\pages\MaterialesCostos.jsx:547:            <select value={materialForm.unidad_compra} onChange={(e) => setMaterialForm({ ...materialForm, unidad_compra: e.target.value 
+})}>
+src\pages\MaterialesCostos.jsx:552:              <input type="number" step="0.01" placeholder="Ancho" value={materialForm.ancho} onChange={(e) => setMaterialForm({ 
+...materialForm, ancho: e.target.value })} />
+src\pages\MaterialesCostos.jsx:553:              <input type="number" step="0.01" placeholder="Largo" value={materialForm.largo} onChange={(e) => setMaterialForm({ 
+...materialForm, largo: e.target.value })} />
+src\pages\MaterialesCostos.jsx:557:              <input type="number" step="0.01" placeholder="Costo compra" value={materialForm.costo_compra} onChange={(e) => 
+setMaterialForm({ ...materialForm, costo_compra: e.target.value })} />
+src\pages\MaterialesCostos.jsx:558:              <input type="number" step="0.01" placeholder="IVA %" value={materialForm.iva} onChange={(e) => setMaterialForm({ 
+...materialForm, iva: e.target.value })} />
+src\pages\MaterialesCostos.jsx:564:              placeholder={['Rollo', 'Lamina'].includes(materialForm.unidad_compra) ? 'Desperdicio %' : 'Recargo %'}
+src\pages\MaterialesCostos.jsx:565:              value={materialForm.desperdicio_recargo}
+src\pages\MaterialesCostos.jsx:566:              onChange={(e) => setMaterialForm({ ...materialForm, desperdicio_recargo: e.target.value })}
+src\pages\MaterialesCostos.jsx:569:            <textarea placeholder="Notas" value={materialForm.notas || ''} onChange={(e) => setMaterialForm({ ...materialForm, notas: 
+e.target.value })} />
+src\pages\MaterialesCostos.jsx:577:            <div className="title"><Search size={20} /><h2>Materiales</h2></div>
+src\pages\MaterialesCostos.jsx:581:              {listaMateriales.map((m) => {
+src\pages\MaterialesCostos.jsx:582:                const proveedores = proveedoresDelMaterial(m, materiales, emcItems);
+src\pages\MaterialesCostos.jsx:598:                      <button className="btn-edit" onClick={() => editarMaterial(m)}>Editar</button>
+src\pages\MaterialesCostos.jsx:599:                      <button className="btn-delete" onClick={() => eliminar('materiales_master', m.id)}>Eliminar</button>
+src\pages\MaterialesCostos.jsx:663:                <h3>Agregar material</h3>
+src\pages\MaterialesCostos.jsx:664:                <input placeholder="Buscar material..." value={busquedaMaterialCombo} onChange={(e) => 
+setBusquedaMaterialCombo(e.target.value)} />
+src\pages\MaterialesCostos.jsx:667:                  {materialesParaCombo.map((m) => (
+src\pages\MaterialesCostos.jsx:668:                    <button type="button" key={m.id} onClick={() => setMaterialSeleccionado(m)}>
+src\pages\MaterialesCostos.jsx:675:                  {materialSeleccionado ? materialSeleccionado.nombre : 'Sin material seleccionado'}
+src\pages\MaterialesCostos.jsx:684:                    const mat = materiales.find((m) => m.id === d.material_id);
+src\pages\MaterialesCostos.jsx:687:                        {mat?.nombre || 'Material'} x {d.cantidad}
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\MiCuenta.jsx =====
+src\pages\MiCuenta.jsx:1:import React, { useMemo, useState } from 'react';
+src\pages\MiCuenta.jsx:2:import { KeyRound, QrCode, Save, UserRound } from 'lucide-react';
+src\pages\MiCuenta.jsx:3:import { useApp } from '../context/AppContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\OrdenTrabajo.jsx =====
+src\pages\OrdenTrabajo.jsx:1:import { useMemo, useState } from 'react';
+src\pages\OrdenTrabajo.jsx:2:import { useApp } from '../context/AppContext';
+src\pages\OrdenTrabajo.jsx:3:import {
+src\pages\OrdenTrabajo.jsx:12:} from '../components/ot';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\PanelVentas.jsx =====
+src\pages\PanelVentas.jsx:1:import React from 'react';
+src\pages\PanelVentas.jsx:29:        <button className="crm-card" type="button" onClick={() => setPage('cotizador')}>
+src\pages\PanelVentas.jsx:30:          <h3>Cotizador</h3>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\Pedidos.jsx =====
+src\pages\Pedidos.jsx:1:import React, { useMemo, useState } from 'react';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\PedidosProduccion.jsx =====
+src\pages\PedidosProduccion.jsx:1:import { useMemo, useState } from 'react';
+src\pages\PedidosProduccion.jsx:2:import {
+src\pages\PedidosProduccion.jsx:13:} from 'lucide-react';
+src\pages\PedidosProduccion.jsx:14:import { useApp } from '../context/AppContext';
+src\pages\PedidosProduccion.jsx:15:import { generarProduccionAutomatica } from '../services/motorProduccion';
+src\pages\PedidosProduccion.jsx:84:    costoInventario: '',
+src\pages\PedidosProduccion.jsx:359:          <div class="legal">Este recibo soporta el pago registrado para la orden indicada. Producción inicia según validación 
+administrativa y disponibilidad de materiales.</div>
+src\pages\PedidosProduccion.jsx:429:      n(costos.costoInventario) +
+src\pages\PedidosProduccion.jsx:605:      ...(auto?.materiales || []).map((m) => `- ${m.nombre || m.material}: ${m.cantidad || ''} ${m.unidad || ''}`),
+src\pages\PedidosProduccion.jsx:865:                      <button className="secondary-btn" type="button" onClick={imprimirReciboCaja}>Generar recibo PDF</button>
+src\pages\PedidosProduccion.jsx:877:                                <button className="secondary-btn" type="button" onClick={imprimirReciboCaja}>📄 PDF</button>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\ProduccionPanel.jsx =====
+src\pages\ProduccionPanel.jsx:1:import React, { useMemo, useState } from 'react';
+src\pages\ProduccionPanel.jsx:2:import {
+src\pages\ProduccionPanel.jsx:10:} from 'lucide-react';
+src\pages\ProduccionPanel.jsx:11:import { useApp } from '../context/AppContext';
+src\pages\ProduccionPanel.jsx:12:import { generarProduccionAutomatica } from '../services/motorProduccion';
+src\pages\ProduccionPanel.jsx:506:                      placeholder="Notas internas: materiales, medidas, instalación, pendientes o restricciones técnicas"
+src\pages\ProduccionPanel.jsx:534:                      <h3>Materiales y cantidades</h3>
+src\pages\ProduccionPanel.jsx:535:                      {(auto.materiales || []).map((m) => (
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\ProveedoresHub.jsx =====
+src\pages\ProveedoresHub.jsx:1:import React, { useEffect, useMemo, useState } from 'react';
+src\pages\ProveedoresHub.jsx:2:import { Brain, Building2, CheckCircle2, Database, RefreshCw, Save, Search, Sparkles, Trash2 } from 'lucide-react';
+src\pages\ProveedoresHub.jsx:3:import { listSuppliersV2, createSupplierV2, deleteSupplierV2 } from '../services/suppliers';
+src\pages\ProveedoresHub.jsx:4:import { parseSupplierCapture } from '../services/suppliers/supplierCaptureParser';
+src\pages\ProveedoresHub.jsx:79:      setMensaje('Proveedor guardado en Supplier Hub. Ya podés cargar su catálogo en EMC.');
+src\pages\ProveedoresHub.jsx:122:          <p>Registrá proveedores desde una descripción simple. Después el catálogo, listas e imágenes se cargan desde EMC.</p>
+src\pages\ProveedoresHub.jsx:133:        <article><Database size={22} /><span>Fuente</span><strong>Supabase</strong></article>
+src\pages\ProveedoresHub.jsx:149:            placeholder="Ejemplo: Scolor vende acrílico, PVC, vinil, lonas, LED y materiales para rotulación. Está en Managua. WhatsApp 
+8888 8888. Tiene crédito para clientes frecuentes."
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\RecomendadorTecnico.jsx =====
+src\pages\RecomendadorTecnico.jsx:1:import React, { useMemo, useState } from "react";
+src\pages\RecomendadorTecnico.jsx:2:import { CheckCircle2, Lightbulb, ShieldCheck } from "lucide-react";
+src\pages\RecomendadorTecnico.jsx:3:import { opcionesRecomendador } from "../data/recomendaciones";
+src\pages\RecomendadorTecnico.jsx:4:import { recomendarSoluciones } from "../services/motorRecomendacion";
+src\pages\RecomendadorTecnico.jsx:30:        <p>Analiza condiciones reales y recomienda una solución técnica. No calcula costos, utilidad, comisión ni PDF.</p>
+src\pages\RecomendadorTecnico.jsx:80:                  <h3>Materiales sugeridos</h3>
+src\pages\RecomendadorTecnico.jsx:81:                  <p>{principal.materiales.join(" · ")}</p>
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\RedProveedoresIA.jsx =====
+src\pages\RedProveedoresIA.jsx:1:import React, { useEffect, useMemo, useState } from 'react';
+src\pages\RedProveedoresIA.jsx:2:import {
+src\pages\RedProveedoresIA.jsx:7:} from '../services/rpiService';
+src\pages\RedProveedoresIA.jsx:8:import { catalogoPilotoRPI, proveedorPilotoRPI } from '../data/rpiProveedorPiloto';
+src\pages\RedProveedoresIA.jsx:87:        item.materiales,
+src\pages\RedProveedoresIA.jsx:112:            líneas, materiales, usos y compatibilidades. Los precios, compras y automatización IA
+src\pages\RedProveedoresIA.jsx:145:              según material, sistema o solución.
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\Seguimiento.jsx =====
+src\pages\Seguimiento.jsx:1:import React, { useMemo, useState } from 'react';
+src\pages\Seguimiento.jsx:2:import { Camera, Clock, Search, Video } from 'lucide-react';
+src\pages\Seguimiento.jsx:3:import { estadosProduccion, etiquetasEstado, useApp } from '../context/AppContext';
+src\pages\Seguimiento.jsx:4:import { formatoC$ } from '../lib/calculos';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\Servicios.jsx =====
+src\pages\Servicios.jsx:1:import React, { useMemo, useState } from 'react';
+src\pages\Servicios.jsx:2:import {
+src\pages\Servicios.jsx:14:} from 'lucide-react';
+src\pages\Servicios.jsx:15:import '../styles/servicios.css';
+src\pages\Servicios.jsx:40:      'Impresión para publicidad, comunicación comercial, eventos, promociones y materiales corporativos.',
+src\pages\Servicios.jsx:90:      'Material POP',
+src\pages\Servicios.jsx:98:      'Grabado y corte láser sobre diferentes materiales para piezas corporativas, promocionales y decorativas.',
+src\pages\Servicios.jsx:213:            placeholder="Buscar servicio, material o aplicación..."
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\SolicitudesDisenoAI.jsx =====
+src\pages\SolicitudesDisenoAI.jsx:1:import React, { useEffect, useMemo, useState } from 'react';
+src\pages\SolicitudesDisenoAI.jsx:2:import { CalendarDays, RefreshCw, Search, Sparkles, X } from 'lucide-react';
+src\pages\SolicitudesDisenoAI.jsx:3:import { supabase } from '../lib/supabase';
+src\pages\SolicitudesDisenoAI.jsx:82:    if (!supabase) return;
+src\pages\SolicitudesDisenoAI.jsx:85:    const { data, error } = await supabase
+src\pages\SolicitudesDisenoAI.jsx:118:    if (!supabase || !s?.id) return;
+src\pages\SolicitudesDisenoAI.jsx:120:    const { error } = await supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\Tienda.jsx =====
+src\pages\Tienda.jsx:1:import React, { useMemo, useState } from 'react';
+src\pages\Tienda.jsx:2:import {
+src\pages\Tienda.jsx:10:} from 'lucide-react';
+src\pages\Tienda.jsx:11:import { useApp } from '../context/AppContext';
+src\pages\Tienda.jsx:12:import { AI_DESIGN_LIMIT, obtenerPerfilIA } from '../data/aiProductProfiles';
+src\pages\Tienda.jsx:587:                  accept=".png,.jpg,.jpeg,.webp,.svg,.pdf,.ai,.eps"
+src\pages\Tienda.jsx:597:                  accept=".png,.jpg,.jpeg,.webp,.svg,.pdf"
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\pages\Trabajos.jsx =====
+src\pages\Trabajos.jsx:1:import React from 'react';
+src\pages\Trabajos.jsx:2:import { useApp } from '../context/AppContext';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\ai\aiActionRegistry.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\ai\aiDispatcher.js =====
+src\services\ai\aiDispatcher.js:1:import {
+src\services\ai\aiDispatcher.js:5:} from './aiPedidoActions';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\ai\aiPedidoActions.js =====
+src\services\ai\aiPedidoActions.js:87:    costoInventario: n(prev.costoInventario) + n(costos.costoInventario),
+src\services\ai\aiPedidoActions.js:97:    n(actualizados.costoInventario) +
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\compras\commands\comprasCommandService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\compras\queries\comprasQueryService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\compras\repository\comprasRepository.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\compras\ordenCompraService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\compras\proveedorPedidoService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\emc\emcImportAi22Service.js =====
+src\services\emc\emcImportAi22Service.js:1:import { supabase } from "../../lib/supabase";
+src\services\emc\emcImportAi22Service.js:6:const EMC_STORAGE_BUCKET =
+src\services\emc\emcImportAi22Service.js:7:  import.meta.env.VITE_EMC_STORAGE_BUCKET || "emc-importaciones";
+src\services\emc\emcImportAi22Service.js:9:const EMC_PROVEEDOR_ITEMS_TABLE = "elankav_catalogo_proveedor_items";
+src\services\emc\emcImportAi22Service.js:26:  return `emc/ai22/${proveedorId}/${fecha}/${timestamp}-${index}-${nombre}`;
+src\services\emc\emcImportAi22Service.js:43:  if (!supabase) {
+src\services\emc\emcImportAi22Service.js:44:    throw new Error("Supabase no configurado.");
+src\services\emc\emcImportAi22Service.js:49:  const { error } = await supabase.storage
+src\services\emc\emcImportAi22Service.js:50:    .from(EMC_STORAGE_BUCKET)
+src\services\emc\emcImportAi22Service.js:61:  const { data } = supabase.storage
+src\services\emc\emcImportAi22Service.js:62:    .from(EMC_STORAGE_BUCKET)
+src\services\emc\emcImportAi22Service.js:71:    bucket: EMC_STORAGE_BUCKET,
+src\services\emc\emcImportAi22Service.js:78:async function postEMCImport(payload) {
+src\services\emc\emcImportAi22Service.js:79:  const res = await fetch(`${CORE_URL.replace(/\/$/, "")}/api/emc-import`, {
+src\services\emc\emcImportAi22Service.js:98:export async function subirArchivosEMCAI22({ proveedor, archivos = [] }) {
+src\services\emc\emcImportAi22Service.js:124:export async function importarEMCAI22({
+src\services\emc\emcImportAi22Service.js:133:  const archivosSubidos = await subirArchivosEMCAI22({
+src\services\emc\emcImportAi22Service.js:138:  return await postEMCImport({
+src\services\emc\emcImportAi22Service.js:145:export async function guardarResultadoEMCAI22({ proveedor, resultado } = {}) {
+src\services\emc\emcImportAi22Service.js:167:  return await postEMCImport({
+src\services\emc\emcImportAi22Service.js:175:  if (!supabase) {
+src\services\emc\emcImportAi22Service.js:176:    throw new Error("Supabase no configurado.");
+src\services\emc\emcImportAi22Service.js:183:  const { data, error } = await supabase
+src\services\emc\emcImportAi22Service.js:184:    .from(EMC_PROVEEDOR_ITEMS_TABLE)
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\emc\emcImportService.js =====
+src\services\emc\emcImportService.js:1:import { supabase } from "../../lib/supabase";
+src\services\emc\emcImportService.js:6:const EMC_STORAGE_BUCKET =
+src\services\emc\emcImportService.js:7:  import.meta.env.VITE_EMC_STORAGE_BUCKET || "emc-importaciones";
+src\services\emc\emcImportService.js:24:  return `emc/${proveedorId}/${fecha}/${timestamp}-${index}-${nombre}`;
+src\services\emc\emcImportService.js:27:async function subirArchivoEMC({ proveedor, archivo, index }) {
+src\services\emc\emcImportService.js:28:  if (!supabase) {
+src\services\emc\emcImportService.js:29:    throw new Error("Supabase no configurado.");
+src\services\emc\emcImportService.js:34:  const { error } = await supabase.storage
+src\services\emc\emcImportService.js:35:    .from(EMC_STORAGE_BUCKET)
+src\services\emc\emcImportService.js:46:  const { data } = supabase.storage
+src\services\emc\emcImportService.js:47:    .from(EMC_STORAGE_BUCKET)
+src\services\emc\emcImportService.js:56:    bucket: EMC_STORAGE_BUCKET,
+src\services\emc\emcImportService.js:62:export async function analizarImportacionEMC({
+src\services\emc\emcImportService.js:64:  tipoProveedor = "materiales",
+src\services\emc\emcImportService.js:84:    throw new Error("Subí al menos un archivo PDF, Excel, CSV, TXT o imagen.");
+src\services\emc\emcImportService.js:90:    const archivoSubido = await subirArchivoEMC({
+src\services\emc\emcImportService.js:100:    tipo: "importar-emc",
+src\services\emc\emcImportService.js:105:    origen_archivo: "supabase-storage",
+src\services\emc\emcImportService.js:135:        `No se pudo analizar la importación EMC. HTTP ${res.status}`
+src\services\emc\emcImportService.js:142:export const importarEMC = analizarImportacionEMC;
+src\services\emc\emcImportService.js:143:export const procesarImportacionEMC = analizarImportacionEMC;
+src\services\emc\emcImportService.js:144:export const importarCatalogoEMC = analizarImportacionEMC;
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\emc\emcService.js =====
+src\services\emc\emcService.js:1:import { supabase } from "../../lib/supabase";
+src\services\emc\emcService.js:3:export const EMC_TABLES = {
+src\services\emc\emcService.js:18:const EMC_STORAGE_BUCKET =
+src\services\emc\emcService.js:19:  import.meta.env.VITE_EMC_STORAGE_BUCKET || "emc-importaciones";
+src\services\emc\emcService.js:21:function limpiarNombreArchivo(nombre = "archivo.pdf") {
+src\services\emc\emcService.js:34:  const nombre = limpiarNombreArchivo(archivo?.name || `archivo-${index}.pdf`);
+src\services\emc\emcService.js:36:  return `emc/${proveedorId}/${fecha}/${timestamp}-${index}-${nombre}`;
+src\services\emc\emcService.js:52:        `Error CORE ${res.status}: no se pudo completar la operación EMC.`
+src\services\emc\emcService.js:59:export async function obtenerResumenEMC() {
+src\services\emc\emcService.js:60:  if (!supabase) throw new Error("Supabase no configurado");
+src\services\emc\emcService.js:63:    supabase.from(EMC_TABLES.categorias).select("id", { count: "exact", head: true }),
+src\services\emc\emcService.js:64:    supabase.from(EMC_TABLES.subcategorias).select("id", { count: "exact", head: true }),
+src\services\emc\emcService.js:65:    supabase.from(EMC_TABLES.marcas).select("id", { count: "exact", head: true }),
+src\services\emc\emcService.js:66:    supabase.from(EMC_TABLES.unidades).select("id", { count: "exact", head: true }),
+src\services\emc\emcService.js:67:    supabase.from(EMC_TABLES.items).select("id", { count: "exact", head: true }),
+src\services\emc\emcService.js:68:    supabase.from(EMC_TABLES.multimedia).select("id", { count: "exact", head: true }),
+src\services\emc\emcService.js:69:    supabase.from(EMC_TABLES.listasPrecio).select("id", { count: "exact", head: true }),
+src\services\emc\emcService.js:89:export async function listarItemsEMC({ busqueda = "", proveedorId = "", limite = 300 } = {}) {
+src\services\emc\emcService.js:90:  if (!supabase) throw new Error("Supabase no configurado");
+src\services\emc\emcService.js:92:  let query = supabase
+src\services\emc\emcService.js:93:    .from(EMC_TABLES.items)
+src\services\emc\emcService.js:114:    categoriaIds.length ? supabase.from(EMC_TABLES.categorias).select("*").in("id", categoriaIds) : { data: [] },
+src\services\emc\emcService.js:115:    subcategoriaIds.length ? supabase.from(EMC_TABLES.subcategorias).select("*").in("id", subcategoriaIds) : { data: [] },
+src\services\emc\emcService.js:116:    marcaIds.length ? supabase.from(EMC_TABLES.marcas).select("*").in("id", marcaIds) : { data: [] },
+src\services\emc\emcService.js:117:    unidadIds.length ? supabase.from(EMC_TABLES.unidades).select("*").in("id", unidadIds) : { data: [] },
+src\services\emc\emcService.js:128:    let preciosQuery = supabase
+src\services\emc\emcService.js:129:      .from(EMC_TABLES.proveedorItems)
+src\services\emc\emcService.js:160:export async function subirArchivosEMCStorage({ proveedor, archivos = [] }) {
+src\services\emc\emcService.js:161:  if (!supabase) throw new Error("Supabase no configurado");
+src\services\emc\emcService.js:175:    const { error } = await supabase.storage
+src\services\emc\emcService.js:176:      .from(EMC_STORAGE_BUCKET)
+src\services\emc\emcService.js:187:    const { data: publicData } = supabase.storage
+src\services\emc\emcService.js:188:      .from(EMC_STORAGE_BUCKET)
+src\services\emc\emcService.js:195:      bucket: EMC_STORAGE_BUCKET,
+src\services\emc\emcService.js:204:export async function importarEMC({
+src\services\emc\emcService.js:209:  tipo_proveedor = "materiales",
+src\services\emc\emcService.js:216:  const archivosSubidos = await subirArchivosEMCStorage({ proveedor, archivos });
+src\services\emc\emcService.js:219:    tipo: "importar-emc",
+src\services\emc\emcService.js:226:    origen_archivo: "supabase-storage",
+src\services\emc\emcService.js:230:export async function crearJobImportacionEMC({
+src\services\emc\emcService.js:235:  tipo_proveedor = "materiales",
+src\services\emc\emcService.js:239:    throw new Error("Seleccioná un proveedor antes de crear el Job EMC.");
+src\services\emc\emcService.js:242:  const archivosSubidos = await subirArchivosEMCStorage({ proveedor, archivos });
+src\services\emc\emcService.js:245:    tipo: "crear-job-emc",
+src\services\emc\emcService.js:252:    origen_archivo: "supabase-storage",
+src\services\emc\emcService.js:256:export async function obtenerEstadoJobEMC(jobId) {
+src\services\emc\emcService.js:260:    tipo: "estado-job-emc",
+src\services\emc\emcService.js:265:export async function guardarImportacionEMC({ proveedor, items = [], resultado = null, notas = "" }) {
+src\services\emc\emcService.js:267:    throw new Error("Seleccioná un proveedor antes de guardar en EMC.");
+src\services\emc\emcService.js:275:    tipo: "guardar-emc",
+src\services\emc\emcService.js:289:      : json?.error || json?.mensaje || "No se pudo guardar en EMC.";
+src\services\emc\emcService.js:297:export const procesarImportacionEMC = importarEMC;
+src\services\emc\emcService.js:298:export const importarCatalogoEMC = importarEMC;
+src\services\emc\emcService.js:299:export const crearJobEMC = crearJobImportacionEMC;
+src\services\emc\emcService.js:300:export const estadoJobEMC = obtenerEstadoJobEMC;
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\finanzas\finanzasPedidoAdapter.js =====
+src\services\finanzas\finanzasPedidoAdapter.js:1:import {
+src\services\finanzas\finanzasPedidoAdapter.js:6:} from './finanzasPedidoService';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\finanzas\finanzasPedidoService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\finanzas\index.js =====
+src\services\finanzas\index.js:1:export * from './finanzasPedidoService';
+src\services\finanzas\index.js:2:export * from './finanzasPedidoAdapter';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\ot\commands\ordenTrabajoCommandService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\ot\queries\ordenTrabajoQueryService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\ot\repository\ordenTrabajoRepository.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\ot\comprasService.js =====
+src\services\ot\comprasService.js:1:import { getClienteOT, getCodigoOT, getNumeroPedido, getProyectoOT, money } from './ordenTrabajoService';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\ot\ordenTrabajoFactory.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\ot\ordenTrabajoService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\ot\ordenTrabajoUpdater.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\ot\pagosService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\pedidos\commands\pedidosCommandService.js =====
+src\services\pedidos\commands\pedidosCommandService.js:1:import { mapPedidoFromDb } from '../pedidosMapper';
+src\services\pedidos\commands\pedidosCommandService.js:2:import {
+src\services\pedidos\commands\pedidosCommandService.js:6:} from '../repository/pedidosRepository';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\pedidos\queries\pedidosQueryService.js =====
+src\services\pedidos\queries\pedidosQueryService.js:1:import { mapPedidoFromDb } from '../pedidosMapper';
+src\services\pedidos\queries\pedidosQueryService.js:2:import { listarPedidosElanvisualDb } from '../repository/pedidosRepository';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\pedidos\repository\pedidosRepository.js =====
+src\services\pedidos\repository\pedidosRepository.js:1:import { supabase } from '../../../lib/supabase';
+src\services\pedidos\repository\pedidosRepository.js:2:import { mapPedidoToDb } from '../pedidosMapper';
+src\services\pedidos\repository\pedidosRepository.js:7:  if (!supabase) return { ok: false, data: [], error: 'Supabase no disponible' };
+src\services\pedidos\repository\pedidosRepository.js:9:  const { data, error } = await supabase
+src\services\pedidos\repository\pedidosRepository.js:21:  if (!supabase) return { ok: false, data: null, error: 'Supabase no disponible' };
+src\services\pedidos\repository\pedidosRepository.js:23:  const { data, error } = await supabase
+src\services\pedidos\repository\pedidosRepository.js:35:  if (!supabase) return { ok: false, error: 'Supabase no disponible' };
+src\services\pedidos\repository\pedidosRepository.js:37:  const { error } = await supabase
+src\services\pedidos\repository\pedidosRepository.js:48:  if (!supabase) return { ok: false, error: 'Supabase no disponible' };
+src\services\pedidos\repository\pedidosRepository.js:50:  const { error } = await supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\pedidos\sync\pedidosSyncService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\pedidos\pedidosFactory.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\pedidos\pedidosMapper.js =====
+src\services\pedidos\pedidosMapper.js:1:import { construirFinanzasDesdePedido } from '../finanzas';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\suppliers\index.js =====
+src\services\suppliers\index.js:6:} from './supplierHubV2Service';
+src\services\suppliers\index.js:8:export { mapSupplierToUI, normalizeSupplierForm } from './supplierMapper';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\suppliers\supplierCapabilityService.js =====
+src\services\suppliers\supplierCapabilityService.js:1:import { supabase } from '../../lib/supabase';
+src\services\suppliers\supplierCapabilityService.js:2:import { SUPPLIER_TABLES } from './supplierTables';
+src\services\suppliers\supplierCapabilityService.js:5:  if (!supabase || companyIds.length === 0) return [];
+src\services\suppliers\supplierCapabilityService.js:7:  const { data, error } = await supabase
+src\services\suppliers\supplierCapabilityService.js:17:  if (!supabase) throw new Error('Supabase no configurado');
+src\services\suppliers\supplierCapabilityService.js:35:  const { data, error } = await supabase
+src\services\suppliers\supplierCapabilityService.js:45:  if (!supabase || !proveedorId) return true;
+src\services\suppliers\supplierCapabilityService.js:47:  const { error } = await supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\suppliers\supplierCaptureParser.js =====
+src\services\suppliers\supplierCaptureParser.js:119:    'Materiales para publicidad exterior',
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\suppliers\supplierCompanyService.js =====
+src\services\suppliers\supplierCompanyService.js:1:import { supabase } from '../../lib/supabase';
+src\services\suppliers\supplierCompanyService.js:2:import { SUPPLIER_TABLES } from './supplierTables';
+src\services\suppliers\supplierCompanyService.js:5:  if (!supabase) return [];
+src\services\suppliers\supplierCompanyService.js:7:  const { data, error } = await supabase
+src\services\suppliers\supplierCompanyService.js:17:  if (!supabase) throw new Error('Supabase no configurado');
+src\services\suppliers\supplierCompanyService.js:35:  const { data, error } = await supabase
+src\services\suppliers\supplierCompanyService.js:46:  if (!supabase) throw new Error('Supabase no configurado');
+src\services\suppliers\supplierCompanyService.js:65:  const { data, error } = await supabase
+src\services\suppliers\supplierCompanyService.js:77:  if (!supabase) throw new Error('Supabase no configurado');
+src\services\suppliers\supplierCompanyService.js:80:  const { data, error } = await supabase
+src\services\suppliers\supplierCompanyService.js:89:    throw new Error('Supabase no eliminó el proveedor. Revisar RLS, permisos o ID.');
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\suppliers\supplierContactService.js =====
+src\services\suppliers\supplierContactService.js:1:import { supabase } from '../../lib/supabase';
+src\services\suppliers\supplierContactService.js:2:import { SUPPLIER_TABLES } from './supplierTables';
+src\services\suppliers\supplierContactService.js:5:  if (!supabase || companyIds.length === 0) return [];
+src\services\suppliers\supplierContactService.js:7:  const { data, error } = await supabase
+src\services\suppliers\supplierContactService.js:17:  if (!supabase) throw new Error('Supabase no configurado');
+src\services\suppliers\supplierContactService.js:32:  const { data, error } = await supabase
+src\services\suppliers\supplierContactService.js:43:  if (!supabase || !proveedorId) return true;
+src\services\suppliers\supplierContactService.js:45:  const { error } = await supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\suppliers\supplierHubV2Service.js =====
+src\services\suppliers\supplierHubV2Service.js:1:import { listSupplierCompanies, createSupplierCompany, updateSupplierCompany, deleteSupplierCompany } from 
+'./supplierCompanyService';
+src\services\suppliers\supplierHubV2Service.js:2:import { listSupplierContactsByCompanies, createSupplierContact, deleteSupplierContacts } from './supplierContactService';
+src\services\suppliers\supplierHubV2Service.js:3:import { listSupplierCapabilitiesByCompanies, createSupplierCapabilities, deleteSupplierCapabilities } from 
+'./supplierCapabilityService';
+src\services\suppliers\supplierHubV2Service.js:4:import { deleteSupplierProducts } from './supplierProductService';
+src\services\suppliers\supplierHubV2Service.js:5:import { mapSupplierToUI, normalizeSupplierForm } from './supplierMapper';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\suppliers\supplierMapper.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\suppliers\supplierProductService.js =====
+src\services\suppliers\supplierProductService.js:1:import { supabase } from '../../lib/supabase';
+src\services\suppliers\supplierProductService.js:2:import { SUPPLIER_TABLES } from './supplierTables';
+src\services\suppliers\supplierProductService.js:5:  if (!supabase || !proveedorId) return [];
+src\services\suppliers\supplierProductService.js:7:  const { data, error } = await supabase
+src\services\suppliers\supplierProductService.js:17:  if (!supabase || !proveedorId) return true;
+src\services\suppliers\supplierProductService.js:19:  const { error } = await supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\suppliers\supplierTables.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\tesoreria\commands\tesoreriaCommandService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\tesoreria\queries\tesoreriaQueryService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\tesoreria\repository\tesoreriaRepository.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\tesoreria\bancosService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\tesoreria\cajaService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\tesoreria\index.js =====
+src\services\tesoreria\index.js:1:export * from './movimientosService';
+src\services\tesoreria\index.js:2:export * from './recibosService';
+src\services\tesoreria\index.js:3:export * from './bancosService';
+src\services\tesoreria\index.js:4:export * from './cajaService';
+src\services\tesoreria\index.js:5:export * from './tesoreriaAdapter';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\tesoreria\movimientosService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\tesoreria\recibosService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\tesoreria\tesoreriaAdapter.js =====
+src\services\tesoreria\tesoreriaAdapter.js:1:import { crearMovimientoIngresoPedido } from './movimientosService';
+src\services\tesoreria\tesoreriaAdapter.js:2:import { crearReciboCaja } from './recibosService';
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\aiArchivosService.js =====
+src\services\aiArchivosService.js:8:  "pdf",
+src\services\aiArchivosService.js:25:  if (extension === "pdf") return "pdf";
+src\services\aiArchivosService.js:86:  supabase,
+src\services\aiArchivosService.js:92:  if (!supabase) throw new Error("Supabase no disponible.");
+src\services\aiArchivosService.js:99:  const upload = await supabase.storage
+src\services\aiArchivosService.js:111:  const publicUrlData = supabase.storage
+src\services\aiArchivosService.js:142:  const insert = await supabase
+src\services\aiArchivosService.js:156:  supabase,
+src\services\aiArchivosService.js:167:      supabase,
+src\services\aiArchivosService.js:180:export async function listarArchivosProyectoAI({ supabase, proyectoId }) {
+src\services\aiArchivosService.js:183:  const { data, error } = await supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\aiService.js =====
+src\services\aiService.js:1:import { supabase } from '../lib/supabase';
+src\services\aiService.js:5:    let query = supabase
+src\services\aiService.js:43:    let query = supabase
+src\services\aiService.js:65:    let query = supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\aiTemporalService.js =====
+src\services\aiTemporalService.js:5:  'application/pdf',
+src\services\aiTemporalService.js:17:  const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'svg', 'pdf'];
+src\services\aiTemporalService.js:20:    return { ok: false, error: 'Formato no permitido. Usar JPG, PNG, SVG o PDF.' };
+src\services\aiTemporalService.js:83:  if (extension === 'pdf') {
+src\services\aiTemporalService.js:86:      tipo: file.type || 'application/pdf',
+src\services\aiTemporalService.js:91:      aviso: 'PDF recibido temporalmente. Para evitar payload pesado, se envÃa metadata; extracciÃ³n PDF avanzada queda para 
+AI-04C/AI-05.',
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\archivosService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\cotizacionesService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\crmService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\emcMaterialesAdapter.js =====
+src\services\emcMaterialesAdapter.js:1:export async function cargarMaterialesEMC(supabase) {
+src\services\emcMaterialesAdapter.js:2:  if (!supabase) {
+src\services\emcMaterialesAdapter.js:3:    return { data: [], error: new Error('Supabase no configurado') };
+src\services\emcMaterialesAdapter.js:7:    supabase
+src\services\emcMaterialesAdapter.js:12:    supabase
+src\services\emcMaterialesAdapter.js:18:  console.log('DEBUG EMC itemsRes', itemsRes);
+src\services\emcMaterialesAdapter.js:19:  console.log('DEBUG EMC items count', itemsRes.data?.length || 0);
+src\services\emcMaterialesAdapter.js:20:  console.log('DEBUG EMC proveedorItemsRes', proveedorItemsRes);
+src\services\emcMaterialesAdapter.js:21:  console.log('DEBUG EMC proveedor items count', proveedorItemsRes.data?.length || 0);
+src\services\emcMaterialesAdapter.js:55:        'Material EMC';
+src\services\emcMaterialesAdapter.js:60:        emc_item_id: item.id,
+src\services\emcMaterialesAdapter.js:61:        emc_proveedor_item_id: prov?.id || null,
+src\services\emcMaterialesAdapter.js:66:        categoria: item.categoria || item.categoria_nombre || 'EMC',
+src\services\emcMaterialesAdapter.js:94:        origen: 'EMC',
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\memoriaOperativaElan.js =====
+src\services\memoriaOperativaElan.js:1:import { supabase } from '../lib/supabase';
+src\services\memoriaOperativaElan.js:2:import { generarProduccionAutomatica } from './motorProduccion';
+src\services\memoriaOperativaElan.js:167:    puede_enviar_cotizador:
+src\services\memoriaOperativaElan.js:168:      accion.manda_cotizador &&
+src\services\memoriaOperativaElan.js:187:  const mandaCotizador =
+src\services\memoriaOperativaElan.js:188:    t.includes('mandalo al cotizador') ||
+src\services\memoriaOperativaElan.js:189:    t.includes('pasalo al cotizador') ||
+src\services\memoriaOperativaElan.js:205:      mandaCotizador ? 'cotizacion_en_preparacion' :
+src\services\memoriaOperativaElan.js:207:    manda_cotizador: mandaCotizador,
+src\services\memoriaOperativaElan.js:210:    cierre_contexto_al_enviar: mandaCotizador,
+src\services\memoriaOperativaElan.js:235:    requiere_materiales: true,
+src\services\memoriaOperativaElan.js:245:  if (!supabase) return { ok: false, tabla, data: [], error: 'Supabase no disponible' };
+src\services\memoriaOperativaElan.js:248:    const { data, error } = await supabase
+src\services\memoriaOperativaElan.js:270:  const sinMateriales =
+src\services\memoriaOperativaElan.js:271:    Array.isArray(relevantes.materiales_master) &&
+src\services\memoriaOperativaElan.js:272:    relevantes.materiales_master.length === 0;
+src\services\memoriaOperativaElan.js:284:  if (sinMateriales && ai06c.items?.length) {
+src\services\memoriaOperativaElan.js:286:      tipo: 'material',
+src\services\memoriaOperativaElan.js:288:      motivo: 'No se encontraron materiales relevantes en materiales_master.',
+src\services\memoriaOperativaElan.js:321:    materiales,
+src\services\memoriaOperativaElan.js:330:    leerTabla('materiales_master', 'created_at', 80),
+src\services\memoriaOperativaElan.js:364:      materiales_master: limpiar(materiales.data, 80),
+src\services\memoriaOperativaElan.js:382:        materiales_master: filtrarRelevantesAI06(materiales.data, mensaje, 15),
+src\services\memoriaOperativaElan.js:393:      'No inventar materiales, precios, proveedores ni tecnologías.',
+src\services\memoriaOperativaElan.js:395:      'Usar materiales_master, tintas_master, biblioteca_tecnica, tecnologias_impresion y proveedores como fuente prioritaria.',
+src\services\memoriaOperativaElan.js:407:          materiales_master: filtrarRelevantesAI06(materiales.data, mensaje, 15),
+src\services\memoriaOperativaElan.js:414:      materiales_master: materiales.ok,
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\motorProduccion.js =====
+src\services\motorProduccion.js:57:function materialesDesdeSistema(sistema = {}, pedido = {}, medidas = {}) {
+src\services\motorProduccion.js:60:  const despiece = sistema.despiece || sistema.materiales || pedido.despiece || pedido.cotizacion?.despiece || [];
+src\services\motorProduccion.js:68:        nombre: item.nombre || item.material || "Material",
+src\services\motorProduccion.js:69:        tipo: item.tipo_componente || item.tipo || "Material",
+src\services\motorProduccion.js:81:        nombre: item.nombre || item.material || "Estructura",
+src\services\motorProduccion.js:139:    { id: "material-base", nombre: "Material base según receta", tipo: "Material", unidad: "m2", cantidad: medidas.area || 1, origen: 
+"base" },
+src\services\motorProduccion.js:144:function procesosDesdeMateriales(materiales = [], pedido = {}) {
+src\services\motorProduccion.js:145:  const nombres = materiales.map((m) => texto(m.nombre + " " + m.tipo)).join(" ");
+src\services\motorProduccion.js:149:    "Preparar materiales según despiece técnico.",
+src\services\motorProduccion.js:188:  const materiales = materialesDesdeSistema(sistema, pedido, medidas);
+src\services\motorProduccion.js:190:  const procesos = procesosDesdeMateriales(materiales, pedido);
+src\services\motorProduccion.js:193:    materiales.find((m) => texto(m.tipo).includes("impresi"))?.tipo ||
+src\services\motorProduccion.js:194:    materiales.find((m) => texto(m.tipo).includes("estructura"))?.tipo ||
+src\services\motorProduccion.js:195:    materiales[0]?.tipo ||
+src\services\motorProduccion.js:205:    materiales,
+src\services\motorProduccion.js:206:    cantidades: materiales.map((m) => ({
+src\services\motorProduccion.js:211:    despiece: materiales,
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\motorRecomendacion.js =====
+src\services\motorRecomendacion.js:1:import { recomendacionesTecnicas } from "../data/recomendaciones";
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\onboardingService.js =====
+src\services\onboardingService.js:1:import { supabase } from '../lib/supabase';
+src\services\onboardingService.js:6:  const { data } = await supabase
+src\services\onboardingService.js:22:  const { data } = await supabase
+src\services\onboardingService.js:32:  return supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\pedidosService.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\permisosCRM.js =====
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\rpiKnowledgeService.js =====
+src\services\rpiKnowledgeService.js:1:import { supabase } from '../lib/supabase';
+src\services\rpiKnowledgeService.js:21:    item.materiales,
+src\services\rpiKnowledgeService.js:33:  if (!supabase) return [];
+src\services\rpiKnowledgeService.js:36:  const { data, error } = await supabase
+src\services\rpiKnowledgeService.js:55:export async function rpiBuscarProveedorPorMaterial(material) {
+src\services\rpiKnowledgeService.js:56:  return rpiBuscarConocimiento(material);
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\rpiPriceService.js =====
+src\services\rpiPriceService.js:1:import { supabase } from '../lib/supabase';
+src\services\rpiPriceService.js:7:  if (!supabase) return [];
+src\services\rpiPriceService.js:9:  const { data, error } = await supabase
+src\services\rpiPriceService.js:19:  if (!supabase) return [];
+src\services\rpiPriceService.js:24:  const { data, error } = await supabase
+src\services\rpiPriceService.js:35:  if (!supabase) throw new Error('Supabase no está configurado.');
+src\services\rpiPriceService.js:50:  const { data, error } = await supabase
+src\services\rpiPriceService.js:61:  if (!supabase) return [];
+src\services\rpiPriceService.js:63:  let query = supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\rpiService.js =====
+src\services\rpiService.js:1:import { supabase } from '../lib/supabase';
+src\services\rpiService.js:8:  if (!supabase) return [];
+src\services\rpiService.js:10:  const { data, error } = await supabase
+src\services\rpiService.js:20:  if (!supabase) return [];
+src\services\rpiService.js:22:  const { data, error } = await supabase
+src\services\rpiService.js:32:  if (!supabase) throw new Error('Supabase no está configurado.');
+src\services\rpiService.js:34:  const { data, error } = await supabase
+src\services\rpiService.js:45:  if (!supabase) throw new Error('Supabase no está configurado.');
+src\services\rpiService.js:48:  const { data, error } = await supabase
+src\services\rpiService.js:58:  if (!supabase) throw new Error('Supabase no está configurado.');
+src\services\rpiService.js:60:  const { data, error } = await supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\rpiSourceService.js =====
+src\services\rpiSourceService.js:1:import { supabase } from '../lib/supabase';
+src\services\rpiSourceService.js:7:  if (!supabase) return [];
+src\services\rpiSourceService.js:9:  const { data, error } = await supabase
+src\services\rpiSourceService.js:19:  if (!supabase) throw new Error('Supabase no configurado');
+src\services\rpiSourceService.js:21:  const { data, error } = await supabase
+src\services\rpiSourceService.js:32:  if (!supabase) return [];
+src\services\rpiSourceService.js:34:  const { data, error } = await supabase
+src\services\rpiSourceService.js:45:  if (!supabase) throw new Error('Supabase no configurado');
+src\services\rpiSourceService.js:47:  const { data, error } = await supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\sembrarBibliotecaTecnica.js =====
+src\services\sembrarBibliotecaTecnica.js:1:import { recetasConstructivasBase } from "../data/recetasConstructivasBase";
+src\services\sembrarBibliotecaTecnica.js:12:function payloadComponente(componente, bibliotecaId, materiales, combinaciones, tecnologias, orden) {
+src\services\sembrarBibliotecaTecnica.js:13:  const material = buscarPorKeywords(materiales, componente.keywords);
+src\services\sembrarBibliotecaTecnica.js:18:  let materialId = null;
+src\services\sembrarBibliotecaTecnica.js:22:  if (material) {
+src\services\sembrarBibliotecaTecnica.js:23:    tipoReferencia = "material";
+src\services\sembrarBibliotecaTecnica.js:24:    materialId = material.id;
+src\services\sembrarBibliotecaTecnica.js:40:    material_id: materialId,
+src\services\sembrarBibliotecaTecnica.js:50:    notas: tipoReferencia === "manual" ? "Pendiente de vincular con Material Master." : "Vinculado automáticamente.",
+src\services\sembrarBibliotecaTecnica.js:56:export async function sembrarBibliotecaTecnicaBase(supabase) {
+src\services\sembrarBibliotecaTecnica.js:58:    supabase.from("biblioteca_tecnica").select("*"),
+src\services\sembrarBibliotecaTecnica.js:59:    supabase.from("materiales_master").select("*"),
+src\services\sembrarBibliotecaTecnica.js:60:    supabase.from("combinaciones_master").select("*"),
+src\services\sembrarBibliotecaTecnica.js:61:    supabase.from("tecnologias_impresion").select("*"),
+src\services\sembrarBibliotecaTecnica.js:67:  const materiales = mat.data || [];
+src\services\sembrarBibliotecaTecnica.js:80:      const insert = await supabase
+src\services\sembrarBibliotecaTecnica.js:105:    const compActuales = await supabase
+src\services\sembrarBibliotecaTecnica.js:114:        payloadComponente(c, bibliotecaId, materiales, combinaciones, tecnologias, index + 1)
+src\services\sembrarBibliotecaTecnica.js:117:      const insComp = await supabase.from("biblioteca_componentes").insert(payload);
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\services\solicitudesCostosService.js =====
+src\services\solicitudesCostosService.js:1:import { supabase } from '../lib/supabase';
+src\services\solicitudesCostosService.js:14:  if (!supabase || !Array.isArray(faltantes) || faltantes.length === 0) {
+src\services\solicitudesCostosService.js:23:    tipo: faltante.tipo || 'material',
+src\services\solicitudesCostosService.js:33:  const { data, error } = await supabase
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\App.jsx =====
+src\App.jsx:1:import { AIAssistantProvider } from './ai/AIAssistantProvider';
+src\App.jsx:2:import AIFloatingButton from './ai/AIFloatingButton';
+src\App.jsx:3:import AIAssistantPanel from './ai/AIAssistantPanel';
+src\App.jsx:4:import ClientesCRM from './crm/Clientes';
+src\App.jsx:5:import PanelVentas from './pages/PanelVentas';
+src\App.jsx:6:import React, { useEffect, useState } from 'react';
+src\App.jsx:7:import CRM from './crm/App/CRM.jsx';
+src\App.jsx:8:import Header from './components/Header';
+src\App.jsx:9:import Home from './pages/Home';
+src\App.jsx:10:import Servicios from './pages/Servicios';
+src\App.jsx:11:import Tienda from './pages/Tienda';
+src\App.jsx:12:import Carrito from './pages/Carrito';
+src\App.jsx:13:import ProduccionPanel from './pages/ProduccionPanel';
+src\App.jsx:14:import AdminPanel from './pages/AdminPanel';
+src\App.jsx:15:import Login from './pages/Login';
+src\App.jsx:16:import Contacto from './pages/Contacto';
+src\App.jsx:17:import Seguimiento from './pages/Seguimiento';
+src\App.jsx:18:import MaterialesCostos from './pages/MaterialesCostos';
+src\App.jsx:19:import PedidosProduccion from './pages/PedidosProduccion';
+src\App.jsx:20:import OrdenTrabajo from './pages/OrdenTrabajo';
+src\App.jsx:21:import DashboardERP from './pages/DashboardERP';
+src\App.jsx:22:import MiCuenta from './pages/MiCuenta';
+src\App.jsx:23:import ProveedoresHub from './pages/ProveedoresHub';
+src\App.jsx:24:import RedProveedoresIA from './pages/RedProveedoresIA';
+src\App.jsx:25:import InventarioInteligente from './pages/InventarioInteligente';
+src\App.jsx:26:import BibliotecaTecnica from './pages/BibliotecaTecnica';
+src\App.jsx:27:import CotizadorDirectoAI from './pages/CotizadorDirectoAI';
+src\App.jsx:28:import CapturaInteligente from './pages/CapturaInteligente';
+src\App.jsx:29:import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
+src\App.jsx:30:import RecomendadorTecnico from './pages/RecomendadorTecnico';
+src\App.jsx:31:import AIStudio from './pages/AIStudio';
+src\App.jsx:32:import SolicitudesDisenoAI from './pages/SolicitudesDisenoAI';
+src\App.jsx:33:import EMCImportadorAI22 from './pages/EMCImportadorAI22';
+src\App.jsx:34:import EMCInventario from './pages/EMCInventario';
+src\App.jsx:35:import { useApp } from './context/AppContext';
+src\App.jsx:36:import './styles/global.css';
+src\App.jsx:42:    if (pathInicial.startsWith('/emc-inventario')) return 'emcInventario';
+src\App.jsx:43:    if (pathInicial.startsWith('/emc')) return 'emc';
+src\App.jsx:50:    if (pathInicial.startsWith('/materiales')) return 'materiales';
+src\App.jsx:52:    if (pathInicial.startsWith('/cotizador-ai')) return 'cotizadorAI';
+src\App.jsx:53:    if (pathInicial.startsWith('/cotizador-visual')) return 'cotizadorVisual';
+src\App.jsx:59:    if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizador';
+src\App.jsx:60:    if (pathInicial.startsWith('/cotizador')) return 'cotizador';
+src\App.jsx:72:    if (pathInicial.startsWith('/inventario')) return 'inventario';
+src\App.jsx:78:    if (pathInicial.startsWith('/inventario-real')) return 'inventarioReal';
+src\App.jsx:105:      materiales: '/materiales',
+src\App.jsx:106:      emc: '/emc',
+src\App.jsx:107:      emcInventario: '/emc-inventario',
+src\App.jsx:109:      cotizador: '/cotizador',
+src\App.jsx:110:      cotizadorAI: '/cotizador-ai',
+src\App.jsx:111:      cotizadorInteligente: '/cotizador',
+src\App.jsx:117:      cotizadorVisual: '/cotizador-visual',
+src\App.jsx:121:      inventario: '/inventario',
+src\App.jsx:126:      inventarioReal: '/inventario-real',
+src\App.jsx:160:      {page === 'inventarioReal' &&
+src\App.jsx:161:        (accesoAdmin ? <InventarioInteligente /> : <Login setPage={ir} destino="admin" />)}
+src\App.jsx:186:      {page === 'inventario' &&
+src\App.jsx:188:          <DashboardERP setPage={ir} areaInicial="inventario" />
+src\App.jsx:213:      {page === 'materiales' &&
+src\App.jsx:214:        (accesoAdmin ? <MaterialesCostos /> : <Login setPage={ir} destino="materiales" />)}
+src\App.jsx:216:{page === 'emc' &&
+src\App.jsx:217:        (accesoAdmin ? <EMCImportadorAI22 /> : <Login setPage={ir} destino="admin" />)}
+src\App.jsx:219:      {page === 'emcInventario' &&
+src\App.jsx:220:        (accesoAdmin ? <EMCInventario /> : <Login setPage={ir} destino="admin" />)}
+src\App.jsx:223:        (accesoVentas ? <RecomendadorTecnico /> : <Login setPage={ir} destino="cotizador" />)}
+src\App.jsx:231:      {page === 'cotizador' &&
+src\App.jsx:232:        (accesoVentas ? <CotizadorDirectoAI setPage={ir} /> : <Login setPage={ir} destino="cotizador" />)}
+src\App.jsx:234:      {page === 'cotizadorAI' &&
+src\App.jsx:235:        (accesoVentas ? <CotizadorDirectoAI setPage={ir} /> : <Login setPage={ir} destino="cotizadorAI" />)}
+src\App.jsx:238:        (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="cotizador" />)}
+src\App.jsx:240:      {page === 'cotizadorVisual' &&
+src\App.jsx:241:        (accesoAdmin ? <CotizadorDirectoAI setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
+
+===== D:\ELAN\ELANVISUAL_DESDE_ELANPET\src\main.jsx =====
+src\main.jsx:20:import React from 'react';
+src\main.jsx:21:import { createRoot } from 'react-dom/client';
+src\main.jsx:23:import App from './App';
+src\main.jsx:25:import { AppProvider } from './context/AppContext';
+src\main.jsx:26:import { CoreProvider } from './core/context/CoreContext';
+
+

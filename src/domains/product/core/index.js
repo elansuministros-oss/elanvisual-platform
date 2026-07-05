@@ -1,0 +1,1 @@
+export { ProductCore } from './ProductCore';

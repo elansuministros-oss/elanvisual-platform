@@ -1,0 +1,34 @@
+﻿
+FullName                                                                        Length LastWriteTime     
+--------                                                                        ------ -------------     
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\assets\branding\elanvisual-isotipo.svg     791 26/6/2026 21:42:51
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\assets\branding\elanvisual.svg            5575 26/6/2026 21:42:51
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\assets\branding\visualkav.svg             5047 26/6/2026 21:42:51
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\categorias\camas.png                    132266 13/6/2026 14:26:59
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\categorias\casas.png                    155321 13/6/2026 14:26:59
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\categorias\comederos.png                121400 13/6/2026 14:26:59
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\categorias\escaleras.png                104788 13/6/2026 14:26:59
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\categorias\organizadores.png           2268724 13/6/2026 14:26:59
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\categorias\torres-gatos.png             245339 13/6/2026 14:26:59
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\productos\portada2-01.png              3030391 13/6/2026 14:27:00
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\productos\producto-01.jpg               456659 13/6/2026 14:27:00
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\productos\producto-02.jpg               489424 13/6/2026 14:27:00
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\productos\producto-03.jpg               516880 13/6/2026 14:27:00
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\productos\producto-04.jpg               530078 13/6/2026 14:27:00
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\productos\producto-05.jpg               427988 13/6/2026 14:27:00
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\productos\producto-06.jpg               495925 13/6/2026 14:27:00
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\productos\producto-07.jpg               511742 13/6/2026 14:27:00
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\productos\producto-08.jpg               419498 13/6/2026 14:27:00
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\productos\producto-09.jpg               534725 13/6/2026 14:27:00
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\productos\producto-10.jpg               402627 13/6/2026 14:27:00
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\servicios\diseno.webp                  2101930 30/6/2026 08:19:29
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\servicios\display.webp                 2063558 30/6/2026 08:29:18
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\servicios\estructuras.webp             2371840 30/6/2026 08:36:06
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\servicios\hero-servicios.webp          1961445 30/6/2026 08:14:26
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\servicios\impresion.webp               2343725 30/6/2026 08:22:28
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\servicios\laser.webp                   2228628 30/6/2026 08:31:55
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\servicios\mobiliario.webp              2359547 30/6/2026 08:39:30
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\servicios\rotulacion.webp              2345170 30/6/2026 08:24:57
+D:\ELAN\ELANVISUAL_DESDE_ELANPET\public\servicios\textil.webp                  2359699 30/6/2026 08:33:48
+
+

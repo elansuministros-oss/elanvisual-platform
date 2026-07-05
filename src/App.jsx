@@ -32,6 +32,7 @@ import AIStudio from './pages/AIStudio';
 import SolicitudesDisenoAI from './pages/SolicitudesDisenoAI';
 import EMCImportadorAI22 from './pages/EMCImportadorAI22';
 import EMCInventario from './pages/EMCInventario';
+import { ProjectsPage } from './domains/project';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -42,6 +43,7 @@ export default function App() {
     if (pathInicial.startsWith('/emc-inventario')) return 'emcInventario';
     if (pathInicial.startsWith('/emc')) return 'emc';
     if (pathInicial.startsWith('/clientes')) return 'clientes';
+    if (pathInicial.startsWith('/proyectos')) return 'proyectos';
     if (pathInicial.startsWith('/crm')) return 'crm';
     if (pathInicial.startsWith('/seguimiento')) return 'seguimiento';
     if (pathInicial.startsWith('/login')) return 'login';
@@ -100,6 +102,7 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       dashboard: '/dashboard',
       crm: '/crm',
       clientes: '/clientes',
+      proyectos: '/proyectos',
       admin: '/admin',
       produccion: '/produccion',
       materiales: '/materiales',
@@ -179,6 +182,9 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
 
       {page === 'clientes' &&
         (accesoVentas ? <ClientesCRM /> : <Login setPage={ir} destino="clientes" />)}
+
+      {page === 'proyectos' &&
+        (accesoVentas ? <ProjectsPage /> : <Login setPage={ir} destino="proyectos" />)}
 
       {page === 'ventas' &&
         (accesoVentas ? <PanelVentas setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}

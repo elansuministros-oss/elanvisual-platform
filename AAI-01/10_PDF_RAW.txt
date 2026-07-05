@@ -1,0 +1,1482 @@
+﻿
+src\ai\AIAssistantPanel.jsx:205:              accept=".jpg,.jpeg,.png,.svg,.pdf"
+src\ai\aiContextStore.js:7:  cotizacionActiva: null,
+src\components\admin\CategoriasHomePanel.jsx:204:                <span>/{item.slug || 'categoria'} · Orden {item.orden || 1} · {item.activo === false ? 'Oculta' : 
+'Activa'}</span>
+src\components\admin\CategoriasHomePanel.jsx:209:                {item.activo === false ? 'Activar' : 'Ocultar'}
+src\components\admin\Usuarios20Panel.jsx:409:          <textarea placeholder="Notas administrativas, cédula o datos pendientes..." value={form.observaciones} onChange={(e) 
+=> cambiar('observaciones', e.target.value)} />
+src\components\admin\Usuarios20Panel.jsx:449:                <button type="button" className="usuarios20-btn secondary usuarios20-mini" onClick={() => actualizarUsuario({ 
+...u, activo: u.activo === false })}>{u.activo === false ? <Eye size={14} /> : <EyeOff size={14} />}{u.activo === false ? 'Activar' : 'Desactivar'}</button>
+src\components\emc\ProveedorCatalogoAI22.jsx:122:                  <span style={tag}>{item.incluye_iva ? "IVA incluido" : "+ IVA"}</span>
+src\components\ot\OTDocumentos.jsx:5:      <p>Recibos, PDF, archivos técnicos y soportes.</p>
+src\components\Header.jsx:65:  ['cotizacionesInteligentes', 'Cotizaciones', <ClipboardList size={24} />],
+src\context\AppContext.jsx:420:  observaciones: 'Proveedor estratégico para procesos de impresión y manufactura. RUC pendiente. La IA no debe usar precios de este proveedor 
+para cotizaciones comerciales; solo para Compras cuando exista OT aprobada.',
+src\context\AppContext.jsx:443:  const [cotizacionesProveedor, setCotizacionesProveedor] = useState(() => leerStorage('elanvisual_cotizaciones_proveedor', []));
+src\context\AppContext.jsx:482:  useEffect(() => guardarStorage('elanvisual_cotizaciones_proveedor', cotizacionesProveedor), [cotizacionesProveedor]);
+src\context\AppContext.jsx:1021:        subtotal: Number(pedidoBase.resumen?.subtotal || 0),
+src\context\AppContext.jsx:1103:    setCotizacionesProveedor((prev) => prev.filter((s) => s.pedidoId !== id));
+src\context\AppContext.jsx:1469:    setCotizacionesProveedor((prev) => [solicitud, ...prev]);
+src\context\AppContext.jsx:1476:        codigoRecotizacion: codigo,
+src\context\AppContext.jsx:1487:    setCotizacionesProveedor((prev) =>
+src\context\AppContext.jsx:1770:      { ...cuenta, id: `cta-${Date.now()}`, activa: true, visible: true },
+src\context\AppContext.jsx:2015:        cotizacionesProveedor,
+src\core\context\CoreContext.jsx:33:  { id: 'cotizaciones', label: 'Cotizaciones', grupo: 'Ventas' },
+src\core\context\CoreContext.jsx:102:      'cotizaciones',
+src\core\context\CoreContext.jsx:121:    descripcion: 'Gestion comercial: empresas, contactos, cotizaciones, pedidos y cobros basicos.',
+src\core\context\CoreContext.jsx:122:    permisos: ['dashboard', 'notificaciones', 'centro-whatsapp', 'empresas', 'contactos', 'clientes', 'cotizaciones', 'pedidos', 
+'cobros'],
+src\core\context\CoreContext.jsx:249:  const [cotizaciones, setCotizaciones] = useState(() =>
+src\core\context\CoreContext.jsx:250:    leerStorage('elankav_cotizaciones', [])
+src\core\context\CoreContext.jsx:317:  useEffect(() => guardarStorage('elankav_cotizaciones', cotizaciones), [cotizaciones]);
+src\core\context\CoreContext.jsx:336:    detalle = '',
+src\core\context\CoreContext.jsx:357:      detalle,
+src\core\context\CoreContext.jsx:373:      detalle: 'Se limpio el historial de auditoria del CRM.',
+src\core\context\CoreContext.jsx:384:      detalle: `Empresa creada: ${registro.nombre || registro.razonSocial || registro.id}`,
+src\core\context\CoreContext.jsx:397:      detalle: `Empresa actualizada: ${datos.nombre || datos.razonSocial || id}`,
+src\core\context\CoreContext.jsx:415:      detalle: `Empresa eliminada: ${empresa?.nombre || empresa?.razonSocial || id}`,
+src\core\context\CoreContext.jsx:428:      detalle: `Registro creado: ${registro.nombre || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:441:      detalle: `Registro actualizado: ${datos.nombre || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:454:      detalle: `Registro eliminado: ${registro?.nombre || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:467:      detalle: `Registro creado: ${registro.titulo || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:480:      detalle: `Registro actualizado: ${datos.titulo || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:493:      detalle: `Registro eliminado: ${registro?.titulo || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:506:      detalle: `Registro creado: ${registro.nombre || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:519:      detalle: `Registro actualizado: ${datos.nombre || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:532:      detalle: `Registro eliminado: ${registro?.nombre || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:545:      detalle: `Registro creado: ${registro.nombre || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:558:      detalle: `Registro actualizado: ${datos.nombre || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:571:      detalle: `Registro eliminado: ${registro?.nombre || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:584:      detalle: `Registro creado: ${registro.nombre || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:597:      detalle: `Registro actualizado: ${datos.nombre || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:610:      detalle: `Registro eliminado: ${registro?.nombre || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:623:      detalle: `Registro creado: ${registro.nombre || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:636:      detalle: `Registro actualizado: ${datos.nombre || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:649:      detalle: `Registro eliminado: ${registro?.nombre || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:662:      detalle: `Registro creado: ${registro.proveedor || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:675:      detalle: `Registro actualizado: ${datos.proveedor || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:688:      detalle: `Registro eliminado: ${registro?.proveedor || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:701:      detalle: `Registro creado: ${registro.proveedor || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:714:      detalle: `Registro actualizado: ${datos.proveedor || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:727:      detalle: `Registro eliminado: ${registro?.proveedor || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:740:      detalle: `Registro creado: ${registro.cliente || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:753:      detalle: `Registro actualizado: ${datos.cliente || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:766:      detalle: `Registro eliminado: ${registro?.cliente || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:779:      detalle: `Registro creado: ${registro.concepto || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:792:      detalle: `Registro actualizado: ${datos.concepto || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:805:      detalle: `Registro eliminado: ${registro?.concepto || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:812:  const crearCotizacion = (datos) => {
+src\core\context\CoreContext.jsx:813:    const registro = crearRegistro('cotizacion', datos);
+src\core\context\CoreContext.jsx:814:    setCotizaciones((prev) => [registro, ...prev]);
+src\core\context\CoreContext.jsx:816:      modulo: 'Cotizaciones',
+src\core\context\CoreContext.jsx:818:      detalle: `Registro creado: ${registro.cliente || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:820:      entidadTipo: 'cotizacion',
+src\core\context\CoreContext.jsx:826:  const actualizarCotizacion = (id, datos) => {
+src\core\context\CoreContext.jsx:827:    setCotizaciones((prev) => actualizarLista(prev, id, datos));
+src\core\context\CoreContext.jsx:829:      modulo: 'Cotizaciones',
+src\core\context\CoreContext.jsx:831:      detalle: `Registro actualizado: ${datos.cliente || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:833:      entidadTipo: 'cotizacion',
+src\core\context\CoreContext.jsx:838:  const eliminarCotizacion = (id) => {
+src\core\context\CoreContext.jsx:839:    const registro = cotizaciones.find((item) => item.id === id);
+src\core\context\CoreContext.jsx:840:    setCotizaciones((prev) => eliminarDeLista(prev, id));
+src\core\context\CoreContext.jsx:842:      modulo: 'Cotizaciones',
+src\core\context\CoreContext.jsx:844:      detalle: `Registro eliminado: ${registro?.cliente || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:846:      entidadTipo: 'cotizacion',
+src\core\context\CoreContext.jsx:857:      detalle: `Registro creado: ${registro.cliente || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:870:      detalle: `Registro actualizado: ${datos.cliente || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:883:      detalle: `Registro eliminado: ${registro?.cliente || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:896:      detalle: `Registro creado: ${registro.cliente || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:909:      detalle: `Registro actualizado: ${datos.cliente || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:922:      detalle: `Registro eliminado: ${registro?.cliente || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:935:      detalle: `Registro creado: ${registro.producto || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:948:      detalle: `Registro actualizado: ${datos.producto || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:961:      detalle: `Registro eliminado: ${registro?.producto || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:974:      detalle: `Registro creado: ${registro.cliente || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:987:      detalle: `Registro actualizado: ${datos.cliente || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:1000:      detalle: `Registro eliminado: ${registro?.cliente || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:1013:      detalle: `Registro creado: ${registro.vendedor || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:1026:      detalle: `Registro actualizado: ${datos.vendedor || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:1039:      detalle: `Registro eliminado: ${registro?.vendedor || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:1052:      detalle: `Registro creado: ${registro.nombre || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:1065:      detalle: `Registro actualizado: ${datos.nombre || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:1078:      detalle: `Registro eliminado: ${registro?.nombre || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:1091:      detalle: `Registro creado: ${registro.nombre || registro.nombre || registro.concepto || registro.id}`,
+src\core\context\CoreContext.jsx:1104:      detalle: `Registro actualizado: ${datos.nombre || datos.nombre || datos.concepto || id}`,
+src\core\context\CoreContext.jsx:1117:      detalle: `Registro eliminado: ${registro?.nombre || registro?.nombre || registro?.concepto || id}`,
+src\core\context\CoreContext.jsx:1130:      detalle: `Usuario CRM creado: ${registro.nombre || registro.usuario || registro.id}`,
+src\core\context\CoreContext.jsx:1143:      detalle: `Usuario CRM actualizado: ${datos.nombre || datos.usuario || id}`,
+src\core\context\CoreContext.jsx:1163:      detalle: `Usuario CRM eliminado: ${usuario?.nombre || usuario?.usuario || id}`,
+src\core\context\CoreContext.jsx:1177:      detalle: `Usuario activo cambiado a: ${usuario?.nombre || 'Administrador General'}`,
+src\core\context\CoreContext.jsx:1190:      detalle: `Rol CRM creado: ${registro.nombre || registro.id}`,
+src\core\context\CoreContext.jsx:1203:      detalle: `Rol CRM actualizado: ${datos.nombre || id}`,
+src\core\context\CoreContext.jsx:1223:      detalle: `Rol CRM eliminado: ${rol?.nombre || id}`,
+src\core\context\CoreContext.jsx:1269:    detalle = '',
+src\core\context\CoreContext.jsx:1284:      detalle,
+src\core\context\CoreContext.jsx:1292:      archivada: Boolean(registroManual?.archivada),
+src\core\context\CoreContext.jsx:1315:            detalle: `${cuenta.cliente || cuenta.empresa || cuenta.concepto || 'Cliente'} - Saldo estimado C$ 
+${saldo.toLocaleString('es-NI')} - ${dias < 0 ? `${Math.abs(dias)} dia(s) vencida` : `vence en ${dias} dia(s)`}`,
+src\core\context\CoreContext.jsx:1341:            detalle: `${cuenta.proveedor || cuenta.empresa || cuenta.concepto || 'Proveedor'} - Saldo estimado C$ 
+${saldo.toLocaleString('es-NI')} - ${dias < 0 ? `${Math.abs(dias)} dia(s) vencida` : `vence en ${dias} dia(s)`}`,
+src\core\context\CoreContext.jsx:1366:            detalle: `${item.producto || item.proyecto || item.cliente || item.concepto || 'Produccion'} - ${Math.abs(dias)} dia(s) de 
+atraso`,
+src\core\context\CoreContext.jsx:1391:            detalle: `${orden.cliente || orden.proyecto || orden.concepto || orden.id} - ${Math.abs(dias)} dia(s) de atraso`,
+src\core\context\CoreContext.jsx:1418:            detalle: `${compra.proveedor || compra.concepto || compra.id} - ${dias !== null && dias < 0 ? `${Math.abs(dias)} dia(s) de 
+atraso` : 'requiere seguimiento'}`,
+src\core\context\CoreContext.jsx:1442:            detalle: `${item.nombre || item.material || item.codigo || item.id} - existencia ${cantidad}${minimo > 0 ? ` / minimo 
+${minimo}` : ''}`,
+src\core\context\CoreContext.jsx:1454:      .filter((alerta) => !alerta.archivada)
+src\core\context\CoreContext.jsx:1485:      return [{ id, leida: true, archivada: false, fechaLectura: new Date().toISOString(), fechaRegistro: new Date().toISOString() }, 
+...prev];
+src\core\context\CoreContext.jsx:1490:      detalle: `Notificacion marcada como leida: ${id}`,
+src\core\context\CoreContext.jsx:1496:  const archivarNotificacionCRM = (id) => {
+src\core\context\CoreContext.jsx:1501:          item.id === id ? { ...item, archivada: true, fechaArchivada: new Date().toISOString() } : item
+src\core\context\CoreContext.jsx:1504:      return [{ id, leida: true, archivada: true, fechaArchivada: new Date().toISOString(), fechaRegistro: new Date().toISOString() }, 
+...prev];
+src\core\context\CoreContext.jsx:1508:      accion: 'ARCHIVAR',
+src\core\context\CoreContext.jsx:1509:      detalle: `Notificacion archivada: ${id}`,
+src\core\context\CoreContext.jsx:1520:        mapa.set(item.id, { ...(mapa.get(item.id) || {}), id: item.id, leida: true, archivada: false, fechaLectura: fecha, 
+fechaRegistro: mapa.get(item.id)?.fechaRegistro || fecha });
+src\core\context\CoreContext.jsx:1527:      detalle: 'Todas las notificaciones visibles fueron marcadas como leidas.',
+src\core\context\CoreContext.jsx:1547:      cotizacionId: datos.cotizacionId || '',
+src\core\context\CoreContext.jsx:1555:      detalle: `Lead creado: ${registro.nombre || registro.whatsapp || registro.id}`,
+src\core\context\CoreContext.jsx:1571:      detalle: `Lead actualizado: ${datos.nombre || datos.whatsapp || id}`,
+src\core\context\CoreContext.jsx:1584:      detalle: `Lead eliminado: ${registro?.nombre || registro?.whatsapp || id}`,
+src\core\context\CoreContext.jsx:1621:      cotizacionId: lead.cotizacionId || '',
+src\core\context\CoreContext.jsx:1627:  const crearCotizacionDesdeLeadWhatsApp = (id) => {
+src\core\context\CoreContext.jsx:1631:    const cotizacion = crearCotizacion({
+src\core\context\CoreContext.jsx:1637:      categoria: lead.clasificacion || 'Cotizacion',
+src\core\context\CoreContext.jsx:1640:      subtotal: 0,
+src\core\context\CoreContext.jsx:1641:      iva: 15,
+src\core\context\CoreContext.jsx:1651:      cotizacionId: cotizacion.id,
+src\core\context\CoreContext.jsx:1666:    return cotizacion;
+src\core\context\CoreContext.jsx:1696:      cotizaciones,
+src\core\context\CoreContext.jsx:1761:      crearCotizacion,
+src\core\context\CoreContext.jsx:1762:      actualizarCotizacion,
+src\core\context\CoreContext.jsx:1763:      eliminarCotizacion,
+src\core\context\CoreContext.jsx:1803:      archivarNotificacionCRM,
+src\core\context\CoreContext.jsx:1809:      crearCotizacionDesdeLeadWhatsApp,
+src\core\context\CoreContext.jsx:1824:      cotizaciones,
+src\crm\App\CRM.jsx:39:import Cotizaciones from '../Cotizaciones';
+src\crm\App\CRM.jsx:102:          { id: 'cotizaciones', label: 'Cotizaciones', icono: '', componente: <Cotizaciones /> },
+src\crm\App\CRM.jsx:166:          { id: 'cotizaciones', label: 'Cotizaciones', icono: '', componente: <Cotizaciones /> },
+src\crm\App\CRM.jsx:448:                ? 'Panel comercial para clientes, cotizaciones, pedidos y seguimiento.'
+src\crm\App\CRM.jsx:449:                : `CRM Central conectado a la cadena operativa completa. Rol activo: ${rolUsuarioActivoCRM?.nombre || 'Administrador General'}.`}
+src\crm\AppMovilCRM.jsx:98:            <li>Acceso rapido a ordenes activas.</li>
+src\crm\AppMovilCRM.jsx:108:            <h4 style={styles.screenTitle}>ðŸ“‹ Ã“rdenes activas</h4>
+src\crm\AuditoriaCRM.jsx:90:            registro.detalle,
+src\crm\AuditoriaCRM.jsx:542:              placeholder="Usuario, modulo, detalle..."
+src\crm\AuditoriaCRM.jsx:571:                <th>Detalle</th>
+src\crm\AuditoriaCRM.jsx:604:                        {registro.detalle || 'Sin detalle'}
+src\crm\AutomatizacionesCRM.jsx:16:  numero(item.subtotal) ||
+src\crm\AutomatizacionesCRM.jsx:49:    ...cuentasPorCobrar.filter(i => estaVencido(i.vencimiento || i.fechaVencimiento) && (i.estado || '').toLowerCase() !== 
+'pagado').map(i => ({ tipo:'Cobro vencido', detalle: i.cliente || i.empresa || i.concepto || i.id, prioridad:'Alta' })),
+src\crm\AutomatizacionesCRM.jsx:50:    ...cuentasPorPagar.filter(i => estaVencido(i.vencimiento || i.fechaVencimiento) && (i.estado || '').toLowerCase() !== 'pagado').map(i 
+=> ({ tipo:'Pago vencido', detalle: i.proveedor || i.concepto || i.id, prioridad:'Alta' })),
+src\crm\AutomatizacionesCRM.jsx:51:    ...ordenesTrabajo.filter(i => ['pendiente','en proceso','activa'].includes((i.estado || '').toLowerCase())).map(i => ({ tipo:'Orden 
+activa', detalle: i.codigo || i.titulo || i.id, prioridad:'Media' })),
+src\crm\AutomatizacionesCRM.jsx:52:    ...produccion.filter(i => ['pendiente','en proceso','activa'].includes((i.estado || '').toLowerCase())).map(i => ({ tipo:'Produccion 
+activa', detalle: i.codigo || i.producto || i.id, prioridad:'Media' })),
+src\crm\AutomatizacionesCRM.jsx:53:    ...inventario.filter(i => numero(i.stock) <= numero(i.stockMinimo || i.minimo)).map(i => ({ tipo:'Inventario bajo', detalle: i.nombre 
+|| i.material || i.id, prioridad:'Media' })),
+src\crm\AutomatizacionesCRM.jsx:57:    <h2>Automatizaciones Corporativas</h2><p style={{ color: '#6b7280' }}>Reglas operativas sugeridas por el sistema segun cobros, pagos, 
+ordenes, produccion e inventario.</p>
+src\crm\AutomatizacionesCRM.jsx:59:    <div style={{ ...tarjeta, marginTop: 18 }}><h3>Cola de automatizaciones</h3>{acciones.length === 0 ? <p>No hay acciones automaticas 
+pendientes.</p> : acciones.map((a,idx)=><div key={idx} style={{padding:'12px 0',borderBottom:'1px solid #eef2f7'}}><strong>{a.tipo}</strong><p style={{margin:'4px 
+0',color:'#6b7280'}}>{a.detalle}</p><span>Prioridad: {a.prioridad}</span></div>)}</div>
+src\crm\CalendarioCorporativo.jsx:16:  numero(item.subtotal) ||
+src\crm\CalendarioCorporativo.jsx:54:  return <div style={{ padding: 20 }}><h2>Calendario Corporativo</h2><p style={{ color: '#6b7280' }}>Agenda operativa de entregas, 
+produccion, cobros y pagos.</p><div style={tarjeta}>{eventos.length===0 ? <p>Sin eventos programados.</p> : eventos.slice(0,80).map((e,idx)=><div key={idx} 
+style={{display:'grid',gridTemplateColumns:'140px 170px 1fr 180px',gap:10,padding:'10px 0',borderBottom:'1px solid 
+#eef2f7'}}><strong>{String(e.fecha).slice(0,10)}</strong><span>{e.tipo}</span><span>{e.titulo}</span><span>{e.unidad}</span></div>)}</div></div>;
+src\crm\CentroUtilidades.jsx:56:  numero(item.montoFactura || item.total || item.valorVenta || item.precioVenta || item.monto || item.subtotal);
+src\crm\CentroUtilidades.jsx:59:  numero(item.total || item.subtotal || item.monto || item.valor || item.costoTotal);
+src\crm\CentroUtilidades.jsx:181:    cotizaciones = [],
+src\crm\CentroUtilidades.jsx:213:    const cotizacionesFiltradas = filtrar(cotizaciones);
+src\crm\CentroUtilidades.jsx:222:      const cotizacionesUnidad = cotizacionesFiltradas.filter((item) => unidadRegistro(item) === unidad);
+src\crm\CentroUtilidades.jsx:227:        sumar(cotizacionesUnidad, ventaRegistro);
+src\crm\CentroUtilidades.jsx:255:          cotizacionesUnidad.length,
+src\crm\CentroUtilidades.jsx:261:    const totales = unidades.reduce(
+src\crm\CentroUtilidades.jsx:286:    totales.margen = totales.ventas > 0 ? (totales.utilidadNeta / totales.ventas) * 100 : 0;
+src\crm\CentroUtilidades.jsx:288:    return { unidades, ranking, totales };
+src\crm\CentroUtilidades.jsx:289:  }, [compras, cobros, cuentasPorCobrar, cuentasPorPagar, produccion, pedidos, cotizaciones, filtros]);
+src\crm\CentroUtilidades.jsx:325:        <div style={styles.stat}><span style={styles.statLabel}>Ventas</span><strong 
+style={styles.statValue}>{moneda(datos.totales.ventas)}</strong></div>
+src\crm\CentroUtilidades.jsx:326:        <div style={styles.stat}><span style={styles.statLabel}>Compras</span><strong 
+style={styles.statValue}>{moneda(datos.totales.compras)}</strong></div>
+src\crm\CentroUtilidades.jsx:327:        <div style={styles.stat}><span style={styles.statLabel}>Costos produccion</span><strong 
+style={styles.statValue}>{moneda(datos.totales.costosProduccion)}</strong></div>
+src\crm\CentroUtilidades.jsx:328:        <div style={styles.stat}><span style={styles.statLabel}>Cobros</span><strong 
+style={styles.statValue}>{moneda(datos.totales.cobrado)}</strong></div>
+src\crm\CentroUtilidades.jsx:329:        <div style={styles.stat}><span style={styles.statLabel}>Cuentas por cobrar</span><strong 
+style={styles.statValue}>{moneda(datos.totales.porCobrar)}</strong></div>
+src\crm\CentroUtilidades.jsx:330:        <div style={styles.stat}><span style={styles.statLabel}>Cuentas por pagar</span><strong 
+style={styles.statValue}>{moneda(datos.totales.porPagar)}</strong></div>
+src\crm\CentroUtilidades.jsx:331:        <div style={styles.stat}><span style={styles.statLabel}>Utilidad bruta</span><strong 
+style={styles.statValue}>{moneda(datos.totales.utilidadBruta)}</strong></div>
+src\crm\CentroUtilidades.jsx:332:        <div style={styles.stat}><span style={styles.statLabel}>Utilidad neta</span><strong style={datos.totales.utilidadNeta >= 0 ? 
+styles.positive : styles.negative}>{moneda(datos.totales.utilidadNeta)}</strong></div>
+src\crm\CentroUtilidades.jsx:333:        <div style={styles.stat}><span style={styles.statLabel}>Margen neto</span><strong 
+style={styles.statValue}>{porcentaje(datos.totales.margen)}</strong></div>
+src\crm\CentroUtilidades.jsx:353:        <h3 style={{ marginTop: 0 }}>Detalle financiero por unidad</h3>
+src\crm\CentroWhatsApp.jsx:36:    'Luces decorativas',
+src\crm\CentroWhatsApp.jsx:123:    crearCotizacionDesdeLeadWhatsApp,
+src\crm\CentroWhatsApp.jsx:211:  const crearCotizacion = (lead) => {
+src\crm\CentroWhatsApp.jsx:212:    crearCotizacionDesdeLeadWhatsApp(lead.id);
+src\crm\CentroWhatsApp.jsx:651:                  {lead.cotizacionId && <p><strong>Cotización creada:</strong> Sí</p>}
+src\crm\CentroWhatsApp.jsx:657:                    <button type="button" className="wa-btn blue" onClick={() => crearCotizacion(lead)}>Crear cotización</button>
+src\crm\Cobros.jsx:6:const TIPOS_FISCALES = ['Con IVA', 'Sin factura', 'Exento'];
+src\crm\Cobros.jsx:7:const IVA = 0.15;
+src\crm\Cobros.jsx:17:  if (tipoFiscal === 'Con IVA') {
+src\crm\Cobros.jsx:18:    const subtotal = monto / (1 + IVA);
+src\crm\Cobros.jsx:19:    const iva = monto - subtotal;
+src\crm\Cobros.jsx:20:    return { subtotal, iva, retencion, neto: monto - retencion };
+src\crm\Cobros.jsx:22:  return { subtotal: monto, iva: 0, retencion, neto: monto - retencion };
+src\crm\Cobros.jsx:25:const fiscalCompra = (subtotal, tipoFiscal) => {
+src\crm\Cobros.jsx:26:  const base = numero(subtotal);
+src\crm\Cobros.jsx:27:  if (tipoFiscal === 'Con IVA') {
+src\crm\Cobros.jsx:28:    const iva = base * IVA;
+src\crm\Cobros.jsx:29:    return { subtotal: base, iva, total: base + iva };
+src\crm\Cobros.jsx:31:  return { subtotal: base, iva: 0, total: base };
+src\crm\Cobros.jsx:71:  tipoFiscal: 'Con IVA',
+src\crm\Cobros.jsx:74:  subtotal: '',
+src\crm\Cobros.jsx:75:  iva: '',
+src\crm\Cobros.jsx:99:      facturaFiscal: base.tipoFiscal === 'Con IVA' ? 'Si' : base.facturaFiscal,
+src\crm\Cobros.jsx:100:      subtotal: fiscal.subtotal.toFixed(2),
+src\crm\Cobros.jsx:101:      iva: fiscal.iva.toFixed(2),
+src\crm\Cobros.jsx:129:      tipoFiscal: form.tipoFiscal || 'Con IVA',
+src\crm\Cobros.jsx:130:      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'Si' : form.facturaFiscal || 'No',
+src\crm\Cobros.jsx:131:      subtotal: fiscal.subtotal,
+src\crm\Cobros.jsx:132:      iva: fiscal.iva,
+src\crm\Cobros.jsx:133:      ivaDebito: form.tipoFiscal === 'Con IVA' ? fiscal.iva : 0,
+src\crm\Cobros.jsx:161:      tipoFiscal: item.tipoFiscal || (numero(item.ivaDebito || item.iva) > 0 ? 'Con IVA' : 'Sin factura'),
+src\crm\Cobros.jsx:162:      facturaFiscal: item.facturaFiscal || (numero(item.ivaDebito || item.iva) > 0 ? 'Si' : 'No'),
+src\crm\Cobros.jsx:164:      subtotal: String(item.subtotal || ''),
+src\crm\Cobros.jsx:165:      iva: String(item.ivaDebito || item.iva || ''),
+src\crm\Cobros.jsx:182:    acc.ivaDebito += item.tipoFiscal === 'Con IVA' ? numero(item.ivaDebito || item.iva) : 0;
+src\crm\Cobros.jsx:187:  }, { facturado: 0, cobrado: 0, ivaDebito: 0, retenciones: 0, sinFactura: 0, saldo: 0 }), [cobros]);
+src\crm\Cobros.jsx:191:      <div style={styles.header}><h2 style={styles.title}>Cobros</h2><p style={styles.subtitle}>Ventas y cobros con IVA debito, retencion y control 
+de ingresos sin factura.</p></div>
+src\crm\Cobros.jsx:195:        <div style={styles.stat}><span style={styles.statLabel}>IVA debito</span><strong 
+style={styles.statValue}>{moneda(resumen.ivaDebito)}</strong></div>
+src\crm\Cobros.jsx:212:          <label style={styles.label}>Subtotal<input style={styles.input} type="number" step="0.01" name="subtotal" value={form.subtotal} readOnly 
+/></label>
+src\crm\Cobros.jsx:213:          <label style={styles.label}>IVA<input style={styles.input} type="number" step="0.01" name="iva" value={form.iva} readOnly /></label>
+src\crm\Cobros.jsx:227:        <thead><tr><th style={styles.th}>Fecha</th><th style={styles.th}>Codigo</th><th style={styles.th}>Cliente/Empresa</th><th 
+style={styles.th}>Unidad</th><th style={styles.th}>Fiscal</th><th style={styles.th}>Factura</th><th style={styles.th}>Cobrado</th><th style={styles.th}>IVA</th><th 
+style={styles.th}>Retencion</th><th style={styles.th}>Saldo</th><th style={styles.th}>Estado</th><th style={styles.th}>Acciones</th></tr></thead>
+src\crm\Cobros.jsx:229:          <td style={styles.td}>{item.fechaCobro}</td><td style={styles.td}>{item.codigo}</td><td style={styles.td}>{item.cliente || 
+item.empresa}</td><td style={styles.td}>{item.unidadNegocio}</td><td style={styles.td}><span style={styles.badge}>{item.tipoFiscal || 'Sin clasificar'}</span></td><td 
+style={styles.td}>{moneda(item.montoFactura)}</td><td style={styles.td}>{moneda(item.montoCobrado)}</td><td style={styles.td}>{moneda(item.ivaDebito || item.iva)}</td><td 
+style={styles.td}>{moneda(item.retencionMonto)}</td><td style={styles.td}>{moneda(item.saldoPendiente)}</td><td style={styles.td}>{item.estado}</td><td 
+style={styles.td}><button style={styles.edit} type="button" onClick={() => editar(item)}>Editar</button> <button style={styles.danger} type="button" onClick={() => 
+eliminarCobro(item.id)}>Eliminar</button></td>
+src\crm\Compras.jsx:6:const TIPOS_FISCALES = ['Con IVA', 'Sin factura', 'Exento'];
+src\crm\Compras.jsx:7:const IVA = 0.15;
+src\crm\Compras.jsx:17:  if (tipoFiscal === 'Con IVA') {
+src\crm\Compras.jsx:18:    const subtotal = monto / (1 + IVA);
+src\crm\Compras.jsx:19:    const iva = monto - subtotal;
+src\crm\Compras.jsx:20:    return { subtotal, iva, retencion, neto: monto - retencion };
+src\crm\Compras.jsx:22:  return { subtotal: monto, iva: 0, retencion, neto: monto - retencion };
+src\crm\Compras.jsx:25:const fiscalCompra = (subtotal, tipoFiscal) => {
+src\crm\Compras.jsx:26:  const base = numero(subtotal);
+src\crm\Compras.jsx:27:  if (tipoFiscal === 'Con IVA') {
+src\crm\Compras.jsx:28:    const iva = base * IVA;
+src\crm\Compras.jsx:29:    return { subtotal: base, iva, total: base + iva };
+src\crm\Compras.jsx:31:  return { subtotal: base, iva: 0, total: base };
+src\crm\Compras.jsx:72:  tipoFiscal: 'Con IVA',
+src\crm\Compras.jsx:74:  subtotal: '',
+src\crm\Compras.jsx:75:  iva: '',
+src\crm\Compras.jsx:100:        nuevo.facturaFiscal = value === 'Con IVA' ? 'Si' : 'No';
+src\crm\Compras.jsx:103:      const fiscal = fiscalCompra(nuevo.subtotal, nuevo.tipoFiscal);
+src\crm\Compras.jsx:104:      nuevo.iva = fiscal.iva.toFixed(2);
+src\crm\Compras.jsx:116:    const fiscal = fiscalCompra(form.subtotal, form.tipoFiscal);
+src\crm\Compras.jsx:127:      tipoFiscal: form.tipoFiscal || 'Con IVA',
+src\crm\Compras.jsx:128:      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'Si' : form.facturaFiscal || 'No',
+src\crm\Compras.jsx:129:      subtotal: fiscal.subtotal,
+src\crm\Compras.jsx:130:      iva: fiscal.iva,
+src\crm\Compras.jsx:131:      ivaCredito: form.tipoFiscal === 'Con IVA' ? fiscal.iva : 0,
+src\crm\Compras.jsx:154:      tipoFiscal: item.tipoFiscal || (numero(item.iva) > 0 ? 'Con IVA' : 'Sin factura'),
+src\crm\Compras.jsx:155:      facturaFiscal: item.facturaFiscal || (numero(item.iva) > 0 ? 'Si' : 'No'),
+src\crm\Compras.jsx:156:      subtotal: String(item.subtotal || ''),
+src\crm\Compras.jsx:157:      iva: String(item.ivaCredito || item.iva || ''),
+src\crm\Compras.jsx:167:    acc.subtotal += numero(item.subtotal);
+src\crm\Compras.jsx:168:    acc.ivaCredito += item.tipoFiscal === 'Con IVA' ? numero(item.ivaCredito || item.iva) : 0;
+src\crm\Compras.jsx:169:    acc.total += numero(item.total || item.subtotal);
+src\crm\Compras.jsx:170:    acc.sinFactura += item.tipoFiscal === 'Sin factura' ? numero(item.total || item.subtotal) : 0;
+src\crm\Compras.jsx:172:  }, { subtotal: 0, ivaCredito: 0, total: 0, sinFactura: 0 }), [compras]);
+src\crm\Compras.jsx:178:        <p style={styles.subtitle}>Compras con control fiscal: IVA credito, compras sin factura y gasto interno real.</p>
+src\crm\Compras.jsx:182:        <div style={styles.stat}><span style={styles.statLabel}>Subtotal</span><strong 
+style={styles.statValue}>{moneda(resumen.subtotal)}</strong></div>
+src\crm\Compras.jsx:183:        <div style={styles.stat}><span style={styles.statLabel}>IVA credito</span><strong 
+style={styles.statValue}>{moneda(resumen.ivaCredito)}</strong></div>
+src\crm\Compras.jsx:198:          <label style={styles.label}>Subtotal<input style={styles.input} type="number" step="0.01" name="subtotal" value={form.subtotal} 
+onChange={cambiar} /></label>
+src\crm\Compras.jsx:199:          <label style={styles.label}>IVA<input style={styles.input} type="number" step="0.01" name="iva" value={form.iva} readOnly /></label>
+src\crm\Compras.jsx:211:            <thead><tr><th style={styles.th}>Fecha</th><th style={styles.th}>Codigo</th><th style={styles.th}>Proveedor</th><th 
+style={styles.th}>Unidad</th><th style={styles.th}>Fiscal</th><th style={styles.th}>Subtotal</th><th style={styles.th}>IVA</th><th style={styles.th}>Total</th><th 
+style={styles.th}>Estado</th><th style={styles.th}>Acciones</th></tr></thead>
+src\crm\Compras.jsx:214:                <td style={styles.td}>{item.fecha}</td><td style={styles.td}>{item.codigo}</td><td style={styles.td}>{item.proveedor}</td><td 
+style={styles.td}>{item.unidadNegocio}</td><td style={styles.td}><span style={styles.badge}>{item.tipoFiscal || 'Sin clasificar'}</span></td><td 
+style={styles.td}>{moneda(item.subtotal)}</td><td style={styles.td}>{moneda(item.ivaCredito || item.iva)}</td><td style={styles.td}>{moneda(item.total || 
+item.subtotal)}</td><td style={styles.td}>{item.estado}</td><td style={styles.td}><button style={styles.edit} type="button" onClick={() => editar(item)}>Editar</button> 
+<button style={styles.danger} type="button" onClick={() => eliminarCompra(item.id)}>Eliminar</button></td>
+src\crm\CRMComercialAvanzado.jsx:16:  numero(item.subtotal) ||
+src\crm\CRMComercialAvanzado.jsx:47:  const { empresas = [], contactos = [], cotizaciones = [], pedidos = [], cobros = [] } = useCore();
+src\crm\CRMComercialAvanzado.jsx:51:    { etapa:'Cotizaciones', cantidad: cotizaciones.length, monto: cotizaciones.reduce((a,i)=>a+montoRegistro(i),0) },
+src\crm\CRMComercialAvanzado.jsx:54:  ], [empresas, contactos, cotizaciones, pedidos, cobros]);
+src\crm\CuentasPorCobrar.jsx:6:const TIPOS_FISCALES = ['Con IVA', 'Sin factura', 'Exento'];
+src\crm\CuentasPorCobrar.jsx:7:const IVA = 0.15;
+src\crm\CuentasPorCobrar.jsx:17:  if (tipoFiscal === 'Con IVA') {
+src\crm\CuentasPorCobrar.jsx:18:    const subtotal = monto / (1 + IVA);
+src\crm\CuentasPorCobrar.jsx:19:    const iva = monto - subtotal;
+src\crm\CuentasPorCobrar.jsx:20:    return { subtotal, iva, retencion, neto: monto - retencion };
+src\crm\CuentasPorCobrar.jsx:22:  return { subtotal: monto, iva: 0, retencion, neto: monto - retencion };
+src\crm\CuentasPorCobrar.jsx:25:const fiscalCompra = (subtotal, tipoFiscal) => {
+src\crm\CuentasPorCobrar.jsx:26:  const base = numero(subtotal);
+src\crm\CuentasPorCobrar.jsx:27:  if (tipoFiscal === 'Con IVA') {
+src\crm\CuentasPorCobrar.jsx:28:    const iva = base * IVA;
+src\crm\CuentasPorCobrar.jsx:29:    return { subtotal: base, iva, total: base + iva };
+src\crm\CuentasPorCobrar.jsx:31:  return { subtotal: base, iva: 0, total: base };
+src\crm\CuentasPorCobrar.jsx:78:  tipoFiscal: 'Con IVA',
+src\crm\CuentasPorCobrar.jsx:81:  subtotal: '',
+src\crm\CuentasPorCobrar.jsx:82:  iva: '',
+src\crm\CuentasPorCobrar.jsx:106:      facturaFiscal: base.tipoFiscal === 'Con IVA' ? 'Si' : base.facturaFiscal,
+src\crm\CuentasPorCobrar.jsx:107:      subtotal: fiscal.subtotal.toFixed(2),
+src\crm\CuentasPorCobrar.jsx:108:      iva: fiscal.iva.toFixed(2),
+src\crm\CuentasPorCobrar.jsx:130:            tipoFiscal: cobro.tipoFiscal || 'Con IVA',
+src\crm\CuentasPorCobrar.jsx:160:      tipoFiscal: form.tipoFiscal || 'Con IVA',
+src\crm\CuentasPorCobrar.jsx:161:      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'Si' : form.facturaFiscal || 'No',
+src\crm\CuentasPorCobrar.jsx:162:      subtotal: fiscal.subtotal,
+src\crm\CuentasPorCobrar.jsx:163:      iva: fiscal.iva,
+src\crm\CuentasPorCobrar.jsx:164:      ivaDebito: form.tipoFiscal === 'Con IVA' ? fiscal.iva : 0,
+src\crm\CuentasPorCobrar.jsx:192:      tipoFiscal: item.tipoFiscal || (numero(item.ivaDebito || item.iva) > 0 ? 'Con IVA' : 'Sin factura'),
+src\crm\CuentasPorCobrar.jsx:193:      facturaFiscal: item.facturaFiscal || (numero(item.ivaDebito || item.iva) > 0 ? 'Si' : 'No'),
+src\crm\CuentasPorCobrar.jsx:195:      subtotal: String(item.subtotal || ''),
+src\crm\CuentasPorCobrar.jsx:196:      iva: String(item.ivaDebito || item.iva || ''),
+src\crm\CuentasPorCobrar.jsx:211:    acc.ivaDebito += item.tipoFiscal === 'Con IVA' ? numero(item.ivaDebito || item.iva) : 0;
+src\crm\CuentasPorCobrar.jsx:215:  }, { monto: 0, abonado: 0, saldo: 0, ivaDebito: 0, retenciones: 0, vencidas: 0 }), [cuentasPorCobrar]);
+src\crm\CuentasPorCobrar.jsx:224:        <div style={styles.stat}><span style={styles.statLabel}>IVA debito</span><strong 
+style={styles.statValue}>{moneda(resumen.ivaDebito)}</strong></div>
+src\crm\CuentasPorCobrar.jsx:242:          <label style={styles.label}>IVA<input style={styles.input} type="number" step="0.01" name="iva" value={form.iva} readOnly 
+/></label>
+src\crm\CuentasPorPagar.jsx:6:const TIPOS_FISCALES = ['Con IVA', 'Sin factura', 'Exento'];
+src\crm\CuentasPorPagar.jsx:7:const IVA = 0.15;
+src\crm\CuentasPorPagar.jsx:17:  if (tipoFiscal === 'Con IVA') {
+src\crm\CuentasPorPagar.jsx:18:    const subtotal = monto / (1 + IVA);
+src\crm\CuentasPorPagar.jsx:19:    const iva = monto - subtotal;
+src\crm\CuentasPorPagar.jsx:20:    return { subtotal, iva, retencion, neto: monto - retencion };
+src\crm\CuentasPorPagar.jsx:22:  return { subtotal: monto, iva: 0, retencion, neto: monto - retencion };
+src\crm\CuentasPorPagar.jsx:25:const fiscalCompra = (subtotal, tipoFiscal) => {
+src\crm\CuentasPorPagar.jsx:26:  const base = numero(subtotal);
+src\crm\CuentasPorPagar.jsx:27:  if (tipoFiscal === 'Con IVA') {
+src\crm\CuentasPorPagar.jsx:28:    const iva = base * IVA;
+src\crm\CuentasPorPagar.jsx:29:    return { subtotal: base, iva, total: base + iva };
+src\crm\CuentasPorPagar.jsx:31:  return { subtotal: base, iva: 0, total: base };
+src\crm\CuentasPorPagar.jsx:78:  tipoFiscal: 'Con IVA',
+src\crm\CuentasPorPagar.jsx:80:  subtotal: '',
+src\crm\CuentasPorPagar.jsx:81:  iva: '',
+src\crm\CuentasPorPagar.jsx:124:            tipoFiscal: compra.tipoFiscal || 'Con IVA',
+src\crm\CuentasPorPagar.jsx:126:            subtotal: String(compra.subtotal || ''),
+src\crm\CuentasPorPagar.jsx:127:            iva: String(compra.ivaCredito || compra.iva || ''),
+src\crm\CuentasPorPagar.jsx:128:            monto: String(compra.total || compra.subtotal || ''),
+src\crm\CuentasPorPagar.jsx:129:            abonado: compra.estado === 'Pagada' ? String(compra.total || compra.subtotal || '') : '',
+src\crm\CuentasPorPagar.jsx:156:      tipoFiscal: form.tipoFiscal || 'Con IVA',
+src\crm\CuentasPorPagar.jsx:157:      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'Si' : form.facturaFiscal || 'No',
+src\crm\CuentasPorPagar.jsx:158:      subtotal: numero(form.subtotal),
+src\crm\CuentasPorPagar.jsx:159:      iva: numero(form.iva),
+src\crm\CuentasPorPagar.jsx:160:      ivaCredito: form.tipoFiscal === 'Con IVA' ? numero(form.iva) : 0,
+src\crm\CuentasPorPagar.jsx:186:      tipoFiscal: item.tipoFiscal || (numero(item.ivaCredito || item.iva) > 0 ? 'Con IVA' : 'Sin factura'),
+src\crm\CuentasPorPagar.jsx:187:      facturaFiscal: item.facturaFiscal || (numero(item.ivaCredito || item.iva) > 0 ? 'Si' : 'No'),
+src\crm\CuentasPorPagar.jsx:188:      subtotal: String(item.subtotal || ''),
+src\crm\CuentasPorPagar.jsx:189:      iva: String(item.ivaCredito || item.iva || ''),
+src\crm\CuentasPorPagar.jsx:203:    acc.ivaCredito += item.tipoFiscal === 'Con IVA' ? numero(item.ivaCredito || item.iva) : 0;
+src\crm\CuentasPorPagar.jsx:207:  }, { monto: 0, abonado: 0, saldo: 0, ivaCredito: 0, sinFactura: 0, vencidas: 0 }), [cuentasPorPagar]);
+src\crm\CuentasPorPagar.jsx:211:      <div style={styles.header}><h2 style={styles.title}>Cuentas por Pagar</h2><p style={styles.subtitle}>Control de proveedores, IVA 
+credito pendiente y pagos sin factura fiscal.</p></div>
+src\crm\CuentasPorPagar.jsx:216:        <div style={styles.stat}><span style={styles.statLabel}>IVA credito</span><strong 
+style={styles.statValue}>{moneda(resumen.ivaCredito)}</strong></div>
+src\crm\CuentasPorPagar.jsx:233:          <label style={styles.label}>Subtotal<input style={styles.input} type="number" step="0.01" name="subtotal" value={form.subtotal} 
+onChange={cambiar} /></label>
+src\crm\CuentasPorPagar.jsx:234:          <label style={styles.label}>IVA<input style={styles.input} type="number" step="0.01" name="iva" value={form.iva} 
+onChange={cambiar} /></label>
+src\crm\DashboardCRM.jsx:12:const IVA = 0.15;
+src\crm\DashboardCRM.jsx:73:const esConIVA = (item = {}) =>
+src\crm\DashboardCRM.jsx:74:  item.tipoFiscal === 'Con IVA' ||
+src\crm\DashboardCRM.jsx:76:  numero(item.ivaDebito || item.ivaCredito || item.iva) > 0;
+src\crm\DashboardCRM.jsx:85:  numero(item.total || item.monto || item.importe || item.valor || item.subtotal);
+src\crm\DashboardCRM.jsx:95:const ivaDebito = (item = {}) => {
+src\crm\DashboardCRM.jsx:96:  if (!esConIVA(item)) return 0;
+src\crm\DashboardCRM.jsx:97:  if (item.ivaDebito !== undefined) return numero(item.ivaDebito);
+src\crm\DashboardCRM.jsx:98:  if (item.iva !== undefined) return numero(item.iva);
+src\crm\DashboardCRM.jsx:100:  return total - total / (1 + IVA);
+src\crm\DashboardCRM.jsx:103:const ivaCredito = (item = {}) => {
+src\crm\DashboardCRM.jsx:104:  if (!esConIVA(item)) return 0;
+src\crm\DashboardCRM.jsx:105:  if (item.ivaCredito !== undefined) return numero(item.ivaCredito);
+src\crm\DashboardCRM.jsx:106:  if (item.iva !== undefined) return numero(item.iva);
+src\crm\DashboardCRM.jsx:107:  const subtotal = numero(item.subtotal || item.baseImponible || 0);
+src\crm\DashboardCRM.jsx:108:  if (subtotal > 0) return subtotal * IVA;
+src\crm\DashboardCRM.jsx:110:  return total - total / (1 + IVA);
+src\crm\DashboardCRM.jsx:132:    cotizaciones = [],
+src\crm\DashboardCRM.jsx:149:    cotizaciones.length +
+src\crm\DashboardCRM.jsx:163:    const ventasTotales = sumar(cobros, montoVenta);
+src\crm\DashboardCRM.jsx:165:    const comprasTotales = sumar(compras, montoCompra);
+src\crm\DashboardCRM.jsx:168:    const comisionesTotales = sumar(comisiones, montoComision);
+src\crm\DashboardCRM.jsx:180:    const ivaDebitoTotal = sumar(cobros, ivaDebito) + sumar(cuentasPorCobrar, ivaDebito);
+src\crm\DashboardCRM.jsx:181:    const ivaCreditoTotal = sumar(compras, ivaCredito) + sumar(cuentasPorPagar, ivaCredito);
+src\crm\DashboardCRM.jsx:183:    const utilidadBruta = ventasTotales - comprasTotales;
+src\crm\DashboardCRM.jsx:184:    const utilidadNeta = utilidadBruta + ingresosFlujo - egresosFlujo - comisionesTotales;
+src\crm\DashboardCRM.jsx:185:    const flujoNeto = cobrado + ingresosFlujo - comprasTotales - egresosFlujo - comisionesTotales;
+src\crm\DashboardCRM.jsx:206:        produccionActiva: contarPorEstado(produccionUnidadLista, [
+src\crm\DashboardCRM.jsx:219:      ventasTotales,
+src\crm\DashboardCRM.jsx:221:      comprasTotales,
+src\crm\DashboardCRM.jsx:224:      comisionesTotales,
+src\crm\DashboardCRM.jsx:230:      ivaDebitoTotal,
+src\crm\DashboardCRM.jsx:231:      ivaCreditoTotal,
+src\crm\DashboardCRM.jsx:232:      ivaNeto: ivaDebitoTotal - ivaCreditoTotal,
+src\crm\DashboardCRM.jsx:246:  const cotizacionesAbiertas = contarPorEstado(cotizaciones, [
+src\crm\DashboardCRM.jsx:267:  const produccionActiva = contarPorEstado(produccion, [
+src\crm\DashboardCRM.jsx:284:      titulo: 'Ventas totales',
+src\crm\DashboardCRM.jsx:285:      valor: moneda(metricas.ventasTotales),
+src\crm\DashboardCRM.jsx:332:      titulo: 'IVA neto estimado',
+src\crm\DashboardCRM.jsx:333:      valor: moneda(metricas.ivaNeto),
+src\crm\DashboardCRM.jsx:340:      titulo: 'Producción activa',
+src\crm\DashboardCRM.jsx:341:      valor: formatoNumero(produccionActiva),
+src\crm\DashboardCRM.jsx:352:    { titulo: 'Cotizaciones', valor: cotizaciones.length, icono: '', area: 'Ventas' },
+src\crm\DashboardCRM.jsx:366:      titulo: 'Cotizaciones abiertas',
+src\crm\DashboardCRM.jsx:367:      valor: cotizacionesAbiertas,
+src\crm\DashboardCRM.jsx:384:      titulo: 'Producción activa',
+src\crm\DashboardCRM.jsx:385:      valor: produccionActiva,
+src\crm\DashboardCRM.jsx:400:    ...cotizaciones.map((item) => ({ ...item, modulo: 'Cotización', icono: '' })),
+src\crm\DashboardCRM.jsx:420:    cotizaciones.length > 0 && pedidos.length === 0
+src\crm\DashboardCRM.jsx:421:      ? 'Hay cotizaciones registradas, pero todavía no se han convertido en pedidos.'
+src\crm\DashboardCRM.jsx:438:    metricas.ivaNeto > 0
+src\crm\DashboardCRM.jsx:439:      ? `IVA neto estimado a favor de DGI: ${moneda(metricas.ivaNeto)}.`
+src\crm\DashboardCRM.jsx:463:          <span style={styles.resumenLabel}>Registros totales</span>
+src\crm\DashboardCRM.jsx:465:          <span style={styles.resumenTexto}>Base operativa activa</span>
+src\crm\DashboardCRM.jsx:484:            <div style={{ ...styles.kpiValorMoneda, color: card.color }}>{card.valor}</div>
+src\crm\DashboardCRM.jsx:494:              <h2 style={styles.sectionTitle}>Cadena Operativa</h2>
+src\crm\DashboardCRM.jsx:535:          <h2 style={styles.sectionTitle}>Alertas Ejecutivas</h2>
+src\crm\DashboardCRM.jsx:568:                <th style={styles.th}>Producción activa</th>
+src\crm\DashboardCRM.jsx:582:                  <td style={styles.td}>{formatoNumero(item.produccionActiva)}</td>
+src\crm\DashboardCRM.jsx:601:            <div style={styles.kpiValor}>{formatoNumero(card.valor)}</div>
+src\crm\DashboardCRM.jsx:653:          <p style={styles.sectionText}>Estructura oficial activa del grupo empresarial.</p>
+src\crm\DashboardCRM.jsx:774:  kpiValor: {
+src\crm\DashboardCRM.jsx:780:  kpiValorMoneda: {
+src\crm\DashboardGerencial.jsx:15:  numero(item.subtotal) ||
+src\crm\DashboardGerencial.jsx:62:    cotizaciones = [],
+src\crm\DashboardGerencial.jsx:73:    const ventas = [...cotizaciones, ...pedidos].reduce(
+src\crm\DashboardGerencial.jsx:108:        const ventaUnidad = [...cotizaciones, ...pedidos]
+src\crm\DashboardGerencial.jsx:143:    cotizaciones,
+src\crm\DashboardGerencial.jsx:168:        Vista ejecutiva del estado operativo, financiero y comercial de ELANKAV GROUP.
+src\crm\DashboardGerencial.jsx:200:            ðŸ”” {notificacion.titulo || notificacion.detalle}
+src\crm\ElanAI.jsx:16:  numero(item.subtotal) ||
+src\crm\ElanAI.jsx:47:  const { cotizaciones = [], pedidos = [], compras = [], cobros = [], cuentasPorCobrar = [], cuentasPorPagar = [], produccion = [] } = useCore();
+src\crm\ElanAI.jsx:49:    const ventas = [...cotizaciones, ...pedidos].reduce((a,i)=>a+montoRegistro(i),0);
+src\crm\ElanAI.jsx:57:    if (utilidad < 0) recomendaciones.push('Revisar costos: la utilidad estimada esta negativa.');
+src\crm\ElanAI.jsx:58:    if (ventas === 0) recomendaciones.push('Registrar ventas o cotizaciones para activar analisis comercial.');
+src\crm\ElanAI.jsx:61:  }, [cotizaciones, pedidos, compras, cobros, cuentasPorCobrar, cuentasPorPagar, produccion]);
+src\crm\EstadoFinanciero.jsx:56:  numero(item.montoFactura || item.total || item.valorVenta || item.precioVenta || item.monto || item.subtotal);
+src\crm\EstadoFinanciero.jsx:59:  numero(item.total || item.subtotal || item.monto || item.valor || item.costoTotal);
+src\crm\EstadoFinanciero.jsx:186:    cotizaciones = [],
+src\crm\EstadoFinanciero.jsx:219:    const cotizacionesFiltradas = filtrar(cotizaciones);
+src\crm\EstadoFinanciero.jsx:229:      const cotizacionesUnidad = cotizacionesFiltradas.filter((item) => unidadRegistro(item) === unidad);
+src\crm\EstadoFinanciero.jsx:235:        sumar(cotizacionesUnidad, ventaRegistro);
+src\crm\EstadoFinanciero.jsx:275:    const totales = unidades.reduce(
+src\crm\EstadoFinanciero.jsx:310:    totales.liquidez = totales.pasivoCorriente > 0 ? totales.activoCorriente / totales.pasivoCorriente : totales.activoCorriente > 0 ? 99 : 
+0;
+src\crm\EstadoFinanciero.jsx:311:    totales.endeudamiento = totales.activoCorriente > 0 ? (totales.pasivoCorriente / totales.activoCorriente) * 100 : 0;
+src\crm\EstadoFinanciero.jsx:312:    totales.rentabilidad = totales.ventas > 0 ? (totales.utilidadNeta / totales.ventas) * 100 : 0;
+src\crm\EstadoFinanciero.jsx:314:    return { unidades, totales };
+src\crm\EstadoFinanciero.jsx:315:  }, [compras, cobros, cuentasPorCobrar, cuentasPorPagar, produccion, pedidos, cotizaciones, flujoCaja, filtros]);
+src\crm\EstadoFinanciero.jsx:318:    if (datos.totales.liquidez >= 1.5 && datos.totales.rentabilidad >= 20 && datos.totales.endeudamiento <= 40) return 'Salud financiera 
+fuerte';
+src\crm\EstadoFinanciero.jsx:319:    if (datos.totales.liquidez >= 1 && datos.totales.rentabilidad >= 0 && datos.totales.endeudamiento <= 70) return 'Salud financiera 
+estable';
+src\crm\EstadoFinanciero.jsx:359:        <div style={styles.stat}><span style={styles.statLabel}>Activos corrientes</span><strong 
+style={styles.statValue}>{moneda(datos.totales.activoCorriente)}</strong></div>
+src\crm\EstadoFinanciero.jsx:360:        <div style={styles.stat}><span style={styles.statLabel}>Pasivos corrientes</span><strong 
+style={styles.statValue}>{moneda(datos.totales.pasivoCorriente)}</strong></div>
+src\crm\EstadoFinanciero.jsx:361:        <div style={styles.stat}><span style={styles.statLabel}>Patrimonio estimado</span><strong style={datos.totales.patrimonioEstimado 
+>= 0 ? styles.positive : styles.negative}>{moneda(datos.totales.patrimonioEstimado)}</strong></div>
+src\crm\EstadoFinanciero.jsx:362:        <div style={styles.stat}><span style={styles.statLabel}>Ventas</span><strong 
+style={styles.statValue}>{moneda(datos.totales.ventas)}</strong></div>
+src\crm\EstadoFinanciero.jsx:363:        <div style={styles.stat}><span style={styles.statLabel}>Utilidad bruta</span><strong style={datos.totales.utilidadBruta >= 0 ? 
+styles.positive : styles.negative}>{moneda(datos.totales.utilidadBruta)}</strong></div>
+src\crm\EstadoFinanciero.jsx:364:        <div style={styles.stat}><span style={styles.statLabel}>Utilidad neta</span><strong style={datos.totales.utilidadNeta >= 0 ? 
+styles.positive : styles.negative}>{moneda(datos.totales.utilidadNeta)}</strong></div>
+src\crm\EstadoFinanciero.jsx:365:        <div style={styles.stat}><span style={styles.statLabel}>Liquidez</span><strong 
+style={styles.statValue}>{numero(datos.totales.liquidez).toFixed(2)}</strong></div>
+src\crm\EstadoFinanciero.jsx:366:        <div style={styles.stat}><span style={styles.statLabel}>Endeudamiento</span><strong style={datos.totales.endeudamiento <= 40 ? 
+styles.positive : datos.totales.endeudamiento <= 70 ? styles.warning : styles.negative}>{porcentaje(datos.totales.endeudamiento)}</strong></div>
+src\crm\EstadoFinanciero.jsx:367:        <div style={styles.stat}><span style={styles.statLabel}>Rentabilidad</span><strong style={datos.totales.rentabilidad >= 0 ? 
+styles.positive : styles.negative}>{porcentaje(datos.totales.rentabilidad)}</strong></div>
+src\crm\EstadoFinanciero.jsx:372:          <h3 style={{ marginTop: 0 }}>Lectura ejecutiva</h3>
+src\crm\EstadoFinanciero.jsx:380:          <p style={styles.muted}><strong>Ingresos caja:</strong> {moneda(datos.totales.ingresosCaja)}</p>
+src\crm\EstadoFinanciero.jsx:381:          <p style={styles.muted}><strong>Egresos caja:</strong> {moneda(datos.totales.egresosCaja)}</p>
+src\crm\EstadoFinanciero.jsx:382:          <p style={styles.muted}><strong>Caja neta:</strong> {moneda(datos.totales.cajaNeta)}</p>
+src\crm\ExportadorCRMCentral.jsx:17:  const blob = new Blob([contenido], {
+src\crm\ExportadorCRMCentral.jsx:21:  const url = URL.createObjectURL(blob);
+src\crm\ExportadorCRMCentral.jsx:25:  enlace.download = nombreArchivo;
+src\crm\ExportadorCRMCentral.jsx:150:      cotizaciones: asegurarArray(core.cotizaciones),
+src\crm\FiscalCRM.jsx:4:const IVA = 0.15;
+src\crm\FiscalCRM.jsx:72:const esConIVA = (item = {}) => item.tipoFiscal === 'Con IVA' || item.facturaFiscal === 'Si' || numero(item.ivaDebito || item.ivaCredito || 
+item.iva) > 0;
+src\crm\FiscalCRM.jsx:78:const montoCompra = (item = {}) => numero(item.total || item.monto || item.importe || item.valor || item.subtotal);
+src\crm\FiscalCRM.jsx:79:const baseCompra = (item = {}) => numero(item.subtotal || item.baseImponible || item.monto || item.total);
+src\crm\FiscalCRM.jsx:80:const baseVenta = (item = {}) => numero(item.subtotal || item.baseImponible || item.montoFactura || item.monto || item.total);
+src\crm\FiscalCRM.jsx:82:const ivaDebito = (item = {}) => {
+src\crm\FiscalCRM.jsx:83:  if (!esConIVA(item)) return 0;
+src\crm\FiscalCRM.jsx:84:  if (item.ivaDebito !== undefined) return numero(item.ivaDebito);
+src\crm\FiscalCRM.jsx:85:  if (item.iva !== undefined) return numero(item.iva);
+src\crm\FiscalCRM.jsx:86:  return montoVenta(item) - montoVenta(item) / (1 + IVA);
+src\crm\FiscalCRM.jsx:89:const ivaCredito = (item = {}) => {
+src\crm\FiscalCRM.jsx:90:  if (!esConIVA(item)) return 0;
+src\crm\FiscalCRM.jsx:91:  if (item.ivaCredito !== undefined) return numero(item.ivaCredito);
+src\crm\FiscalCRM.jsx:92:  if (item.iva !== undefined) return numero(item.iva);
+src\crm\FiscalCRM.jsx:93:  return baseCompra(item) * IVA;
+src\crm\FiscalCRM.jsx:162:    const ventasConIva = cobrosFiltrados.filter(esConIVA);
+src\crm\FiscalCRM.jsx:166:    const comprasConIva = comprasFiltradas.filter(esConIVA);
+src\crm\FiscalCRM.jsx:170:    const cxcConIva = cxcFiltradas.filter(esConIVA);
+src\crm\FiscalCRM.jsx:171:    const cxpConIva = cxpFiltradas.filter(esConIVA);
+src\crm\FiscalCRM.jsx:176:    const ventasGravadas = sumar(ventasConIva, montoVenta);
+src\crm\FiscalCRM.jsx:182:    const comprasDeclaradas = sumar(comprasConIva, montoCompra);
+src\crm\FiscalCRM.jsx:187:    const debitoCobros = sumar(ventasConIva, ivaDebito);
+src\crm\FiscalCRM.jsx:188:    const debitoPendiente = sumar(cxcConIva, ivaDebito);
+src\crm\FiscalCRM.jsx:189:    const creditoCompras = sumar(comprasConIva, ivaCredito);
+src\crm\FiscalCRM.jsx:190:    const creditoPendiente = sumar(cxpConIva, ivaCredito);
+src\crm\FiscalCRM.jsx:194:    const retencionesTotales = retencionesCobros + retencionesCxc;
+src\crm\FiscalCRM.jsx:199:    const ivaNetoCaja = debitoCobros - creditoCompras;
+src\crm\FiscalCRM.jsx:200:    const ivaNetoComprometido = debitoCobros + debitoPendiente - creditoCompras - creditoPendiente;
+src\crm\FiscalCRM.jsx:216:      const ivaDebitoUnidad = sumar(cobrosUnidad.filter(esConIVA), ivaDebito);
+src\crm\FiscalCRM.jsx:217:      const ivaCreditoUnidad = sumar(comprasUnidad.filter(esConIVA), ivaCredito);
+src\crm\FiscalCRM.jsx:224:        ivaDebito: ivaDebitoUnidad,
+src\crm\FiscalCRM.jsx:225:        ivaCredito: ivaCreditoUnidad,
+src\crm\FiscalCRM.jsx:226:        ivaNeto: ivaDebitoUnidad - ivaCreditoUnidad,
+src\crm\FiscalCRM.jsx:252:      ivaNetoCaja,
+src\crm\FiscalCRM.jsx:253:      ivaNetoComprometido,
+src\crm\FiscalCRM.jsx:256:      retencionesTotales,
+src\crm\FiscalCRM.jsx:272:          Control separado entre declaracion fiscal y realidad interna: IVA debito, IVA credito,
+src\crm\FiscalCRM.jsx:301:        <div style={styles.stat}><span style={styles.statLabel}>IVA debito cobrado</span><strong 
+style={styles.statValue}>{moneda(fiscal.debitoCobros)}</strong><span style={styles.statHelp}>Ventas con IVA registradas en cobros.</span></div>
+src\crm\FiscalCRM.jsx:302:        <div style={styles.stat}><span style={styles.statLabel}>IVA credito compras</span><strong 
+style={styles.statValue}>{moneda(fiscal.creditoCompras)}</strong><span style={styles.statHelp}>Compras con factura fiscal.</span></div>
+src\crm\FiscalCRM.jsx:303:        <div style={styles.stat}><span style={styles.statLabel}>IVA neto caja</span><strong 
+style={styles.statValue}>{moneda(fiscal.ivaNetoCaja)}</strong><span style={styles.statHelp}>Debito cobrado menos credito de compras.</span></div>
+src\crm\FiscalCRM.jsx:304:        <div style={styles.stat}><span style={styles.statLabel}>Retenciones totales</span><strong 
+style={styles.statValue}>{moneda(fiscal.retencionesTotales)}</strong><span style={styles.statHelp}>Cobros + cuentas por cobrar.</span></div>
+src\crm\FiscalCRM.jsx:322:        <div style={styles.stat}><span style={styles.statLabel}>IVA debito pendiente</span><strong 
+style={styles.statValue}>{moneda(fiscal.debitoPendiente)}</strong><span style={styles.statHelp}>CxC con IVA, aun no cobrada total o parcialmente.</span></div>
+src\crm\FiscalCRM.jsx:323:        <div style={styles.stat}><span style={styles.statLabel}>IVA credito pendiente</span><strong 
+style={styles.statValue}>{moneda(fiscal.creditoPendiente)}</strong><span style={styles.statHelp}>CxP con factura fiscal pendiente.</span></div>
+src\crm\FiscalCRM.jsx:324:        <div style={styles.stat}><span style={styles.statLabel}>IVA neto comprometido</span><strong 
+style={styles.statValue}>{moneda(fiscal.ivaNetoComprometido)}</strong><span style={styles.statHelp}>Incluye cobros, CxC, compras y CxP.</span></div>
+src\crm\FiscalCRM.jsx:336:        <strong>Nota operativa:</strong> este modulo separa control fiscal y control real interno. Los valores son estimaciones administrativas 
+del CRM; antes de declarar, deben compararse con facturas oficiales, retenciones emitidas por clientes y criterios del contador.
+src\crm\FiscalCRM.jsx:349:                <th style={styles.th}>IVA debito</th>
+src\crm\FiscalCRM.jsx:350:                <th style={styles.th}>IVA credito</th>
+src\crm\FiscalCRM.jsx:351:                <th style={styles.th}>IVA neto</th>
+src\crm\FiscalCRM.jsx:363:                  <td style={styles.td}>{moneda(item.ivaDebito)}</td>
+src\crm\FiscalCRM.jsx:364:                  <td style={styles.td}>{moneda(item.ivaCredito)}</td>
+src\crm\FiscalCRM.jsx:365:                  <td style={styles.td}>{moneda(item.ivaNeto)}</td>
+src\crm\FiscalCRM.jsx:379:          IVA neto caja indica lo que ya se mueve con documentos registrados en cobros y compras.
+src\crm\FiscalCRM.jsx:380:          IVA neto comprometido agrega cuentas por cobrar y cuentas por pagar para anticipar carga fiscal futura.
+src\crm\FlujoCaja.jsx:6:const TIPOS_FISCALES = ['Con IVA', 'Sin factura', 'Exento'];
+src\crm\FlujoCaja.jsx:7:const IVA = 0.15;
+src\crm\FlujoCaja.jsx:17:  if (tipoFiscal === 'Con IVA') {
+src\crm\FlujoCaja.jsx:18:    const subtotal = monto / (1 + IVA);
+src\crm\FlujoCaja.jsx:19:    const iva = monto - subtotal;
+src\crm\FlujoCaja.jsx:20:    return { subtotal, iva, retencion, neto: monto - retencion };
+src\crm\FlujoCaja.jsx:22:  return { subtotal: monto, iva: 0, retencion, neto: monto - retencion };
+src\crm\FlujoCaja.jsx:25:const fiscalCompra = (subtotal, tipoFiscal) => {
+src\crm\FlujoCaja.jsx:26:  const base = numero(subtotal);
+src\crm\FlujoCaja.jsx:27:  if (tipoFiscal === 'Con IVA') {
+src\crm\FlujoCaja.jsx:28:    const iva = base * IVA;
+src\crm\FlujoCaja.jsx:29:    return { subtotal: base, iva, total: base + iva };
+src\crm\FlujoCaja.jsx:31:  return { subtotal: base, iva: 0, total: base };
+src\crm\FlujoCaja.jsx:99:      if (name === 'tipoFiscal') nuevo.facturaFiscal = value === 'Con IVA' ? 'Si' : 'No';
+src\crm\FlujoCaja.jsx:116:      facturaFiscal: form.tipoFiscal === 'Con IVA' ? 'Si' : form.facturaFiscal || 'No',
+src\crm\FlujoCaja.jsx:153:      .reduce((total, item) => total + numero(item.total || item.subtotal), 0);
+src\crm\FlujoCaja.jsx:171:    const ivaDebito = cobros.reduce((total, item) => total + (item.tipoFiscal === 'Con IVA' ? numero(item.ivaDebito || item.iva) : 0), 0);
+src\crm\FlujoCaja.jsx:172:    const ivaCredito = compras.reduce((total, item) => total + (item.tipoFiscal === 'Con IVA' ? numero(item.ivaCredito || item.iva) : 0), 0);
+src\crm\FlujoCaja.jsx:174:    const egresosSinFactura = compras.reduce((total, item) => total + (item.tipoFiscal === 'Sin factura' ? numero(item.total || item.subtotal) : 
+0), 0);
+src\crm\FlujoCaja.jsx:176:    const ingresosTotales = ingresosCobros + ingresosManuales;
+src\crm\FlujoCaja.jsx:177:    const egresosTotales = egresosCompras + egresosManuales;
+src\crm\FlujoCaja.jsx:182:      ingresosTotales,
+src\crm\FlujoCaja.jsx:185:      egresosTotales,
+src\crm\FlujoCaja.jsx:188:      saldoOperativo: ingresosTotales - egresosTotales,
+src\crm\FlujoCaja.jsx:189:      posicionFinanciera: ingresosTotales + porCobrar - egresosTotales - porPagar,
+src\crm\FlujoCaja.jsx:190:      ivaDebito,
+src\crm\FlujoCaja.jsx:191:      ivaCredito,
+src\crm\FlujoCaja.jsx:192:      ivaNeto: Math.max(ivaDebito - ivaCredito, 0),
+src\crm\FlujoCaja.jsx:193:      saldoFiscal: ivaDebito - ivaCredito,
+src\crm\FlujoCaja.jsx:203:    const egresos = compras.filter((i) => i.unidadNegocio === unidad).reduce((t, i) => t + numero(i.total || i.subtotal), 0)
+src\crm\FlujoCaja.jsx:210:      <div style={styles.header}><h2 style={styles.title}>Flujo de Caja</h2><p style={styles.subtitle}>Caja real + lectura fiscal: IVA neto, 
+ingresos sin factura y egresos sin factura.</p></div>
+src\crm\FlujoCaja.jsx:213:        <div style={styles.stat}><span style={styles.statLabel}>Ingresos totales</span><strong 
+style={styles.statValue}>{moneda(resumen.ingresosTotales)}</strong></div>
+src\crm\FlujoCaja.jsx:214:        <div style={styles.stat}><span style={styles.statLabel}>Egresos totales</span><strong 
+style={styles.statValue}>{moneda(resumen.egresosTotales)}</strong></div>
+src\crm\FlujoCaja.jsx:218:        <div style={styles.stat}><span style={styles.statLabel}>IVA debito</span><strong 
+style={styles.statValue}>{moneda(resumen.ivaDebito)}</strong></div>
+src\crm\FlujoCaja.jsx:219:        <div style={styles.stat}><span style={styles.statLabel}>IVA credito</span><strong 
+style={styles.statValue}>{moneda(resumen.ivaCredito)}</strong></div>
+src\crm\FlujoCaja.jsx:220:        <div style={styles.stat}><span style={styles.statLabel}>IVA neto estimado</span><strong 
+style={styles.statValue}>{moneda(resumen.ivaNeto)}</strong></div>
+src\crm\MetasKPIs.jsx:16:  numero(item.subtotal) ||
+src\crm\MetasKPIs.jsx:47:  const { cotizaciones = [], pedidos = [], cobros = [], produccion = [] } = useCore();
+src\crm\MetasKPIs.jsx:49:  const ventaReal = useMemo(() => [...cotizaciones, ...pedidos].reduce((a,i)=>a+montoRegistro(i),0), [cotizaciones, pedidos]);
+src\crm\MetasKPIs.jsx:51:  const produccionActiva = produccion.filter(i => ['pendiente','en proceso','activa'].includes((i.estado || '').toLowerCase())).length;
+src\crm\MetasKPIs.jsx:53:  return <div style={{ padding: 20 }}><h2>Metas y KPIs Corporativos</h2><p style={{ color: '#6b7280' }}>Control de cumplimiento mensual para 
+direccion.</p><div style={{ ...tarjeta, marginBottom: 18 }}><label>Meta de ventas C$ </label><input type="number" value={metaVentas} 
+onChange={e=>setMetaVentas(Number(e.target.value))} style={{padding:10,borderRadius:10,border:'1px solid #d1d5db'}} /></div><div style={grid}><div 
+style={tarjeta}><strong>Meta ventas</strong><h3>{fmt(metaVentas)}</h3></div><div style={tarjeta}><strong>Venta real</strong><h3>{fmt(ventaReal)}</h3></div><div 
+style={tarjeta}><strong>Cumplimiento</strong><h3>{cumplimiento.toFixed(1)}%</h3></div><div style={tarjeta}><strong>Cobros</strong><h3>{fmt(cobroReal)}</h3></div><div 
+style={tarjeta}><strong>Produccion activa</strong><h3>{produccionActiva}</h3></div></div></div>;
+src\crm\NotificacionesCRM.jsx:27:    archivarNotificacionCRM,
+src\crm\NotificacionesCRM.jsx:57:        `${item.titulo} ${item.detalle} ${item.modulo} ${item.tipo} ${item.unidadNegocio}`
+src\crm\NotificacionesCRM.jsx:373:              placeholder="Cliente, modulo, detalle..."
+src\crm\NotificacionesCRM.jsx:389:            <h3>Sin alertas activas</h3>
+src\crm\NotificacionesCRM.jsx:398:                  <p>{item.detalle}</p>
+src\crm\NotificacionesCRM.jsx:419:                  <button type="button" className="noti-btn" onClick={() => archivarNotificacionCRM(item.id)}>
+src\crm\NotificacionesCRM.jsx:420:                    Archivar
+src\crm\OrdenesTrabajo.jsx:54:  cotizacionId: '',
+src\crm\OrdenesTrabajo.jsx:55:  cotizacionCodigo: '',
+src\crm\OrdenesTrabajo.jsx:113:          acc.activas += 1;
+src\crm\OrdenesTrabajo.jsx:122:      { venta: 0, costo: 0, utilidad: 0, activas: 0, terminadas: 0 }
+src\crm\OrdenesTrabajo.jsx:159:            cotizacionId: '',
+src\crm\OrdenesTrabajo.jsx:160:            cotizacionCodigo: '',
+src\crm\OrdenesTrabajo.jsx:176:          cotizacionId: pedidoSeleccionado.cotizacionId || '',
+src\crm\OrdenesTrabajo.jsx:177:          cotizacionCodigo: pedidoSeleccionado.cotizacionCodigo || '',
+src\crm\OrdenesTrabajo.jsx:298:          <span>Activas</span>
+src\crm\OrdenesTrabajo.jsx:299:          <strong>{resumen.activas}</strong>
+src\crm\Pedidos.jsx:16:  cotizacionId: '',
+src\crm\Pedidos.jsx:17:  cotizacionCodigo: '',
+src\crm\Pedidos.jsx:38:    cotizaciones,
+src\crm\Pedidos.jsx:48:  const cotizacionesDisponibles = useMemo(() => {
+src\crm\Pedidos.jsx:49:    return cotizaciones.filter((cotizacion) => {
+src\crm\Pedidos.jsx:50:      const estado = cotizacion.estado || '';
+src\crm\Pedidos.jsx:53:  }, [cotizaciones]);
+src\crm\Pedidos.jsx:84:      if (name === 'cotizacionId') {
+src\crm\Pedidos.jsx:85:        const cotizacionSeleccionada = cotizaciones.find(
+src\crm\Pedidos.jsx:86:          (cotizacion) => cotizacion.id === value
+src\crm\Pedidos.jsx:89:        if (!cotizacionSeleccionada) {
+src\crm\Pedidos.jsx:92:            cotizacionId: '',
+src\crm\Pedidos.jsx:93:            cotizacionCodigo: '',
+src\crm\Pedidos.jsx:106:        const empresaNombre = obtenerEmpresaNombre(cotizacionSeleccionada);
+src\crm\Pedidos.jsx:107:        const contactoNombre = obtenerContactoNombre(cotizacionSeleccionada);
+src\crm\Pedidos.jsx:108:        const telefono = obtenerTelefonoContacto(cotizacionSeleccionada.contactoId);
+src\crm\Pedidos.jsx:112:          cotizacionId: cotizacionSeleccionada.id,
+src\crm\Pedidos.jsx:113:          cotizacionCodigo: cotizacionSeleccionada.codigo || '',
+src\crm\Pedidos.jsx:114:          empresaId: cotizacionSeleccionada.empresaId || '',
+src\crm\Pedidos.jsx:116:          contactoId: cotizacionSeleccionada.contactoId || '',
+src\crm\Pedidos.jsx:120:          producto: cotizacionSeleccionada.descripcion || cotizacionSeleccionada.categoria || '',
+src\crm\Pedidos.jsx:121:          unidadNegocio: cotizacionSeleccionada.unidadNegocio || 'ELANVISUAL',
+src\crm\Pedidos.jsx:122:          total: String(cotizacionSeleccionada.total || ''),
+src\crm\Pedidos.jsx:125:            cotizacionSeleccionada.observaciones ||
+src\crm\Pedidos.jsx:142:    if (!form.cotizacionId && !form.cliente.trim()) {
+src\crm\Pedidos.jsx:143:      alert('Debes seleccionar una cotizacion o indicar un cliente.');
+src\crm\Pedidos.jsx:152:    const cotizacionSeleccionada = cotizaciones.find(
+src\crm\Pedidos.jsx:153:      (cotizacion) => cotizacion.id === form.cotizacionId
+src\crm\Pedidos.jsx:158:      cotizacionId: form.cotizacionId,
+src\crm\Pedidos.jsx:159:      cotizacionCodigo:
+src\crm\Pedidos.jsx:160:        form.cotizacionCodigo || cotizacionSeleccionada?.codigo || '',
+src\crm\Pedidos.jsx:161:      empresaId: form.empresaId || cotizacionSeleccionada?.empresaId || '',
+src\crm\Pedidos.jsx:164:        (cotizacionSeleccionada ? obtenerEmpresaNombre(cotizacionSeleccionada) : ''),
+src\crm\Pedidos.jsx:165:      contactoId: form.contactoId || cotizacionSeleccionada?.contactoId || '',
+src\crm\Pedidos.jsx:168:        (cotizacionSeleccionada ? obtenerContactoNombre(cotizacionSeleccionada) : ''),
+src\crm\Pedidos.jsx:193:    const cotizacion = cotizaciones.find(
+src\crm\Pedidos.jsx:194:      (cotizacionItem) => cotizacionItem.id === item.cotizacionId
+src\crm\Pedidos.jsx:199:      cotizacionId: item.cotizacionId || '',
+src\crm\Pedidos.jsx:200:      cotizacionCodigo: item.cotizacionCodigo || cotizacion?.codigo || '',
+src\crm\Pedidos.jsx:201:      empresaId: item.empresaId || cotizacion?.empresaId || '',
+src\crm\Pedidos.jsx:204:        (cotizacion ? obtenerEmpresaNombre(cotizacion) : '') ||
+src\crm\Pedidos.jsx:207:      contactoId: item.contactoId || cotizacion?.contactoId || '',
+src\crm\Pedidos.jsx:210:        (cotizacion ? obtenerContactoNombre(cotizacion) : '') ||
+src\crm\Pedidos.jsx:215:        (cotizacion ? obtenerEmpresaNombre(cotizacion) : '') ||
+src\crm\Pedidos.jsx:218:      producto: item.producto || cotizacion?.descripcion || '',
+src\crm\Pedidos.jsx:219:      unidadNegocio: item.unidadNegocio || cotizacion?.unidadNegocio || 'ELANVISUAL',
+src\crm\Pedidos.jsx:261:          <p>Registro general de pedidos conectados a cotizaciones.</p>
+src\crm\Pedidos.jsx:292:            Cotizacion
+src\crm\Pedidos.jsx:294:              name="cotizacionId"
+src\crm\Pedidos.jsx:295:              value={form.cotizacionId}
+src\crm\Pedidos.jsx:298:              <option value="">Seleccionar cotizacion</option>
+src\crm\Pedidos.jsx:299:              {cotizacionesDisponibles.map((cotizacion) => (
+src\crm\Pedidos.jsx:300:                <option key={cotizacion.id} value={cotizacion.id}>
+src\crm\Pedidos.jsx:301:                  {cotizacion.codigo || 'Sin codigo'} - {obtenerEmpresaNombre(cotizacion) || 'Sin empresa'} - C$ {Number(cotizacion.total || 
+0).toFixed(2)}
+src\crm\Pedidos.jsx:323:              placeholder="Se completa desde la cotizacion"
+src\crm\Pedidos.jsx:324:              readOnly={Boolean(form.cotizacionId)}
+src\crm\Pedidos.jsx:335:              readOnly={Boolean(form.cotizacionId)}
+src\crm\Pedidos.jsx:455:              <th>Cotizacion</th>
+src\crm\Pedidos.jsx:482:                      {item.cotizacionCodigo || 'Manual'}
+src\crm\PortalClienteCRM.jsx:16:  numero(item.subtotal) ||
+src\crm\PortalClienteCRM.jsx:47:  const { empresas = [], cotizaciones = [], pedidos = [], cobros = [] } = useCore();
+src\crm\PortalClienteCRM.jsx:48:  return <div style={{ padding: 20 }}><h2>Portal Cliente</h2><p style={{ color: '#6b7280' }}>Base futura para que cada cliente consulte 
+cotizaciones, pedidos, avances y cobros.</p><div style={grid}><div style={tarjeta}><strong>Clientes/Empresas</strong><h3>{empresas.length}</h3></div><div 
+style={tarjeta}><strong>Cotizaciones visibles</strong><h3>{cotizaciones.length}</h3></div><div style={tarjeta}><strong>Pedidos</strong><h3>{pedidos.length}</h3></div><div 
+style={tarjeta}><strong>Cobros</strong><h3>{cobros.length}</h3></div></div></div>;
+src\crm\Produccion.jsx:56:  cotizacionId: '',
+src\crm\Produccion.jsx:57:  cotizacionCodigo: '',
+src\crm\Produccion.jsx:115:          acc.activa += 1;
+src\crm\Produccion.jsx:124:      { venta: 0, costo: 0, utilidad: 0, activa: 0, terminada: 0 }
+src\crm\Produccion.jsx:164:            cotizacionId: '',
+src\crm\Produccion.jsx:165:            cotizacionCodigo: '',
+src\crm\Produccion.jsx:188:          cotizacionId: ordenSeleccionada.cotizacionId || '',
+src\crm\Produccion.jsx:189:          cotizacionCodigo: ordenSeleccionada.cotizacionCodigo || '',
+src\crm\Produccion.jsx:311:          <span>Produccion activa</span>
+src\crm\Produccion.jsx:312:          <strong>{resumen.activa}</strong>
+src\crm\ReportesCRM.jsx:55:    cotizaciones = [],
+src\crm\ReportesCRM.jsx:82:    const cotizacionesFiltradas = filtrar(cotizaciones);
+src\crm\ReportesCRM.jsx:95:    const comprasTotal = sumar(comprasFiltradas, (item) => item.total || item.subtotal);
+src\crm\ReportesCRM.jsx:102:    const ivaDebito = sumar(cobrosFiltrados, (item) => item.tipoFiscal === 'Con IVA' ? item.ivaDebito || item.iva : 0);
+src\crm\ReportesCRM.jsx:103:    const ivaCredito = sumar(comprasFiltradas, (item) => item.tipoFiscal === 'Con IVA' ? item.ivaCredito || item.iva : 0);
+src\crm\ReportesCRM.jsx:106:    const comprasSinFactura = sumar(comprasFiltradas, (item) => item.tipoFiscal === 'Sin factura' ? item.total || item.subtotal : 0);
+src\crm\ReportesCRM.jsx:110:      const comprasUnidad = sumar(comprasFiltradas.filter((item) => (item.unidadNegocio || 'ELANVISUAL') === unidad), (item) => item.total || 
+item.subtotal);
+src\crm\ReportesCRM.jsx:126:        utilidadOperativa: ventasUnidad - comprasUnidad - comisionesUnidad,
+src\crm\ReportesCRM.jsx:131:      cotizaciones: cotizacionesFiltradas.length,
+src\crm\ReportesCRM.jsx:144:      ivaDebito,
+src\crm\ReportesCRM.jsx:145:      ivaCredito,
+src\crm\ReportesCRM.jsx:146:      ivaNeto: ivaDebito - ivaCredito,
+src\crm\ReportesCRM.jsx:154:    cotizaciones,
+src\crm\ReportesCRM.jsx:194:        <div style={styles.stat}><span style={styles.statLabel}>IVA generado ventas</span><strong 
+style={styles.statValue}>{moneda(datos.ivaDebito)}</strong></div>
+src\crm\ReportesCRM.jsx:195:        <div style={styles.stat}><span style={styles.statLabel}>IVA acreditable compras</span><strong 
+style={styles.statValue}>{moneda(datos.ivaCredito)}</strong></div>
+src\crm\ReportesCRM.jsx:196:        <div style={styles.stat}><span style={styles.statLabel}>IVA neto estimado</span><strong 
+style={styles.statValue}>{moneda(datos.ivaNeto)}</strong></div>
+src\crm\ReportesCRM.jsx:217:                <th style={styles.th}>Utilidad operativa</th>
+src\crm\ReportesCRM.jsx:231:                  <td style={styles.td}>{moneda(item.utilidadOperativa)}</td>
+src\crm\ReportesCRM.jsx:240:        <h3>Lectura ejecutiva</h3>
+src\crm\ReportesCRM.jsx:242:          Este reporte separa el dinero real del control fiscal. Las ventas y compras con IVA alimentan el IVA debito y credito.
+src\crm\SeguimientoCRM.jsx:278:              placeholder="Detalle de la llamada, visita o actividad..."
+src\crm\UsuariosPermisos.jsx:472:            <span>Cambiar vista operativa</span>
+src\data\aiProductProfiles.js:74:Eres un diseñador especializado exclusivamente en botones publicitarios premium fabricados por ELANVISUAL.
+src\data\aiProductProfiles.js:78:Solo puedes generar propuestas de botones publicitarios circulares o derivados directos del formato botón.
+src\data\aiProductProfiles.js:166:No debes rediseñar agresivamente la identidad del cliente si ya subió un logo.
+src\data\aiProductProfiles.js:175:- Cámara equivalente a 50 mm.
+src\data\aiProductProfiles.js:189:- PDF.
+src\data\recetasConstructivasBase.js:1:export const recetasConstructivasBase = [
+src\lib\calculos.js:5: const subtotal=items.reduce((a,i)=>a+i.precio*i.cantidad,0);
+src\lib\calculos.js:7: const descuentoMonto=subtotal*(descuentoPorcentaje/100);
+src\lib\calculos.js:8: const total=subtotal-descuentoMonto;
+src\lib\calculos.js:10: return {cantidad,subtotal,descuentoPorcentaje,descuentoMonto,total,comision};
+src\pages\AdminPanel.jsx:373:              Cliente ? Solicitud ? Cotizacion ? Pedido ? Orden de Trabajo ?
+src\pages\AdminPanel.jsx:455:                  {p.activo === false ? 'Activar' : 'Ocultar'}
+src\pages\AdminPanel.jsx:501:                  {t.activo === false ? 'Activar' : 'Ocultar'}
+src\pages\AdminPanel.jsx:597:                    {b.activo === false ? 'Activar' : 'Ocultar'}
+src\pages\AIStudio.jsx:6:import { cargarMemoriaOperativaElan } from '../services/memoriaOperativaElan';
+src\pages\AIStudio.jsx:42:function guardarBorradorCotizadorAI06C(memoriaOperativa = null, proyectoActivo = null) {
+src\pages\AIStudio.jsx:43:  const paquete = memoriaOperativa?.ai06c_items_cotizables;
+src\pages\AIStudio.jsx:55:  localStorage.setItem('elanvisual_cotizacion_ai_borrador', JSON.stringify(payload));
+src\pages\AIStudio.jsx:56:  localStorage.setItem('elanvisual_cotizacion_item_activo', JSON.stringify(payload.items?.[0] || null));
+src\pages\AIStudio.jsx:190:  async function llamarCore(messages, modo = 'chat', memoriaOperativa = null) {
+src\pages\AIStudio.jsx:207:        memoria_operativa: memoriaOperativa,
+src\pages\AIStudio.jsx:289:      setEstado('Consultando memoria operativa ELAN...');
+src\pages\AIStudio.jsx:291:      const memoriaOperativa = await cargarMemoriaOperativaElan({
+src\pages\AIStudio.jsx:315:      memoriaOperativa.ai16_acciones_erp = {
+src\pages\AIStudio.jsx:339:        faltantes: memoriaOperativa.ai06d_costos_faltantes || [],
+src\pages\AIStudio.jsx:347:        memoriaOperativa.ai06d_solicitudes_creadas = solicitudesCostosAI06D.map((s) => ({
+src\pages\AIStudio.jsx:358:      const data = await llamarCore(historial, 'chat', memoriaOperativa);
+src\pages\AIStudio.jsx:397:      const memoriaOperativa = await cargarMemoriaOperativaElan({
+src\pages\AIStudio.jsx:407:        memoriaOperativa
+src\pages\AIStudio.jsx:437:        .from('cotizaciones_inteligentes')
+src\pages\AIStudio.jsx:459:  'elanvisual_Cotización_ai_activa',
+src\pages\AIStudio.jsx:467:setPage?.('CotizacionesInteligentes');
+src\pages\AIStudio.jsx:589:                accept=".jpg,.jpeg,.png,.svg,.pdf"
+src\pages\BibliotecaTecnica.jsx:83:    if (!confirm('Cargar recetas constructivas base en Biblioteca Técnica?')) return;
+src\pages\BibliotecaTecnica.jsx:229:        <p>Recetas constructivas, componentes, fórmulas y solicitudes de costos.</p>
+src\pages\BibliotecaTecnica.jsx:249:            <textarea placeholder="Descripción constructiva" value={formBiblioteca.descripcion || ''} onChange={(e) => 
+setFormBiblioteca({ ...formBiblioteca, descripcion: e.target.value })} />
+src\pages\CapturaInteligente.jsx:83:    ['Managua', 'Granada', 'Masaya', 'Leon', 'León', 'Chinandega', 'Esteli', 'Estelí', 'Matagalpa', 'Jinotega', 'Juigalpa', 'Rivas', 
+'Carazo', 'Boaco']
+src\pages\CapturaInteligente.jsx:119:    ['Managua', 'Granada', 'Masaya', 'Leon', 'León', 'Chinandega', 'Esteli', 'Estelí', 'Matagalpa', 'Jinotega', 'Juigalpa', 'Rivas', 
+'Carazo', 'Boaco'].find((c) =>
+src\pages\Carrito.jsx:30:    cuenta?.activa !== false &&
+src\pages\Carrito.jsx:62:  const cuentasActivas = useMemo(
+src\pages\Carrito.jsx:68:  const baseCotizacion = Number(resumen.total || 0);
+src\pages\Carrito.jsx:69:  const montoAnticipo = baseCotizacion * (anticipoPorcentaje / 100);
+src\pages\Carrito.jsx:70:  const montoSolicitado = pagoTipo === 'total' ? baseCotizacion : montoAnticipo;
+src\pages\Carrito.jsx:71:  const saldoPendiente = Math.max(0, baseCotizacion - montoSolicitado);
+src\pages\Carrito.jsx:80:      cuentasActivas.length > 0
+src\pages\Carrito.jsx:81:        ? cuentasActivas
+src\pages\Carrito.jsx:112:${baseCotizacion > 0 ? formatoC$(baseCotizacion) : 'A cotizar'}
+src\pages\Carrito.jsx:115:${baseCotizacion > 0 ? formatoC$(montoSolicitado) : 'Pendiente de cotizacion'}
+src\pages\Carrito.jsx:118:${baseCotizacion > 0 ? formatoC$(saldoPendiente) : 'Pendiente de cotizacion'}
+src\pages\Carrito.jsx:126:Tu solicitud sera revisada para cotizacion, orden de trabajo y programacion de produccion.`;
+src\pages\Carrito.jsx:155:Monto de referencia: ${baseCotizacion > 0 ? formatoC$(baseCotizacion) : 'A cotizar'}
+src\pages\Carrito.jsx:157:Monto solicitado: ${baseCotizacion > 0 ? formatoC$(montoSolicitado) : 'Pendiente de cotizacion'}
+src\pages\Carrito.jsx:158:Saldo pendiente: ${baseCotizacion > 0 ? formatoC$(saldoPendiente) : 'Pendiente de cotizacion'}
+src\pages\Carrito.jsx:160:Estado: Solicitud recibida. Revisar para cotizacion, pedido, OT y produccion.`;
+src\pages\Carrito.jsx:241:          <h1>Preparar solicitud para cotizacion</h1>
+src\pages\Carrito.jsx:244:            envia la solicitud para revision comercial, cotizacion y produccion.
+src\pages\Carrito.jsx:250:          <span>Solicitud â†’ Cotizacion â†’ OT</span>
+src\pages\Carrito.jsx:251:          <strong>{baseCotizacion > 0 ? formatoC$(baseCotizacion) : 'A cotizar'}</strong>
+src\pages\Carrito.jsx:299:            <h2>Datos para cotizacion</h2>
+src\pages\Carrito.jsx:365:                placeholder="Medidas aproximadas, cantidades, color, iluminacion, estructura o detalles tecnicos"
+src\pages\Carrito.jsx:382:                <b>{baseCotizacion > 0 ? formatoC$(baseCotizacion) : 'A cotizar'}</b>
+src\pages\Carrito.jsx:390:                seguimiento mientras se conecta el flujo nativo de cotizaciones.
+src\pages\Carrito.jsx:408:                    {baseCotizacion > 0 ? formatoC$(montoAnticipo) : 'A cotizar'}
+src\pages\Carrito.jsx:424:                    {baseCotizacion > 0 ? formatoC$(baseCotizacion) : 'A cotizar'}
+src\pages\Carrito.jsx:438:                cotizacion, orden de trabajo y produccion.
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:24:export default function CotizacionesInteligentes() {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:27:  const [cotizaciones, setCotizaciones] = useState([]);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:30:  const [cotizacionActiva, setCotizacionActiva] = useState(null);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:31:  const [otActiva, setOtActiva] = useState(null);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:33:  const detalleRef = useRef(null);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:35:  const cargarCotizaciones = async () => {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:39:      .from('cotizaciones_inteligentes')
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:44:      console.error('Error cargando cotizaciones inteligentes:', error);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:45:      alert(`No se pudieron cargar las cotizaciones: ${error.message}`);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:50:    setCotizaciones(data || []);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:55:    cargarCotizaciones();
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:61:    if (!q) return cotizaciones;
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:63:    return cotizaciones.filter((c) =>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:68:  }, [cotizaciones, busqueda]);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:70:  const abrirDetalleCotizacion = (cotizacion) => {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:71:    setCotizacionActiva(cotizacion);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:75:        detalleRef.current?.scrollIntoView({
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:84:    if (!cotizaciones.length) return;
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:86:    const raw = localStorage.getItem('elanvisual_cotizacion_ai_activa');
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:90:      const activa = JSON.parse(raw);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:92:      const encontrada = cotizaciones.find(
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:93:        (c) => c.id === activa?.id || c.codigo === activa?.codigo
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:98:        abrirDetalleCotizacion(encontrada);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:99:        localStorage.removeItem('elanvisual_cotizacion_ai_activa');
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:102:      localStorage.removeItem('elanvisual_cotizacion_ai_activa');
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:104:  }, [cotizaciones]);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:106:  const actualizarEstadoCotizacion = async (cotizacion, estado) => {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:116:      payload.anticipo_requerido = anticipo60(cotizacion.precio_b);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:117:      payload.saldo_pendiente = saldo40(cotizacion.precio_b);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:122:      .from('cotizaciones_inteligentes')
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:124:      .eq('id', cotizacion.id);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:132:    const actualizada = { ...cotizacion, ...payload };
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:134:    setCotizacionActiva((prev) =>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:135:      prev?.id === cotizacion.id ? actualizada : prev
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:138:    setCotizaciones((prev) =>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:139:      prev.map((c) => (c.id === cotizacion.id ? { ...c, ...payload } : c))
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:142:    alert(`Cotización ${cotizacion.codigo} actualizada a: ${estado}`);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:145:  const convertirAPedido = async (cotizacion) => {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:146:    if (!cotizacion) return;
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:148:    if (cotizacion.estado !== 'aprobada') {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:153:    if (!confirm(`¿Convertir ${cotizacion.codigo} a pedido de producción?`)) return;
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:159:    const total = Number(cotizacion.precio_b || 0);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:165:      nombre: cotizacion.biblioteca_nombre || 'Cotización inteligente',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:167:        cotizacion.descripcion ||
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:168:        cotizacion.biblioteca_nombre ||
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:170:      ancho: Number(cotizacion.ancho || 0),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:171:      alto: Number(cotizacion.alto || 0),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:172:      cantidad: Number(cotizacion.cantidad || 1),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:174:      instalacion: Number(cotizacion.costo_instalacion || 0) > 0 ? 'Si' : 'No',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:175:      costoProduccion: Number(cotizacion.costo_produccion || 0),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:178:        ...(Array.isArray(cotizacion.despiece) ? cotizacion.despiece : []),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:179:        ...(Array.isArray(cotizacion.estructura) ? cotizacion.estructura : []),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:180:        ...(Array.isArray(cotizacion.obra_civil) ? cotizacion.obra_civil : []),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:187:      nota: `Generado desde ${cotizacion.codigo}`,
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:197:      origenCotizacionId: cotizacion.id,
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:198:      origenCotizacionCodigo: cotizacion.codigo,
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:200:        nombre: cotizacion.cliente_nombre || 'Cliente',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:201:        empresa: cotizacion.cliente_nombre || '',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:202:        contacto: cotizacion.cliente_nombre || '',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:203:        whatsapp: cotizacion.celular || '',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:204:        telefono: cotizacion.celular || '',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:209:        lugar: cotizacion.ubicacion || '',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:210:        direccion: cotizacion.ubicacion || '',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:215:        subtotal: total,
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:223:        produccionEstimada: Number(cotizacion.costo_produccion || 0),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:224:        instalacion: Number(cotizacion.costo_instalacion || 0),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:225:        transporte: Number(cotizacion.costo_transporte || 0),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:226:        viaticos: Number(cotizacion.costo_viaticos || 0),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:227:        equipo: Number(cotizacion.costo_equipo || 0),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:228:        empresa: Number(cotizacion.costo_empresa || 0),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:239:        cliente: cotizacion.cliente_nombre || 'Cliente',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:241:          cotizacion.biblioteca_nombre ||
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:242:          cotizacion.descripcion ||
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:244:        cantidad: Number(cotizacion.cantidad || 1),
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:245:        observaciones: `Convertido desde cotización ${cotizacion.codigo}. ${
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:246:          cotizacion.descripcion || ''
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:255:          nota: `Pedido convertido desde cotización inteligente ${cotizacion.codigo}.`,
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:269:      .from('cotizaciones_inteligentes')
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:271:      .eq('id', cotizacion.id);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:273:    const actualizada = { ...cotizacion, ...payload };
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:275:    setCotizacionActiva(actualizada);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:276:    setOtActiva({ cotizacion: actualizada, pedido, numero, numeroOT, total, anticipo, saldo });
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:278:    setCotizaciones((prev) =>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:279:      prev.map((c) => (c.id === cotizacion.id ? actualizada : c))
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:285:  const editarEnCotizador = (cotizacion) => {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:286:    if (!cotizacion) return;
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:289:      'elanvisual_cotizacion_item_activo',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:290:      JSON.stringify(cotizacion)
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:296:  const imprimirOT = (cotizacion) => {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:297:    if (!cotizacion) return;
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:299:    const total = Number(cotizacion.precio_b || 0);
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:301:    setOtActiva({
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:302:      cotizacion,
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:304:      numero: cotizacion.pedido_numero || 'PED-PENDIENTE',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:305:      numeroOT: cotizacion.pedido_ot || 'OT-PENDIENTE',
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:318:        <h1>Cotizaciones Inteligentes</h1>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:334:        <button className="primary" type="button" onClick={cargarCotizaciones}>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:348:            <p className="note">No hay cotizaciones guardadas todavía.</p>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:353:                  cotizacionActiva?.id === c.id ? 'row-active' : ''
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:371:                  <button type="button" onClick={() => abrirDetalleCotizacion(c)}>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:377:                    onClick={() => actualizarEstadoCotizacion(c, 'aprobada')}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:384:                    onClick={() => actualizarEstadoCotizacion(c, 'rechazada')}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:399:      {cotizacionActiva && (
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:401:          ref={detalleRef}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:402:          className="mm3-card cotizacion-detalle-activa"
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:404:          <div className="detalle-header">
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:407:              <h2>Detalle {cotizacionActiva.codigo || 'Sin código'}</h2>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:413:              onClick={() => setCotizacionActiva(null)}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:420:          <div className="detalle-grid">
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:422:              Cliente: <b>{cotizacionActiva.cliente_nombre || 'Sin cliente'}</b>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:425:              Celular: <b>{cotizacionActiva.celular || 'Sin celular'}</b>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:428:              Ubicación: <b>{cotizacionActiva.ubicacion || 'Sin ubicación'}</b>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:431:              Estado: <b>{cotizacionActiva.estado || 'borrador'}</b>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:434:              Total recomendado: <b>{money(cotizacionActiva.precio_b)}</b>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:440:                  cotizacionActiva.anticipo_requerido ||
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:441:                    anticipo60(cotizacionActiva.precio_b)
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:449:                  cotizacionActiva.saldo_pendiente ||
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:450:                    saldo40(cotizacionActiva.precio_b)
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:455:              Pedido: <b>{cotizacionActiva.pedido_numero || 'No generado'}</b>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:458:              OT: <b>{cotizacionActiva.pedido_ot || 'No generada'}</b>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:462:          {cotizacionActiva.descripcion && (
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:463:            <p className="note detalle-descripcion">
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:464:              {cotizacionActiva.descripcion}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:468:          <div className="detalle-actions">
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:472:              onClick={() => editarEnCotizador(cotizacionActiva)}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:481:                actualizarEstadoCotizacion(cotizacionActiva, 'aprobada')
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:491:                actualizarEstadoCotizacion(cotizacionActiva, 'rechazada')
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:500:              onClick={() => convertirAPedido(cotizacionActiva)}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:509:              onClick={() => imprimirOT(cotizacionActiva)}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:518:      {otActiva && (
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:528:                <strong>{otActiva.numeroOT}</strong>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:529:                <p>{otActiva.numero}</p>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:538:                  {otActiva.cotizacion.cliente_nombre || 'Cliente'}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:542:                  {otActiva.cotizacion.celular || 'Sin celular'}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:546:                  {otActiva.cotizacion.ubicacion || 'Sin ubicación'}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:553:                  <b>Cotización:</b> {otActiva.cotizacion.codigo}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:557:                  {otActiva.cotizacion.biblioteca_nombre ||
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:562:                  {Number(otActiva.cotizacion.ancho || 0).toFixed(2)} m ×{' '}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:563:                  {Number(otActiva.cotizacion.alto || 0).toFixed(2)} m
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:566:                  <b>Cantidad:</b> {otActiva.cotizacion.cantidad || 1}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:573:              <p>{otActiva.cotizacion.descripcion || 'Sin descripción'}</p>
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:580:                  <b>Total:</b> {money(otActiva.total)}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:583:                  <b>Anticipo 60%:</b> {money(otActiva.anticipo)}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:586:                  <b>Saldo 40%:</b> {money(otActiva.saldo)}
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:597:                  {Number(otActiva.cotizacion.costo_instalacion || 0) > 0
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:624:        .cotizacion-detalle-activa {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:635:        .detalle-header {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:655:        .detalle-grid {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:661:        .detalle-descripcion {
+src\pages\CotizacionesInteligentes.CI17.BACKUP.jsx:666:        .detalle-actions {
+src\pages\CotizacionesInteligentes.jsx:24:export default function CotizacionesInteligentes() {
+src\pages\CotizacionesInteligentes.jsx:27:  const [cotizaciones, setCotizaciones] = useState([]);
+src\pages\CotizacionesInteligentes.jsx:30:  const [cotizacionActiva, setCotizacionActiva] = useState(null);
+src\pages\CotizacionesInteligentes.jsx:31:  const [otActiva, setOtActiva] = useState(null);
+src\pages\CotizacionesInteligentes.jsx:33:  const detalleRef = useRef(null);
+src\pages\CotizacionesInteligentes.jsx:35:  const cargarCotizaciones = async () => {
+src\pages\CotizacionesInteligentes.jsx:39:      .from('cotizaciones_inteligentes')
+src\pages\CotizacionesInteligentes.jsx:44:      console.error('Error cargando cotizaciones inteligentes:', error);
+src\pages\CotizacionesInteligentes.jsx:45:      alert(`No se pudieron cargar las cotizaciones: ${error.message}`);
+src\pages\CotizacionesInteligentes.jsx:50:    setCotizaciones(data || []);
+src\pages\CotizacionesInteligentes.jsx:55:    cargarCotizaciones();
+src\pages\CotizacionesInteligentes.jsx:61:    if (!q) return cotizaciones;
+src\pages\CotizacionesInteligentes.jsx:63:    return cotizaciones.filter((c) =>
+src\pages\CotizacionesInteligentes.jsx:68:  }, [cotizaciones, busqueda]);
+src\pages\CotizacionesInteligentes.jsx:70:  const abrirDetalleCotizacion = (cotizacion) => {
+src\pages\CotizacionesInteligentes.jsx:71:    setCotizacionActiva(cotizacion);
+src\pages\CotizacionesInteligentes.jsx:75:        detalleRef.current?.scrollIntoView({
+src\pages\CotizacionesInteligentes.jsx:84:    if (!cotizaciones.length) return;
+src\pages\CotizacionesInteligentes.jsx:86:    const raw = localStorage.getItem('elanvisual_cotizacion_ai_activa');
+src\pages\CotizacionesInteligentes.jsx:90:      const activa = JSON.parse(raw);
+src\pages\CotizacionesInteligentes.jsx:92:      const encontrada = cotizaciones.find(
+src\pages\CotizacionesInteligentes.jsx:93:        (c) => c.id === activa?.id || c.codigo === activa?.codigo
+src\pages\CotizacionesInteligentes.jsx:98:        abrirDetalleCotizacion(encontrada);
+src\pages\CotizacionesInteligentes.jsx:99:        localStorage.removeItem('elanvisual_cotizacion_ai_activa');
+src\pages\CotizacionesInteligentes.jsx:102:      localStorage.removeItem('elanvisual_cotizacion_ai_activa');
+src\pages\CotizacionesInteligentes.jsx:104:  }, [cotizaciones]);
+src\pages\CotizacionesInteligentes.jsx:106:  const actualizarEstadoCotizacion = async (cotizacion, estado) => {
+src\pages\CotizacionesInteligentes.jsx:116:      payload.anticipo_requerido = anticipo60(cotizacion.precio_b);
+src\pages\CotizacionesInteligentes.jsx:117:      payload.saldo_pendiente = saldo40(cotizacion.precio_b);
+src\pages\CotizacionesInteligentes.jsx:122:      .from('cotizaciones_inteligentes')
+src\pages\CotizacionesInteligentes.jsx:124:      .eq('id', cotizacion.id);
+src\pages\CotizacionesInteligentes.jsx:132:    const actualizada = { ...cotizacion, ...payload };
+src\pages\CotizacionesInteligentes.jsx:134:    setCotizacionActiva((prev) =>
+src\pages\CotizacionesInteligentes.jsx:135:      prev?.id === cotizacion.id ? actualizada : prev
+src\pages\CotizacionesInteligentes.jsx:138:    setCotizaciones((prev) =>
+src\pages\CotizacionesInteligentes.jsx:139:      prev.map((c) => (c.id === cotizacion.id ? { ...c, ...payload } : c))
+src\pages\CotizacionesInteligentes.jsx:142:    alert(`Cotización ${cotizacion.codigo} actualizada a: ${estado}`);
+src\pages\CotizacionesInteligentes.jsx:145:  const convertirAPedido = async (cotizacion) => {
+src\pages\CotizacionesInteligentes.jsx:146:    if (!cotizacion) return;
+src\pages\CotizacionesInteligentes.jsx:148:    if (cotizacion.estado !== 'aprobada') {
+src\pages\CotizacionesInteligentes.jsx:153:    if (!confirm(`¿Convertir ${cotizacion.codigo} a pedido de producción?`)) return;
+src\pages\CotizacionesInteligentes.jsx:159:    const total = Number(cotizacion.precio_b || 0);
+src\pages\CotizacionesInteligentes.jsx:165:      nombre: cotizacion.biblioteca_nombre || 'Cotización inteligente',
+src\pages\CotizacionesInteligentes.jsx:167:        cotizacion.descripcion ||
+src\pages\CotizacionesInteligentes.jsx:168:        cotizacion.biblioteca_nombre ||
+src\pages\CotizacionesInteligentes.jsx:170:      ancho: Number(cotizacion.ancho || 0),
+src\pages\CotizacionesInteligentes.jsx:171:      alto: Number(cotizacion.alto || 0),
+src\pages\CotizacionesInteligentes.jsx:172:      cantidad: Number(cotizacion.cantidad || 1),
+src\pages\CotizacionesInteligentes.jsx:174:      instalacion: Number(cotizacion.costo_instalacion || 0) > 0 ? 'Si' : 'No',
+src\pages\CotizacionesInteligentes.jsx:175:      costoProduccion: Number(cotizacion.costo_produccion || 0),
+src\pages\CotizacionesInteligentes.jsx:178:        ...(Array.isArray(cotizacion.despiece) ? cotizacion.despiece : []),
+src\pages\CotizacionesInteligentes.jsx:179:        ...(Array.isArray(cotizacion.estructura) ? cotizacion.estructura : []),
+src\pages\CotizacionesInteligentes.jsx:180:        ...(Array.isArray(cotizacion.obra_civil) ? cotizacion.obra_civil : []),
+src\pages\CotizacionesInteligentes.jsx:187:      nota: `Generado desde ${cotizacion.codigo}`,
+src\pages\CotizacionesInteligentes.jsx:197:      origenCotizacionId: cotizacion.id,
+src\pages\CotizacionesInteligentes.jsx:198:      origenCotizacionCodigo: cotizacion.codigo,
+src\pages\CotizacionesInteligentes.jsx:200:        nombre: cotizacion.cliente_nombre || 'Cliente',
+src\pages\CotizacionesInteligentes.jsx:201:        empresa: cotizacion.cliente_nombre || '',
+src\pages\CotizacionesInteligentes.jsx:202:        contacto: cotizacion.cliente_nombre || '',
+src\pages\CotizacionesInteligentes.jsx:203:        whatsapp: cotizacion.celular || '',
+src\pages\CotizacionesInteligentes.jsx:204:        telefono: cotizacion.celular || '',
+src\pages\CotizacionesInteligentes.jsx:209:        lugar: cotizacion.ubicacion || '',
+src\pages\CotizacionesInteligentes.jsx:210:        direccion: cotizacion.ubicacion || '',
+src\pages\CotizacionesInteligentes.jsx:215:        subtotal: total,
+src\pages\CotizacionesInteligentes.jsx:223:        produccionEstimada: Number(cotizacion.costo_produccion || 0),
+src\pages\CotizacionesInteligentes.jsx:224:        instalacion: Number(cotizacion.costo_instalacion || 0),
+src\pages\CotizacionesInteligentes.jsx:225:        transporte: Number(cotizacion.costo_transporte || 0),
+src\pages\CotizacionesInteligentes.jsx:226:        viaticos: Number(cotizacion.costo_viaticos || 0),
+src\pages\CotizacionesInteligentes.jsx:227:        equipo: Number(cotizacion.costo_equipo || 0),
+src\pages\CotizacionesInteligentes.jsx:228:        empresa: Number(cotizacion.costo_empresa || 0),
+src\pages\CotizacionesInteligentes.jsx:239:        cliente: cotizacion.cliente_nombre || 'Cliente',
+src\pages\CotizacionesInteligentes.jsx:241:          cotizacion.biblioteca_nombre ||
+src\pages\CotizacionesInteligentes.jsx:242:          cotizacion.descripcion ||
+src\pages\CotizacionesInteligentes.jsx:244:        cantidad: Number(cotizacion.cantidad || 1),
+src\pages\CotizacionesInteligentes.jsx:245:        observaciones: `Convertido desde cotización ${cotizacion.codigo}. ${
+src\pages\CotizacionesInteligentes.jsx:246:          cotizacion.descripcion || ''
+src\pages\CotizacionesInteligentes.jsx:255:          nota: `Pedido convertido desde cotización inteligente ${cotizacion.codigo}.`,
+src\pages\CotizacionesInteligentes.jsx:269:      .from('cotizaciones_inteligentes')
+src\pages\CotizacionesInteligentes.jsx:271:      .eq('id', cotizacion.id);
+src\pages\CotizacionesInteligentes.jsx:273:    const actualizada = { ...cotizacion, ...payload };
+src\pages\CotizacionesInteligentes.jsx:275:    setCotizacionActiva(actualizada);
+src\pages\CotizacionesInteligentes.jsx:276:    setOtActiva({ cotizacion: actualizada, pedido, numero, numeroOT, total, anticipo, saldo });
+src\pages\CotizacionesInteligentes.jsx:278:    setCotizaciones((prev) =>
+src\pages\CotizacionesInteligentes.jsx:279:      prev.map((c) => (c.id === cotizacion.id ? actualizada : c))
+src\pages\CotizacionesInteligentes.jsx:285:  const editarEnCotizador = (cotizacion) => {
+src\pages\CotizacionesInteligentes.jsx:286:    if (!cotizacion?.id) {
+src\pages\CotizacionesInteligentes.jsx:291:    window.location.href = `/cotizador?id=${cotizacion.id}`;
+src\pages\CotizacionesInteligentes.jsx:294:  const imprimirOT = (cotizacion) => {
+src\pages\CotizacionesInteligentes.jsx:295:    if (!cotizacion) return;
+src\pages\CotizacionesInteligentes.jsx:297:    const total = Number(cotizacion.precio_b || 0);
+src\pages\CotizacionesInteligentes.jsx:299:    setOtActiva({
+src\pages\CotizacionesInteligentes.jsx:300:      cotizacion,
+src\pages\CotizacionesInteligentes.jsx:302:      numero: cotizacion.pedido_numero || 'PED-PENDIENTE',
+src\pages\CotizacionesInteligentes.jsx:303:      numeroOT: cotizacion.pedido_ot || 'OT-PENDIENTE',
+src\pages\CotizacionesInteligentes.jsx:316:        <h1>Cotizaciones Inteligentes</h1>
+src\pages\CotizacionesInteligentes.jsx:332:        <button className="primary" type="button" onClick={cargarCotizaciones}>
+src\pages\CotizacionesInteligentes.jsx:346:            <p className="note">No hay cotizaciones guardadas todavía.</p>
+src\pages\CotizacionesInteligentes.jsx:351:                  cotizacionActiva?.id === c.id ? 'row-active' : ''
+src\pages\CotizacionesInteligentes.jsx:369:                  <button type="button" onClick={() => abrirDetalleCotizacion(c)}>
+src\pages\CotizacionesInteligentes.jsx:375:                    onClick={() => actualizarEstadoCotizacion(c, 'aprobada')}
+src\pages\CotizacionesInteligentes.jsx:382:                    onClick={() => actualizarEstadoCotizacion(c, 'rechazada')}
+src\pages\CotizacionesInteligentes.jsx:397:      {cotizacionActiva && (
+src\pages\CotizacionesInteligentes.jsx:399:          ref={detalleRef}
+src\pages\CotizacionesInteligentes.jsx:400:          className="mm3-card cotizacion-detalle-activa"
+src\pages\CotizacionesInteligentes.jsx:402:          <div className="detalle-header">
+src\pages\CotizacionesInteligentes.jsx:405:              <h2>Detalle {cotizacionActiva.codigo || 'Sin código'}</h2>
+src\pages\CotizacionesInteligentes.jsx:411:              onClick={() => setCotizacionActiva(null)}
+src\pages\CotizacionesInteligentes.jsx:418:          <div className="detalle-grid">
+src\pages\CotizacionesInteligentes.jsx:420:              Cliente: <b>{cotizacionActiva.cliente_nombre || 'Sin cliente'}</b>
+src\pages\CotizacionesInteligentes.jsx:423:              Celular: <b>{cotizacionActiva.celular || 'Sin celular'}</b>
+src\pages\CotizacionesInteligentes.jsx:426:              Ubicación: <b>{cotizacionActiva.ubicacion || 'Sin ubicación'}</b>
+src\pages\CotizacionesInteligentes.jsx:429:              Estado: <b>{cotizacionActiva.estado || 'borrador'}</b>
+src\pages\CotizacionesInteligentes.jsx:432:              Total recomendado: <b>{money(cotizacionActiva.precio_b)}</b>
+src\pages\CotizacionesInteligentes.jsx:438:                  cotizacionActiva.anticipo_requerido ||
+src\pages\CotizacionesInteligentes.jsx:439:                    anticipo60(cotizacionActiva.precio_b)
+src\pages\CotizacionesInteligentes.jsx:447:                  cotizacionActiva.saldo_pendiente ||
+src\pages\CotizacionesInteligentes.jsx:448:                    saldo40(cotizacionActiva.precio_b)
+src\pages\CotizacionesInteligentes.jsx:453:              Pedido: <b>{cotizacionActiva.pedido_numero || 'No generado'}</b>
+src\pages\CotizacionesInteligentes.jsx:456:              OT: <b>{cotizacionActiva.pedido_ot || 'No generada'}</b>
+src\pages\CotizacionesInteligentes.jsx:460:          {cotizacionActiva.descripcion && (
+src\pages\CotizacionesInteligentes.jsx:461:            <p className="note detalle-descripcion">
+src\pages\CotizacionesInteligentes.jsx:462:              {cotizacionActiva.descripcion}
+src\pages\CotizacionesInteligentes.jsx:466:          <div className="detalle-actions">
+src\pages\CotizacionesInteligentes.jsx:470:              onClick={() => editarEnCotizador(cotizacionActiva)}
+src\pages\CotizacionesInteligentes.jsx:479:                actualizarEstadoCotizacion(cotizacionActiva, 'aprobada')
+src\pages\CotizacionesInteligentes.jsx:489:                actualizarEstadoCotizacion(cotizacionActiva, 'rechazada')
+src\pages\CotizacionesInteligentes.jsx:498:              onClick={() => convertirAPedido(cotizacionActiva)}
+src\pages\CotizacionesInteligentes.jsx:507:              onClick={() => imprimirOT(cotizacionActiva)}
+src\pages\CotizacionesInteligentes.jsx:516:      {otActiva && (
+src\pages\CotizacionesInteligentes.jsx:526:                <strong>{otActiva.numeroOT}</strong>
+src\pages\CotizacionesInteligentes.jsx:527:                <p>{otActiva.numero}</p>
+src\pages\CotizacionesInteligentes.jsx:536:                  {otActiva.cotizacion.cliente_nombre || 'Cliente'}
+src\pages\CotizacionesInteligentes.jsx:540:                  {otActiva.cotizacion.celular || 'Sin celular'}
+src\pages\CotizacionesInteligentes.jsx:544:                  {otActiva.cotizacion.ubicacion || 'Sin ubicación'}
+src\pages\CotizacionesInteligentes.jsx:551:                  <b>Cotización:</b> {otActiva.cotizacion.codigo}
+src\pages\CotizacionesInteligentes.jsx:555:                  {otActiva.cotizacion.biblioteca_nombre ||
+src\pages\CotizacionesInteligentes.jsx:560:                  {Number(otActiva.cotizacion.ancho || 0).toFixed(2)} m ×{' '}
+src\pages\CotizacionesInteligentes.jsx:561:                  {Number(otActiva.cotizacion.alto || 0).toFixed(2)} m
+src\pages\CotizacionesInteligentes.jsx:564:                  <b>Cantidad:</b> {otActiva.cotizacion.cantidad || 1}
+src\pages\CotizacionesInteligentes.jsx:571:              <p>{otActiva.cotizacion.descripcion || 'Sin descripción'}</p>
+src\pages\CotizacionesInteligentes.jsx:578:                  <b>Total:</b> {money(otActiva.total)}
+src\pages\CotizacionesInteligentes.jsx:581:                  <b>Anticipo 60%:</b> {money(otActiva.anticipo)}
+src\pages\CotizacionesInteligentes.jsx:584:                  <b>Saldo 40%:</b> {money(otActiva.saldo)}
+src\pages\CotizacionesInteligentes.jsx:595:                  {Number(otActiva.cotizacion.costo_instalacion || 0) > 0
+src\pages\CotizacionesInteligentes.jsx:622:        .cotizacion-detalle-activa {
+src\pages\CotizacionesInteligentes.jsx:633:        .detalle-header {
+src\pages\CotizacionesInteligentes.jsx:653:        .detalle-grid {
+src\pages\CotizacionesInteligentes.jsx:659:        .detalle-descripcion {
+src\pages\CotizacionesInteligentes.jsx:664:        .detalle-actions {
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:19:  iva: 0.15,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:284:    usaIVA: false,
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:514:    const subtotalBruto = items.reduce((acc, item) => acc + n(item.resumen.venta), 0);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:515:    const descuento = subtotalBruto * (n(form.descuento) / 100);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:516:    const subtotal = subtotalBruto - descuento;
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:517:    const iva = form.usaIVA ? subtotal * POLITICA.iva : 0;
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:518:    const totalCliente = subtotal + iva;
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:545:    return { subtotalBruto, descuento, subtotal, iva, totalCliente, pagos, sumaPagos };
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:562:    const actual = JSON.parse(localStorage.getItem('elanvision_cotizaciones_directas') || '[]');
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:563:    localStorage.setItem('elanvision_cotizaciones_directas', JSON.stringify([payload, ...actual]));
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:575:        estado: 'cotizacion_guardada',
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:603:      Android/iOS pueden bloquear el diálogo, mostrar blanco o no ofrecer guardar PDF.
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:632:    const tituloPDF = `Cotizacion-ELANVISION-${Date.now()}`;
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:641:          <title>${tituloPDF}</title>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:840:            Cargar imágenes, PDF o referencias opcionales
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:841:            <input type="file" multiple accept="image/*,.pdf,.xlsx,.xls,.csv" onChange={manejarArchivos} />
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:925:              <label>Aplicar IVA</label>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:927:                value={form.usaIVA ? 'si' : 'no'}
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:928:                onChange={(e) => actualizar('usaIVA', e.target.value === 'si')}
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:930:                <option value="no">Sin IVA</option>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:931:                <option value="si">Con IVA</option>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:973:              <span>Subtotal</span>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:974:              <b>{money(total.subtotal)}</b>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:977:            {form.usaIVA && (
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:979:                <span>IVA</span>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:980:                <b>{money(total.iva)}</b>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1006:            Descargar / Imprimir PDF
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1116:              const subtotalItem = n(item.resumen?.venta);
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1117:              const precioUnitario = subtotalItem / cantidad;
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1130:                    <p><span>Subtotal</span><b>{money(subtotalItem)}</b></p>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1141:              <span>Subtotal</span>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1142:              <b>{money(total.subtotalBruto)}</b>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1151:              <span>Subtotal ajustado</span>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1152:              <b>{money(total.subtotal)}</b>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1155:            {form.usaIVA && (
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1157:                <span>IVA 15%</span>
+src\pages\CotizadorDirecto.CI17.BACKUP.jsx:1158:                <b>{money(total.iva)}</b>
+src\pages\CotizadorDirecto.jsx:20:  iva: 0.15,
+src\pages\CotizadorDirecto.jsx:297:  const tipoCambioCotizacion = Number(configuracion?.tipoCambio || 36.8);
+src\pages\CotizadorDirecto.jsx:304:  const [cotizacionEdicion, setCotizacionEdicion] = useState(null);
+src\pages\CotizadorDirecto.jsx:308:  const cotizacionIdEdicion = params.get('id');
+src\pages\CotizadorDirecto.jsx:309:  const modoEdicion = Boolean(cotizacionIdEdicion);
+src\pages\CotizadorDirecto.jsx:326:    usaIVA: false,
+src\pages\CotizadorDirecto.jsx:366:    const cargarCotizacionEdicion = async () => {
+src\pages\CotizadorDirecto.jsx:367:      if (!cotizacionIdEdicion || !supabase) return;
+src\pages\CotizadorDirecto.jsx:372:        .from('cotizaciones_inteligentes')
+src\pages\CotizadorDirecto.jsx:374:        .eq('id', cotizacionIdEdicion)
+src\pages\CotizadorDirecto.jsx:390:      setCotizacionEdicion(data);
+src\pages\CotizadorDirecto.jsx:414:        origen: 'cotizaciones_inteligentes',
+src\pages\CotizadorDirecto.jsx:446:        usaIVA: false,
+src\pages\CotizadorDirecto.jsx:459:    cargarCotizacionEdicion();
+src\pages\CotizadorDirecto.jsx:460:  }, [cotizacionIdEdicion]);
+src\pages\CotizadorDirecto.jsx:661:    const subtotalBruto = items.reduce((acc, item) => acc + n(item.resumen.venta), 0);
+src\pages\CotizadorDirecto.jsx:662:    const descuento = subtotalBruto * (n(form.descuento) / 100);
+src\pages\CotizadorDirecto.jsx:663:    const subtotal = subtotalBruto - descuento;
+src\pages\CotizadorDirecto.jsx:664:    const iva = form.usaIVA ? subtotal * POLITICA.iva : 0;
+src\pages\CotizadorDirecto.jsx:665:    const totalCliente = subtotal + iva;
+src\pages\CotizadorDirecto.jsx:692:    return { subtotalBruto, descuento, subtotal, iva, totalCliente, pagos, sumaPagos };
+src\pages\CotizadorDirecto.jsx:709:    const actual = JSON.parse(localStorage.getItem('elanvision_cotizaciones_directas') || '[]');
+src\pages\CotizadorDirecto.jsx:710:    localStorage.setItem('elanvision_cotizaciones_directas', JSON.stringify([payload, ...actual]));
+src\pages\CotizadorDirecto.jsx:722:        estado: 'cotizacion_guardada',
+src\pages\CotizadorDirecto.jsx:750:      Android/iOS pueden bloquear el diálogo, mostrar blanco o no ofrecer guardar PDF.
+src\pages\CotizadorDirecto.jsx:779:    const tituloPDF = `Cotizacion-ELANVISION-${Date.now()}`;
+src\pages\CotizadorDirecto.jsx:788:          <title>${tituloPDF}</title>
+src\pages\CotizadorDirecto.jsx:987:            Cargar imágenes, PDF o referencias opcionales
+src\pages\CotizadorDirecto.jsx:988:            <input type="file" multiple accept="image/*,.pdf,.xlsx,.xls,.csv" onChange={manejarArchivos} />
+src\pages\CotizadorDirecto.jsx:1072:              <label>Aplicar IVA</label>
+src\pages\CotizadorDirecto.jsx:1074:                value={form.usaIVA ? 'si' : 'no'}
+src\pages\CotizadorDirecto.jsx:1075:                onChange={(e) => actualizar('usaIVA', e.target.value === 'si')}
+src\pages\CotizadorDirecto.jsx:1077:                <option value="no">Sin IVA</option>
+src\pages\CotizadorDirecto.jsx:1078:                <option value="si">Con IVA</option>
+src\pages\CotizadorDirecto.jsx:1120:              <span>Subtotal</span>
+src\pages\CotizadorDirecto.jsx:1121:              <b>{money(total.subtotal, tipoCambioCotizacion)}</b>
+src\pages\CotizadorDirecto.jsx:1124:            {form.usaIVA && (
+src\pages\CotizadorDirecto.jsx:1126:                <span>IVA</span>
+src\pages\CotizadorDirecto.jsx:1127:                <b>{money(total.iva, tipoCambioCotizacion)}</b>
+src\pages\CotizadorDirecto.jsx:1133:              <b>{money(total.totalCliente, tipoCambioCotizacion)}</b>
+src\pages\CotizadorDirecto.jsx:1134:              <small>Equivalente {moneyUSD(total.totalCliente)} · TC C$ {tipoCambioCotizacion.toFixed(2)}</small>
+src\pages\CotizadorDirecto.jsx:1143:                <b>{money(p.monto, tipoCambioCotizacion)}</b>
+src\pages\CotizadorDirecto.jsx:1154:            Descargar / Imprimir PDF
+src\pages\CotizadorDirecto.jsx:1174:              <strong>{money(item.resumen.venta, tipoCambioCotizacion)}</strong>
+src\pages\CotizadorDirecto.jsx:1259:<p className="muted">Vista interna. Esta información no aparece en el PDF del cliente.</p>
+src\pages\CotizadorDirecto.jsx:1326:              const subtotalItem = n(item.resumen?.venta);
+src\pages\CotizadorDirecto.jsx:1327:              const precioUnitario = subtotalItem / cantidad;
+src\pages\CotizadorDirecto.jsx:1339:                    <p><span>Precio Unitario</span><b>{money(precioUnitario, tipoCambioCotizacion)}</b></p>
+src\pages\CotizadorDirecto.jsx:1340:                    <p><span>Subtotal</span><b>{money(subtotalItem, tipoCambioCotizacion)}</b></p>
+src\pages\CotizadorDirecto.jsx:1351:              <span>Subtotal</span>
+src\pages\CotizadorDirecto.jsx:1352:              <b>{money(total.subtotalBruto, tipoCambioCotizacion)}</b>
+src\pages\CotizadorDirecto.jsx:1357:              <b>-{money(total.descuento, tipoCambioCotizacion)}</b>
+src\pages\CotizadorDirecto.jsx:1361:              <span>Subtotal ajustado</span>
+src\pages\CotizadorDirecto.jsx:1362:              <b>{money(total.subtotal, tipoCambioCotizacion)}</b>
+src\pages\CotizadorDirecto.jsx:1365:            {form.usaIVA && (
+src\pages\CotizadorDirecto.jsx:1367:                <span>IVA 15%</span>
+src\pages\CotizadorDirecto.jsx:1368:                <b>{money(total.iva, tipoCambioCotizacion)}</b>
+src\pages\CotizadorDirecto.jsx:1374:              <b>{money(total.totalCliente, tipoCambioCotizacion)}</b>
+src\pages\CotizadorDirecto.jsx:1375:              <small>Equivalente {moneyUSD(total.totalCliente)} · TC C$ {tipoCambioCotizacion.toFixed(2)}</small>
+src\pages\CotizadorDirecto.jsx:1381:            <p className="ev-tc-line"><span>Tipo de cambio aplicado</span><b>1 USD = C$ {tipoCambioCotizacion.toFixed(2)}</b></p>
+src\pages\CotizadorDirecto.jsx:1385:                <b>{money(p.monto, tipoCambioCotizacion)}</b>
+src\pages\CotizadorDirectoAI.jsx:20:  iva: 0.15,
+src\pages\CotizadorDirectoAI.jsx:443:  const [cotizacionEdicion, setCotizacionEdicion] = useState(null);
+src\pages\CotizadorDirectoAI.jsx:482:  const cotizacionIdEdicion = params.get('id');
+src\pages\CotizadorDirectoAI.jsx:483:  const modoEdicion = Boolean(cotizacionIdEdicion);
+src\pages\CotizadorDirectoAI.jsx:500:    usaIVA: false,
+src\pages\CotizadorDirectoAI.jsx:547:    const cargarCotizacionEdicion = async () => {
+src\pages\CotizadorDirectoAI.jsx:548:      if (!cotizacionIdEdicion || !supabase) return;
+src\pages\CotizadorDirectoAI.jsx:553:        .from('cotizaciones_inteligentes')
+src\pages\CotizadorDirectoAI.jsx:555:        .eq('id', cotizacionIdEdicion)
+src\pages\CotizadorDirectoAI.jsx:559:        console.error('Error cargando cotizacion inteligente para edicion:', error);
+src\pages\CotizadorDirectoAI.jsx:560:        setMensaje('No se pudo cargar la cotizacion inteligente para edicion.');
+src\pages\CotizadorDirectoAI.jsx:566:        setMensaje('No se encontro la cotizacion inteligente indicada.');
+src\pages\CotizadorDirectoAI.jsx:571:      setCotizacionEdicion(data);
+src\pages\CotizadorDirectoAI.jsx:577:        'Cotizacion inteligente';
+src\pages\CotizadorDirectoAI.jsx:591:        tipo: 'Cotizacion inteligente',
+src\pages\CotizadorDirectoAI.jsx:595:        origen: 'cotizaciones_inteligentes',
+src\pages\CotizadorDirectoAI.jsx:627:        usaIVA: false,
+src\pages\CotizadorDirectoAI.jsx:640:    cargarCotizacionEdicion();
+src\pages\CotizadorDirectoAI.jsx:641:  }, [cotizacionIdEdicion]);
+src\pages\CotizadorDirectoAI.jsx:926:    setMensaje('item agregado a la cotizacion.');
+src\pages\CotizadorDirectoAI.jsx:931:    const subtotalBruto = items.reduce((acc, item) => acc + n(item.resumen.venta), 0);
+src\pages\CotizadorDirectoAI.jsx:932:    const descuento = subtotalBruto * (n(form.descuento) / 100);
+src\pages\CotizadorDirectoAI.jsx:933:    const subtotal = subtotalBruto - descuento;
+src\pages\CotizadorDirectoAI.jsx:934:    const iva = form.usaIVA ? subtotal * POLITICA.iva : 0;
+src\pages\CotizadorDirectoAI.jsx:935:    const totalCliente = subtotal + iva;
+src\pages\CotizadorDirectoAI.jsx:962:    return { subtotalBruto, descuento, subtotal, iva, totalCliente, pagos, sumaPagos };
+src\pages\CotizadorDirectoAI.jsx:979:    const actual = JSON.parse(localStorage.getItem('elanvision_cotizaciones_directas') || '[]');
+src\pages\CotizadorDirectoAI.jsx:980:    localStorage.setItem('elanvision_cotizaciones_directas', JSON.stringify([payload, ...actual]));
+src\pages\CotizadorDirectoAI.jsx:983:      setMensaje('Cotizacion guardada localmente. Supabase no disponible.');
+src\pages\CotizadorDirectoAI.jsx:992:        estado: 'cotizacion_guardada',
+src\pages\CotizadorDirectoAI.jsx:1000:        console.error('Error guardando cotizacion directa en Supabase:', error);
+src\pages\CotizadorDirectoAI.jsx:1001:        setMensaje('Cotizacion guardada localmente. No se pudo guardar en Supabase.');
+src\pages\CotizadorDirectoAI.jsx:1005:      setMensaje(clienteSupabaseOk ? 'Cotizacion y cliente guardados en Supabase.' : 'Cotizacion guardada en Supabase. Cliente 
+pendiente de sincronizar.');
+src\pages\CotizadorDirectoAI.jsx:1008:      console.error('Error inesperado guardando cotizacion directa:', error);
+src\pages\CotizadorDirectoAI.jsx:1009:      setMensaje('Cotizacion guardada localmente. Supabase no disponible.');
+src\pages\CotizadorDirectoAI.jsx:1020:      Android/iOS pueden bloquear el dialogo, mostrar blanco o no ofrecer guardar PDF.
+src\pages\CotizadorDirectoAI.jsx:1049:    const tituloPDF = `Cotizacion-ELANVISION-${Date.now()}`;
+src\pages\CotizadorDirectoAI.jsx:1058:          <title>${tituloPDF}</title>
+src\pages\CotizadorDirectoAI.jsx:1111:        <h1>CREA TU COTIZACION</h1>
+src\pages\CotizadorDirectoAI.jsx:1309:            Cargar imagenes, PDF o referencias opcionales
+src\pages\CotizadorDirectoAI.jsx:1310:            <input type="file" multiple accept="image/*,.pdf,.xlsx,.xls,.csv" onChange={manejarArchivos} />
+src\pages\CotizadorDirectoAI.jsx:1333:            Agregar item a cotizacion
+src\pages\CotizadorDirectoAI.jsx:1394:              <label>Aplicar IVA</label>
+src\pages\CotizadorDirectoAI.jsx:1396:                value={form.usaIVA ? 'si' : 'no'}
+src\pages\CotizadorDirectoAI.jsx:1397:                onChange={(e) => actualizar('usaIVA', e.target.value === 'si')}
+src\pages\CotizadorDirectoAI.jsx:1399:                <option value="no">Sin IVA</option>
+src\pages\CotizadorDirectoAI.jsx:1400:                <option value="si">Con IVA</option>
+src\pages\CotizadorDirectoAI.jsx:1442:              <span>Subtotal</span>
+src\pages\CotizadorDirectoAI.jsx:1443:              <b>{money(total.subtotal)}</b>
+src\pages\CotizadorDirectoAI.jsx:1446:            {form.usaIVA && (
+src\pages\CotizadorDirectoAI.jsx:1448:                <span>IVA</span>
+src\pages\CotizadorDirectoAI.jsx:1449:                <b>{money(total.iva)}</b>
+src\pages\CotizadorDirectoAI.jsx:1470:            Guardar cotizacion
+src\pages\CotizadorDirectoAI.jsx:1475:            Descargar / Imprimir PDF
+src\pages\CotizadorDirectoAI.jsx:1488:    <p className="muted">Agrega un item a la cotizacion para ver la trazabilidad tecnica.</p>
+src\pages\CotizadorDirectoAI.jsx:1517:  <p className="muted">Vista interna. Esta informacion no aparece en el PDF del cliente.</p>
+src\pages\CotizadorDirectoAI.jsx:1557:                <span>COTIZACION</span>
+src\pages\CotizadorDirectoAI.jsx:1601:              const subtotalItem = n(item.resumen?.venta);
+src\pages\CotizadorDirectoAI.jsx:1602:              const precioUnitario = subtotalItem / cantidad;
+src\pages\CotizadorDirectoAI.jsx:1615:                    <p><span>Subtotal</span><b>{money(subtotalItem)}</b></p>
+src\pages\CotizadorDirectoAI.jsx:1626:              <span>Subtotal</span>
+src\pages\CotizadorDirectoAI.jsx:1627:              <b>{money(total.subtotalBruto)}</b>
+src\pages\CotizadorDirectoAI.jsx:1636:              <span>Subtotal ajustado</span>
+src\pages\CotizadorDirectoAI.jsx:1637:              <b>{money(total.subtotal)}</b>
+src\pages\CotizadorDirectoAI.jsx:1640:            {form.usaIVA && (
+src\pages\CotizadorDirectoAI.jsx:1642:                <span>IVA 15%</span>
+src\pages\CotizadorDirectoAI.jsx:1643:                <b>{money(total.iva)}</b>
+src\pages\CotizadorDirectoAI.jsx:1670:            <p>La presente cotizacion tiene validez de 15 dias.</p>
+src\pages\CotizadorVisual.jsx:135:  const [aplicaIva, setAplicaIva] = useState(false);
+src\pages\CotizadorVisual.jsx:258:      const subtotal = precioUnitario * areaItem;
+src\pages\CotizadorVisual.jsx:260:      const montoDescuento = subtotal * (descuentoPermitido / 100);
+src\pages\CotizadorVisual.jsx:261:      const total = subtotal - montoDescuento;
+src\pages\CotizadorVisual.jsx:266:        subtotal,
+src\pages\CotizadorVisual.jsx:274:    const subtotalItems = items.reduce((acc, item) => acc + num(item.total), 0);
+src\pages\CotizadorVisual.jsx:281:    const subtotal = subtotalItems + transporte;
+src\pages\CotizadorVisual.jsx:282:    const iva = aplicaIva ? subtotal * 0.15 : 0;
+src\pages\CotizadorVisual.jsx:283:    const total = subtotal + iva;
+src\pages\CotizadorVisual.jsx:286:      subtotalItems,
+src\pages\CotizadorVisual.jsx:290:      subtotal,
+src\pages\CotizadorVisual.jsx:291:      iva,
+src\pages\CotizadorVisual.jsx:296:  }, [items, km, costoKm, aplicaIva]);
+src\pages\CotizadorVisual.jsx:346:    const subtotal = precioUnitario * cantidadBase;
+src\pages\CotizadorVisual.jsx:348:    const montoDescuento = subtotal * (descuentoPermitido / 100);
+src\pages\CotizadorVisual.jsx:349:    const total = subtotal - montoDescuento;
+src\pages\CotizadorVisual.jsx:366:      subtotal,
+src\pages\CotizadorVisual.jsx:395:        subtotal: instalacionM2 * cantidadBase,
+src\pages\CotizadorVisual.jsx:466:        cotizacion: true,
+src\pages\CotizadorVisual.jsx:483:    const detalle = items.map((item, index) => {
+src\pages\CotizadorVisual.jsx:498:      '*COTIZACION ELANVISUAL*',
+src\pages\CotizadorVisual.jsx:512:      '*Detalle*',
+src\pages\CotizadorVisual.jsx:513:      ...detalle,
+src\pages\CotizadorVisual.jsx:518:      `Subtotal items: ${money(resumen.subtotalItems)}`,
+src\pages\CotizadorVisual.jsx:519:      `Subtotal: ${money(resumen.subtotal)}`,
+src\pages\CotizadorVisual.jsx:520:      aplicaIva ? `IVA 15%: ${money(resumen.iva)}` : 'IVA: No aplicado',
+src\pages\CotizadorVisual.jsx:525:      'Precios sujetos a validacion final segun artes, medidas definitivas y condiciones reales de instalacion.',
+src\pages\CotizadorVisual.jsx:529:  }, [items, resumen, km, costoKm, aplicaIva, cliente, proyecto, pedidoGenerado]);
+src\pages\CotizadorVisual.jsx:557:        <p>Material, tinta, medidas, instalacion, transporte e IVA.</p>
+src\pages\CotizadorVisual.jsx:745:            {items.length === 0 && <div className="empty">Agrega items para construir la cotizacion.</div>}
+src\pages\CotizadorVisual.jsx:760:          <label className="iva-check">
+src\pages\CotizadorVisual.jsx:761:            <input type="checkbox" checked={aplicaIva} onChange={(e) => setAplicaIva(e.target.checked)} />
+src\pages\CotizadorVisual.jsx:762:            Aplicar IVA 15%
+src\pages\CotizadorVisual.jsx:766:            <p><span>Items</span><b>{money(resumen.subtotalItems)}</b></p>
+src\pages\CotizadorVisual.jsx:769:            <p><span>Subtotal</span><b>{money(resumen.subtotal)}</b></p>
+src\pages\CotizadorVisual.jsx:770:            <p><span>IVA</span><b>{money(resumen.iva)}</b></p>
+src\pages\CotizadorVisual.jsx:778:            <button className="secondary-btn" type="button" onClick={() => copiarTexto(textoWhatsApp, 'Cotizacion copiada para 
+WhatsApp.')}><Copy size={18} />Copiar WhatsApp cliente</button>
+src\pages\CotizadorVisual.jsx:835:        .iva-check{display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid 
+#e5e7eb;border-radius:16px;padding:12px;margin:14px 0;font-weight:950}
+src\pages\CotizadorVisual.jsx:836:        .iva-check input{width:22px;height:22px}
+src\pages\DashboardERP.jsx:211:    const produccionActiva = listaPedidos.filter((p) => estadoActivo(p.estadoProduccion)).length;
+src\pages\DashboardERP.jsx:256:      produccionActiva,
+src\pages\DashboardERP.jsx:305:      count: data.produccionActiva,
+src\pages\DashboardERP.jsx:414:          <MiniAction icon={<Factory size={20} />} title="Reporte producción" desc="Producción activa y entregas." onClick={() => 
+setPage('produccion')} />
+src\pages\DashboardERP.jsx:501:            <KPI title="Producción" value={data.produccionActiva} desc="OT activas" icon={<Factory size={18} />} />
+src\pages\EMCDashboard.jsx:42:const extensionesPermitidas = ".pdf,.xlsx,.xls,.csv,.txt,.png,.jpg,.jpeg,.webp";
+src\pages\EMCDashboard.jsx:72:  if (tipo.includes("pdf") || nombre.endsWith(".pdf")) return <FileText size={20} />;
+src\pages\EMCDashboard.jsx:490:                    El catálogo entra por PDF, Excel, CSV, TXT o imágenes.
+src\pages\EMCDashboard.jsx:598:                    Subir PDF, Excel, CSV, TXT o imágenes
+src\pages\EMCDashboard.jsx:658:                  placeholder="Ejemplo: lista trae precios + IVA..."
+src\pages\EMCImportadorAI22.jsx:22:const extensionesPermitidas = ".pdf,.xlsx,.xls,.csv,.txt,.png,.jpg,.jpeg,.webp";
+src\pages\EMCImportadorAI22.jsx:53:  if (tipo.includes("pdf") || nombre.endsWith(".pdf")) return <FileText size={20} />;
+src\pages\EMCImportadorAI22.jsx:231:              <b>Seleccionar PDF, Excel, imagen, CSV o TXT</b>
+src\pages\Home.jsx:146:            Solicitar cotizacion
+src\pages\InventarioInteligente.jsx:153:          <h1>Acceso privado</h1>
+src\pages\MaterialesCostos.jsx:35:  iva: 15,
+src\pages\MaterialesCostos.jsx:176:  const iva = item.iva ?? item.porcentaje_iva ?? item.impuesto ?? itemBase.iva ?? itemBase.porcentaje_iva ?? 15;
+src\pages\MaterialesCostos.jsx:198:    iva: Number(iva || 0),
+src\pages\MaterialesCostos.jsx:246:  const iva = num(form.iva);
+src\pages\MaterialesCostos.jsx:251:  const costoIva = costo * (1 + iva / 100);
+src\pages\MaterialesCostos.jsx:252:  const costoFinal = costoIva * (1 + extra / 100);
+src\pages\MaterialesCostos.jsx:269:  const [detalles, setDetalles] = useState([]);
+src\pages\MaterialesCostos.jsx:300:    supabase.from('combinaciones_detalle').select('*'),
+src\pages\MaterialesCostos.jsx:329:  if (!det.error) setDetalles(det.data || []);
+src\pages\MaterialesCostos.jsx:370:      iva: num(materialForm.iva),
+src\pages\MaterialesCostos.jsx:440:  const agregarDetalle = async () => {
+src\pages\MaterialesCostos.jsx:444:    const { error } = await supabase.from('combinaciones_detalle').insert({
+src\pages\MaterialesCostos.jsx:498:  const detallesCombo = detalles.filter((d) => d.combinacion_id === editCombo);
+src\pages\MaterialesCostos.jsx:558:              <input type="number" step="0.01" placeholder="IVA %" value={materialForm.iva} onChange={(e) => setMaterialForm({ 
+...materialForm, iva: e.target.value })} />
+src\pages\MaterialesCostos.jsx:680:                <button type="button" className="secondary" onClick={agregarDetalle}>Agregar a combinacion</button>
+src\pages\MaterialesCostos.jsx:683:                  {detallesCombo.map((d) => {
+src\pages\MaterialesCostos.jsx:688:                        <button type="button" onClick={() => eliminar('combinaciones_detalle', d.id)}>Eliminar</button>
+src\pages\PanelVentas.jsx:9:          <p>Accesos del vendedor para operar clientes, cotizaciones y pedidos.</p>
+src\pages\PanelVentas.jsx:31:          <p>Crear cotizaciones comerciales.</p>
+src\pages\PedidosProduccion.jsx:54:    cotizacionesProveedor = [],
+src\pages\PedidosProduccion.jsx:122:  const solicitudActiva = useMemo(() => {
+src\pages\PedidosProduccion.jsx:124:    return cotizacionesProveedor.find((s) => s.pedidoId === pedidoActivo.id);
+src\pages\PedidosProduccion.jsx:125:  }, [cotizacionesProveedor, pedidoActivo]);
+src\pages\PedidosProduccion.jsx:343:            <small>Equivalente USD ${Number(pago.montoUSD || 0).toFixed(2)} · TC ${Number(pago.tipoCambio || 0).toFixed(2)}</small>
+src\pages\PedidosProduccion.jsx:359:          <div class="legal">Este recibo soporta el pago registrado para la orden indicada. Producción inicia según validación 
+administrativa y disponibilidad de materiales.</div>
+src\pages\PedidosProduccion.jsx:378:  const solicitarRecotizacion = () => {
+src\pages\PedidosProduccion.jsx:385:    if (!solicitudActiva) return alert('Primero generá una solicitud de recotización.');
+src\pages\PedidosProduccion.jsx:390:      solicitudId: solicitudActiva.id,
+src\pages\PedidosProduccion.jsx:492:    if (utilidadReal <= 0) return alert('La utilidad real no permite liquidación positiva.');
+src\pages\PedidosProduccion.jsx:527:    if (!esAdmin) return alert('Solo administración puede eliminar pedidos definitivamente.');
+src\pages\PedidosProduccion.jsx:532:      `Para eliminar definitivamente el pedido ${codigo}, escribí ELIMINAR`
+src\pages\PedidosProduccion.jsx:539:    alert('Pedido eliminado definitivamente.');
+src\pages\PedidosProduccion.jsx:566:        pedido?.sistemaConstructivo || pedido?.cotizacion?.sistemaConstructivo,
+src\pages\PedidosProduccion.jsx:863:                      <label>Observaciones<input value={pagoObservaciones} onChange={(e) => setPagoObservaciones(e.target.value)} 
+placeholder="Detalle libre del pago..." /></label>
+src\pages\PedidosProduccion.jsx:865:                      <button className="secondary-btn" type="button" onClick={imprimirReciboCaja}>Generar recibo PDF</button>
+src\pages\PedidosProduccion.jsx:877:                                <button className="secondary-btn" type="button" onClick={imprimirReciboCaja}>📄 PDF</button>
+src\pages\PedidosProduccion.jsx:940:                    <button className="secondary-btn" type="button" onClick={solicitarRecotizacion}>Crear solicitud proveedor</button>
+src\pages\PedidosProduccion.jsx:958:                  {solicitudActiva && (
+src\pages\PedidosProduccion.jsx:960:                      <strong>{solicitudActiva.codigo}</strong>
+src\pages\PedidosProduccion.jsx:961:                      {(solicitudActiva.respuestas || []).map((r) => (
+src\pages\PedidosProduccion.jsx:1012:                    Eliminar definitivamente
+src\pages\ProduccionPanel.jsx:64:      pedido?.cotizacion?.total ||
+src\pages\ProduccionPanel.jsx:406:              <div className="produccion-detalle">
+src\pages\ProduccionPanel.jsx:517:                      pedidoActivo?.cotizacion?.sistemaConstructivo,
+src\pages\RecomendadorTecnico.jsx:30:        <p>Analiza condiciones reales y recomienda una solución técnica. No calcula costos, utilidad, comisión ni PDF.</p>
+src\pages\Servicios.jsx:96:    subtitulo: 'Detalles exclusivos y personalizados',
+src\pages\Servicios.jsx:98:      'Grabado y corte láser sobre diferentes materiales para piezas corporativas, promocionales y decorativas.',
+src\pages\Servicios.jsx:108:      'Detalles personalizados',
+src\pages\Tienda.jsx:130:  const [categoriaActiva, setCategoriaActiva] = useState(slugInicial);
+src\pages\Tienda.jsx:193:      .filter((producto) => !categoriaActiva || producto.categoriaSlug === categoriaActiva)
+src\pages\Tienda.jsx:203:  }, [productosNormalizados, categoriaActiva, busqueda]);
+src\pages\Tienda.jsx:208:    setCategoriaActiva(slug);
+src\pages\Tienda.jsx:215:    setCategoriaActiva('');
+src\pages\Tienda.jsx:405:        {categoriaActiva ? (
+src\pages\Tienda.jsx:412:        {categoriaActiva ? (
+src\pages\Tienda.jsx:430:      {!categoriaActiva && (
+src\pages\Tienda.jsx:458:      {categoriaActiva && (
+src\pages\Tienda.jsx:511:      {!categoriaActiva && categorias.length === 0 && (
+src\pages\Tienda.jsx:519:      {categoriaActiva && productosFiltrados.length === 0 && (
+src\pages\Tienda.jsx:587:                  accept=".png,.jpg,.jpeg,.webp,.svg,.pdf,.ai,.eps"
+src\pages\Tienda.jsx:597:                  accept=".png,.jpg,.jpeg,.webp,.svg,.pdf"
+src\pages\Tienda.jsx:618:                placeholder="Describe tu idea, medidas aproximadas, colores, ubicación, tipo de iluminación y cualquier detalle importante."
+src\services\emc\emcImportService.js:84:    throw new Error("Subí al menos un archivo PDF, Excel, CSV, TXT o imagen.");
+src\services\emc\emcService.js:21:function limpiarNombreArchivo(nombre = "archivo.pdf") {
+src\services\emc\emcService.js:34:  const nombre = limpiarNombreArchivo(archivo?.name || `archivo-${index}.pdf`);
+src\services\emc\emcService.js:287:    const detalle = primerError
+src\services\emc\emcService.js:288:      ? `${primerError.item || "Item"}: ${primerError.error || "Error sin detalle"}`
+src\services\emc\emcService.js:291:    throw new Error(detalle);
+src\services\finanzas\finanzasPedidoAdapter.js:117:      // Compatibilidad legacy, siempre derivada del historial real.
+src\services\pedidos\pedidosMapper.js:33:    subtotal: Number(row.subtotal || resumenOriginal.subtotal || 0),
+src\services\pedidos\pedidosMapper.js:108:    estado: row.estado || 'cotizacion_guardada',
+src\services\pedidos\pedidosMapper.js:111:    seguimientoEstado: row.seguimiento_estado || row.estado || 'cotizacion_guardada',
+src\services\pedidos\pedidosMapper.js:182:    estado: pedido.estado || 'cotizacion_guardada',
+src\services\pedidos\pedidosMapper.js:185:    seguimiento_estado: pedido.seguimientoEstado || pedido.estado || 'cotizacion_guardada',
+src\services\pedidos\pedidosMapper.js:187:    subtotal: Number(resumen.subtotal || pedido.subtotal || total || 0),
+src\services\pedidos\pedidosMapper.js:189:    iva: Number(resumen.iva || pedido.iva || 0),
+src\services\suppliers\supplierCaptureParser.js:2:  'Managua','Chinandega','León','Masaya','Granada','Carazo','Rivas','Estelí','Matagalpa',
+src\services\aiArchivosService.js:8:  "pdf",
+src\services\aiArchivosService.js:25:  if (extension === "pdf") return "pdf";
+src\services\aiService.js:41:export async function buscarCotizaciones(vendedorId = null) {
+src\services\aiService.js:44:      .from('cotizaciones_inteligentes')
+src\services\aiTemporalService.js:5:  'application/pdf',
+src\services\aiTemporalService.js:17:  const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'svg', 'pdf'];
+src\services\aiTemporalService.js:20:    return { ok: false, error: 'Formato no permitido. Usar JPG, PNG, SVG o PDF.' };
+src\services\aiTemporalService.js:83:  if (extension === 'pdf') {
+src\services\aiTemporalService.js:86:      tipo: file.type || 'application/pdf',
+src\services\aiTemporalService.js:91:      aviso: 'PDF recibido temporalmente. Para evitar payload pesado, se envÃa metadata; extracciÃ³n PDF avanzada queda para 
+AI-04C/AI-05.',
+src\services\archivosService.js:15:export async function buscarCotizaciones() {
+src\services\cotizacionesService.js:1:export async function obtenerCotizaciones() {
+src\services\memoriaOperativaElan.js:190:    t.includes('generar cotizacion') ||
+src\services\memoriaOperativaElan.js:191:    t.includes('genera cotizacion') ||
+src\services\memoriaOperativaElan.js:193:    t.includes('hacer cotizacion');
+src\services\memoriaOperativaElan.js:196:    t.includes('agrega') && t.includes('cotizacion') ||
+src\services\memoriaOperativaElan.js:197:    t.includes('sumale') && t.includes('cotizacion') ||
+src\services\memoriaOperativaElan.js:198:    t.includes('modifica') && t.includes('cotizacion');
+src\services\memoriaOperativaElan.js:200:  const numeroCotizacion = (mensaje.match(/(?:AI|COT|EV)[-\w\d]+/i) || [null])[0];
+src\services\memoriaOperativaElan.js:204:      modificaExistente && numeroCotizacion ? 'modificacion_cotizacion_existente' :
+src\services\memoriaOperativaElan.js:205:      mandaCotizador ? 'cotizacion_en_preparacion' :
+src\services\memoriaOperativaElan.js:209:    numero_cotizacion: numeroCotizacion,
+src\services\memoriaOperativaElan.js:314:export async function cargarMemoriaOperativaElan({
+src\services\memoriaOperativaElan.js:327:    cotizaciones,
+src\services\memoriaOperativaElan.js:336:    leerTabla('cotizaciones_inteligentes', 'created_at', 20),
+src\services\memoriaOperativaElan.js:344:      cotizacion: {},
+src\services\memoriaOperativaElan.js:346:    cotizacion: {},
+src\services\memoriaOperativaElan.js:370:      cotizaciones_inteligentes: limpiar(cotizaciones.data, 20),
+src\services\memoriaOperativaElan.js:388:        cotizaciones_inteligentes: filtrarRelevantesAI06(cotizaciones.data, mensaje, 5),
+src\services\memoriaOperativaElan.js:394:      'Si un dato no existe en memoria operativa, indicar pendiente de validación.',
+src\services\memoriaOperativaElan.js:420:      cotizaciones_inteligentes: cotizaciones.ok,
+src\services\motorProduccion.js:8:  const ancho = n(origen.ancho || origen.medidas?.ancho || origen.cotizacion?.ancho || origen.item?.ancho);
+src\services\motorProduccion.js:9:  const alto = n(origen.alto || origen.medidas?.alto || origen.cotizacion?.alto || origen.item?.alto);
+src\services\motorProduccion.js:52:    pedido.cotizacion?.tecnologia ||
+src\services\motorProduccion.js:60:  const despiece = sistema.despiece || sistema.materiales || pedido.despiece || pedido.cotizacion?.despiece || [];
+src\services\motorProduccion.js:61:  const estructura = sistema.estructura || pedido.estructura || pedido.cotizacion?.estructura || [];
+src\services\motorProduccion.js:62:  const obraCivil = sistema.obraCivil || sistema.obra_civil || pedido.obraCivil || pedido.cotizacion?.obra_civil || [];
+src\services\motorProduccion.js:155:  if (nombres.includes("estructura")) fabricacion.push("Verificar escuadra, soldadura, refuerzos y pintura anticorrosiva.");
+src\services\motorProduccion.js:175:  cotizacion = {},
+src\services\motorProduccion.js:178:  const sistema = sistemaConstructivo || pedido.sistemaConstructivo || pedido.cotizacion?.sistemaConstructivo || 
+cotizacion.sistemaConstructivo || {};
+src\services\motorProduccion.js:182:    ...cotizacion,
+src\services\motorProduccion.js:185:    medidas: sistema.medidas || pedido.medidas || cotizacion.medidas,
+src\services\motorRecomendacion.js:56:    alternativas: resultados.slice(1, 4),
+src\services\sembrarBibliotecaTecnica.js:1:import { recetasConstructivasBase } from "../data/recetasConstructivasBase";
+src\services\sembrarBibliotecaTecnica.js:74:  for (const receta of recetasConstructivasBase) {
+src\App.jsx:29:import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
+src\App.jsx:54:    if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
+src\App.jsx:112:      cotizacionesInteligentes: '/cotizaciones-inteligentes',
+src\App.jsx:237:      {page === 'cotizacionesInteligentes' &&
+src\App.jsx:238:        (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="cotizador" />)}
+src\main.jsx:1:if (typeof window !== 'undefined' && !localStorage.getItem('elanvisual_limpieza_masiva_20260615')) {
+src\main.jsx:18:  localStorage.setItem('elanvisual_limpieza_masiva_20260615', 'ok');
+
+
