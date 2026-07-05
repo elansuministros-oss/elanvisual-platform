@@ -1,54 +1,11 @@
 import { listarItemsEMC } from '../../../services/emc/emcService';
 
-const EMC_ITEM_REFERENCES = Object.freeze({
-  'mat-acm-3mm': Object.freeze({
-    emcItemId: 'emc-acm-3mm-standard',
-    supplierId: 'supplier-alum-panel-mock',
-    supplierName: 'Proveedor Paneles Mock',
-    unitCost: 18,
-    currency: 'USD',
-    unit: 'm2',
-  }),
-  'mat-pvc-10mm': Object.freeze({
-    emcItemId: 'emc-pvc-10mm-standard',
-    supplierId: 'supplier-plastics-mock',
-    supplierName: 'Proveedor Plasticos Mock',
-    unitCost: 12,
-    currency: 'USD',
-    unit: 'm2',
-  }),
-  'mat-frontlit-banner': Object.freeze({
-    emcItemId: 'emc-frontlit-banner-standard',
-    supplierId: 'supplier-print-media-mock',
-    supplierName: 'Proveedor Medios Impresion Mock',
-    unitCost: 6,
-    currency: 'USD',
-    unit: 'm2',
-  }),
-  'mat-vinyl-adhesive': Object.freeze({
-    emcItemId: 'emc-vinyl-adhesive-standard',
-    supplierId: 'supplier-vinyl-mock',
-    supplierName: 'Proveedor Vinil Mock',
-    unitCost: 4.5,
-    currency: 'USD',
-    unit: 'm2',
-  }),
-  'mat-roll-up-banner': Object.freeze({
-    emcItemId: 'emc-roll-up-banner-standard',
-    supplierId: 'supplier-pop-display-mock',
-    supplierName: 'Proveedor POP Mock',
-    unitCost: 22,
-    currency: 'USD',
-    unit: 'unit',
-  }),
-});
-
 const EMC_MATERIAL_SEARCH_TERMS = Object.freeze({
-  'mat-acm-3mm': Object.freeze(['acm 3mm', 'acm', 'alucobond']),
-  'mat-pvc-10mm': Object.freeze(['pvc 10mm', 'pvc']),
-  'mat-frontlit-banner': Object.freeze(['frontlit banner', 'lona frontlit', 'banner']),
-  'mat-vinyl-adhesive': Object.freeze(['vinil adhesivo', 'vinyl adhesive', 'vinil']),
-  'mat-roll-up-banner': Object.freeze(['roll up banner', 'roll up']),
+  acm: Object.freeze(['acm 3mm', 'acm', 'alucobond']),
+  pvc: Object.freeze(['pvc 10mm', 'pvc']),
+  lona: Object.freeze(['frontlit banner', 'lona frontlit', 'banner']),
+  vinil: Object.freeze(['vinil adhesivo', 'vinyl adhesive', 'vinil']),
+  rollup: Object.freeze(['roll up banner', 'roll up']),
 });
 
 const EMC_REAL_LOOKUP_TIMEOUT_MS = 2500;
@@ -61,24 +18,27 @@ function normalizeText(value = '') {
     .trim();
 }
 
-function resolverItemCatalogoMock(materialId) {
-  const reference = EMC_ITEM_REFERENCES[materialId] || {};
-
+function createPendingReference(materialQuery = '') {
   return {
-    materialId,
-    emcItemId: reference.emcItemId || '',
-    supplierId: reference.supplierId || '',
-    supplierName: reference.supplierName || '',
-    source: 'EMC_MOCK',
-    unitCost: Number(reference.unitCost || 0),
-    currency: reference.currency || 'USD',
-    unit: reference.unit || '',
-    costSource: 'EMC_MOCK_COST',
+    materialId: '',
+    materialName: '',
+    materialQuery,
+    emcItemId: '',
+    supplierId: '',
+    supplierName: '',
+    source: 'PENDING_CATALOG_MATCH',
+    unitCost: 0,
+    currency: '',
+    unit: '',
+    costSource: '',
   };
 }
 
-function getSearchTerms(materialId) {
-  return [materialId, ...(EMC_MATERIAL_SEARCH_TERMS[materialId] || [])].filter(Boolean);
+function getSearchTerms(materialQuery = '') {
+  const normalizedQuery = normalizeText(materialQuery);
+  const presetKey = Object.keys(EMC_MATERIAL_SEARCH_TERMS).find((key) => normalizedQuery.includes(key));
+  const presetTerms = presetKey ? EMC_MATERIAL_SEARCH_TERMS[presetKey] : [];
+  return [materialQuery, ...presetTerms].filter(Boolean);
 }
 
 function getItemSearchText(item = {}) {
@@ -116,7 +76,9 @@ function mapRealEmcItem(materialId, item = {}) {
   const firstPrice = getFirstPrice(item);
 
   return {
-    materialId,
+    materialId: String(item.id || materialId || '').trim(),
+    materialName: String(item.nombre || item.descripcion || '').trim(),
+    materialQuery: materialId,
     emcItemId: String(item.id || '').trim(),
     supplierId: String(item.proveedor_id || firstPrice?.proveedor_id || '').trim(),
     supplierName: String(item.proveedor_nombre || item.proveedor || firstPrice?.proveedor_nombre || '').trim(),
@@ -169,7 +131,7 @@ async function resolverItemCatalogo(materialId) {
     return realReference;
   }
 
-  return resolverItemCatalogoMock(materialId);
+  return createPendingReference(materialId);
 }
 
 export const EMCCore = Object.freeze({

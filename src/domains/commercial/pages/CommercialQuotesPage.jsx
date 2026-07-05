@@ -11,6 +11,17 @@ const formatMoney = (value, currency = 'USD') =>
     maximumFractionDigits: 2,
   })}`;
 
+const getLineResolutionStatus = (line) => {
+  if (line.resolutionStatus) return line.resolutionStatus;
+  if (!line.materialId) return 'PENDIENTE MATERIAL';
+  if (!line.tintaId) return 'PENDING_INK_MATCH';
+  if (!line.technologyId) return 'PENDING_TECHNOLOGY_MATCH';
+  if (!line.emcItemId) return 'PENDIENTE EMC';
+  return 'RESUELTA';
+};
+
+const getStatusClassName = (status) => status.toLowerCase().replace(/[_\s]+/g, '-');
+
 export default function CommercialQuotesPage() {
   const [projects] = useState(() => QuoteService.listProjects());
   const [quotes, setQuotes] = useState(() => QuoteService.list());
@@ -166,14 +177,23 @@ export default function CommercialQuotesPage() {
                       <span>Subtotal: {formatMoney(line.lineSubtotal, line.currency)}</span>
                     </div>
                     <div className="commercial-technical-refs">
+                      <span className={`commercial-resolution-status status-${getStatusClassName(getLineResolutionStatus(line))}`}>
+                        Estado técnico: {getLineResolutionStatus(line)}
+                      </span>
                       <span>Recipe ID: {line.recipeId || '-'}</span>
                       <span>BOM ID: {line.bomId || '-'}</span>
-                      <span>Material ID: {line.materialId || '-'}</span>
-                      <span>Technology ID: {line.technologyId || '-'}</span>
+                      <span>Material: {line.materialName || line.materialQuery || 'PENDIENTE MATERIAL'}</span>
+                      <span>Material ID: {line.materialId || 'PENDIENTE MATERIAL'}</span>
+                      <span>Tinta: {line.tintaName || line.tintaQuery || 'PENDING_INK_MATCH'}</span>
+                      <span>Tinta ID: {line.tintaId || 'PENDING_INK_MATCH'}</span>
+                      <span>Tinta Source: {line.tintaSource || 'PENDING_INK_MATCH'}</span>
+                      <span>Tecnología: {line.technologyName || line.technologyQuery || 'PENDING_TECHNOLOGY_MATCH'}</span>
+                      <span>Technology ID: {line.technologyId || 'PENDING_TECHNOLOGY_MATCH'}</span>
+                      <span>Technology Source: {line.technologySource || 'PENDING_TECHNOLOGY_MATCH'}</span>
                       <span>EMC Item ID: {line.emcItemId || '-'}</span>
                       <span>Supplier ID: {line.supplierId || '-'}</span>
-                      <span>Supplier Name: {line.supplierName || '-'}</span>
-                      <span>Source: {line.source || '-'}</span>
+                      <span>Proveedor: {line.supplierName || 'PENDIENTE EMC'}</span>
+                      <span>Source: {line.source || 'PENDING_CATALOG_MATCH'}</span>
                       <span>AI-23 Status: {line.ai23Status || 'PENDING'}</span>
                       <span>AI-23 Source: {line.ai23Source || '-'}</span>
                       <span>AI-23 Message: {line.ai23Message || '-'}</span>

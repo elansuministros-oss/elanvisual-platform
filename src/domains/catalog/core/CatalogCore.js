@@ -1,4 +1,5 @@
 import { EMCCore } from '../../emc';
+import { inkResolver, technologyResolver } from '../resolvers';
 
 const NOT_IMPLEMENTED = 'Not implemented';
 
@@ -12,49 +13,82 @@ const PRODUCT_TECHNICAL_REFERENCES = Object.freeze({
   'prod-rotulo-acm': Object.freeze({
     recipeId: 'recipe-rotulo-acm-standard',
     bomId: 'bom-rotulo-acm-standard',
-    technologyId: 'tech-router-vinyl-assembly',
-    materialId: 'mat-acm-3mm',
+    materialQuery: 'acm 3mm',
+    tintaQuery: 'vinil corte',
+    technologyQuery: 'router cnc vinil',
   }),
   'prod-letras-3d': Object.freeze({
     recipeId: 'recipe-letras-3d-standard',
     bomId: 'bom-letras-3d-standard',
-    technologyId: 'tech-cnc-fabrication',
-    materialId: 'mat-pvc-10mm',
+    materialQuery: 'pvc 10mm',
+    tintaQuery: '',
+    technologyQuery: 'cnc fabricacion',
   }),
   'prod-lona-impresa': Object.freeze({
     recipeId: 'recipe-lona-impresa-standard',
     bomId: 'bom-lona-impresa-standard',
-    technologyId: 'tech-large-format-print',
-    materialId: 'mat-frontlit-banner',
+    materialQuery: 'lona frontlit',
+    tintaQuery: 'tinta solvente',
+    technologyQuery: 'impresion gran formato',
   }),
   'prod-vinil-adhesivo': Object.freeze({
     recipeId: 'recipe-vinil-adhesivo-standard',
     bomId: 'bom-vinil-adhesivo-standard',
-    technologyId: 'tech-eco-solvent-print',
-    materialId: 'mat-vinyl-adhesive',
+    materialQuery: 'vinil adhesivo',
+    tintaQuery: 'tinta ecosolvente',
+    technologyQuery: 'impresion ecosolvente',
   }),
   'prod-roll-up': Object.freeze({
     recipeId: 'recipe-roll-up-standard',
     bomId: 'bom-roll-up-standard',
-    technologyId: 'tech-large-format-pop',
-    materialId: 'mat-roll-up-banner',
+    materialQuery: 'roll up banner',
+    tintaQuery: 'tinta ecosolvente',
+    technologyQuery: 'impresion gran formato pop',
   }),
 });
 
+function getResolutionStatus({ materialId, tintaId, technologyId, emcItemId }) {
+  if (!materialId) return 'PENDIENTE MATERIAL';
+  if (!tintaId) return 'PENDING_INK_MATCH';
+  if (!technologyId) return 'PENDING_TECHNOLOGY_MATCH';
+  if (!emcItemId) return 'PENDIENTE EMC';
+  return 'RESUELTA';
+}
+
 async function resolverProducto(productId) {
   const references = PRODUCT_TECHNICAL_REFERENCES[productId] || {};
-  const emcReference = await EMCCore.resolverItemCatalogo(references.materialId || '');
+  const [emcReference, tintaReference, technologyReference] = await Promise.all([
+    EMCCore.resolverItemCatalogo(references.materialQuery || productId || ''),
+    inkResolver.resolveForQuote(references.tintaQuery || ''),
+    technologyResolver.resolveForQuote(references.technologyQuery || ''),
+  ]);
+  const materialId = emcReference.materialId || '';
+  const tintaId = tintaReference.id || '';
+  const technologyId = technologyReference.id || '';
+  const emcItemId = emcReference.emcItemId || '';
+  const resolutionStatus = getResolutionStatus({ materialId, tintaId, technologyId, emcItemId });
 
   return {
     productId,
     recipeId: references.recipeId || '',
     bomId: references.bomId || '',
-    technologyId: references.technologyId || '',
-    materialId: references.materialId || '',
-    emcItemId: emcReference.emcItemId || '',
+    materialId,
+    materialName: emcReference.materialName || '',
+    materialQuery: references.materialQuery || '',
+    tintaId,
+    tintaName: tintaReference.name || '',
+    tintaQuery: references.tintaQuery || '',
+    technologyId,
+    technologyName: technologyReference.name || '',
+    technologyQuery: references.technologyQuery || '',
+    technologySource: technologyReference.source || 'PENDING_TECHNOLOGY_MATCH',
+    emcItemId,
     supplierId: emcReference.supplierId || '',
     supplierName: emcReference.supplierName || '',
-    source: emcReference.source || '',
+    source: resolutionStatus === 'RESUELTA' ? emcReference.source || 'EMC_REAL' : resolutionStatus,
+    emcSource: emcReference.source || 'PENDING_CATALOG_MATCH',
+    tintaSource: tintaReference.source || 'PENDING_INK_MATCH',
+    resolutionStatus,
     unitCost: Number(emcReference.unitCost || 0),
     currency: emcReference.currency || '',
     unit: emcReference.unit || '',

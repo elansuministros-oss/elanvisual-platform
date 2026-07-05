@@ -255,6 +255,28 @@
   white-space: normal;
 }
 
+.commercial-technical-refs .commercial-resolution-status {
+  color: #0f172a;
+  border-radius: 8px;
+}
+
+.commercial-technical-refs .status-resuelta {
+  border-color: #86efac;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.commercial-technical-refs .status-pendiente-material,
+.commercial-technical-refs .status-pendiente-tinta,
+.commercial-technical-refs .status-pendiente-tecnologia,
+.commercial-technical-refs .status-pending-ink-match,
+.commercial-technical-refs .status-pending-technology-match,
+.commercial-technical-refs .status-pendiente-emc {
+  border-color: #fde68a;
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .commercial-quote-total {
   display: grid;
   grid-template-columns: repeat(3, minmax(170px, 1fr));
