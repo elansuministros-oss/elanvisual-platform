@@ -266,16 +266,35 @@ const pvc = buscar(materiales, ['pvc'], form.descripcion);
   }
 
   if (ia.impresion) {
-    lineas.push(
-      crearLinea({
-        nombre: 'Tinta / impresion',
-        tipo: 'Impresion digital',
+  const costoTinta = Number(
+    tinta?.costo_m2 ||
+    tinta?.costo_unitario ||
+    tinta?.costoUnitario ||
+    tinta?.costo ||
+    tinta?.precio ||
+    tinta?.precio_unitario ||
+    0
+  );
+
+  lineas.push(
+    crearLinea({
+      nombre: tinta?.nombre || 'Tinta / impresion',
+      tipo: 'Impresion digital',
+      unidad: 'm2',
+      cantidad: area,
+      material: {
+        ...(tinta || {}),
+        nombre: tinta?.nombre || 'Tinta / impresion',
         unidad: 'm2',
-        cantidad: area,
-        material: tinta,
-      })
-    );
-  }
+        costo_unitario: costoTinta,
+        costo: costoTinta,
+        costo_real: costoTinta,
+        precio: costoTinta,
+        origen: 'Tinta Master',
+      },
+    })
+  );
+}
 
   if (ia.pvc) {
     lineas.push(
