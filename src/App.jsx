@@ -33,6 +33,7 @@ import SolicitudesDisenoAI from './pages/SolicitudesDisenoAI';
 import EMCImportadorAI22 from './pages/EMCImportadorAI22';
 import EMCInventario from './pages/EMCInventario';
 import { ProjectsPage } from './domains/project';
+import { ECEPage } from './domains/ece';
 import { useApp } from './context/AppContext';
 import './styles/global.css';
 
@@ -41,6 +42,7 @@ export default function App() {
 
   const paginaInicial = (() => {
     if (pathInicial.startsWith('/emc-inventario')) return 'emcInventario';
+    if (pathInicial.startsWith('/ece')) return 'ece';
     if (pathInicial.startsWith('/emc')) return 'emc';
     if (pathInicial.startsWith('/clientes')) return 'clientes';
     if (pathInicial.startsWith('/proyectos')) return 'proyectos';
@@ -107,6 +109,7 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       produccion: '/produccion',
       materiales: '/materiales',
       emc: '/emc',
+      ece: '/ece',
       emcInventario: '/emc-inventario',
       bibliotecaTecnica: '/biblioteca-tecnica',
       cotizador: '/cotizador',
@@ -224,6 +227,9 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
 
       {page === 'emcInventario' &&
         (accesoAdmin ? <EMCInventario /> : <Login setPage={ir} destino="admin" />)}
+
+      {page === 'ece' &&
+        (accesoVentas ? <ECEPage /> : <Login setPage={ir} destino="ventas" />)}
   
       {page === 'recomendadorTecnico' &&
         (accesoVentas ? <RecomendadorTecnico /> : <Login setPage={ir} destino="cotizador" />)}

@@ -37,6 +37,32 @@ export const CheckoutService = Object.freeze({
     );
   },
 
+  createPendingAttemptFromEceQuote(quote, paymentMethod) {
+    if (!quote?.quoteId) {
+      throw new Error('ECE Quote is required');
+    }
+
+    const total = Number(quote.total || 0);
+    const amount = total * 0.6;
+
+    return CheckoutRepository.save(
+      createPaymentAttemptModel({
+        quoteId: quote.quoteId,
+        cliente: quote.cliente,
+        proyecto: {
+          id: quote.projectId,
+          nombre: quote.nombreProyecto,
+        },
+        totalGeneral: total,
+        anticipoRequerido: amount,
+        saldoPendiente: total * 0.4,
+        paymentMethod,
+        amount,
+        status: PAYMENT_STATUS.PENDING,
+      })
+    );
+  },
+
   updateAttemptStatus(quoteId, status) {
     const nextStatus = normalizePaymentStatus(status);
     if (nextStatus === PAYMENT_STATUS.PENDING) {

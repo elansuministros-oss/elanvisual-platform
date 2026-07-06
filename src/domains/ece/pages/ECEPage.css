@@ -1,0 +1,264 @@
+.ece-page {
+  min-height: 100vh;
+  padding: 36px clamp(18px, 4vw, 56px);
+  background: #eef2f6;
+  color: #0f172a;
+}
+
+.ece-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.ece-header span {
+  display: block;
+  color: #997400;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ece-header h1 {
+  margin: 6px 0 0;
+  font-size: 46px;
+  line-height: 1;
+}
+
+.ece-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.ece-panel {
+  max-width: 420px;
+}
+
+.ece-panel,
+.ece-results,
+.ece-quote,
+.ece-checkout {
+  border: 1px solid #d8dee8;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 18px;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+}
+
+.ece-panel h2,
+.ece-checkout h2 {
+  margin: 0 0 16px;
+  font-size: 22px;
+}
+
+.ece-demo-data {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.ece-demo-data div {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 11px;
+  background: #f8fafc;
+}
+
+.ece-demo-data dt,
+.ece-select-label {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ece-demo-data dd {
+  margin: 5px 0 0;
+  font-weight: 800;
+}
+
+.ece-primary,
+.ece-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border-radius: 8px;
+  padding: 10px 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ece-primary {
+  border: 0;
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.ece-secondary {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.ece-primary:disabled,
+.ece-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ece-panel > .ece-primary,
+.ece-actions {
+  width: 100%;
+}
+
+.ece-select-label {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.ece-select-label select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  text-transform: none;
+}
+
+.ece-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.ece-message {
+  margin: 14px 0 0;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  padding: 10px;
+  background: #e0f2fe;
+  color: #075985;
+  font-weight: 800;
+}
+
+.ece-results {
+  display: grid;
+  gap: 14px;
+}
+
+.ece-empty {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  min-height: 260px;
+  color: #64748b;
+  text-align: center;
+}
+
+.ece-quote {
+  box-shadow: none;
+}
+
+.ece-quote header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ece-quote h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.ece-quote p {
+  margin: 5px 0 0;
+  color: #64748b;
+}
+
+.ece-quote-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ece-quote-meta span,
+.ece-quote-meta strong,
+.ece-line-main span,
+.ece-grid span {
+  border: 1px solid #d8dee8;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ece-lines {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.ece-line {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px;
+  background: #f8fafc;
+}
+
+.ece-line-main {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto auto minmax(160px, 0.8fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.ece-line-main small {
+  display: block;
+  margin-top: 3px;
+  color: #64748b;
+}
+
+.ece-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.ece-grid span {
+  width: 100%;
+  white-space: normal;
+}
+
+.ece-checkout {
+  box-shadow: none;
+}
+
+@media (max-width: 900px) {
+  .ece-layout,
+  .ece-line-main,
+  .ece-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ece-header,
+  .ece-quote header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

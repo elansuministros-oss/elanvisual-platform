@@ -52,6 +52,7 @@ export default function Header({ page, setPage }) {
     ['dashboard', 'Dashboard', <LayoutDashboard size={24} />],
     ['crm', 'CRM', <Users size={24} />],
     ['proyectos', 'Proyectos', <FolderKanban size={24} />],
+    ['ece', 'ECE', <Calculator size={24} />],
     ['cotizador', 'Cotizador', <Calculator size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['produccion', 'Produccin', <Factory size={24} />],
@@ -65,6 +66,7 @@ export default function Header({ page, setPage }) {
  const ventasLinks = [
   ['aiStudio', 'AI', <Calculator size={24} />],
   ['proyectos', 'Proyectos', <FolderKanban size={24} />],
+  ['ece', 'ECE', <Calculator size={24} />],
   ['cotizacionesInteligentes', 'Cotizaciones', <ClipboardList size={24} />],
   ['pedidos', 'Pedidos', <ClipboardList size={24} />],
   ['miCuenta', 'Cuenta', <Users size={24} />],
