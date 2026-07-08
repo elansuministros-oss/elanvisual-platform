@@ -45,7 +45,8 @@ export default function Header({ page, setPage }) {
     ['tienda', 'Tienda', <PackageSearch size={24} />],
     ['carrito', 'Carrito', <ShoppingCart size={24} />],
     ['seguimiento', 'Seguimiento', <ClipboardList size={24} />],
-    ['contacto', 'Contacto', <Phone size={24} />],
+['contacto', 'Contacto', <Phone size={24} />],
+['whatsapp', 'WhatsApp', <Phone size={24} />],
   ];
 
   const adminLinks = [
@@ -99,7 +100,12 @@ export default function Header({ page, setPage }) {
               key={key}
               type="button"
               className={page === key ? 'nav-active' : ''}
-              onClick={() => go(key)}
+onClick={() => {
+  if (key === 'whatsapp') {
+    trackWhatsAppClick();
+  }
+  go(key);
+}}
             >
               {label}
             </button>

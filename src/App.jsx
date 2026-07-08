@@ -4,6 +4,7 @@ import AIAssistantPanel from './ai/AIAssistantPanel';
 import ClientesCRM from './crm/Clientes';
 import PanelVentas from './pages/PanelVentas';
 import React, { useEffect, useState } from 'react';
+import RouteAnalytics from './lib/analytics/RouteAnalytics';
 import CRM from './crm/App/CRM.jsx';
 import Header from './components/Header';
 import Home from './pages/Home';
@@ -143,7 +144,9 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
   const accesoPedidos = rol === 'admin' || rol === 'ventas' || rol === 'produccion';
   const accesoERP = rol === 'admin';
 
-  return (
+return (
+  <>
+    <RouteAnalytics />
     <AIAssistantProvider>
       {usuario && (rol === 'admin' || rol === 'ventas') && (
         <>
@@ -261,6 +264,7 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       {page === 'solicitudesAI' &&
         (accesoAdmin ? <SolicitudesDisenoAI /> : <Login setPage={ir} destino="admin" />)}
     </AIAssistantProvider>
-  );
+  </>
+);
 }
 

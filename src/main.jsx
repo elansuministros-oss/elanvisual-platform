@@ -18,12 +18,15 @@
   localStorage.setItem('elanvisual_limpieza_masiva_20260615', 'ok');
 }
 import React from 'react';
+import { initMetaPixel } from './lib/analytics/metaPixel';
 import { createRoot } from 'react-dom/client';
 
 import App from './App';
 
 import { AppProvider } from './context/AppContext';
 import { CoreProvider } from './core/context/CoreContext';
+
+initMetaPixel();
 
 createRoot(document.getElementById('root')).render(
   <CoreProvider>
