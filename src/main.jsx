@@ -1,4 +1,13 @@
-﻿if (typeof window !== 'undefined' && !localStorage.getItem('elanvisual_limpieza_masiva_20260615')) {
+﻿import React from 'react';
+import { initMetaPixel } from './lib/analytics/metaPixel';
+import { createRoot } from 'react-dom/client';
+
+import App from './App';
+
+import { AppProvider } from './context/AppContext';
+import { CoreProvider } from './core/context/CoreContext';
+
+if (typeof window !== 'undefined' && !localStorage.getItem('elanvisual_limpieza_masiva_20260615')) {
   Object.keys(localStorage).forEach((key) => {
     const k = key.toLowerCase();
     if (
@@ -17,14 +26,6 @@
 
   localStorage.setItem('elanvisual_limpieza_masiva_20260615', 'ok');
 }
-import React from 'react';
-import { initMetaPixel } from './lib/analytics/metaPixel';
-import { createRoot } from 'react-dom/client';
-
-import App from './App';
-
-import { AppProvider } from './context/AppContext';
-import { CoreProvider } from './core/context/CoreContext';
 
 initMetaPixel();
 
