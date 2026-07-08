@@ -456,8 +456,14 @@ export default function CotizadorDirectoAI({ setPage }) {
 
   return Array.from(mapa.values());
 }, [productos, productosRegistrados]);
+  const tintasInventario = useMemo(() => {
+    return (Array.isArray(materiales) ? materiales : []).filter((m) => {
+      const txt = `${m?.nombre || ""} ${m?.categoria || ""} ${m?.tipo || ""}`.toLowerCase();
+      return txt.includes("tinta");
+    });
+  }, [materiales]);
 
-const productosFiltrados = useMemo(() => {
+  const productosFiltrados = useMemo(() => {
   const q = limpiar(busquedaProducto);
   if (!q) return [];
 
@@ -1290,7 +1296,7 @@ cantidad: 1,
             <label>Tipo de tinta / impresion</label>
             <select value={form.tintaId} onChange={(e) => actualizar('tintaId', e.target.value)}>
               <option value="">Seleccionar tinta</option>
-              {tintas.map((t) => (
+              {tintasInventario.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.nombre}
                 </option>
@@ -2516,6 +2522,7 @@ cantidad: 1,
     </main>
   );
 }
+
 
 
 
