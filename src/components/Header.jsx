@@ -55,6 +55,7 @@ export default function Header({ page, setPage }) {
     ['proyectos', 'Proyectos', <FolderKanban size={24} />],
     ['ece', 'ECE', <Calculator size={24} />],
     ['cotizador', 'Cotizador', <Calculator size={24} />],
+    ['bibliotecaComercial', 'Biblioteca Comercial', <BriefcaseBusiness size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['produccion', 'Produccin', <Factory size={24} />],
     ['materiales', 'Inventario', <PackageSearch size={24} />],
@@ -179,6 +180,7 @@ onClick={() => {
     </>
   );
 }
+
 
 
 

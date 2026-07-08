@@ -14,9 +14,18 @@ const guardar = (data) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 };
 
+const generarCodigo = (items = []) => {
+  const max = items.reduce((acc, item) => {
+    const n = Number(String(item.codigo || "").replace("BC-", ""));
+    return Number.isFinite(n) ? Math.max(acc, n) : acc;
+  }, 0);
+
+  return `BC-${String(max + 1).padStart(6, "0")}`;
+};
+
 const nuevoForm = {
   nombre: "",
-  categoria: "Rotulación Vehicular",
+  categoria: "",
   descripcionComercial: "",
   descripcionTecnica: "",
   precioBaseUsd: "",
@@ -25,10 +34,40 @@ const nuevoForm = {
   activo: true,
 };
 
+
+const parseCapturaInteligente = (texto = "") => {
+  const limpio = String(texto).trim();
+
+  const buscarLinea = (keys) => {
+    const linea = limpio.split(/\n/).find((l) =>
+      keys.some((k) => l.toLowerCase().includes(k))
+    );
+    return linea ? linea.split(":").slice(1).join(":").trim() : "";
+  };
+
+  const precioMatch = limpio.match(/(?:usd|\$)?\s*(\d+(?:[.,]\d+)?)/i);
+  const precio = precioMatch ? Number(precioMatch[1].replace(",", ".")) : "";
+
+  const nombre =
+    buscarLinea(["nombre", "trabajo", "combinado"]) ||
+    limpio.split(/\n/)[0]?.trim() ||
+    "";
+
+  return {
+    nombre,
+    categoria: buscarLinea(["categoria", "categoría"]),
+    descripcionComercial:
+      buscarLinea(["descripcion", "descripción"]) || limpio,
+    materiales: buscarLinea(["material", "materiales"]),
+    precioBaseUsd: precio || "",
+  };
+};
+
 export default function BibliotecaComercial() {
   const [trabajos, setTrabajos] = useState(leer);
   const [form, setForm] = useState(nuevoForm);
-  const [busqueda, setBusqueda] = useState("");
+    const [busqueda, setBusqueda] = useState("");
+  const [capturaLibre, setCapturaLibre] = useState("");
 
   const lista = useMemo(() => {
     const q = busqueda.toLowerCase().trim();
@@ -40,8 +79,13 @@ export default function BibliotecaComercial() {
     );
   }, [trabajos, busqueda]);
 
-  const actualizar = (campo, valor) => {
+    const actualizar = (campo, valor) => {
     setForm((prev) => ({ ...prev, [campo]: valor }));
+  };
+
+  const aplicarCapturaInteligente = () => {
+    const datos = parseCapturaInteligente(capturaLibre);
+    setForm((prev) => ({ ...prev, ...datos }));
   };
 
   const crearTrabajo = () => {
@@ -50,7 +94,7 @@ export default function BibliotecaComercial() {
 
     const item = {
       id: crypto.randomUUID(),
-      codigo: `BT-${Date.now()}`,
+      codigo: generarCodigo(trabajos),
       ...form,
       precioBaseUsd: Number(form.precioBaseUsd),
       moneda: "USD",
@@ -81,22 +125,28 @@ export default function BibliotecaComercial() {
 
       <section className="admin-grid">
         <article className="admin-card">
-          <h2>Crear trabajo</h2>
+                    <h2>Crear trabajo</h2>
+
+          <label>Capturador inteligente</label>
+          <textarea
+            value={capturaLibre}
+            onChange={(e) => setCapturaLibre(e.target.value)}
+            placeholder="Ej: Rotulación de microbús con vinil 3M, sobrelaminado UV e instalación. Materiales: vinil 3M, UV. Precio: 850"
+          />
+
+          <button type="button" onClick={aplicarCapturaInteligente}>
+            Llenar casillas
+          </button>
 
           <label>Nombre</label>
           <input value={form.nombre} onChange={(e) => actualizar("nombre", e.target.value)} placeholder="Rotulación Microbús 3M + UV" />
 
-          <label>Categoría</label>
-          <select value={form.categoria} onChange={(e) => actualizar("categoria", e.target.value)}>
-            <option>Rotulación Vehicular</option>
-            <option>Viniles</option>
-            <option>Lonas</option>
-            <option>PVC</option>
-            <option>Acrílico</option>
-            <option>Señalización</option>
-            <option>Instalación</option>
-            <option>Otro</option>
-          </select>
+                    <label>Categoría</label>
+          <input
+            value={form.categoria}
+            onChange={(e) => actualizar("categoria", e.target.value)}
+            placeholder="Ej: Rotulación Vehicular, Microbuses, Lonas, PVC"
+          />
 
           <label>Descripción comercial</label>
           <textarea value={form.descripcionComercial} onChange={(e) => actualizar("descripcionComercial", e.target.value)} />
@@ -123,7 +173,7 @@ export default function BibliotecaComercial() {
           <div className="stack">
             {lista.map((t) => (
               <div key={t.id} className="admin-card soft">
-                <strong>{t.nombre}</strong>
+                <strong>{t.codigo} · {t.nombre}</strong>
                 <p>{t.categoria}</p>
                 <p>{t.descripcionComercial}</p>
                 <b>USD {t.precioBaseUsd.toFixed(2)}</b>
@@ -138,4 +188,7 @@ export default function BibliotecaComercial() {
     </main>
   );
 }
+
+
+
 

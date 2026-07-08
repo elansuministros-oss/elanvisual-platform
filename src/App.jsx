@@ -1,4 +1,4 @@
-import { AIAssistantProvider } from './ai/AIAssistantProvider';
+﻿import { AIAssistantProvider } from './ai/AIAssistantProvider';
 import AIFloatingButton from './ai/AIFloatingButton';
 import AIAssistantPanel from './ai/AIAssistantPanel';
 import ClientesCRM from './crm/Clientes';
@@ -26,6 +26,7 @@ import RedProveedoresIA from './pages/RedProveedoresIA';
 import InventarioInteligente from './pages/InventarioInteligente';
 import BibliotecaTecnica from './pages/BibliotecaTecnica';
 import CotizadorDirectoAI from './pages/CotizadorDirectoAI';
+import BibliotecaComercial from './pages/biblioteca-comercial/BibliotecaComercial';
 import CapturaInteligente from './pages/CapturaInteligente';
 import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
@@ -62,6 +63,7 @@ export default function App() {
     if (pathInicial.startsWith('/solicitudes-ai')) return 'solicitudesAI';
     if (pathInicial.startsWith('/ai-studio')) return 'aiStudio';
     if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizador';
+    if (pathInicial.startsWith('/biblioteca-comercial')) return 'bibliotecaComercial';
     if (pathInicial.startsWith('/cotizador')) return 'cotizador';
     if (pathInicial.startsWith('/orden-trabajo')) return 'ordenTrabajo';
     if (pathInicial.startsWith('/pedidos')) return 'pedidos';
@@ -114,6 +116,7 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       emcInventario: '/emc-inventario',
       bibliotecaTecnica: '/biblioteca-tecnica',
       cotizador: '/cotizador',
+      bibliotecaComercial: '/biblioteca-comercial',
       cotizadorAI: '/cotizador-ai',
       cotizadorInteligente: '/cotizador',
       cotizacionesInteligentes: '/cotizaciones-inteligentes',
@@ -243,6 +246,9 @@ return (
       {page === 'capturaInteligente' &&
         (accesoVentas ? <CapturaInteligente /> : <Login setPage={ir} destino="crm" />)}
 
+      {page === 'bibliotecaComercial' &&
+        (accesoAdmin ? <BibliotecaComercial /> : <Login setPage={ir} destino="admin" />)}
+
       {page === 'cotizador' &&
         (accesoVentas ? <CotizadorDirectoAI setPage={ir} /> : <Login setPage={ir} destino="cotizador" />)}
 
@@ -267,4 +273,5 @@ return (
   </>
 );
 }
+
 

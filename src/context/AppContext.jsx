@@ -1248,29 +1248,10 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
     );
   };
 
-  const login = ({ email, password }) => {
-    const acceso = normalizarUsuario(email);
-    const clave = String(password || '').trim();
-
-    const usuarioEncontrado = usuarios.find((u) => {
-      const usuarioNormalizado = normalizarUsuario(u.usuario);
-      const emailNormalizado = normalizarUsuario(u.email);
-
-      return (
-        u.activo !== false &&
-        (usuarioNormalizado === acceso || emailNormalizado === acceso) &&
-        String(u.password || '').trim() === clave
-      );
-    });
-
-    if (!usuarioEncontrado) return { ok: false };
-
-    setUsuario(usuarioEncontrado);
+  const login = () => {
     return {
-      ok: true,
-      rol: usuarioEncontrado.rol,
-      usuario: usuarioEncontrado,
-      supabaseListo,
+      ok: false,
+      error: "Acceso deshabilitado temporalmente. Autenticaci�n segura en configuraci�n.",
     };
   };
 
