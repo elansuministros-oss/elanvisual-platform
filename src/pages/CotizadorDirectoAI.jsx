@@ -422,6 +422,11 @@ async function calcularConAI23(payload) {
   return res.json();
 }
 
+const normalizarInventarioParaCotizador = (item) => item;
+
+
+
+
 export default function CotizadorDirectoAI({ setPage }) {
   const { configuracion, productos = [] } = useApp();
   const [materiales, setMateriales] = useState([]);
@@ -1296,7 +1301,7 @@ cantidad: 1,
             <label>Tipo de tinta / impresion</label>
             <select value={form.tintaId} onChange={(e) => actualizar('tintaId', e.target.value)}>
               <option value="">Seleccionar tinta</option>
-              {tintasInventario.map((t) => (
+              {(tintasInventario.length ? tintasInventario : tintas).map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.nombre}
                 </option>
@@ -2522,6 +2527,9 @@ cantidad: 1,
     </main>
   );
 }
+
+
+
 
 
 
