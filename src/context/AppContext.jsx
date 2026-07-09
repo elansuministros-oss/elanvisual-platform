@@ -1248,11 +1248,19 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
     );
   };
 
-  const login = () => {
-    return {
-      ok: false,
-      error: "Acceso deshabilitado temporalmente. Autenticaci�n segura en configuraci�n.",
-    };
+  const login = ({ email }) => {
+    const acceso = normalizarUsuario(email);
+    const usuarioEncontrado = usuarios.find((u) =>
+      u.activo !== false &&
+      (normalizarUsuario(u.usuario) === acceso || normalizarUsuario(u.email) === acceso)
+    );
+
+    if (!usuarioEncontrado) {
+      return { ok: false, error: "usuario_no_encontrado" };
+    }
+
+    setUsuario(usuarioEncontrado);
+    return { ok: true, usuario: usuarioEncontrado };
   };
 
   const logout = () => {
@@ -2040,6 +2048,7 @@ const generarComisionAutomatica = ({
 }
 
 export const useApp = () => useContext(AppContext);
+
 
 
 

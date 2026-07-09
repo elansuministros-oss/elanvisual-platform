@@ -28,6 +28,9 @@ const money = (v) =>
     minimumFractionDigits: 2,
   }).format(Number(v || 0));
 
+const moneyUSD = (v) =>
+  "U$" + Number(v || 0).toFixed(2);
+
 const n = (v) => Number(v || 0);
 
 const limpiar = (v) =>
@@ -1444,19 +1447,19 @@ cantidad: 1,
           <div className="total-box">
             <p>
               <span>Subtotal</span>
-              <b>{money(total.subtotal)}</b>
+              <b>{moneyUSD(total.subtotal)}</b>
             </p>
 
             {form.usaIVA && (
               <p>
                 <span>IVA</span>
-                <b>{money(total.iva)}</b>
+                <b>{moneyUSD(total.iva)}</b>
               </p>
             )}
 
             <p className="total-line">
               <span>Total</span>
-              <b>{money(total.totalCliente)}</b>
+              <b>{moneyUSD(total.totalCliente)}</b>
             </p>
 
             <hr />
@@ -1465,7 +1468,7 @@ cantidad: 1,
             {total.pagos.map((p) => (
               <p key={p.label}>
                 <span>{p.label}</span>
-                <b>{money(p.monto)}</b>
+                <b>{moneyUSD(p.monto)}</b>
               </p>
             ))}
           </div>
@@ -1615,8 +1618,8 @@ cantidad: 1,
 
                   <div className="ev-item-values">
                     <p><span>Cantidad</span><b>{cantidad}</b></p>
-                    <p><span>Precio Unitario</span><b>{money(precioUnitario)}</b></p>
-                    <p><span>Subtotal</span><b>{money(subtotalItem)}</b></p>
+                    <p><span>Precio Unitario</span><b>{moneyUSD(precioUnitario)}</b></p>
+                    <p><span>Subtotal</span><b>{moneyUSD(subtotalItem)}</b></p>
                   </div>
                 </article>
               );
@@ -1628,29 +1631,29 @@ cantidad: 1,
 
             <div className="ev-summary-line">
               <span>Subtotal</span>
-              <b>{money(total.subtotalBruto)}</b>
+              <b>{moneyUSD(total.subtotalBruto)}</b>
             </div>
 
             <div className="ev-summary-line">
               <span>Descuento comercial</span>
-              <b>-{money(total.descuento)}</b>
+              <b>-{moneyUSD(total.descuento)}</b>
             </div>
 
             <div className="ev-summary-line">
               <span>Subtotal ajustado</span>
-              <b>{money(total.subtotal)}</b>
+              <b>{moneyUSD(total.subtotal)}</b>
             </div>
 
             {form.usaIVA && (
               <div className="ev-summary-line">
                 <span>IVA 15%</span>
-                <b>{money(total.iva)}</b>
+                <b>{moneyUSD(total.iva)}</b>
               </div>
             )}
 
             <div className="ev-total-line">
               <span>TOTAL</span>
-              <b>{money(total.totalCliente)}</b>
+              <b>{moneyUSD(total.totalCliente)}</b>
             </div>
           </section>
 
@@ -1659,7 +1662,7 @@ cantidad: 1,
             {total.pagos.map((p) => (
               <p key={p.label}>
                 <span>{p.label}</span>
-                <b>{money(p.monto)}</b>
+                <b>{moneyUSD(p.monto)}</b>
               </p>
             ))}
           </section>
@@ -1709,10 +1712,11 @@ cantidad: 1,
         }
 
         .ev-brand-block{
-          display:flex;
-          align-items:flex-start;
-          gap:22px;
-        }
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:8px;
+}
 
         .ev-logo-img{
           width:150px;
@@ -2527,6 +2531,8 @@ cantidad: 1,
     </main>
   );
 }
+
+
 
 
 
