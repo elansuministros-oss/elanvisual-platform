@@ -1546,19 +1546,14 @@ cantidad: 1,
         <div className="ev-quote-sheet">
           <header className="ev-quote-header">
             <div className="ev-brand-block">
-              {true ? (
-                <img src="/assets/branding/elanvisual.svg" alt={configuracion.logoTexto || 'ELANVISION'} className="ev-logo-img" />
-              ) : (
-                <div className="ev-logo-mark">EV</div>
-              )}
+              <img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL" className="ev-logo-img" />
 
-              <div>
-                <h1>{configuracion?.logoTexto || 'ELANVISION'}</h1>
-                <p>Soluciones de Rotulacion e Imagen Comercial</p>
+              <div className="ev-brand-info">
                 <strong>RUC: 4012805831001E</strong>
+                <p>Web: visual.elankav.com</p>
+                <p>WhatsApp: +505 7882 8089</p>
               </div>
             </div>
-
             <div className="ev-doc-box">
               <div>
                 <span>COTIZACION</span>
@@ -1650,10 +1645,13 @@ cantidad: 1,
                 <b>{moneyUSD(total.iva)}</b>
               </div>
             )}
-
             <div className="ev-total-line">
               <span>TOTAL</span>
               <b>{moneyUSD(total.totalCliente)}</b>
+              <small>Tipo de cambio</small>
+              <em>1 USD = C$36.80</em>
+              <small>Equivalente en cordobas</small>
+              <strong>{money(total.totalCliente * 36.8)}</strong>
             </div>
           </section>
 
@@ -1719,8 +1717,8 @@ cantidad: 1,
 }
 
         .ev-logo-img{
-          width:150px;
-          max-height:120px;
+          width:330px;
+          max-height:180px;
           object-fit:contain;
         }
 
@@ -1932,20 +1930,42 @@ cantidad: 1,
         }
 
         .ev-total-line{
-          margin-top:12px;
-          padding-top:22px;
-          border-top:2px solid rgba(255,255,255,.25);
-        }
+  margin-top:12px;
+  padding-top:22px;
+  border-top:2px solid rgba(255,255,255,.25);
 
-        .ev-total-line span{
-          font-size:28px;
-          font-weight:950;
-        }
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:8px;
+}
 
-        .ev-total-line b{
-          font-size:42px;
-          font-weight:950;
-        }
+.ev-total-line span{
+  font-size:28px;
+  font-weight:950;
+}
+
+.ev-total-line b{
+  font-size:42px;
+  font-weight:950;
+}
+
+.ev-total-line small{
+  font-size:16px;
+  opacity:.9;
+  font-weight:700;
+}
+
+.ev-total-line em{
+  font-size:18px;
+  font-style:normal;
+  font-weight:900;
+}
+
+.ev-total-line strong{
+  font-size:30px;
+  font-weight:950;
+}
 
         .ev-payment-box,
         .ev-check-box,
@@ -2531,6 +2551,10 @@ cantidad: 1,
     </main>
   );
 }
+
+
+
+
 
 
 
