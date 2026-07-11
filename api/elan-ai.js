@@ -1,5 +1,7 @@
 ﻿import OpenAI from "openai";
 
+const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -109,7 +111,7 @@ async function generarRenderBotones(body = {}) {
   ];
 
   const response = await client.responses.create({
-    model: "gpt-4.1-mini",
+    model: OPENAI_MODEL,
     input,
     tools: [{ type: "image_generation" }],
   });
@@ -187,7 +189,7 @@ export default async function handler(req, res) {
     ];
 
     const response = await client.responses.create({
-      model: "gpt-4.1-mini",
+      model: OPENAI_MODEL,
       input: [
         {
           role: "system",

@@ -1,4 +1,5 @@
-const AI23_ENDPOINT = 'https://elankav-core.vercel.app/api/elan-ai';
+const AI23_ENDPOINT_CONFIG =
+  import.meta.env.VITE_ELANKAV_CORE_AI_ENDPOINT || import.meta.env.VITE_ELANKAV_CORE_URL || '';
 const AI23_TIMEOUT_MS = 6000;
 
 export const AI23_STATUS = Object.freeze({
@@ -19,6 +20,12 @@ function createPendingResult(message = 'AI-23 no disponible') {
   };
 }
 
+function resolveAI23Endpoint() {
+  const endpoint = String(AI23_ENDPOINT_CONFIG || '').trim().replace(/\/$/, '');
+  if (!endpoint) return '';
+  return endpoint.endsWith('/api/elan-ai') ? endpoint : `${endpoint}/api/elan-ai`;
+}
+
 function createComponentFromQuoteLine(line = {}) {
   return {
     nombre: line.producto?.nombre || 'Producto registrado',
@@ -30,11 +37,20 @@ function createComponentFromQuoteLine(line = {}) {
 }
 
 async function postAI23(payload) {
+  const endpoint = resolveAI23Endpoint();
+  if (!endpoint) {
+    return {
+      ok: false,
+      mensaje: 'AI-23 sin endpoint configurado',
+      error: 'AI23_ENDPOINT_NOT_CONFIGURED',
+    };
+  }
+
   const controller = new AbortController();
   const timeoutId = globalThis.setTimeout(() => controller.abort(), AI23_TIMEOUT_MS);
 
   try {
-    const response = await fetch(AI23_ENDPOINT, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
