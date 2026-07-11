@@ -1,8 +1,28 @@
 ﻿import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const DEFAULT_OPENAI_MODEL = "gpt-4.1-mini";
+
+let openAIClient;
+
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+
+  if (!apiKey) {
+    const error = new Error("Falta OPENAI_API_KEY en variables de entorno.");
+    error.statusCode = 503;
+    throw error;
+  }
+
+  if (!openAIClient) {
+    openAIClient = new OpenAI({ apiKey });
+  }
+
+  return openAIClient;
+}
+
+function getOpenAIModel() {
+  return process.env.OPENAI_MODEL?.trim() || DEFAULT_OPENAI_MODEL;
+}
 
 const ELAN_AI_BOTONES = `
 Eres ELAN AI BOTONES.
@@ -70,6 +90,8 @@ function prepararImagenesTemporales(archivos = []) {
 }
 
 async function generarRenderBotones(body = {}) {
+  const client = getOpenAIClient();
+  const model = getOpenAIModel();
   const producto = body.producto || {};
   const cliente = body.cliente || {};
   const contexto = body.contexto || {};
@@ -109,7 +131,7 @@ async function generarRenderBotones(body = {}) {
   ];
 
   const response = await client.responses.create({
-    model: "gpt-4.1-mini",
+    model,
     input,
     tools: [{ type: "image_generation" }],
   });
@@ -186,8 +208,11 @@ export default async function handler(req, res) {
       ...imagenes,
     ];
 
+    const client = getOpenAIClient();
+    const model = getOpenAIModel();
+
     const response = await client.responses.create({
-      model: "gpt-4.1-mini",
+      model,
       input: [
         {
           role: "system",
@@ -211,7 +236,7 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error("Error ELAN AI:", error);
-    return res.status(500).json({
+    return res.status(error?.statusCode || 500).json({
       ok: false,
       error: error?.message || "Error conectando ELAN AI",
     });
