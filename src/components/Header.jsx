@@ -21,6 +21,7 @@ import {
   Palette,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../lib/supabase';
 
 export default function Header({ page, setPage }) {
   const { usuario, logout, configuracion } = useApp();
@@ -31,9 +32,15 @@ export default function Header({ page, setPage }) {
     setOpen(false);
   };
 
-  const salir = () => {
-    logout();
-    go('home');
+  const salir = async () => {
+    try {
+      if (supabase) await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Error cerrando sesión de Supabase:', error);
+    } finally {
+      logout();
+      go('home');
+    }
   };
 
   const brandName = configuracion.logoTexto || configuracion.nombreSitio || 'ELANVISUAL';
@@ -62,12 +69,12 @@ export default function Header({ page, setPage }) {
     ['admin', 'Administracin', <Settings size={24} />],
   ];
 
- const ventasLinks = [
-  ['aiStudio', 'AI', <Calculator size={24} />],
-  ['cotizacionesInteligentes', 'Cotizaciones', <ClipboardList size={24} />],
-  ['pedidos', 'Pedidos', <ClipboardList size={24} />],
-  ['miCuenta', 'Cuenta', <Users size={24} />],
-];
+  const ventasLinks = [
+    ['aiStudio', 'AI', <Calculator size={24} />],
+    ['cotizacionesInteligentes', 'Cotizaciones', <ClipboardList size={24} />],
+    ['pedidos', 'Pedidos', <ClipboardList size={24} />],
+    ['miCuenta', 'Cuenta', <Users size={24} />],
+  ];
 
   const produccionLinks = [
     ['pedidos', 'Pedidos / OT', <ClipboardList size={24} />],
@@ -87,7 +94,6 @@ export default function Header({ page, setPage }) {
       <header className="desktop-header app-desktop-header">
         <div className="brand" onClick={() => go(usuario ? 'dashboard' : 'home')}>
           <img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL" className="brand-logo-img brand-logo-desktop" />
-
         </div>
 
         <nav className="desktop-nav app-desktop-nav">
@@ -118,7 +124,6 @@ export default function Header({ page, setPage }) {
         <div className="mobile-bar app-mobile-bar">
           <div className="brand" onClick={() => go(usuario ? 'dashboard' : 'home')}>
             <img src="/assets/branding/elanvisual-isotipo.svg" alt="ELANVISUAL" className="brand-logo-img brand-logo-mobile" />
-  
           </div>
 
           {usuario && (
@@ -170,11 +175,3 @@ export default function Header({ page, setPage }) {
     </>
   );
 }
-
-
-
-
-
-
-
-
