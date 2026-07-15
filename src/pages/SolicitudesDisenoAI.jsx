@@ -54,7 +54,7 @@ function GaleriaArchivos({ titulo, archivos = [] }) {
       <h3>{titulo}</h3>
       {!lista.length && <p>No hay archivos registrados.</p>}
       {!!lista.length && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 14 }}>
           {lista.map((archivo, index) => (
             <article
               key={`${archivo.path || archivo.name || 'archivo'}-${index}`}
@@ -65,15 +65,15 @@ function GaleriaArchivos({ titulo, archivos = [] }) {
                   <img
                     src={archivo.signedUrl}
                     alt={archivo.name || titulo}
-                    style={{ width: '100%', height: 170, objectFit: 'contain', borderRadius: 8 }}
+                    style={{ width: '100%', height: 220, objectFit: 'contain', borderRadius: 8, background: '#f8fafc' }}
                   />
                 </a>
               ) : (
-                <div style={{ minHeight: 80, display: 'grid', placeItems: 'center', textAlign: 'center' }}>
+                <div style={{ minHeight: 120, display: 'grid', placeItems: 'center', textAlign: 'center', color: '#475569' }}>
                   {archivo.signedUrlError || 'Archivo registrado sin vista previa.'}
                 </div>
               )}
-              <p style={{ marginTop: 8, overflowWrap: 'anywhere' }}>
+              <p style={{ marginTop: 8, overflowWrap: 'anywhere', color: '#0f172a' }}>
                 <strong>{archivo.kind || 'archivo'}:</strong> {archivo.name || archivo.path || 'Archivo'}
               </p>
             </article>
@@ -196,7 +196,7 @@ export default function SolicitudesDisenoAI() {
 
       {!cargando && !errorCarga && (
         <section className="panel">
-          <div style={{ display: 'grid', gap: 8 }}>
+          <div style={{ display: 'grid', gap: 10 }}>
             {lista.map((solicitud) => (
               <button
                 key={solicitud.id}
@@ -205,23 +205,29 @@ export default function SolicitudesDisenoAI() {
                 style={{
                   width: '100%',
                   display: 'grid',
-                  gridTemplateColumns: 'minmax(180px, 1.3fr) minmax(160px, 1fr) minmax(130px, .8fr) auto',
-                  gap: 12,
+                  gridTemplateColumns: 'minmax(240px, 1.4fr) minmax(190px, 1fr) minmax(160px, .8fr) minmax(150px, .7fr)',
+                  gap: 14,
                   alignItems: 'center',
                   textAlign: 'left',
-                  padding: '12px 14px',
-                  border: '1px solid #dbe5f0',
+                  padding: '14px 16px',
+                  minHeight: 74,
+                  border: '1px solid #cbd5e1',
                   borderRadius: 12,
-                  background: '#fff',
+                  background: '#ffffff',
+                  color: '#0f172a',
                   cursor: 'pointer',
+                  lineHeight: 1.35,
+                  boxShadow: '0 1px 2px rgba(15, 23, 42, 0.05)',
                 }}
               >
-                <span>
-                  <strong style={{ display: 'block' }}>{solicitud.customer_name || 'Sin nombre'}</strong>
-                  <small>{solicitud.request_code}</small>
+                <span style={{ color: '#0f172a' }}>
+                  <strong style={{ display: 'block', fontSize: 16 }}>{solicitud.customer_name || 'Sin nombre'}</strong>
+                  <small style={{ display: 'block', marginTop: 3, color: '#475569', overflowWrap: 'anywhere' }}>
+                    {solicitud.request_code}
+                  </small>
                 </span>
-                <span>{solicitud.business_name || 'Sin negocio'}</span>
-                <span>{solicitud.whatsapp || 'Sin WhatsApp'}</span>
+                <span style={{ color: '#334155' }}>{solicitud.business_name || 'Sin negocio'}</span>
+                <span style={{ color: '#334155' }}>{solicitud.whatsapp || 'Sin WhatsApp'}</span>
                 <span className="store-ai-badge">
                   {ETIQUETAS_ESTADO[solicitud.status] || solicitud.status || 'Pendiente'}
                 </span>
@@ -257,6 +263,9 @@ export default function SolicitudesDisenoAI() {
             </div>
 
             <div className="ai-chat-body">
+              <GaleriaArchivos titulo="Diseños realizados" archivos={abierta.result_files} />
+              <GaleriaArchivos titulo="Archivos enviados" archivos={abierta.files} />
+
               <div className="ai-chat-result">
                 <h3>Cliente</h3>
                 <p><strong>Nombre:</strong> {abierta.customer_name || 'No indicado'}</p>
@@ -273,9 +282,6 @@ export default function SolicitudesDisenoAI() {
                 <p><strong>Indicaciones:</strong> {abierta.design_notes || 'Sin descripción.'}</p>
                 <p><strong>Fecha:</strong> {formatearFecha(abierta.created_at)}</p>
               </div>
-
-              <GaleriaArchivos titulo="Archivos enviados" archivos={abierta.files} />
-              <GaleriaArchivos titulo="Diseños realizados" archivos={abierta.result_files} />
             </div>
           </div>
         </section>
