@@ -1,7 +1,7 @@
 ﻿import React, { useState } from 'react';
 import { LockKeyhole, ShieldCheck, Building2 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
 import { useCore } from '../core/context/CoreContext';
+import { supabase } from '../lib/supabase';
 
 function destinoPorRol(rol) {
   if (rol === 'admin') return 'admin';
@@ -10,17 +10,47 @@ function destinoPorRol(rol) {
   return 'home';
 }
 
+function rutaPorDestino(destino) {
+  const rutas = {
+    admin: '/admin',
+    produccion: '/produccion',
+    ventas: '/ventas',
+    clientes: '/clientes',
+    crm: '/crm',
+    cotizador: '/cotizador',
+    cotizadorAI: '/cotizador-ai',
+    pedidos: '/pedidos',
+    materiales: '/materiales',
+    miCuenta: '/mi-cuenta',
+    home: '/',
+  };
+
+  return rutas[destino] || '/';
+}
+
 const normalizar = (valor = '') =>
   String(valor || '').trim().toLowerCase();
 
-export default function Login({ setPage, destino }) {
-  const { login } = useApp();
+function mapPerfil(row) {
+  return {
+    id: row.id,
+    nombre: row.nombre || row.usuario || row.email || '',
+    usuario: row.usuario || '',
+    email: row.email || '',
+    rol: normalizar(row.rol),
+    clienteId: row.cliente_id || row.vendedor_id || row.veterinaria_id || '',
+    activo: row.activo !== false,
+  };
+}
+
+export default function Login({ destino }) {
   const { usuariosCRM = [], cambiarUsuarioActivoCRM } = useCore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [error, setError] = useState('');
+  const [enviando, setEnviando] = useState(false);
 
   const sincronizarUsuarioCRM = (res) => {
     const entrada = normalizar(email);
@@ -55,30 +85,77 @@ export default function Login({ setPage, destino }) {
     }
   };
 
-  const entrar = (e) => {
+  const entrar = async (e) => {
     e.preventDefault();
-
-    const res = login({ email, password });
-
-    if (!res.ok) {
-      setError('Usuario o contraseña incorrectos.');
-      return;
-    }
-
-    if (destino === 'admin' && res.rol !== 'admin') {
-      setError('Este usuario no tiene permisos de administrador.');
-      return;
-    }
-
-    if (destino === 'produccion' && !['admin', 'produccion'].includes(res.rol)) {
-      setError('Este usuario no tiene permisos de producción.');
-      return;
-    }
-
-    sincronizarUsuarioCRM(res);
-
     setError('');
-    setPage(destino || destinoPorRol(res.rol));
+
+    const correo = normalizar(email);
+    if (!correo || !password) {
+      setError('Ingresá tu correo y contraseña.');
+      return;
+    }
+
+    if (!supabase) {
+      setError('El servicio de autenticación no está configurado.');
+      return;
+    }
+
+    setEnviando(true);
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: correo,
+        password,
+      });
+
+      if (authError || !authData?.user?.id) {
+        setError('Correo o contraseña incorrectos.');
+        return;
+      }
+
+      const { data: perfilData, error: perfilError } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (perfilError || !perfilData) {
+        await supabase.auth.signOut();
+        setError('Tu identidad no tiene un perfil operativo autorizado.');
+        return;
+      }
+
+      const perfil = mapPerfil(perfilData);
+
+      if (!perfil.activo) {
+        await supabase.auth.signOut();
+        setError('Este usuario está inactivo.');
+        return;
+      }
+
+      if (destino === 'admin' && perfil.rol !== 'admin') {
+        await supabase.auth.signOut();
+        setError('Este usuario no tiene permisos de administrador.');
+        return;
+      }
+
+      if (destino === 'produccion' && !['admin', 'produccion'].includes(perfil.rol)) {
+        await supabase.auth.signOut();
+        setError('Este usuario no tiene permisos de producción.');
+        return;
+      }
+
+      sincronizarUsuarioCRM(perfil);
+      localStorage.setItem('elanvisual_usuario_actual', JSON.stringify(perfil));
+
+      const destinoFinal = destino || destinoPorRol(perfil.rol);
+      window.location.assign(rutaPorDestino(destinoFinal));
+    } catch (loginError) {
+      console.error('Error iniciando sesión con Supabase Auth:', loginError);
+      setError('No se pudo iniciar sesión. Intentá nuevamente.');
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -96,13 +173,15 @@ export default function Login({ setPage, destino }) {
         </p>
 
         <form onSubmit={entrar}>
-          <label>Usuario o correo</label>
+          <label>Correo autorizado</label>
 
           <input
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Correo o usuario autorizado"
+            placeholder="Correo autorizado"
             autoComplete="username"
+            disabled={enviando}
           />
 
           <label>Contraseña</label>
@@ -114,12 +193,14 @@ export default function Login({ setPage, destino }) {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Contraseña"
               autoComplete="current-password"
+              disabled={enviando}
             />
 
             <button
               type="button"
               className="password-toggle"
               onClick={() => setMostrarPassword((prev) => !prev)}
+              disabled={enviando}
             >
               {mostrarPassword ? 'OCULTAR' : 'VER'}
             </button>
@@ -127,9 +208,9 @@ export default function Login({ setPage, destino }) {
 
           {error && <small className="error-text">{error}</small>}
 
-          <button type="submit">
+          <button type="submit" disabled={enviando}>
             <LockKeyhole size={18} />
-            Entrar
+            {enviando ? 'Validando…' : 'Entrar'}
           </button>
         </form>
 
