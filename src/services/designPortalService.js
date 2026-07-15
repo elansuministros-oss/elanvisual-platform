@@ -26,12 +26,25 @@ export function readDesignFile(file) {
   });
 }
 
-export function parseWhatsAppDesignContext(search = window.location.search) {
+export function parseWhatsAppDesignContext(
+  search = window.location.search,
+  pathname = typeof window === 'object' ? window.location.pathname : '/'
+) {
   const params = new URLSearchParams(search);
+  const rawWhatsapp = String(params.get('wa') || '').replace(/\D/g, '');
+  const whatsapp = /^505\d{8}$/.test(rawWhatsapp)
+    ? rawWhatsapp
+    : /^\d{8}$/.test(rawWhatsapp)
+      ? `505${rawWhatsapp}`
+      : '';
 
   return {
-    source: params.get('source') === 'whatsapp' ? 'whatsapp' : 'web',
-    whatsapp: String(params.get('wa') || '').replace(/\D/g, '').slice(0, 15),
+    source:
+      params.get('source') === 'whatsapp' ||
+      String(pathname || '').startsWith('/diseno/whatsapp')
+        ? 'whatsapp'
+        : 'web',
+    whatsapp,
     externalUserId: String(params.get('uid') || '').slice(0, 160),
     conversationRef: String(params.get('conversation') || '').slice(0, 300),
     requestType: ['rotulo', 'fachada', 'logo', 'otro'].includes(params.get('type'))
