@@ -6,6 +6,7 @@ import {
   parseWhatsAppDesignContext,
   resolveCoreDesignUrl,
   loadDesignRequestStatus,
+  submitDesignFollowup,
   submitDesignRequest
 } from '../src/services/designPortalService.js';
 
@@ -31,6 +32,43 @@ test('consulta estado privado de la generación con código y token', async () =
     assert.equal(result.ready, true);
   } finally {
     globalThis.fetch = originalFetch;
+  }
+});
+
+test('DESIGN-FOLLOWUP-01 envía cambios sobre la misma solicitud', async () => {
+  const previousFetch = globalThis.fetch;
+  let request;
+  globalThis.fetch = async (_url, options) => {
+    request = JSON.parse(options.body);
+    return new Response(JSON.stringify({
+      ok: true,
+      result: {
+        requestCode: 'DESIGN-TEST-01',
+        action: 'render',
+        status: 'ai_pending'
+      }
+    }), { status: 202, headers: { 'content-type': 'application/json' } });
+  };
+
+  try {
+    const result = await submitDesignFollowup({
+      requestCode: 'DESIGN-TEST-01',
+      accessToken: 'secret',
+      action: 'render',
+      instructions: 'Instalado de noche.',
+      project: {
+        requestType: 'rotulo',
+        installationEnvironment: 'exterior'
+      }
+    });
+
+    assert.equal(request.tipo, 'design-request-action');
+    assert.equal(request.requestCode, 'DESIGN-TEST-01');
+    assert.equal(request.accessToken, 'secret');
+    assert.equal(request.action, 'render');
+    assert.equal(result.result.status, 'ai_pending');
+  } finally {
+    globalThis.fetch = previousFetch;
   }
 });
 

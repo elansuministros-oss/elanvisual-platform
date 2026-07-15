@@ -586,6 +586,112 @@
   font-weight: 800;
 }
 
+.design-version-label {
+  margin: -10px 0 18px;
+  color: var(--design-muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.design-followup-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 0 20px;
+}
+
+.design-followup-actions button,
+.design-followup-form-actions button {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 15px;
+  border: 1px solid var(--design-line);
+  border-radius: 12px;
+  color: var(--design-primary);
+  background: #fff;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.design-followup-actions button:last-child,
+.design-followup-form-actions button:last-child {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #6d28d9, #4c0d82);
+}
+
+.design-followup-form {
+  margin: 0 0 22px;
+  padding: 20px;
+  border: 1px solid var(--design-line);
+  border-radius: 16px;
+  background: var(--design-soft);
+  text-align: left;
+}
+
+.design-followup-form h2 {
+  margin: 0 0 16px;
+  font-size: 21px;
+}
+
+.design-followup-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--design-text);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.design-followup-form input,
+.design-followup-form select,
+.design-followup-form textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px;
+  border: 1px solid var(--design-line);
+  border-radius: 10px;
+  color: var(--design-text);
+  background: #fff;
+  font: inherit;
+}
+
+.design-followup-form textarea {
+  min-height: 120px;
+  margin-top: 14px;
+  resize: vertical;
+}
+
+.design-followup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.design-followup-file {
+  margin-bottom: 2px;
+}
+
+.design-followup-file small {
+  color: var(--design-muted);
+  font-weight: 600;
+}
+
+.design-followup-form .design-form-error {
+  margin: 14px 0 0;
+}
+
+.design-followup-form-actions {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
 .spin {
   animation: design-spin 0.8s linear infinite;
 }
@@ -605,6 +711,20 @@
 
   .design-gallery-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .design-success-card {
+    margin: 18px auto;
+    padding: 25px 18px;
+  }
+
+  .design-followup-actions,
+  .design-followup-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .design-followup-form {
+    padding: 16px;
   }
 }
 

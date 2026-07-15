@@ -120,4 +120,39 @@ export async function loadDesignRequestStatus({ requestCode, accessToken }) {
   return data.result;
 }
 
+export async function submitDesignFollowup({
+  requestCode,
+  accessToken,
+  action,
+  instructions,
+  project,
+  files = []
+}) {
+  const response = await fetch(CORE_DESIGN_URL, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      tipo: 'design-request-action',
+      requestCode: String(requestCode || ''),
+      accessToken: String(accessToken || ''),
+      action: String(action || ''),
+      instructions: String(instructions || ''),
+      project: project || {},
+      files
+    })
+  });
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok || data?.ok !== true || !data?.result) {
+    throw new Error(
+      data?.error || 'No fue posible continuar la solicitud.'
+    );
+  }
+
+  return data;
+}
+
 export { CORE_DESIGN_URL, MAX_FILE_BYTES };

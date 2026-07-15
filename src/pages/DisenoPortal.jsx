@@ -18,6 +18,7 @@ import {
   loadDesignRequestStatus,
   parseWhatsAppDesignContext,
   readDesignFile,
+  submitDesignFollowup,
   submitDesignRequest
 } from '../services/designPortalService';
 import '../styles/design-portal.css';
@@ -77,6 +78,17 @@ export default function DisenoPortal() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(null);
   const [resultStatus, setResultStatus] = useState(null);
+  const [followupMode, setFollowupMode] = useState('');
+  const [followupSubmitting, setFollowupSubmitting] = useState(false);
+  const [followupError, setFollowupError] = useState('');
+  const [followupFile, setFollowupFile] = useState(null);
+  const [followupForm, setFollowupForm] = useState({
+    instructions: '',
+    requestType: 'rotulo',
+    environment: 'exterior',
+    widthCm: '',
+    heightCm: ''
+  });
 
   useEffect(() => {
     let active = true;
@@ -182,6 +194,52 @@ export default function DisenoPortal() {
     }
   };
 
+  const handleFollowupSubmit = async event => {
+    event.preventDefault();
+    setFollowupError('');
+    setFollowupSubmitting(true);
+
+    try {
+      const preparedFiles = [];
+      if (followupFile) {
+        const prepared = await readDesignFile(followupFile);
+        preparedFiles.push({ kind: 'place', ...prepared });
+      }
+      const data = await submitDesignFollowup({
+        requestCode: success.requestCode,
+        accessToken: success.accessToken,
+        action: followupMode,
+        instructions: followupForm.instructions,
+        project: followupMode === 'render'
+          ? {
+              requestType: followupForm.requestType,
+              installationEnvironment: followupForm.environment,
+              widthCm: followupForm.widthCm || null,
+              heightCm: followupForm.heightCm || null
+            }
+          : {},
+        files: preparedFiles
+      });
+
+      setResultStatus({
+        ...data.result,
+        ready: false,
+        deliveryPending: false
+      });
+      setFollowupMode('');
+      setFollowupFile(null);
+      setFollowupForm(current => ({ ...current, instructions: '' }));
+      setSuccess(current => ({ ...current, followupNonce: Date.now() }));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (followupSubmitError) {
+      setFollowupError(
+        followupSubmitError?.message || 'No fue posible continuar la solicitud.'
+      );
+    } finally {
+      setFollowupSubmitting(false);
+    }
+  };
+
   if (success) {
     const ready = resultStatus?.ready === true && resultStatus?.imageUrl;
     const failed = resultStatus?.status === 'failed';
@@ -213,6 +271,129 @@ export default function DisenoPortal() {
                   <LoaderCircle className="spin" size={22} />
                   Enviando también a tu WhatsApp…
                 </div>
+              )}
+              <p className="design-version-label">
+                Versión {resultStatus.revisionNumber || 1} · {
+                  resultStatus.workflowStage === 'render'
+                    ? 'Render hiperrealista'
+                    : resultStatus.workflowStage === 'revision'
+                      ? 'Propuesta ajustada'
+                      : 'Concepto inicial'
+                }
+              </p>
+              <div className="design-followup-actions">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFollowupMode('revision');
+                    setFollowupError('');
+                  }}
+                >
+                  <Palette size={18} /> Solicitar cambios
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFollowupMode('render');
+                    setFollowupError('');
+                  }}
+                >
+                  <Sparkles size={18} /> Crear render hiperrealista
+                </button>
+              </div>
+              {followupMode && (
+                <form className="design-followup-form" onSubmit={handleFollowupSubmit}>
+                  <h2>
+                    {followupMode === 'render'
+                      ? 'Convertir este diseño en un render'
+                      : 'Preparar una nueva versión'}
+                  </h2>
+                  {followupMode === 'render' && (
+                    <>
+                      <div className="design-followup-grid">
+                        <label>
+                          <span>Aplicación</span>
+                          <select
+                            value={followupForm.requestType}
+                            onChange={event => setFollowupForm(current => ({ ...current, requestType: event.target.value }))}
+                          >
+                            <option value="rotulo">Rótulo</option>
+                            <option value="fachada">Fachada</option>
+                          </select>
+                        </label>
+                        <label>
+                          <span>Instalación</span>
+                          <select
+                            value={followupForm.environment}
+                            onChange={event => setFollowupForm(current => ({ ...current, environment: event.target.value }))}
+                          >
+                            <option value="exterior">Exterior</option>
+                            <option value="interior">Interior</option>
+                          </select>
+                        </label>
+                        <label>
+                          <span>Ancho aproximado (cm)</span>
+                          <input
+                            type="number"
+                            min="1"
+                            inputMode="decimal"
+                            value={followupForm.widthCm}
+                            onChange={event => setFollowupForm(current => ({ ...current, widthCm: event.target.value }))}
+                          />
+                        </label>
+                        <label>
+                          <span>Alto aproximado (cm)</span>
+                          <input
+                            type="number"
+                            min="1"
+                            inputMode="decimal"
+                            value={followupForm.heightCm}
+                            onChange={event => setFollowupForm(current => ({ ...current, heightCm: event.target.value }))}
+                          />
+                        </label>
+                      </div>
+                      <label className="design-followup-file">
+                        <span>Foto del lugar (opcional)</span>
+                        <input
+                          type="file"
+                          accept=".png,.jpg,.jpeg,.webp"
+                          onChange={event => setFollowupFile(event.target.files?.[0] || null)}
+                        />
+                        <small>{followupFile?.name || 'Ayuda a crear un montaje más realista.'}</small>
+                      </label>
+                    </>
+                  )}
+                  <label>
+                    <span>
+                      {followupMode === 'render'
+                        ? '¿Cómo debe verse instalado?'
+                        : '¿Qué querés cambiar?'}
+                    </span>
+                    <textarea
+                      required
+                      maxLength={4000}
+                      value={followupForm.instructions}
+                      onChange={event => setFollowupForm(current => ({ ...current, instructions: event.target.value }))}
+                      placeholder={followupMode === 'render'
+                        ? 'Ej. Sobre pared blanca, de noche y con iluminación cálida.'
+                        : 'Ej. Cambiar el fondo rosado por azul oscuro y quitar los corazones.'}
+                    />
+                  </label>
+                  {followupError && <div className="design-form-error" role="alert">{followupError}</div>}
+                  <div className="design-followup-form-actions">
+                    <button type="button" onClick={() => setFollowupMode('')}>Cancelar</button>
+                    <button type="submit" disabled={followupSubmitting}>
+                      {followupSubmitting
+                        ? <LoaderCircle className="spin" size={18} />
+                        : <Send size={18} />}
+                      {followupSubmitting
+                        ? 'Enviando…'
+                        : followupMode === 'render'
+                          ? 'Generar render'
+                          : 'Generar nueva versión'}
+                    </button>
+                  </div>
+                </form>
               )}
             </>
           )}
