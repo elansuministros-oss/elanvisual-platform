@@ -98,4 +98,26 @@ export async function loadDesignGallery() {
   return data.items;
 }
 
+export async function loadDesignRequestStatus({ requestCode, accessToken }) {
+  const response = await fetch(CORE_DESIGN_URL, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      tipo: 'design-request-status',
+      requestCode: String(requestCode || ''),
+      accessToken: String(accessToken || '')
+    })
+  });
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok || data?.ok !== true || !data?.result) {
+    throw new Error('No fue posible consultar la propuesta.');
+  }
+
+  return data.result;
+}
+
 export { CORE_DESIGN_URL, MAX_FILE_BYTES };

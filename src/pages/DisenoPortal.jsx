@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import {
   loadDesignGallery,
+  loadDesignRequestStatus,
   parseWhatsAppDesignContext,
   readDesignFile,
   submitDesignRequest
@@ -75,6 +76,7 @@ export default function DisenoPortal() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(null);
+  const [resultStatus, setResultStatus] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -93,6 +95,37 @@ export default function DisenoPortal() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!success?.requestCode || !success?.accessToken) return undefined;
+    let active = true;
+    let timer;
+
+    const poll = async () => {
+      try {
+        const result = await loadDesignRequestStatus({
+          requestCode: success.requestCode,
+          accessToken: success.accessToken
+        });
+        if (!active) return;
+        setResultStatus(result);
+        if (
+          result.status !== 'failed' &&
+          (!result.ready || result.deliveryPending === true)
+        ) {
+          timer = window.setTimeout(poll, 4000);
+        }
+      } catch {
+        if (active) timer = window.setTimeout(poll, 7000);
+      }
+    };
+
+    void poll();
+    return () => {
+      active = false;
+      if (timer) window.clearTimeout(timer);
+    };
+  }, [success]);
 
   const update = (key, value) => {
     setForm(current => ({
@@ -150,16 +183,47 @@ export default function DisenoPortal() {
   };
 
   if (success) {
+    const ready = resultStatus?.ready === true && resultStatus?.imageUrl;
+    const failed = resultStatus?.status === 'failed';
     return (
       <main className="design-portal-page">
         <section className="design-success-card">
           <span className="design-success-icon"><CheckCircle2 size={38} /></span>
-          <p className="design-eyebrow">Solicitud recibida</p>
-          <h1>Ya tenemos los datos para tu propuesta</h1>
+          <p className="design-eyebrow">{ready ? 'Propuesta generada' : 'Solicitud recibida'}</p>
+          <h1>{ready ? 'Tu propuesta visual está lista' : 'ELAN IA está preparando tu diseño'}</h1>
           <p>
             Guardá este código: <strong>{success.requestCode}</strong>.
-            El seguimiento y la propuesta continuarán directamente por WhatsApp.
+            {ready
+              ? resultStatus.deliveredToWhatsApp
+                ? ' También la enviamos a tu WhatsApp para continuar con los ajustes.'
+                : ' Podés revisar la imagen aquí y continuar por WhatsApp.'
+              : failed
+                ? ' No fue posible completar esta generación. Continuaremos la revisión por WhatsApp.'
+                : ' Esta pantalla se actualizará automáticamente cuando la imagen esté lista.'}
           </p>
+          {ready && (
+            <>
+              <img
+                className="design-result-image"
+                src={resultStatus.imageUrl}
+                alt={`Propuesta visual ${success.requestCode}`}
+              />
+              {resultStatus.deliveryPending && (
+                <div className="design-generation-status" role="status">
+                  <LoaderCircle className="spin" size={22} />
+                  Enviando también a tu WhatsApp…
+                </div>
+              )}
+            </>
+          )}
+          {!ready && !failed && (
+            <div className="design-generation-status" role="status">
+              <LoaderCircle className="spin" size={22} />
+              {resultStatus?.status === 'designing'
+                ? 'Generando la imagen…'
+                : 'Solicitud en cola…'}
+            </div>
+          )}
           <a
             className="design-primary-button"
             href={`https://wa.me/${String(success.whatsapp || '').replace(/\D/g, '')}`}
@@ -178,7 +242,7 @@ export default function DisenoPortal() {
           <p className="design-eyebrow"><Sparkles size={17} /> ELAN IA · Diseño visual</p>
           <h1>Contanos cómo debe verse tu proyecto</h1>
           <p>
-            Completá los datos una sola vez. Recibirás el seguimiento y la propuesta por WhatsApp.
+            Completá los datos una sola vez. ELAN IA generará la propuesta y podrás continuar por WhatsApp.
           </p>
         </div>
         {context.source === 'whatsapp' && (
@@ -306,7 +370,7 @@ export default function DisenoPortal() {
               {submitting ? <LoaderCircle className="spin" size={21} /> : <Send size={20} />}
               {submitting ? 'Enviando solicitud…' : 'Enviar solicitud de diseño'}
             </button>
-            <p><MessageCircle size={16} /> Recibirás la propuesta por WhatsApp</p>
+            <p><Sparkles size={16} /> La propuesta se generará al enviar la solicitud</p>
           </div>
         </form>
 
