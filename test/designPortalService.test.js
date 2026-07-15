@@ -21,6 +21,16 @@ test('DESIGN-PORTAL-01 recupera contexto desde enlace de WhatsApp', () => {
   });
 });
 
+test('DESIGN-PORTAL-01 no bloquea un identificador LID como teléfono', () => {
+  const result = parseWhatsAppDesignContext(
+    '?source=whatsapp&wa=168534952960065&uid=168534952960065&type=rotulo'
+  );
+
+  assert.equal(result.whatsapp, '');
+  assert.equal(result.externalUserId, '168534952960065');
+  assert.equal(result.requestType, 'rotulo');
+});
+
 test('DESIGN-PORTAL-01 envía el contrato al Core', async () => {
   const previousFetch = globalThis.fetch;
   let request = null;
