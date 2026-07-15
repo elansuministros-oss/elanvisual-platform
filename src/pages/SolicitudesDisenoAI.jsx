@@ -1,150 +1,97 @@
 ﻿import React, { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, RefreshCw, Search, Sparkles, X } from 'lucide-react';
+import { RefreshCw, Search, Sparkles, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-const ESTADOS = [
-  'pendiente_diseno_manual',
-  'en_diseno',
-  'render_listo',
-  'cotizado',
-  'enviado_whatsapp',
-  'cerrado',
-];
-
-const grupoFecha = (fecha) => {
-  const d = new Date(fecha || Date.now());
-  const hoy = new Date();
-  const a = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
-  const b = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const diff = Math.round((a - b) / 86400000);
-
-  if (diff === 0) return 'Hoy';
-  if (diff === 1) return 'Ayer';
-  if (diff <= 7) return 'Esta semana';
-  if (d.getMonth() === hoy.getMonth() && d.getFullYear() === hoy.getFullYear()) return 'Este mes';
-  return 'Anteriores';
+const ETIQUETAS_ESTADO = {
+  ai_pending: 'Pendiente IA',
+  ai_processing: 'Generando diseño',
+  review: 'Listo para revisión',
+  approved: 'Aprobado',
+  quoted: 'Cotizado',
+  closed: 'Cerrado',
+  failed: 'Con error',
 };
 
-const obtenerImagenCliente = (s = {}) => {
-  return s.logo_url || s.referencia_url || s.lugar_url || '';
+const ETIQUETAS_TIPO = {
+  rotulo: 'Rótulo',
+  fachada: 'Fachada',
+  logo: 'Logo',
+  otro: 'Otro',
 };
 
-const esImagenVisible = (url = '') => {
-  const valor = String(url || '');
-  return valor.startsWith('data:image') || valor.startsWith('http') || valor.startsWith('/');
+const formatearFecha = (valor) => {
+  if (!valor) return 'Sin fecha';
+  return new Date(valor).toLocaleString();
 };
-
-const detectarCategoria = (s) => {
-  const t = `${s.categoria || ''} ${s.producto || ''} ${s.modelo || ''} ${s.idea || ''}`.toLowerCase();
-  if (t.includes('boton') || t.includes('botón')) return 'Botones';
-  if (t.includes('letra')) return 'Letras';
-  if (t.includes('jalavista')) return 'Jalavistas';
-  if (t.includes('fachada')) return 'Fachadas';
-  if (t.includes('totem') || t.includes('tótem')) return 'Tótems';
-  if (t.includes('señal') || t.includes('senal')) return 'Señalización';
-  return 'Otros';
-};
-
-const ImagenArchivo = ({ titulo, nombre, url, alt }) => (
-  <div style={{ marginTop: 14 }}>
-    <p>
-      <strong>{titulo}:</strong> {url ? 'Recibido' : 'No recibido'}
-      {nombre ? ` · ${nombre}` : ''}
-    </p>
-
-    {url && esImagenVisible(url) ? (
-      <img
-        src={url}
-        alt={alt}
-        style={{
-          width: '100%',
-          maxHeight: 320,
-          objectFit: 'contain',
-          borderRadius: 14,
-          background: '#fff',
-          border: '1px solid #dbe5f0',
-          marginTop: 10,
-        }}
-      />
-    ) : null}
-  </div>
-);
 
 export default function SolicitudesDisenoAI() {
   const [solicitudes, setSolicitudes] = useState([]);
   const [busqueda, setBusqueda] = useState('');
-  const [categoria, setCategoria] = useState('Todas');
-  const [estado, setEstado] = useState('Todos');
   const [abierta, setAbierta] = useState(null);
   const [cargando, setCargando] = useState(false);
+  const [errorCarga, setErrorCarga] = useState('');
 
   const cargar = async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      setErrorCarga('Supabase no está configurado en esta instalación.');
+      return;
+    }
+
     setCargando(true);
+    setErrorCarga('');
 
     const { data, error } = await supabase
-      .from('elan_ai_solicitudes_render')
-      .select('*')
-      .order('creado_en', { ascending: false });
+      .from('design_requests')
+      .select([
+        'id',
+        'request_code',
+        'customer_name',
+        'business_name',
+        'whatsapp',
+        'request_type',
+        'installation_environment',
+        'width_cm',
+        'height_cm',
+        'design_notes',
+        'status',
+        'created_at',
+        'files',
+        'result_files',
+      ].join(','))
+      .order('created_at', { ascending: false });
 
-    if (!error) setSolicitudes(data || []);
+    if (error) {
+      console.error('Error cargando solicitudes de diseño:', error);
+      setSolicitudes([]);
+      setErrorCarga(`No fue posible cargar las solicitudes: ${error.message}`);
+    } else {
+      setSolicitudes(data || []);
+    }
+
     setCargando(false);
   };
 
   useEffect(() => {
-    cargar();
+    void cargar();
   }, []);
 
   const lista = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
+    if (!q) return solicitudes;
 
-    return solicitudes
-      .map((s) => ({
-        ...s,
-        categoriaDetectada: detectarCategoria(s),
-        grupoFecha: grupoFecha(s.creado_en),
-      }))
-      .filter((s) => categoria === 'Todas' || s.categoriaDetectada === categoria)
-      .filter((s) => estado === 'Todos' || s.estado === estado)
-      .filter((s) => {
-        if (!q) return true;
-        return `${s.negocio || ''} ${s.whatsapp || ''} ${s.producto || ''} ${s.modelo || ''} ${s.idea || ''} ${s.estado || ''}`
-          .toLowerCase()
-          .includes(q);
-      });
-  }, [solicitudes, busqueda, categoria, estado]);
-
-  const cambiarEstado = async (s, nuevoEstado) => {
-    if (!supabase || !s?.id) return;
-
-    const { error } = await supabase
-      .from('elan_ai_solicitudes_render')
-      .update({
-        estado: nuevoEstado,
-        actualizado_en: new Date().toISOString(),
-      })
-      .eq('id', s.id);
-
-    if (!error) {
-      setSolicitudes((prev) =>
-        prev.map((item) => (item.id === s.id ? { ...item, estado: nuevoEstado } : item))
-      );
-      setAbierta((prev) => (prev?.id === s.id ? { ...prev, estado: nuevoEstado } : prev));
-    }
-  };
-
-  const categorias = [
-    'Todas',
-    'Botones',
-    'Letras',
-    'Jalavistas',
-    'Fachadas',
-    'Tótems',
-    'Señalización',
-    'Otros',
-  ];
-
-  const fechas = ['Hoy', 'Ayer', 'Esta semana', 'Este mes', 'Anteriores'];
+    return solicitudes.filter((solicitud) =>
+      [
+        solicitud.request_code,
+        solicitud.customer_name,
+        solicitud.business_name,
+        solicitud.whatsapp,
+        solicitud.request_type,
+        solicitud.status,
+      ]
+        .map((valor) => String(valor || '').toLowerCase())
+        .some((valor) => valor.includes(q))
+    );
+  }, [solicitudes, busqueda]);
 
   return (
     <main className="dashboard">
@@ -152,8 +99,8 @@ export default function SolicitudesDisenoAI() {
         <div className="title">
           <Sparkles size={22} />
           <div>
-            <h1>Solicitudes AI</h1>
-            <p>Diseños recibidos desde Tienda, clasificados por categoría, fecha y estado.</p>
+            <h1>Solicitudes de Diseño</h1>
+            <p>{solicitudes.length} expedientes registrados.</p>
           </div>
         </div>
 
@@ -162,72 +109,50 @@ export default function SolicitudesDisenoAI() {
             <Search size={18} />
             <input
               value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar WhatsApp, negocio, modelo, idea o estado..."
+              onChange={(event) => setBusqueda(event.target.value)}
+              placeholder="Buscar código, cliente, negocio o WhatsApp..."
             />
           </div>
-
-          <select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
-            {categorias.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-
-          <select value={estado} onChange={(e) => setEstado(e.target.value)}>
-            <option>Todos</option>
-            {ESTADOS.map((e) => (
-              <option key={e}>{e}</option>
-            ))}
-          </select>
 
           <button type="button" className="filter-label" onClick={cargar}>
             <RefreshCw size={18} />
             {cargando ? 'Cargando...' : 'Actualizar'}
           </button>
         </div>
+
+        {errorCarga && <p className="error-text">{errorCarga}</p>}
       </section>
 
-      {fechas.map((grupo) => {
-        const items = lista.filter((s) => s.grupoFecha === grupo);
-        if (!items.length) return null;
-
-        return (
-          <section className="panel" key={grupo}>
-            <div className="title">
-              <CalendarDays size={20} />
-              <h2>{grupo}</h2>
-            </div>
-
-            <div className="product-grid">
-              {items.map((s) => (
-                <article className="product-card" key={s.id}>
-                  <div className="product-body">
-                    <span className="store-ai-badge">{s.categoriaDetectada}</span>
-                    <h3>{s.negocio || s.modelo || s.producto || 'Solicitud AI'}</h3>
-                    <p>
-                      <strong>WhatsApp:</strong> {s.whatsapp || 'No indicado'}
-                    </p>
-                    <p>
-                      <strong>Estado:</strong> {s.estado || 'pendiente'}
-                    </p>
-                    <p>
-                      <strong>Fecha:</strong>{' '}
-                      {s.creado_en ? new Date(s.creado_en).toLocaleString() : 'Sin fecha'}
-                    </p>
-                    <button type="button" className="product-main-action" onClick={() => setAbierta(s)}>
-                      Abrir expediente
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        );
-      })}
-
-      {!lista.length && (
+      {!cargando && !errorCarga && (
         <section className="panel">
-          <p className="note">No hay solicitudes AI con estos filtros.</p>
+          <div className="product-grid">
+            {lista.map((solicitud) => (
+              <article className="product-card" key={solicitud.id}>
+                <div className="product-body">
+                  <span className="store-ai-badge">
+                    {ETIQUETAS_ESTADO[solicitud.status] || solicitud.status || 'Pendiente'}
+                  </span>
+                  <h3>{solicitud.request_code}</h3>
+                  <p><strong>Cliente:</strong> {solicitud.customer_name || 'No indicado'}</p>
+                  <p><strong>Negocio:</strong> {solicitud.business_name || 'No indicado'}</p>
+                  <p><strong>WhatsApp:</strong> {solicitud.whatsapp || 'No indicado'}</p>
+                  <p><strong>Tipo:</strong> {ETIQUETAS_TIPO[solicitud.request_type] || solicitud.request_type || 'No indicado'}</p>
+                  <p><strong>Fecha:</strong> {formatearFecha(solicitud.created_at)}</p>
+                  <button
+                    type="button"
+                    className="product-main-action"
+                    onClick={() => setAbierta(solicitud)}
+                  >
+                    Abrir expediente
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {!lista.length && (
+            <p className="note">No hay solicitudes que coincidan con la búsqueda.</p>
+          )}
         </section>
       )}
 
@@ -239,62 +164,27 @@ export default function SolicitudesDisenoAI() {
             </button>
 
             <div className="ai-chat-head">
-              <span>
-                <Sparkles size={18} /> Expediente AI
-              </span>
-              <h2>{abierta.negocio || abierta.modelo || abierta.producto || 'Solicitud'}</h2>
-              <p>{abierta.whatsapp}</p>
+              <span><Sparkles size={18} /> Expediente DESIGN</span>
+              <h2>{abierta.request_code}</h2>
+              <p>{abierta.customer_name} · {abierta.whatsapp}</p>
             </div>
 
             <div className="ai-chat-body">
-              <label className="ai-chat-field">
-                <select
-                  value={abierta.estado || 'pendiente_diseno_manual'}
-                  onChange={(e) => cambiarEstado(abierta, e.target.value)}
-                >
-                  {ESTADOS.map((e) => (
-                    <option key={e} value={e}>
-                      {e}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
               <div className="ai-chat-result">
-                <h3>Idea del cliente</h3>
-                <p>{abierta.idea || 'Sin descripción.'}</p>
+                <h3>Cliente</h3>
+                <p><strong>Nombre:</strong> {abierta.customer_name || 'No indicado'}</p>
+                <p><strong>Negocio:</strong> {abierta.business_name || 'No indicado'}</p>
+                <p><strong>WhatsApp:</strong> {abierta.whatsapp || 'No indicado'}</p>
               </div>
 
               <div className="ai-chat-result">
-                <h3>Archivos</h3>
-
-                <ImagenArchivo
-                  titulo="Logo"
-                  nombre={abierta.logo_nombre}
-                  url={abierta.logo_url}
-                  alt="Logo enviado por el cliente"
-                />
-
-                <ImagenArchivo
-                  titulo="Referencia"
-                  nombre={abierta.referencia_nombre}
-                  url={abierta.referencia_url}
-                  alt="Referencia enviada por el cliente"
-                />
-
-                <ImagenArchivo
-                  titulo="Foto del lugar"
-                  nombre={abierta.lugar_nombre}
-                  url={abierta.lugar_url || (!abierta.referencia_url && !abierta.logo_url ? obtenerImagenCliente(abierta) : '')}
-                  alt="Foto del lugar enviada por el cliente"
-                />
-              </div>
-
-              <div className="ai-chat-result">
-                <h3>Orden técnica</h3>
-                <pre style={{ whiteSpace: 'pre-wrap', fontSize: 13 }}>
-                  {JSON.stringify(abierta.orden_tecnica || {}, null, 2)}
-                </pre>
+                <h3>Solicitud</h3>
+                <p><strong>Tipo:</strong> {ETIQUETAS_TIPO[abierta.request_type] || abierta.request_type || 'No indicado'}</p>
+                <p><strong>Ubicación:</strong> {abierta.installation_environment || 'No aplica'}</p>
+                <p><strong>Medidas:</strong> {abierta.width_cm || '—'} × {abierta.height_cm || '—'} cm</p>
+                <p><strong>Estado:</strong> {ETIQUETAS_ESTADO[abierta.status] || abierta.status || 'Pendiente'}</p>
+                <p><strong>Indicaciones:</strong> {abierta.design_notes || 'Sin descripción.'}</p>
+                <p><strong>Fecha:</strong> {formatearFecha(abierta.created_at)}</p>
               </div>
             </div>
           </div>
