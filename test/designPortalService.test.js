@@ -4,8 +4,20 @@ import assert from 'node:assert/strict';
 import {
   loadDesignGallery,
   parseWhatsAppDesignContext,
+  resolveCoreDesignUrl,
   submitDesignRequest
 } from '../src/services/designPortalService.js';
+
+test('DESIGN-PORTAL-01 completa el endpoint cuando Vercel entrega solo la base', () => {
+  assert.equal(
+    resolveCoreDesignUrl('https://elankav-core.vercel.app'),
+    'https://elankav-core.vercel.app/api/elan-ai'
+  );
+  assert.equal(
+    resolveCoreDesignUrl('https://elankav-core.vercel.app/api/elan-ai'),
+    'https://elankav-core.vercel.app/api/elan-ai'
+  );
+});
 
 test('DESIGN-PORTAL-01 recupera contexto desde enlace de WhatsApp', () => {
   const result = parseWhatsAppDesignContext(
