@@ -31,6 +31,13 @@ test('DESIGN-PORTAL-01 no bloquea un identificador LID como teléfono', () => {
   assert.equal(result.requestType, 'rotulo');
 });
 
+test('DESIGN-PORTAL-01 reconoce la ruta corta oficial de WhatsApp', () => {
+  const result = parseWhatsAppDesignContext('', '/diseno/whatsapp');
+
+  assert.equal(result.source, 'whatsapp');
+  assert.equal(result.whatsapp, '');
+});
+
 test('DESIGN-PORTAL-01 envía el contrato al Core', async () => {
   const previousFetch = globalThis.fetch;
   let request = null;
