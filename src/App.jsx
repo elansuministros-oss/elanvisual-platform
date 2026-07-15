@@ -30,6 +30,7 @@ import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
 import AIStudio from './pages/AIStudio';
 import SolicitudesDisenoAI from './pages/SolicitudesDisenoAI';
+import DisenoPortal from './pages/DisenoPortal';
 import EMCImportadorAI22 from './pages/EMCImportadorAI22';
 import EMCInventario from './pages/EMCInventario';
 import { useApp } from './context/AppContext';
@@ -54,6 +55,7 @@ export default function App() {
     if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
     if (pathInicial.startsWith('/diseno-ai')) return 'disenoAI';
+    if (pathInicial.startsWith('/diseno') || pathInicial.startsWith('/solicitar-diseno')) return 'disenoPortal';
     if (pathInicial.startsWith('/solicitudes-ai')) return 'solicitudesAI';
     if (pathInicial.startsWith('/ai-studio')) return 'aiStudio';
     if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizador';
@@ -114,6 +116,7 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       aiStudio: '/ai-studio',
       solicitudesAI: '/solicitudes-ai',
       disenoAI: '/diseno-ai',
+      disenoPortal: '/diseno',
       cotizadorVisual: '/cotizador-visual',
       pedidos: '/pedidos',
       ordenTrabajo: '/orden-trabajo',
@@ -154,6 +157,7 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       {page === 'catalogo' && <Servicios setPage={ir} />}
       {page === 'carrito' && <Carrito />}
       {page === 'contacto' && <Contacto />}
+      {page === 'disenoPortal' && <DisenoPortal />}
       {page === 'seguimiento' && <Seguimiento />}
       {page === 'login' && <Login setPage={ir} />}
 
@@ -251,4 +255,3 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
     </AIAssistantProvider>
   );
 }
-
