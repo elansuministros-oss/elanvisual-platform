@@ -5,8 +5,34 @@ import {
   loadDesignGallery,
   parseWhatsAppDesignContext,
   resolveCoreDesignUrl,
+  loadDesignRequestStatus,
   submitDesignRequest
 } from '../src/services/designPortalService.js';
+
+test('consulta estado privado de la generación con código y token', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url, options) => {
+    assert.equal(String(url).includes('token='), false);
+    const body = JSON.parse(options.body);
+    assert.equal(body.tipo, 'design-request-status');
+    assert.equal(body.requestCode, 'DESIGN-TEST-01');
+    assert.equal(body.accessToken, 'secret');
+    return new Response(JSON.stringify({
+      ok: true,
+      result: { status: 'review', ready: true, imageUrl: 'https://storage.test/result.png' }
+    }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+
+  try {
+    const result = await loadDesignRequestStatus({
+      requestCode: 'DESIGN-TEST-01',
+      accessToken: 'secret'
+    });
+    assert.equal(result.ready, true);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
 
 test('DESIGN-PORTAL-01 completa el endpoint cuando Vercel entrega solo la base', () => {
   assert.equal(
