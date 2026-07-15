@@ -52,6 +52,7 @@ export default function Header({ page, setPage }) {
   const adminLinks = [
     ['dashboard', 'Dashboard', <LayoutDashboard size={24} />],
     ['crm', 'CRM', <Users size={24} />],
+    ['solicitudesAI', 'Solicitudes Diseño', <Palette size={24} />],
     ['cotizador', 'Cotizador', <Calculator size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['produccion', 'Produccin', <Factory size={24} />],
@@ -63,11 +64,11 @@ export default function Header({ page, setPage }) {
   ];
 
  const ventasLinks = [
-  ['aiStudio', 'AI', <Calculator size={24} />],
-  ['cotizacionesInteligentes', 'Cotizaciones', <ClipboardList size={24} />],
-  ['pedidos', 'Pedidos', <ClipboardList size={24} />],
-  ['miCuenta', 'Cuenta', <Users size={24} />],
-];
+   ['aiStudio', 'AI', <Calculator size={24} />],
+   ['cotizacionesInteligentes', 'Cotizaciones', <ClipboardList size={24} />],
+   ['pedidos', 'Pedidos', <ClipboardList size={24} />],
+   ['miCuenta', 'Cuenta', <Users size={24} />],
+ ];
 
   const produccionLinks = [
     ['pedidos', 'Pedidos / OT', <ClipboardList size={24} />],
@@ -87,7 +88,6 @@ export default function Header({ page, setPage }) {
       <header className="desktop-header app-desktop-header">
         <div className="brand" onClick={() => go(usuario ? 'dashboard' : 'home')}>
           <img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL" className="brand-logo-img brand-logo-desktop" />
-
         </div>
 
         <nav className="desktop-nav app-desktop-nav">
@@ -170,11 +170,3 @@ export default function Header({ page, setPage }) {
     </>
   );
 }
-
-
-
-
-
-
-
-
