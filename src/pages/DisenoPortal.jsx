@@ -109,7 +109,10 @@ export default function DisenoPortal() {
         });
         if (!active) return;
         setResultStatus(result);
-        if (!result.ready && result.status !== 'failed') {
+        if (
+          result.status !== 'failed' &&
+          (!result.ready || result.deliveryPending === true)
+        ) {
           timer = window.setTimeout(poll, 4000);
         }
       } catch {
@@ -191,17 +194,27 @@ export default function DisenoPortal() {
           <p>
             Guardá este código: <strong>{success.requestCode}</strong>.
             {ready
-              ? ' Podés revisar la imagen y continuar por WhatsApp.'
+              ? resultStatus.deliveredToWhatsApp
+                ? ' También la enviamos a tu WhatsApp para continuar con los ajustes.'
+                : ' Podés revisar la imagen aquí y continuar por WhatsApp.'
               : failed
                 ? ' No fue posible completar esta generación. Continuaremos la revisión por WhatsApp.'
                 : ' Esta pantalla se actualizará automáticamente cuando la imagen esté lista.'}
           </p>
           {ready && (
-            <img
-              className="design-result-image"
-              src={resultStatus.imageUrl}
-              alt={`Propuesta visual ${success.requestCode}`}
-            />
+            <>
+              <img
+                className="design-result-image"
+                src={resultStatus.imageUrl}
+                alt={`Propuesta visual ${success.requestCode}`}
+              />
+              {resultStatus.deliveryPending && (
+                <div className="design-generation-status" role="status">
+                  <LoaderCircle className="spin" size={22} />
+                  Enviando también a tu WhatsApp…
+                </div>
+              )}
+            </>
           )}
           {!ready && !failed && (
             <div className="design-generation-status" role="status">
