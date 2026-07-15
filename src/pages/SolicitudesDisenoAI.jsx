@@ -24,11 +24,72 @@ const formatearFecha = (valor) => {
   return new Date(valor).toLocaleString();
 };
 
+const normalizarArchivos = (valor) => (Array.isArray(valor) ? valor : []);
+
+const obtenerUrlDirecta = (archivo = {}) =>
+  archivo.signedUrl || archivo.publicUrl || archivo.url || archivo.dataUrl || '';
+
+async function firmarArchivos(archivos = []) {
+  return Promise.all(
+    normalizarArchivos(archivos).map(async (archivo) => {
+      const directa = obtenerUrlDirecta(archivo);
+      if (directa) return { ...archivo, signedUrl: directa };
+      if (!archivo?.bucket || !archivo?.path || !supabase) return archivo;
+
+      const { data, error } = await supabase.storage
+        .from(archivo.bucket)
+        .createSignedUrl(archivo.path, 60 * 30);
+
+      if (error) return { ...archivo, signedUrlError: error.message };
+      return { ...archivo, signedUrl: data?.signedUrl || '' };
+    })
+  );
+}
+
+function GaleriaArchivos({ titulo, archivos = [] }) {
+  const lista = normalizarArchivos(archivos);
+
+  return (
+    <div className="ai-chat-result">
+      <h3>{titulo}</h3>
+      {!lista.length && <p>No hay archivos registrados.</p>}
+      {!!lista.length && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+          {lista.map((archivo, index) => (
+            <article
+              key={`${archivo.path || archivo.name || 'archivo'}-${index}`}
+              style={{ border: '1px solid #dbe5f0', borderRadius: 12, padding: 10, background: '#fff' }}
+            >
+              {archivo.signedUrl ? (
+                <a href={archivo.signedUrl} target="_blank" rel="noreferrer">
+                  <img
+                    src={archivo.signedUrl}
+                    alt={archivo.name || titulo}
+                    style={{ width: '100%', height: 170, objectFit: 'contain', borderRadius: 8 }}
+                  />
+                </a>
+              ) : (
+                <div style={{ minHeight: 80, display: 'grid', placeItems: 'center', textAlign: 'center' }}>
+                  {archivo.signedUrlError || 'Archivo registrado sin vista previa.'}
+                </div>
+              )}
+              <p style={{ marginTop: 8, overflowWrap: 'anywhere' }}>
+                <strong>{archivo.kind || 'archivo'}:</strong> {archivo.name || archivo.path || 'Archivo'}
+              </p>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SolicitudesDisenoAI() {
   const [solicitudes, setSolicitudes] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [abierta, setAbierta] = useState(null);
   const [cargando, setCargando] = useState(false);
+  const [cargandoExpediente, setCargandoExpediente] = useState(false);
   const [errorCarga, setErrorCarga] = useState('');
 
   const cargar = async () => {
@@ -93,6 +154,16 @@ export default function SolicitudesDisenoAI() {
     );
   }, [solicitudes, busqueda]);
 
+  const abrirExpediente = async (solicitud) => {
+    setCargandoExpediente(true);
+    const [files, resultFiles] = await Promise.all([
+      firmarArchivos(solicitud.files),
+      firmarArchivos(solicitud.result_files),
+    ]);
+    setAbierta({ ...solicitud, files, result_files: resultFiles });
+    setCargandoExpediente(false);
+  };
+
   return (
     <main className="dashboard">
       <section className="panel">
@@ -110,7 +181,7 @@ export default function SolicitudesDisenoAI() {
             <input
               value={busqueda}
               onChange={(event) => setBusqueda(event.target.value)}
-              placeholder="Buscar código, cliente, negocio o WhatsApp..."
+              placeholder="Buscar nombre, código, negocio o WhatsApp..."
             />
           </div>
 
@@ -125,28 +196,36 @@ export default function SolicitudesDisenoAI() {
 
       {!cargando && !errorCarga && (
         <section className="panel">
-          <div className="product-grid">
+          <div style={{ display: 'grid', gap: 8 }}>
             {lista.map((solicitud) => (
-              <article className="product-card" key={solicitud.id}>
-                <div className="product-body">
-                  <span className="store-ai-badge">
-                    {ETIQUETAS_ESTADO[solicitud.status] || solicitud.status || 'Pendiente'}
-                  </span>
-                  <h3>{solicitud.request_code}</h3>
-                  <p><strong>Cliente:</strong> {solicitud.customer_name || 'No indicado'}</p>
-                  <p><strong>Negocio:</strong> {solicitud.business_name || 'No indicado'}</p>
-                  <p><strong>WhatsApp:</strong> {solicitud.whatsapp || 'No indicado'}</p>
-                  <p><strong>Tipo:</strong> {ETIQUETAS_TIPO[solicitud.request_type] || solicitud.request_type || 'No indicado'}</p>
-                  <p><strong>Fecha:</strong> {formatearFecha(solicitud.created_at)}</p>
-                  <button
-                    type="button"
-                    className="product-main-action"
-                    onClick={() => setAbierta(solicitud)}
-                  >
-                    Abrir expediente
-                  </button>
-                </div>
-              </article>
+              <button
+                key={solicitud.id}
+                type="button"
+                onClick={() => void abrirExpediente(solicitud)}
+                style={{
+                  width: '100%',
+                  display: 'grid',
+                  gridTemplateColumns: 'minmax(180px, 1.3fr) minmax(160px, 1fr) minmax(130px, .8fr) auto',
+                  gap: 12,
+                  alignItems: 'center',
+                  textAlign: 'left',
+                  padding: '12px 14px',
+                  border: '1px solid #dbe5f0',
+                  borderRadius: 12,
+                  background: '#fff',
+                  cursor: 'pointer',
+                }}
+              >
+                <span>
+                  <strong style={{ display: 'block' }}>{solicitud.customer_name || 'Sin nombre'}</strong>
+                  <small>{solicitud.request_code}</small>
+                </span>
+                <span>{solicitud.business_name || 'Sin negocio'}</span>
+                <span>{solicitud.whatsapp || 'Sin WhatsApp'}</span>
+                <span className="store-ai-badge">
+                  {ETIQUETAS_ESTADO[solicitud.status] || solicitud.status || 'Pendiente'}
+                </span>
+              </button>
             ))}
           </div>
 
@@ -156,7 +235,15 @@ export default function SolicitudesDisenoAI() {
         </section>
       )}
 
-      {abierta && (
+      {cargandoExpediente && (
+        <section className="ai-chat-modal" role="status">
+          <div className="ai-chat-card">
+            <div className="ai-chat-body"><p>Cargando expediente...</p></div>
+          </div>
+        </section>
+      )}
+
+      {abierta && !cargandoExpediente && (
         <section className="ai-chat-modal" role="dialog" aria-modal="true">
           <div className="ai-chat-card">
             <button type="button" className="ai-chat-close" onClick={() => setAbierta(null)}>
@@ -186,6 +273,9 @@ export default function SolicitudesDisenoAI() {
                 <p><strong>Indicaciones:</strong> {abierta.design_notes || 'Sin descripción.'}</p>
                 <p><strong>Fecha:</strong> {formatearFecha(abierta.created_at)}</p>
               </div>
+
+              <GaleriaArchivos titulo="Archivos enviados" archivos={abierta.files} />
+              <GaleriaArchivos titulo="Diseños realizados" archivos={abierta.result_files} />
             </div>
           </div>
         </section>
