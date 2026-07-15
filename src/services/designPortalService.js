@@ -1,8 +1,20 @@
-const CORE_DESIGN_URL =
-  (typeof import.meta.env === 'object'
-    ? import.meta.env.VITE_ELANKAV_CORE_URL?.trim()
-    : '') ||
-  'https://elankav-core.vercel.app/api/elan-ai';
+export function resolveCoreDesignUrl(value = '') {
+  const configured = String(value || '').trim().replace(/\/+$/, '');
+
+  if (!configured) {
+    return 'https://elankav-core.vercel.app/api/elan-ai';
+  }
+
+  return configured.endsWith('/api/elan-ai')
+    ? configured
+    : `${configured}/api/elan-ai`;
+}
+
+const CORE_DESIGN_URL = resolveCoreDesignUrl(
+  typeof import.meta.env === 'object'
+    ? import.meta.env.VITE_ELANKAV_CORE_URL
+    : ''
+);
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 
