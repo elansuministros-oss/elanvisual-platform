@@ -1,5 +1,5 @@
-﻿import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Search, Sparkles, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight, RefreshCw, Search, Sparkles, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const ETIQUETAS_ESTADO = {
@@ -34,7 +34,9 @@ async function firmarArchivos(archivos = []) {
     normalizarArchivos(archivos).map(async (archivo) => {
       const directa = obtenerUrlDirecta(archivo);
       if (directa) return { ...archivo, signedUrl: directa };
-      if (!archivo?.bucket || !archivo?.path || !supabase) return archivo;
+      if (!archivo?.bucket || !archivo?.path || !supabase) {
+        return { ...archivo, signedUrlError: 'El archivo no tiene bucket o ruta registrada.' };
+      }
 
       const { data, error } = await supabase.storage
         .from(archivo.bucket)
@@ -58,22 +60,33 @@ function GaleriaArchivos({ titulo, archivos = [] }) {
           {lista.map((archivo, index) => (
             <article
               key={`${archivo.path || archivo.name || 'archivo'}-${index}`}
-              style={{ border: '1px solid #dbe5f0', borderRadius: 12, padding: 10, background: '#fff' }}
+              style={{ border: '1px solid #dbe5f0', borderRadius: 14, padding: 12, background: '#fff' }}
             >
               {archivo.signedUrl ? (
                 <a href={archivo.signedUrl} target="_blank" rel="noreferrer">
                   <img
                     src={archivo.signedUrl}
                     alt={archivo.name || titulo}
-                    style={{ width: '100%', height: 220, objectFit: 'contain', borderRadius: 8, background: '#f8fafc' }}
+                    style={{ width: '100%', height: 220, objectFit: 'contain', borderRadius: 10, background: '#f8fafc' }}
                   />
                 </a>
               ) : (
-                <div style={{ minHeight: 120, display: 'grid', placeItems: 'center', textAlign: 'center', color: '#475569' }}>
+                <div
+                  style={{
+                    minHeight: 130,
+                    display: 'grid',
+                    placeItems: 'center',
+                    textAlign: 'center',
+                    padding: 12,
+                    borderRadius: 10,
+                    background: '#fff7ed',
+                    color: '#9a3412',
+                  }}
+                >
                   {archivo.signedUrlError || 'Archivo registrado sin vista previa.'}
                 </div>
               )}
-              <p style={{ marginTop: 8, overflowWrap: 'anywhere', color: '#0f172a' }}>
+              <p style={{ marginTop: 8, overflowWrap: 'anywhere' }}>
                 <strong>{archivo.kind || 'archivo'}:</strong> {archivo.name || archivo.path || 'Archivo'}
               </p>
             </article>
@@ -91,6 +104,8 @@ export default function SolicitudesDisenoAI() {
   const [cargando, setCargando] = useState(false);
   const [cargandoExpediente, setCargandoExpediente] = useState(false);
   const [errorCarga, setErrorCarga] = useState('');
+  const [porPagina, setPorPagina] = useState(10);
+  const [pagina, setPagina] = useState(1);
 
   const cargar = async () => {
     if (!supabase) {
@@ -136,6 +151,10 @@ export default function SolicitudesDisenoAI() {
     void cargar();
   }, []);
 
+  useEffect(() => {
+    setPagina(1);
+  }, [busqueda, porPagina]);
+
   const lista = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
     if (!q) return solicitudes;
@@ -153,6 +172,11 @@ export default function SolicitudesDisenoAI() {
         .some((valor) => valor.includes(q))
     );
   }, [solicitudes, busqueda]);
+
+  const totalPaginas = Math.max(1, Math.ceil(lista.length / porPagina));
+  const paginaActual = Math.min(pagina, totalPaginas);
+  const inicio = (paginaActual - 1) * porPagina;
+  const visibles = lista.slice(inicio, inicio + porPagina);
 
   const abrirExpediente = async (solicitud) => {
     setCargandoExpediente(true);
@@ -175,15 +199,45 @@ export default function SolicitudesDisenoAI() {
           </div>
         </div>
 
-        <div className="catalog-tools">
-          <div className="search-box">
-            <Search size={18} />
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(320px, 1fr) 150px auto',
+            gap: 12,
+            alignItems: 'center',
+            marginTop: 18,
+          }}
+        >
+          <label
+            style={{
+              minHeight: 52,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '0 16px',
+              border: '1px solid #cbd5e1',
+              borderRadius: 14,
+              background: '#fff',
+            }}
+          >
+            <Search size={20} />
             <input
               value={busqueda}
               onChange={(event) => setBusqueda(event.target.value)}
-              placeholder="Buscar nombre, código, negocio o WhatsApp..."
+              placeholder="Buscar por código DESIGN, nombre, negocio o WhatsApp"
+              style={{ width: '100%', border: 0, outline: 0, background: 'transparent', fontSize: 16 }}
             />
-          </div>
+          </label>
+
+          <select
+            value={porPagina}
+            onChange={(event) => setPorPagina(Number(event.target.value))}
+            style={{ minHeight: 52, borderRadius: 14, border: '1px solid #cbd5e1', padding: '0 12px', background: '#fff' }}
+          >
+            <option value={10}>10 por página</option>
+            <option value={20}>20 por página</option>
+            <option value={50}>50 por página</option>
+          </select>
 
           <button type="button" className="filter-label" onClick={cargar}>
             <RefreshCw size={18} />
@@ -196,8 +250,8 @@ export default function SolicitudesDisenoAI() {
 
       {!cargando && !errorCarga && (
         <section className="panel">
-          <div style={{ display: 'grid', gap: 10 }}>
-            {lista.map((solicitud) => (
+          <div style={{ display: 'grid', gap: 8 }}>
+            {visibles.map((solicitud) => (
               <button
                 key={solicitud.id}
                 type="button"
@@ -205,29 +259,24 @@ export default function SolicitudesDisenoAI() {
                 style={{
                   width: '100%',
                   display: 'grid',
-                  gridTemplateColumns: 'minmax(240px, 1.4fr) minmax(190px, 1fr) minmax(160px, .8fr) minmax(150px, .7fr)',
-                  gap: 14,
+                  gridTemplateColumns: 'minmax(220px, 1.4fr) minmax(180px, 1fr) minmax(150px, .8fr) auto',
+                  gap: 16,
                   alignItems: 'center',
                   textAlign: 'left',
                   padding: '14px 16px',
-                  minHeight: 74,
                   border: '1px solid #cbd5e1',
                   borderRadius: 12,
-                  background: '#ffffff',
-                  color: '#0f172a',
+                  background: '#fff',
                   cursor: 'pointer',
-                  lineHeight: 1.35,
-                  boxShadow: '0 1px 2px rgba(15, 23, 42, 0.05)',
+                  color: '#0f172a',
                 }}
               >
-                <span style={{ color: '#0f172a' }}>
+                <span>
                   <strong style={{ display: 'block', fontSize: 16 }}>{solicitud.customer_name || 'Sin nombre'}</strong>
-                  <small style={{ display: 'block', marginTop: 3, color: '#475569', overflowWrap: 'anywhere' }}>
-                    {solicitud.request_code}
-                  </small>
+                  <small style={{ display: 'block', marginTop: 4 }}>{solicitud.request_code}</small>
                 </span>
-                <span style={{ color: '#334155' }}>{solicitud.business_name || 'Sin negocio'}</span>
-                <span style={{ color: '#334155' }}>{solicitud.whatsapp || 'Sin WhatsApp'}</span>
+                <span>{solicitud.business_name || 'Sin negocio'}</span>
+                <span>{solicitud.whatsapp || 'Sin WhatsApp'}</span>
                 <span className="store-ai-badge">
                   {ETIQUETAS_ESTADO[solicitud.status] || solicitud.status || 'Pendiente'}
                 </span>
@@ -235,8 +284,35 @@ export default function SolicitudesDisenoAI() {
             ))}
           </div>
 
-          {!lista.length && (
+          {!visibles.length && (
             <p className="note">No hay solicitudes que coincidan con la búsqueda.</p>
+          )}
+
+          {lista.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 16 }}>
+              <span>
+                Mostrando {inicio + 1}–{Math.min(inicio + porPagina, lista.length)} de {lista.length}
+              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setPagina((valor) => Math.max(1, valor - 1))}
+                  disabled={paginaActual <= 1}
+                  className="filter-label"
+                >
+                  <ChevronLeft size={18} /> Anterior
+                </button>
+                <strong>{paginaActual} / {totalPaginas}</strong>
+                <button
+                  type="button"
+                  onClick={() => setPagina((valor) => Math.min(totalPaginas, valor + 1))}
+                  disabled={paginaActual >= totalPaginas}
+                  className="filter-label"
+                >
+                  Siguiente <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
           )}
         </section>
       )}
