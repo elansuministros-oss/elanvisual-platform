@@ -18,6 +18,7 @@ import {
   Settings,
   Calculator,
   LayoutDashboard,
+  Palette,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -42,6 +43,7 @@ export default function Header({ page, setPage }) {
     ['home', 'Inicio', <Home size={24} />],
     ['servicios', 'Servicios', <BriefcaseBusiness size={24} />],
     ['tienda', 'Tienda', <PackageSearch size={24} />],
+    ['disenoPortal', 'Diseño', <Palette size={24} />],
     ['carrito', 'Carrito', <ShoppingCart size={24} />],
     ['seguimiento', 'Seguimiento', <ClipboardList size={24} />],
     ['contacto', 'Contacto', <Phone size={24} />],
@@ -168,7 +170,6 @@ export default function Header({ page, setPage }) {
     </>
   );
 }
-
 
 
 
