@@ -59,6 +59,7 @@ export default function Header({ page, setPage }) {
   const adminLinks = [
     ['dashboard', 'Dashboard', <LayoutDashboard size={24} />],
     ['crm', 'CRM', <Users size={24} />],
+    ['solicitudesAI', 'Solicitudes Diseño', <Palette size={24} />],
     ['cotizador', 'Cotizador', <Calculator size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['produccion', 'Produccin', <Factory size={24} />],
