@@ -4,9 +4,58 @@ function money(value) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value || 0));
 }
 
+function normalizeWhatsAppPhone(value = '') {
+  const digits = String(value).replace(/\D/g, '');
+  if (!digits) return '';
+  if (digits.length === 8) return `505${digits}`;
+  if (digits.startsWith('00')) return digits.slice(2);
+  return digits;
+}
+
+function buildWhatsAppMessage({ data, contract, pdfUrl }) {
+  const quotationNumber = data.quotation_number || 'cotización';
+  const installments = contract.payments.installments
+    .map((payment) => `${payment.label} ${payment.percentage}%: ${money(payment.amountUsd)}`)
+    .join('\n');
+  const products = contract.items
+    .map((item) => `• ${item.title}: ${money(item.subtotalUsd)}`)
+    .join('\n');
+
+  return [
+    `Hola ${contract.customer.name || ''},`,
+    '',
+    `Te compartimos la ${quotationNumber} de ELANVISUAL.`,
+    '',
+    products,
+    '',
+    `Total: ${money(contract.pricing.totalUsd)}`,
+    installments,
+    pdfUrl ? '' : null,
+    pdfUrl ? `Ver o descargar PDF: ${pdfUrl}` : null,
+    '',
+    'Para iniciar el proyecto, confirmá por este medio el pago del anticipo correspondiente.'
+  ].filter((line) => line !== null).join('\n');
+}
+
 export default function VQSProjectSummary({ creation, contract, onBack }) {
   const data = creation?.data || creation || {};
   const pdfUrl = data.document_url || data.pdf_url || '';
+  const whatsappPhone = normalizeWhatsAppPhone(contract.customer.phone);
+  const canSendWhatsApp = Boolean(whatsappPhone);
+
+  function sendByWhatsApp() {
+    if (!canSendWhatsApp) return;
+
+    const destination = `+${whatsappPhone}`;
+    const quotationNumber = data.quotation_number || 'esta cotización';
+    const confirmed = window.confirm(
+      `Vas a enviar ${quotationNumber} a ${contract.customer.name || 'Cliente'} (${destination}). ¿Confirmás el envío?`
+    );
+    if (!confirmed) return;
+
+    const message = buildWhatsAppMessage({ data, contract, pdfUrl });
+    window.open(`https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+  }
 
   return (
     <main className="uq-shell">
@@ -68,13 +117,24 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
           <button
             type="button"
             className="uq-primary-wide"
+            disabled={!canSendWhatsApp}
+            onClick={sendByWhatsApp}
+            title={!canSendWhatsApp ? 'La cotización no tiene un teléfono válido del cliente' : 'Verificar destinatario y abrir WhatsApp'}
+          >
+            Enviar por WhatsApp
+          </button>
+          {!canSendWhatsApp && <small className="uq-muted">Agregá el teléfono del cliente para habilitar el envío.</small>}
+
+          <button
+            type="button"
+            className="uq-light uq-primary-wide"
             disabled={!pdfUrl}
             onClick={() => pdfUrl && window.open(pdfUrl, '_blank', 'noopener,noreferrer')}
             title={!pdfUrl ? 'Disponible cuando Document Engine publique el documento' : 'Descargar PDF'}
           >
             Descargar PDF
           </button>
-          {!pdfUrl && <small className="uq-muted">El PDF se habilitará desde Document Engine cuando el Orchestrator entregue la URL oficial.</small>}
+          {!pdfUrl && <small className="uq-muted">El mensaje de WhatsApp puede enviarse de inmediato. El PDF se adjuntará automáticamente cuando Document Engine entregue su URL oficial.</small>}
         </aside>
       </section>
     </main>
