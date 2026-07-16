@@ -51,9 +51,9 @@ export default function App() {
     if (pathInicial.startsWith('/produccion')) return 'produccion';
     if (pathInicial.startsWith('/materiales')) return 'materiales';
     if (pathInicial.startsWith('/biblioteca-tecnica')) return 'bibliotecaTecnica';
-    if (pathInicial.startsWith('/cotizador')) return 'cotizador';
     if (pathInicial === '/cotizaciones' || pathInicial.startsWith('/cotizaciones/')) return 'vqsCenter';
     if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
+    if (pathInicial.startsWith('/cotizador')) return 'cotizador';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
     if (pathInicial.startsWith('/diseno-ai')) return 'disenoAI';
     if (pathInicial.startsWith('/diseno') || pathInicial.startsWith('/solicitar-diseno')) return 'disenoPortal';
