@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { projectCoreClient } from '../modules/vqs/services/projectCoreClient';
 import { projectContextClient } from '../modules/vqs/services/projectContextClient';
 import VQSProjectSummary from './VQSProjectSummary';
@@ -28,10 +28,34 @@ const PAYMENT_PRESETS = Object.freeze({
 
 const emptyItem = () => ({
   id: crypto.randomUUID(), productId: '', designId: '', title: '', commercialDescription: '', quantity: 1,
-  unit: 'unidad', unitPrice: 0, imageUrl: '', features: ''
+  unit: 'unidad', unitPrice: 0, imageUrl: '', features: '', assetFiles: []
 });
 
+function classifyQuery(value = '') {
+  const query = String(value).trim();
+  const digits = query.replace(/\D/g, '');
+  if (/^DESIGN-[A-Z0-9-]+$/i.test(query)) return 'design';
+  if (digits.length >= 8 && digits.length <= 13) return 'customer';
+  return query.length >= 3 ? 'store' : 'all';
+}
+
+function normalizeAssetFiles(images = []) {
+  return (Array.isArray(images) ? images : [])
+    .filter((asset) => asset && typeof asset === 'object')
+    .map((asset) => ({
+      kind: String(asset.kind || ''),
+      name: String(asset.name || ''),
+      path: String(asset.path || ''),
+      bucket: String(asset.bucket || ''),
+      mimeType: String(asset.mimeType || ''),
+      sizeBytes: Number(asset.sizeBytes || 0)
+    }));
+}
+
 function mapContextItem(item = {}) {
+  const stringImage = typeof item.imageUrl === 'string'
+    ? item.imageUrl
+    : (Array.isArray(item.images) ? item.images.find((entry) => typeof entry === 'string') : '');
   return {
     id: item.itemId || crypto.randomUUID(),
     productId: item.productId || '',
@@ -41,21 +65,27 @@ function mapContextItem(item = {}) {
     quantity: Number(item.quantity || 1),
     unit: item.unit || 'unidad',
     unitPrice: Number(item.unitPriceUsd || 0),
-    imageUrl: item.imageUrl || item.images?.[0] || '',
-    features: Array.isArray(item.features) ? item.features.join(', ') : String(item.features || '')
+    imageUrl: stringImage || '',
+    features: Array.isArray(item.features) ? item.features.join(', ') : String(item.features || ''),
+    assetFiles: normalizeAssetFiles(item.images)
   };
+}
+
+function isEmptyItem(item) {
+  return !item.title && !item.productId && !item.designId && Number(item.unitPrice || 0) === 0;
 }
 
 export default function CotizadorUniversal() {
   const [customerId, setCustomerId] = useState(() => `ELANVISUAL-${crypto.randomUUID()}`);
   const [customer, setCustomer] = useState({ name: '', companyName: '', phone: '', email: '', address: '' });
-  const [project, setProject] = useState({ title: '', expectedDeliveryAt: '' });
+  const [project, setProject] = useState({ title: '', expectedDeliveryAt: '', images: [] });
   const [items, setItems] = useState([emptyItem()]);
   const [source, setSource] = useState({ type: 'manual', sourceId: '', designRequestId: '', storeProductId: '', storeCartId: '', designMode: 'optional' });
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [lastAutoQuery, setLastAutoQuery] = useState('');
   const [discountRate, setDiscountRate] = useState(0);
   const [applyTax, setApplyTax] = useState(false);
   const [exchangeRate, setExchangeRate] = useState(36.8);
@@ -110,22 +140,22 @@ export default function CotizadorUniversal() {
       title: project.title.trim(),
       priority: 'normal',
       expectedDeliveryAt: project.expectedDeliveryAt || '',
-      images: []
+      images: project.images.filter((entry) => typeof entry === 'string')
     },
     items: normalizedItems,
     pricing: {
-      currency: 'USD',
-      settlementCurrency: 'NIO',
-      discountUsd: discount,
-      taxRate: applyTax ? 15 : 0,
-      taxUsd: tax,
-      totalUsd: total,
+      currency: 'USD', settlementCurrency: 'NIO', discountUsd: discount,
+      taxRate: applyTax ? 15 : 0, taxUsd: tax, totalUsd: total,
       exchangeRate: Number(exchangeRate || 0),
-      exchangeRateDate: new Date().toISOString().slice(0, 10),
-      payableTotalNio
+      exchangeRateDate: new Date().toISOString().slice(0, 10), payableTotalNio
     },
     payments: { type: paymentType, installments },
-    metadata: { sourceScreen: 'CotizadorUniversal', contextGateway: 'orchestrator', emcStatus: 'interfaces_only' }
+    metadata: {
+      sourceScreen: 'CotizadorUniversal',
+      contextGateway: 'orchestrator',
+      emcStatus: 'interfaces_only',
+      sourceAssets: items.flatMap((item) => item.assetFiles || [])
+    }
   };
 
   const canSubmit = Boolean(
@@ -138,40 +168,37 @@ export default function CotizadorUniversal() {
     current.map((item) => item.id === id ? { ...item, [field]: value } : item)
   );
 
-  async function runContextSearch() {
-    const query = searchQuery.trim();
-    if (query.length < 2 || searching) return;
-    setSearching(true);
-    setSearchError('');
-    try {
-      const result = await projectContextClient.searchContext(query);
-      setSearchResults(Array.isArray(result.results) ? result.results : []);
-      if (!result.results?.length) setSearchError('No se encontraron clientes, diseños o productos con ese dato.');
-    } catch (error) {
-      setSearchResults([]);
-      setSearchError(error.message || 'No fue posible consultar el contexto.');
-    } finally {
-      setSearching(false);
-    }
-  }
-
-  function applyContext(result) {
+  function applyContext(result, { automatic = false } = {}) {
     if (result.customer) {
       setCustomerId(result.customer.customerId || `ELANVISUAL-${crypto.randomUUID()}`);
       setCustomer({
-        name: result.customer.name || '',
-        companyName: result.customer.companyName || '',
-        phone: result.customer.phone || '',
-        email: result.customer.email || '',
-        address: result.customer.address || ''
+        name: result.customer.name || '', companyName: result.customer.companyName || '',
+        phone: result.customer.phone || '', email: result.customer.email || '', address: result.customer.address || ''
       });
     }
-    if (result.project?.title) {
+
+    if (result.type === 'design') {
+      const mappedItems = Array.isArray(result.items) ? result.items.map(mapContextItem) : [];
+      setProject((current) => ({
+        ...current,
+        title: result.project?.title || current.title,
+        images: mappedItems.flatMap((item) => item.assetFiles || [])
+      }));
+      if (mappedItems.length) setItems(mappedItems);
+    } else if (result.type === 'store') {
+      const mappedItems = Array.isArray(result.items) ? result.items.map(mapContextItem) : [];
+      if (result.project?.title) setProject((current) => ({ ...current, title: current.title || result.project.title }));
+      if (mappedItems.length) {
+        setItems((current) => {
+          const base = current.length === 1 && isEmptyItem(current[0]) ? [] : current;
+          const existingIds = new Set(base.map((item) => item.productId || item.id));
+          return [...base, ...mappedItems.filter((item) => !existingIds.has(item.productId || item.id))];
+        });
+      }
+    } else if (result.project?.title) {
       setProject((current) => ({ ...current, title: result.project.title }));
     }
-    if (Array.isArray(result.items) && result.items.length) {
-      setItems(result.items.map(mapContextItem));
-    }
+
     setSource({
       type: result.source?.type || result.type || 'manual',
       sourceId: result.source?.sourceId || result.sourceId || '',
@@ -181,8 +208,47 @@ export default function CotizadorUniversal() {
       designMode: result.type === 'design' ? 'required' : 'optional'
     });
     setSearchResults([]);
-    setSearchError('');
+    setSearchError(automatic ? 'Información cargada automáticamente desde el Orchestrator.' : '');
   }
+
+  async function runContextSearch(queryOverride, options = {}) {
+    const query = String(queryOverride ?? searchQuery).trim();
+    if (query.length < 2 || searching) return;
+    const type = options.type || classifyQuery(query);
+    setSearching(true);
+    setSearchError('');
+    try {
+      const result = await projectContextClient.searchContext(query, { type, limit: type === 'store' ? 12 : 10 });
+      const results = Array.isArray(result.results) ? result.results : [];
+      if (options.automatic && results.length === 1) {
+        applyContext(results[0], { automatic: true });
+      } else {
+        setSearchResults(results);
+        if (!results.length) setSearchError('No se encontraron clientes, diseños o productos con ese dato.');
+      }
+    } catch (error) {
+      setSearchResults([]);
+      setSearchError(error.message || 'No fue posible consultar el contexto.');
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  useEffect(() => {
+    const query = searchQuery.trim();
+    const type = classifyQuery(query);
+    const ready = type === 'design'
+      ? /^DESIGN-[A-Z0-9-]+$/i.test(query)
+      : type === 'customer'
+        ? query.replace(/\D/g, '').length >= 8
+        : query.length >= 3;
+    if (!ready || query === lastAutoQuery) return undefined;
+    const timer = window.setTimeout(() => {
+      setLastAutoQuery(query);
+      runContextSearch(query, { type, automatic: true });
+    }, type === 'store' ? 650 : 450);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery, lastAutoQuery]);
 
   async function saveInProjectCore() {
     if (!canSubmit || saving) return;
@@ -213,14 +279,14 @@ export default function CotizadorUniversal() {
 
       <section className="uq-card">
         <h2>Cargar desde el ecosistema</h2>
-        <p>Buscá por teléfono, nombre, empresa, código de diseño o código de producto. Toda consulta pasa por el Orchestrator.</p>
+        <p>Escribí un teléfono, un código DESIGN o un producto. El cotizador consulta y carga automáticamente desde el Orchestrator.</p>
         <div className="uq-fields two">
           <label className="wide">Buscar contexto
-            <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runContextSearch()} placeholder="Ej. 78828089, DESIGN-XXXX o código de producto" />
+            <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runContextSearch()} placeholder="Ej. 58401030, DESIGN-MRM94PQR-FE4B o acrílico dorado" />
           </label>
         </div>
-        <button type="button" className="uq-light" disabled={searching || searchQuery.trim().length < 2} onClick={runContextSearch}>{searching ? 'Buscando…' : 'Buscar en Orchestrator'}</button>
-        {searchError && <p className="uq-error">{searchError}</p>}
+        <button type="button" className="uq-light" disabled={searching || searchQuery.trim().length < 2} onClick={() => runContextSearch()}>{searching ? 'Buscando…' : 'Buscar en Orchestrator'}</button>
+        {searchError && <p className={searchError.startsWith('Información cargada') ? '' : 'uq-error'}>{searchError}</p>}
         {searchResults.length > 0 && <div className="uq-items">
           {searchResults.map((result, index) => <article className="uq-item" key={`${result.type}-${result.sourceId}-${index}`}>
             <div className="uq-item-heading"><strong>{result.label || result.type}</strong><button type="button" onClick={() => applyContext(result)}>Cargar</button></div>
@@ -254,7 +320,7 @@ export default function CotizadorUniversal() {
           </section>
 
           <section className="uq-card">
-            <div className="uq-section-title"><div><h2>Productos</h2><small>Puede cargarse desde Diseño o Tienda mediante el Orchestrator.</small></div><button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button></div>
+            <div className="uq-section-title"><div><h2>Productos</h2><small>Diseños reemplazan el proyecto actual; productos de tienda se agregan sin duplicarse.</small></div><button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button></div>
             <div className="uq-items">
               {items.map((item, index) => (
                 <article className="uq-item" key={item.id}>
@@ -268,6 +334,7 @@ export default function CotizadorUniversal() {
                     <label>Precio unitario USD<input type="number" min="0" step="0.01" value={item.unitPrice} onChange={(e) => updateItem(item.id, 'unitPrice', e.target.value)} /></label>
                     <label>Características<input value={item.features} onChange={(e) => updateItem(item.id, 'features', e.target.value)} placeholder="Exterior, LED, instalación" /></label>
                   </div>
+                  {item.assetFiles?.length > 0 && <div><small><strong>Archivos del diseño:</strong></small><ul>{item.assetFiles.map((asset, assetIndex) => <li key={`${asset.path}-${assetIndex}`}><small>{asset.kind || 'archivo'} · {asset.name || asset.path}</small></li>)}</ul></div>}
                 </article>
               ))}
             </div>
