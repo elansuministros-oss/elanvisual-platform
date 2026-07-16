@@ -6,6 +6,7 @@ export const sampleQuotation = createQuotationDocument({
   quotationNumber: 'COT-EV-2026-0001',
   status: 'proposal',
   currency: 'USD',
+  settlementCurrency: 'NIO',
   issuedAt: '2026-07-15',
   validUntil: '2026-07-30',
   customer: {
@@ -56,12 +57,14 @@ export const sampleQuotation = createQuotationDocument({
     subtotalGross: 540,
     discount: 0,
     subtotal: 540,
-    taxRate: 15,
+    taxRate: 0,
     tax: 0,
     total: 540,
     currency: 'USD',
+    settlementCurrency: 'NIO',
     exchangeRate: 36.8,
-    convertedTotal: 19872
+    exchangeRateDate: '2026-07-15',
+    payableTotalNio: 19872
   },
   paymentTerms: {
     type: '60_40',
