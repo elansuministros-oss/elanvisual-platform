@@ -78,7 +78,7 @@ export default function Header({ page, setPage }) {
   const ventasLinks = [
     ['aiStudio', 'AI', <Palette size={24} />],
     ['cotizador', 'Nueva cotización', <Calculator size={24} />],
-    ['cotizacionesInteligentes', 'Cotizaciones', <ClipboardList size={24} />],
+    ['cotizaciones', 'Cotizaciones', <ClipboardList size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['miCuenta', 'Cuenta', <Users size={24} />],
   ];
