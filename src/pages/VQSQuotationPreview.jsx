@@ -117,10 +117,11 @@ export default function VQSQuotationPreview() {
             <span className="vqs-section-label">Forma de pago</span>
             <div className="vqs-installments">
               {document.paymentTerms.installments.map((installment) => (
-                <div key={installment.label}>
+                <div key={installment.id}>
                   <strong>{installment.percentage}%</strong>
                   <span>{installment.label}</span>
-                  <b>{money(installment.amount, 'USD')}</b>
+                  <b>{money(installment.amountNio, 'NIO')}</b>
+                  {installment.dueCondition && <small>{installment.dueCondition}</small>}
                 </div>
               ))}
             </div>
