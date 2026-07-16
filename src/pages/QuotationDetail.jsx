@@ -9,6 +9,44 @@ function readQuotationIdFromPath() {
   return match ? decodeURIComponent(match[1]) : '';
 }
 
+function normalizeWhatsappPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (digits.length === 8) return `505${digits}`;
+  if (digits.startsWith('505') && digits.length === 11) return digits;
+  return digits.length >= 10 ? digits : '';
+}
+
+function openWhatsappChat(phone, quotationNumber) {
+  const target = normalizeWhatsappPhone(phone);
+  if (!target) {
+    window.alert('El cliente no tiene un numero de WhatsApp valido registrado.');
+    return;
+  }
+
+  const message = `Hola, le comparto la cotizacion ${quotationNumber || ''} de ELANVISUAL.`;
+  const encodedMessage = encodeURIComponent(message);
+  const appUrl = `whatsapp://send?phone=${target}&text=${encodedMessage}`;
+  const webUrl = `https://api.whatsapp.com/send?phone=${target}&text=${encodedMessage}&type=phone_number&app_absent=0`;
+
+  let fallbackTimer = window.setTimeout(() => {
+    if (document.visibilityState === 'visible') {
+      window.location.assign(webUrl);
+    }
+  }, 900);
+
+  const clearFallback = () => {
+    window.clearTimeout(fallbackTimer);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+  };
+
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') clearFallback();
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.location.href = appUrl;
+}
+
 export default function QuotationDetail({ onBack }) {
   const quotationId = useMemo(() => readQuotationIdFromPath(), []);
   const [quotation, setQuotation] = useState(null);
@@ -65,5 +103,19 @@ export default function QuotationDetail({ onBack }) {
     );
   }
 
-  return <OfficialQuotationDocument quotation={quotation} onBack={onBack} />;
+  const handleDocumentClickCapture = (event) => {
+    const button = event.target.closest('button');
+    if (!button || !button.textContent?.toLowerCase().includes('whatsapp')) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.nativeEvent?.stopImmediatePropagation?.();
+    openWhatsappChat(quotation.customer?.phone, quotation.quotationNumber);
+  };
+
+  return (
+    <div onClickCapture={handleDocumentClickCapture}>
+      <OfficialQuotationDocument quotation={quotation} onBack={onBack} />
+    </div>
+  );
 }
