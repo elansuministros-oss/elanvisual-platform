@@ -1,10 +1,15 @@
-export const VQS_SCHEMA_VERSION = '1.0.0';
+export const VQS_SCHEMA_VERSION = '1.1.0';
 
 export function createQuotationDocument(input = {}) {
   const items = Array.isArray(input.items) ? input.items : [];
   const subtotal = items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
   const discount = Number(input.totals?.discount || 0);
   const tax = Number(input.totals?.tax || 0);
+  const totalUsd = Number(input.totals?.total ?? subtotal - discount + tax);
+  const exchangeRate = Number(input.totals?.exchangeRate || 0);
+  const payableTotalNio = Number(
+    input.totals?.payableTotalNio ?? input.totals?.convertedTotal ?? (exchangeRate > 0 ? totalUsd * exchangeRate : 0)
+  );
 
   return {
     schemaVersion: VQS_SCHEMA_VERSION,
@@ -12,7 +17,8 @@ export function createQuotationDocument(input = {}) {
     platformId: input.platformId || 'ELANVISUAL',
     quotationNumber: input.quotationNumber || 'COT-PENDIENTE',
     status: input.status || 'draft',
-    currency: input.currency || 'USD',
+    currency: 'USD',
+    settlementCurrency: input.settlementCurrency || 'NIO',
     issuedAt: input.issuedAt || new Date().toISOString().slice(0, 10),
     validUntil: input.validUntil || '',
     customer: {
@@ -47,6 +53,7 @@ export function createQuotationDocument(input = {}) {
       discount: Number(item.discount || 0),
       tax: Number(item.tax || 0),
       subtotal: Number(item.subtotal || 0),
+      currency: 'USD',
       dimensions: item.dimensions || null,
       features: Array.isArray(item.features) ? item.features : [],
       images: Array.isArray(item.images) ? item.images : [],
@@ -58,10 +65,13 @@ export function createQuotationDocument(input = {}) {
       subtotal: Number(input.totals?.subtotal ?? subtotal - discount),
       taxRate: Number(input.totals?.taxRate || 0),
       tax,
-      total: Number(input.totals?.total ?? subtotal - discount + tax),
-      currency: input.totals?.currency || input.currency || 'USD',
-      exchangeRate: Number(input.totals?.exchangeRate || 0),
-      convertedTotal: Number(input.totals?.convertedTotal || 0)
+      total: totalUsd,
+      currency: 'USD',
+      exchangeRate,
+      exchangeRateDate: input.totals?.exchangeRateDate || input.issuedAt || new Date().toISOString().slice(0, 10),
+      settlementCurrency: input.totals?.settlementCurrency || input.settlementCurrency || 'NIO',
+      payableTotalNio,
+      convertedTotal: payableTotalNio
     },
     paymentTerms: input.paymentTerms || { type: '60_40', installments: [] },
     paymentAccountsSnapshot: Array.isArray(input.paymentAccountsSnapshot)
@@ -84,8 +94,11 @@ export function validateQuotationDocument(document) {
   if (!document?.quotationNumber) errors.push('quotationNumber es obligatorio');
   if (!document?.customer?.name) errors.push('customer.name es obligatorio');
   if (!Array.isArray(document?.items) || document.items.length === 0) errors.push('Debe existir al menos un ítem');
-  if (!document?.currency) errors.push('currency es obligatorio');
+  if (document?.currency !== 'USD') errors.push('La moneda comercial debe ser USD');
+  if (document?.settlementCurrency !== 'NIO') errors.push('La moneda de pago debe ser NIO');
   if (!Number.isFinite(Number(document?.totals?.total))) errors.push('totals.total debe ser numérico');
+  if (!(Number(document?.totals?.exchangeRate) > 0)) errors.push('totals.exchangeRate debe ser mayor que cero');
+  if (!(Number(document?.totals?.payableTotalNio) >= 0)) errors.push('totals.payableTotalNio debe ser numérico');
 
   const installments = document?.paymentTerms?.installments || [];
   if (document?.paymentTerms?.type === 'custom') {
