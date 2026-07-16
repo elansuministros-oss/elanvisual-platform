@@ -27,6 +27,7 @@ import BibliotecaTecnica from './pages/BibliotecaTecnica';
 import CapturaInteligente from './pages/CapturaInteligente';
 import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import CotizadorUniversal from './pages/CotizadorUniversal';
+import VQSCenter from './pages/VQSCenter';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
 import AIStudio from './pages/AIStudio';
 import SolicitudesDisenoAI from './pages/SolicitudesDisenoAI';
@@ -51,6 +52,7 @@ export default function App() {
     if (pathInicial.startsWith('/materiales')) return 'materiales';
     if (pathInicial.startsWith('/biblioteca-tecnica')) return 'bibliotecaTecnica';
     if (pathInicial.startsWith('/cotizador')) return 'cotizador';
+    if (pathInicial === '/cotizaciones' || pathInicial.startsWith('/cotizaciones/')) return 'vqsCenter';
     if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
     if (pathInicial.startsWith('/diseno-ai')) return 'disenoAI';
@@ -92,7 +94,7 @@ export default function App() {
       contacto: '/contacto', seguimiento: '/seguimiento', login: '/login', dashboard: '/dashboard',
       crm: '/crm', clientes: '/clientes', admin: '/admin', produccion: '/produccion', materiales: '/materiales',
       emc: '/emc', emcInventario: '/emc-inventario', bibliotecaTecnica: '/biblioteca-tecnica',
-      cotizador: '/cotizador', cotizacionesInteligentes: '/cotizaciones-inteligentes',
+      cotizador: '/cotizador', vqsCenter: '/cotizaciones', cotizacionesInteligentes: '/cotizaciones-inteligentes',
       recomendadorTecnico: '/recomendador-tecnico', aiStudio: '/ai-studio', solicitudesAI: '/solicitudes-ai',
       disenoAI: '/diseno-ai', disenoPortal: '/diseno', pedidos: '/pedidos', ordenTrabajo: '/orden-trabajo',
       ventas: '/ventas', inventario: '/inventario', finanzas: '/finanzas', reportes: '/reportes',
@@ -144,6 +146,7 @@ export default function App() {
       {page === 'aiStudio' && (accesoVentas ? <AIStudio setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'capturaInteligente' && (accesoVentas ? <CapturaInteligente /> : <Login setPage={ir} destino="crm" />)}
       {page === 'cotizador' && (accesoVentas ? <CotizadorUniversal /> : <Login setPage={ir} destino="ventas" />)}
+      {page === 'vqsCenter' && (accesoVentas ? <VQSCenter /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'cotizacionesInteligentes' && (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'ordenTrabajo' && (accesoPedidos ? <OrdenTrabajo /> : <Login setPage={ir} destino="pedidos" />)}
       {page === 'pedidos' && (accesoPedidos ? <PedidosProduccion /> : <Login setPage={ir} destino="pedidos" />)}
