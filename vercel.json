@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/vqs-preview",
+      "destination": "/vqs-preview.html"
+    },
+    {
+      "source": "/vqs-preview/",
+      "destination": "/vqs-preview.html"
+    },
+    {
       "source": "/:path*",
       "destination": "/index.html"
     }

@@ -17,8 +17,6 @@ function rutaPorDestino(destino) {
     ventas: '/ventas',
     clientes: '/clientes',
     crm: '/crm',
-    cotizador: '/cotizador',
-    cotizadorAI: '/cotizador-ai',
     pedidos: '/pedidos',
     materiales: '/materiales',
     miCuenta: '/mi-cuenta',

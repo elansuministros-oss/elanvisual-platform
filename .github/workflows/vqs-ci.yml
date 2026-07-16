@@ -1,0 +1,41 @@
+name: VQS CI
+
+on:
+  pull_request:
+    branches:
+      - elanvisual-desde-elanpet
+    paths:
+      - 'src/modules/vqs/**'
+      - 'src/pages/VQSQuotationPreview.jsx'
+      - 'src/styles/vqs-quotation.css'
+      - 'public/vqs-preview.html'
+      - 'scripts/vqs-contract-check.mjs'
+      - 'package.json'
+      - '.github/workflows/vqs-ci.yml'
+  push:
+    branches:
+      - VQS-01-UNIVERSAL-QUOTATION
+
+jobs:
+  validate-vqs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate VQS contract
+        run: npm run test:vqs
+
+      - name: Build application
+        run: npm run build
