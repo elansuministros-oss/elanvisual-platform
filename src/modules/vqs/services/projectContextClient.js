@@ -23,7 +23,7 @@ async function request(path, options = {}) {
 
 export function searchContext(query, { type = 'all', limit = 30 } = {}) {
   const normalizedQuery = String(query || '').trim();
-  const effectiveType = type === 'store' ? 'all' : type;
+  const effectiveType = ['store', 'customer'].includes(type) ? 'all' : type;
   const params = new URLSearchParams({ q: normalizedQuery, type: effectiveType, limit: String(limit) });
   return request(`/api/vqs/context/search?${params.toString()}`, { method: 'GET' });
 }
