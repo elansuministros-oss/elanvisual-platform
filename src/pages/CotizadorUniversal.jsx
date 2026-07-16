@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { projectCoreClient } from '../modules/vqs/services/projectCoreClient';
 import { projectContextClient } from '../modules/vqs/services/projectContextClient';
+import { readDesignFile } from '../services/designPortalService';
 import VQSProjectSummary from './VQSProjectSummary';
 import '../styles/cotizador-universal.css';
 
@@ -27,8 +28,19 @@ const PAYMENT_PRESETS = Object.freeze({
 });
 
 const emptyItem = () => ({
-  id: crypto.randomUUID(), productId: '', designId: '', title: '', commercialDescription: '', quantity: 1,
-  unit: 'unidad', unitPrice: 0, imageUrl: '', features: '', assetFiles: []
+  id: crypto.randomUUID(),
+  productId: '',
+  designId: '',
+  title: '',
+  commercialDescription: '',
+  quantity: 1,
+  unit: 'unidad',
+  unitPrice: 0,
+  imageUrl: '',
+  features: '',
+  assetFiles: [],
+  manualImages: [],
+  uploadError: ''
 });
 
 function classifyQuery(value = '') {
@@ -36,7 +48,7 @@ function classifyQuery(value = '') {
   const digits = query.replace(/\D/g, '');
   if (/^DESIGN-[A-Z0-9-]+$/i.test(query)) return 'design';
   if (digits.length >= 8 && digits.length <= 13) return 'customer';
-  return query.length >= 3 ? 'store' : 'all';
+  return 'all';
 }
 
 function normalizeAssetFiles(images = []) {
@@ -53,9 +65,11 @@ function normalizeAssetFiles(images = []) {
 }
 
 function mapContextItem(item = {}) {
-  const stringImage = typeof item.imageUrl === 'string'
-    ? item.imageUrl
-    : (Array.isArray(item.images) ? item.images.find((entry) => typeof entry === 'string') : '');
+  const stringImages = Array.isArray(item.images)
+    ? item.images.filter((entry) => typeof entry === 'string')
+    : [];
+  const stringImage = typeof item.imageUrl === 'string' ? item.imageUrl : stringImages[0] || '';
+
   return {
     id: item.itemId || crypto.randomUUID(),
     productId: item.productId || '',
@@ -67,7 +81,17 @@ function mapContextItem(item = {}) {
     unitPrice: Number(item.unitPriceUsd || 0),
     imageUrl: stringImage || '',
     features: Array.isArray(item.features) ? item.features.join(', ') : String(item.features || ''),
-    assetFiles: normalizeAssetFiles(item.images)
+    assetFiles: normalizeAssetFiles(item.images),
+    manualImages: stringImages
+      .filter((url) => url !== stringImage)
+      .map((dataUrl, index) => ({
+        id: `context-${index}-${crypto.randomUUID()}`,
+        name: `Imagen ${index + 2}`,
+        mimeType: '',
+        sizeBytes: 0,
+        dataUrl
+      })),
+    uploadError: ''
   };
 }
 
@@ -114,21 +138,28 @@ export default function CotizadorUniversal() {
   }));
   const paymentPercentTotal = installments.reduce((sum, entry) => sum + entry.percentage, 0);
 
-  const normalizedItems = items.map((item) => ({
-    itemId: item.id,
-    productId: item.productId || '',
-    designId: item.designId || '',
-    title: item.title.trim(),
-    description: item.commercialDescription.trim(),
-    quantity: Number(item.quantity || 0),
-    unit: item.unit.trim() || 'unidad',
-    unitPriceUsd: Number(item.unitPrice || 0),
-    subtotalUsd: Number(item.quantity || 0) * Number(item.unitPrice || 0),
-    imageUrl: item.imageUrl.trim(),
-    images: item.imageUrl.trim() ? [item.imageUrl.trim()] : [],
-    features: item.features.split(',').map((value) => value.trim()).filter(Boolean),
-    internalData: null
-  }));
+  const normalizedItems = items.map((item) => {
+    const images = [
+      String(item.imageUrl || '').trim(),
+      ...(Array.isArray(item.manualImages) ? item.manualImages.map((image) => image.dataUrl) : [])
+    ].filter(Boolean);
+
+    return {
+      itemId: item.id,
+      productId: item.productId || '',
+      designId: item.designId || '',
+      title: item.title.trim(),
+      description: item.commercialDescription.trim(),
+      quantity: Number(item.quantity || 0),
+      unit: item.unit.trim() || 'unidad',
+      unitPriceUsd: Number(item.unitPrice || 0),
+      subtotalUsd: Number(item.quantity || 0) * Number(item.unitPrice || 0),
+      imageUrl: images[0] || '',
+      images,
+      features: item.features.split(',').map((value) => value.trim()).filter(Boolean),
+      internalData: null
+    };
+  });
 
   const intakeContract = {
     contractVersion: '1.0.0',
@@ -154,7 +185,16 @@ export default function CotizadorUniversal() {
       sourceScreen: 'CotizadorUniversal',
       contextGateway: 'orchestrator',
       emcStatus: 'interfaces_only',
-      sourceAssets: items.flatMap((item) => item.assetFiles || [])
+      sourceAssets: items.flatMap((item) => [
+        ...(item.assetFiles || []),
+        ...(item.manualImages || []).map((image) => ({
+          kind: 'existing-product-photo',
+          name: image.name,
+          mimeType: image.mimeType,
+          sizeBytes: image.sizeBytes,
+          itemId: item.id
+        }))
+      ])
     }
   };
 
@@ -167,6 +207,43 @@ export default function CotizadorUniversal() {
   const updateItem = (id, field, value) => setItems((current) =>
     current.map((item) => item.id === id ? { ...item, [field]: value } : item)
   );
+
+  async function addManualImages(itemId, selectedFiles) {
+    const files = Array.from(selectedFiles || []);
+    if (!files.length) return;
+
+    setItems((current) => current.map((item) => item.id === itemId ? { ...item, uploadError: '' } : item));
+
+    try {
+      const item = items.find((entry) => entry.id === itemId);
+      const availableSlots = Math.max(0, 4 - Number(item?.manualImages?.length || 0));
+      if (!availableSlots) throw new Error('Este producto ya tiene el máximo de 4 fotos existentes.');
+
+      const acceptedFiles = files.slice(0, availableSlots);
+      const preparedImages = [];
+      for (const file of acceptedFiles) {
+        if (!String(file.type || '').startsWith('image/')) {
+          throw new Error('Solo se permiten imágenes JPG, PNG o WEBP.');
+        }
+        const prepared = await readDesignFile(file);
+        preparedImages.push({ id: crypto.randomUUID(), ...prepared });
+      }
+
+      setItems((current) => current.map((entry) => entry.id === itemId
+        ? { ...entry, manualImages: [...(entry.manualImages || []), ...preparedImages], uploadError: '' }
+        : entry));
+    } catch (error) {
+      setItems((current) => current.map((entry) => entry.id === itemId
+        ? { ...entry, uploadError: error.message || 'No fue posible agregar la fotografía.' }
+        : entry));
+    }
+  }
+
+  function removeManualImage(itemId, imageId) {
+    setItems((current) => current.map((item) => item.id === itemId
+      ? { ...item, manualImages: (item.manualImages || []).filter((image) => image.id !== imageId), uploadError: '' }
+      : item));
+  }
 
   function applyContext(result, { automatic = false } = {}) {
     if (result.customer) {
@@ -218,7 +295,7 @@ export default function CotizadorUniversal() {
     setSearching(true);
     setSearchError('');
     try {
-      const result = await projectContextClient.searchContext(query, { type, limit: type === 'store' ? 12 : 10 });
+      const result = await projectContextClient.searchContext(query, { type, limit: 12 });
       const results = Array.isArray(result.results) ? result.results : [];
       if (options.automatic && results.length === 1) {
         applyContext(results[0], { automatic: true });
@@ -246,7 +323,7 @@ export default function CotizadorUniversal() {
     const timer = window.setTimeout(() => {
       setLastAutoQuery(query);
       runContextSearch(query, { type, automatic: true });
-    }, type === 'store' ? 650 : 450);
+    }, 500);
     return () => window.clearTimeout(timer);
   }, [searchQuery, lastAutoQuery]);
 
@@ -279,10 +356,10 @@ export default function CotizadorUniversal() {
 
       <section className="uq-card">
         <h2>Cargar desde el ecosistema</h2>
-        <p>Escribí un teléfono, un código DESIGN o un producto. El cotizador consulta y carga automáticamente desde el Orchestrator.</p>
+        <p>Escribí un teléfono, un código DESIGN, un cliente o un producto. El cotizador consulta y carga automáticamente desde el Orchestrator.</p>
         <div className="uq-fields two">
           <label className="wide">Buscar contexto
-            <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runContextSearch()} placeholder="Ej. 58401030, DESIGN-MRM94PQR-FE4B o acrílico dorado" />
+            <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runContextSearch()} placeholder="Ej. RESTAURANTES LAS SOPAS, 58401030 o DESIGN-..." />
           </label>
         </div>
         <button type="button" className="uq-light" disabled={searching || searchQuery.trim().length < 2} onClick={() => runContextSearch()}>{searching ? 'Buscando…' : 'Buscar en Orchestrator'}</button>
@@ -320,20 +397,40 @@ export default function CotizadorUniversal() {
           </section>
 
           <section className="uq-card">
-            <div className="uq-section-title"><div><h2>Productos</h2><small>Diseños reemplazan el proyecto actual; productos de tienda se agregan sin duplicarse.</small></div><button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button></div>
+            <div className="uq-section-title"><div><h2>Productos</h2><small>Podés combinar diseños del ecosistema con fotos reales de productos existentes.</small></div><button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button></div>
             <div className="uq-items">
               {items.map((item, index) => (
                 <article className="uq-item" key={item.id}>
                   <div className="uq-item-heading"><strong>Ítem {index + 1}</strong>{items.length > 1 && <button type="button" onClick={() => setItems(items.filter((entry) => entry.id !== item.id))}>Eliminar</button>}</div>
                   <div className="uq-fields two">
                     <label>Producto<input value={item.title} onChange={(e) => updateItem(item.id, 'title', e.target.value)} /></label>
-                    <label>Imagen URL<input value={item.imageUrl} onChange={(e) => updateItem(item.id, 'imageUrl', e.target.value)} placeholder="https://..." /></label>
+                    <label>Imagen principal URL<input value={item.imageUrl} onChange={(e) => updateItem(item.id, 'imageUrl', e.target.value)} placeholder="https://..." /></label>
                     <label className="wide">Descripción comercial<textarea rows="3" value={item.commercialDescription} onChange={(e) => updateItem(item.id, 'commercialDescription', e.target.value)} /></label>
                     <label>Cantidad<input type="number" min="0.01" step="0.01" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', e.target.value)} /></label>
                     <label>Unidad<input value={item.unit} onChange={(e) => updateItem(item.id, 'unit', e.target.value)} /></label>
                     <label>Precio unitario USD<input type="number" min="0" step="0.01" value={item.unitPrice} onChange={(e) => updateItem(item.id, 'unitPrice', e.target.value)} /></label>
                     <label>Características<input value={item.features} onChange={(e) => updateItem(item.id, 'features', e.target.value)} placeholder="Exterior, LED, instalación" /></label>
+                    <label className="wide">Agregar fotos existentes
+                      <input
+                        type="file"
+                        accept=".png,.jpg,.jpeg,.webp"
+                        multiple
+                        onChange={(event) => {
+                          void addManualImages(item.id, event.target.files);
+                          event.target.value = '';
+                        }}
+                      />
+                      <small>Hasta 4 fotos por producto. Cada archivo debe pesar menos de 8 MB.</small>
+                    </label>
                   </div>
+                  {item.uploadError && <p className="uq-error">{item.uploadError}</p>}
+                  {item.manualImages?.length > 0 && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginTop: 12 }}>
+                    {item.manualImages.map((image) => <div key={image.id} style={{ border: '1px solid #d7dde7', borderRadius: 12, padding: 8 }}>
+                      <img src={image.dataUrl} alt={image.name} style={{ width: '100%', height: 110, objectFit: 'cover', borderRadius: 8 }} />
+                      <small style={{ display: 'block', overflowWrap: 'anywhere', margin: '7px 0' }}>{image.name}</small>
+                      <button type="button" className="uq-light" onClick={() => removeManualImage(item.id, image.id)}>Quitar</button>
+                    </div>)}
+                  </div>}
                   {item.assetFiles?.length > 0 && <div><small><strong>Archivos del diseño:</strong></small><ul>{item.assetFiles.map((asset, assetIndex) => <li key={`${asset.path}-${assetIndex}`}><small>{asset.kind || 'archivo'} · {asset.name || asset.path}</small></li>)}</ul></div>}
                 </article>
               ))}
