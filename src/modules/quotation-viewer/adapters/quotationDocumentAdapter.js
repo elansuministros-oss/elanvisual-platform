@@ -79,6 +79,8 @@ function normalizeImage(entry, fallbackAlt = '') {
     entry.image_url ||
     entry.publicUrl ||
     entry.public_url ||
+    entry.signedUrl ||
+    entry.signed_url ||
     entry.downloadUrl ||
     entry.download_url ||
     entry.dataUrl ||

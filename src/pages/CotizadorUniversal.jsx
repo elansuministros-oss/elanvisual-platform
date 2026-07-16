@@ -37,9 +37,11 @@ const emptyItem = () => ({
   unit: 'unidad',
   unitPrice: 0,
   imageUrl: '',
+  contextImageUrls: [],
   features: '',
   assetFiles: [],
   manualImages: [],
+  imagePreviewError: false,
   uploadError: ''
 });
 
@@ -51,24 +53,95 @@ function classifyQuery(value = '') {
   return 'all';
 }
 
+const ASSET_URL_FIELDS = ['publicUrl', 'signedUrl', 'url', 'downloadUrl', 'imageUrl', 'src'];
+
+function isHttpUrl(value = '') {
+  const candidate = String(value || '').trim();
+  if (!candidate) return false;
+  try {
+    const url = new URL(candidate);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+function isImageAsset(asset = {}) {
+  const mimeType = String(asset?.mimeType || asset?.type || '').trim().toLowerCase();
+  return !mimeType || mimeType.startsWith('image/');
+}
+
+function resolveAssetUrl(asset) {
+  if (typeof asset === 'string') {
+    return isHttpUrl(asset) ? asset.trim() : '';
+  }
+
+  if (!asset || typeof asset !== 'object' || !isImageAsset(asset)) return '';
+
+  for (const field of ASSET_URL_FIELDS) {
+    const value = asset[field];
+    if (typeof value === 'string' && isHttpUrl(value)) return value.trim();
+  }
+
+  return '';
+}
+
+function uniqueStrings(values = []) {
+  const seen = new Set();
+  return values
+    .map((value) => String(value || '').trim())
+    .filter((value) => {
+      if (!value || seen.has(value)) return false;
+      seen.add(value);
+      return true;
+    });
+}
+
+function normalizeImageSources(values = []) {
+  return uniqueStrings(
+    (Array.isArray(values) ? values : [values])
+      .map((entry) => resolveAssetUrl(entry))
+  );
+}
+
 function normalizeAssetFiles(images = []) {
   return (Array.isArray(images) ? images : [])
     .filter((asset) => asset && typeof asset === 'object')
-    .map((asset) => ({
-      kind: String(asset.kind || ''),
-      name: String(asset.name || ''),
-      path: String(asset.path || ''),
-      bucket: String(asset.bucket || ''),
-      mimeType: String(asset.mimeType || ''),
-      sizeBytes: Number(asset.sizeBytes || 0)
-    }));
+    .map((asset) => {
+      const normalized = {
+        kind: String(asset.kind || ''),
+        name: String(asset.name || ''),
+        path: String(asset.path || ''),
+        bucket: String(asset.bucket || ''),
+        mimeType: String(asset.mimeType || ''),
+        sizeBytes: Number(asset.sizeBytes || 0)
+      };
+
+      ASSET_URL_FIELDS.forEach((field) => {
+        if (typeof asset[field] === 'string' && asset[field].trim()) {
+          normalized[field] = asset[field].trim();
+        }
+      });
+
+      return normalized;
+    });
 }
 
-function mapContextItem(item = {}) {
-  const stringImages = Array.isArray(item.images)
-    ? item.images.filter((entry) => typeof entry === 'string')
-    : [];
-  const stringImage = typeof item.imageUrl === 'string' ? item.imageUrl : stringImages[0] || '';
+function mapContextItem(item = {}, context = {}) {
+  const sourceImages = Array.isArray(item.images) ? item.images : [];
+  const resultImages = [
+    ...(Array.isArray(item.resultFiles) ? item.resultFiles : []),
+    ...(Array.isArray(item.result_files) ? item.result_files : []),
+    ...(Array.isArray(context.resultFiles) ? context.resultFiles : []),
+    ...(Array.isArray(context.result_files) ? context.result_files : []),
+    ...(Array.isArray(context.raw?.result_files) ? context.raw.result_files : [])
+  ];
+  const contextImageUrls = uniqueStrings([
+    resolveAssetUrl(item.imageUrl),
+    ...resultImages.map((entry) => resolveAssetUrl(entry)),
+    ...sourceImages.map((entry) => resolveAssetUrl(entry))
+  ]);
+  const primaryImageUrl = contextImageUrls[0] || '';
 
   return {
     id: item.itemId || crypto.randomUUID(),
@@ -79,18 +152,12 @@ function mapContextItem(item = {}) {
     quantity: Number(item.quantity || 1),
     unit: item.unit || 'unidad',
     unitPrice: Number(item.unitPriceUsd || 0),
-    imageUrl: stringImage || '',
+    imageUrl: primaryImageUrl,
+    contextImageUrls,
     features: Array.isArray(item.features) ? item.features.join(', ') : String(item.features || ''),
-    assetFiles: normalizeAssetFiles(item.images),
-    manualImages: stringImages
-      .filter((url) => url !== stringImage)
-      .map((dataUrl, index) => ({
-        id: `context-${index}-${crypto.randomUUID()}`,
-        name: `Imagen ${index + 2}`,
-        mimeType: '',
-        sizeBytes: 0,
-        dataUrl
-      })),
+    assetFiles: normalizeAssetFiles([...resultImages, ...sourceImages]),
+    manualImages: [],
+    imagePreviewError: false,
     uploadError: ''
   };
 }
@@ -139,10 +206,12 @@ export default function CotizadorUniversal() {
   const paymentPercentTotal = installments.reduce((sum, entry) => sum + entry.percentage, 0);
 
   const normalizedItems = items.map((item) => {
-    const images = [
+    const contextImageUrls = Array.isArray(item.contextImageUrls) ? item.contextImageUrls : [];
+    const images = uniqueStrings([
       String(item.imageUrl || '').trim(),
+      ...contextImageUrls,
       ...(Array.isArray(item.manualImages) ? item.manualImages.map((image) => image.dataUrl) : [])
-    ].filter(Boolean);
+    ].filter(Boolean));
 
     return {
       itemId: item.id,
@@ -171,7 +240,7 @@ export default function CotizadorUniversal() {
       title: project.title.trim(),
       priority: 'normal',
       expectedDeliveryAt: project.expectedDeliveryAt || '',
-      images: project.images.filter((entry) => typeof entry === 'string')
+      images: normalizeImageSources(project.images)
     },
     items: normalizedItems,
     pricing: {
@@ -205,7 +274,9 @@ export default function CotizadorUniversal() {
   );
 
   const updateItem = (id, field, value) => setItems((current) =>
-    current.map((item) => item.id === id ? { ...item, [field]: value } : item)
+    current.map((item) => item.id === id
+      ? { ...item, [field]: value, ...(field === 'imageUrl' ? { imagePreviewError: false } : {}) }
+      : item)
   );
 
   async function addManualImages(itemId, selectedFiles) {
@@ -255,15 +326,15 @@ export default function CotizadorUniversal() {
     }
 
     if (result.type === 'design') {
-      const mappedItems = Array.isArray(result.items) ? result.items.map(mapContextItem) : [];
+      const mappedItems = Array.isArray(result.items) ? result.items.map((item) => mapContextItem(item, result)) : [];
       setProject((current) => ({
         ...current,
         title: result.project?.title || current.title,
-        images: mappedItems.flatMap((item) => item.assetFiles || [])
+        images: uniqueStrings(mappedItems.flatMap((item) => item.contextImageUrls || []))
       }));
       if (mappedItems.length) setItems(mappedItems);
     } else if (result.type === 'store') {
-      const mappedItems = Array.isArray(result.items) ? result.items.map(mapContextItem) : [];
+      const mappedItems = Array.isArray(result.items) ? result.items.map((item) => mapContextItem(item, result)) : [];
       if (result.project?.title) setProject((current) => ({ ...current, title: current.title || result.project.title }));
       if (mappedItems.length) {
         setItems((current) => {
@@ -423,6 +494,21 @@ export default function CotizadorUniversal() {
                       <small>Hasta 4 fotos por producto. Cada archivo debe pesar menos de 8 MB.</small>
                     </label>
                   </div>
+                  {item.imageUrl && (
+                    <div className={`uq-image-preview ${item.imagePreviewError ? 'is-error' : ''}`}>
+                      {item.imagePreviewError ? (
+                        <p>No fue posible cargar la imagen desde la URL indicada.</p>
+                      ) : (
+                        <img
+                          src={item.imageUrl}
+                          alt={`Imagen principal de ${item.title || `item ${index + 1}`}`}
+                          onLoad={() => updateItem(item.id, 'imagePreviewError', false)}
+                          onError={() => updateItem(item.id, 'imagePreviewError', true)}
+                        />
+                      )}
+                      <small>{item.imageUrl}</small>
+                    </div>
+                  )}
                   {item.uploadError && <p className="uq-error">{item.uploadError}</p>}
                   {item.manualImages?.length > 0 && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginTop: 12 }}>
                     {item.manualImages.map((image) => <div key={image.id} style={{ border: '1px solid #d7dde7', borderRadius: 12, padding: 8 }}>
