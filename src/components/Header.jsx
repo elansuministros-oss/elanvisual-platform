@@ -70,6 +70,7 @@ export default function Header({ page, setPage }) {
     ['materiales', 'Inventario', <PackageSearch size={24} />],
     ['proveedores', 'Proveedores', <Users size={24} />],
     ['finanzas', 'Finanzas', <WalletCards size={24} />],
+    ['cotizaciones', 'Cotizaciones', <ClipboardList size={24} />],
     ['reportes', 'Reportes', <BarChart3 size={24} />],
     ['admin', 'Administración', <Settings size={24} />],
   ];
@@ -77,7 +78,7 @@ export default function Header({ page, setPage }) {
   const ventasLinks = [
     ['aiStudio', 'AI', <Palette size={24} />],
     ['cotizador', 'Nueva cotización', <Calculator size={24} />],
-    ['cotizacionesInteligentes', 'Cotizaciones', <ClipboardList size={24} />],
+    ['cotizaciones', 'Cotizaciones', <ClipboardList size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['miCuenta', 'Cuenta', <Users size={24} />],
   ];
