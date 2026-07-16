@@ -40,6 +40,23 @@ function firstArray(source, paths) {
   return [];
 }
 
+function resolvePublicDocument(source = {}) {
+  const publicDocument = firstValue(source, [
+    'publicDocument',
+    'quotationDocument.publicDocument',
+    'quotation_document.publicDocument',
+    'data.quotationDocument.publicDocument',
+    'data.quotation_document.publicDocument'
+  ]);
+
+  return isObject(publicDocument) ? publicDocument : {};
+}
+
+function normalizeRecordSource(source = {}) {
+  const publicDocument = resolvePublicDocument(source);
+  return Object.keys(publicDocument).length ? { ...source, ...publicDocument } : source;
+}
+
 function normalizeTextList(value) {
   if (Array.isArray(value)) {
     return value
@@ -211,6 +228,11 @@ function normalizePayment(source) {
 function normalizeAccounts(source) {
   const sourceAccounts = firstArray(source, [
     'paymentAccountsSnapshot',
+    'publicDocument.paymentAccountsSnapshot',
+    'quotationDocument.publicDocument.paymentAccountsSnapshot',
+    'quotation_document.publicDocument.paymentAccountsSnapshot',
+    'data.quotationDocument.publicDocument.paymentAccountsSnapshot',
+    'data.quotation_document.publicDocument.paymentAccountsSnapshot',
     'payment_accounts_snapshot',
     'authorizedAccounts',
       'authorized_accounts',
@@ -224,7 +246,15 @@ function normalizeAccounts(source) {
 
   return sourceAccounts.map((account, index) => {
     if (typeof account === 'string') {
-      return { id: `account-${index + 1}`, label: account.trim(), bankName: '', currency: '', accountNumber: '' };
+      return {
+        id: `account-${index + 1}`,
+        label: account.trim(),
+        bankName: '',
+        currency: '',
+        accountNumber: '',
+        accountHolder: '',
+        accountType: ''
+      };
     }
 
     return {
@@ -232,14 +262,44 @@ function normalizeAccounts(source) {
       label: firstText(account, ['label', 'name', 'nombre']),
       bankName: firstText(account, ['bankName', 'bank_name', 'bank', 'banco']),
       currency: firstText(account, ['currency', 'moneda']),
-      accountNumber: firstText(account, ['accountNumber', 'account_number', 'number', 'numero', 'cuenta'])
+      accountNumber: firstText(account, ['accountNumber', 'account_number', 'number', 'numero', 'cuenta']),
+      accountHolder: firstText(account, ['accountHolder', 'account_holder', 'holder', 'titular']),
+      accountType: firstText(account, ['accountType', 'account_type', 'type', 'tipo'])
     };
   }).filter((account) => account.label || account.bankName || account.accountNumber);
 }
 
+function normalizeBrand(source) {
+  const brand = firstValue(source, [
+    'brandSnapshot',
+    'publicDocument.brandSnapshot',
+    'quotationDocument.brandSnapshot',
+    'quotationDocument.publicDocument.brandSnapshot',
+    'quotation_document.brandSnapshot',
+    'quotation_document.publicDocument.brandSnapshot',
+    'data.quotationDocument.brandSnapshot',
+    'data.quotationDocument.publicDocument.brandSnapshot',
+    'data.quotation_document.brandSnapshot',
+    'data.quotation_document.publicDocument.brandSnapshot'
+  ]) || {};
+
+  return {
+    platformId: firstText(brand, ['platformId', 'platform_id']),
+    name: firstText(brand, ['displayName', 'display_name', 'name', 'platformId']),
+    logoForLightBackground: firstText(brand, ['logoForLightBackground', 'logo_for_light_background']),
+    logoLightUrl: firstText(brand, ['logoLightUrl', 'logo_light_url']),
+    logoUrl: firstText(brand, ['logoUrl', 'logo_url']),
+    taxId: firstText(brand, ['taxId', 'tax_id', 'ruc']),
+    website: firstText(brand, ['website', 'web', 'url']),
+    whatsapp: firstText(brand, ['whatsapp', 'phone', 'telefono']),
+    email: firstText(brand, ['email', 'correo'])
+  };
+}
+
 export function normalizeQuotationRecord(source = {}) {
-  const items = normalizeItems(source);
-  const quotationNumber = firstText(source, [
+  const recordSource = normalizeRecordSource(source);
+  const items = normalizeItems(recordSource);
+  const quotationNumber = firstText(recordSource, [
     'quotationNumber',
     'quotation_number',
     'quote.quotationNumber',
@@ -254,7 +314,7 @@ export function normalizeQuotationRecord(source = {}) {
     'numero',
     'number'
   ]);
-  const projectTitle = firstText(source, [
+  const projectTitle = firstText(recordSource, [
     'project.title',
     'project.name',
     'project_name',
@@ -266,7 +326,7 @@ export function normalizeQuotationRecord(source = {}) {
   ]);
 
   return {
-    id: firstText(source, [
+    id: firstText(recordSource, [
       'id',
       'projectId',
       'project_id',
@@ -276,11 +336,37 @@ export function normalizeQuotationRecord(source = {}) {
       'data.id'
     ]) || quotationNumber,
     quotationNumber,
-    status: firstText(source, ['status', 'estado', 'stage', 'project.status', 'project.stage', 'data.status']),
-    date: firstText(source, ['issuedAt', 'issued_at', 'createdAt', 'created_at', 'fecha', 'date', 'contract.issuedAt']),
-    validUntil: firstText(source, ['validUntil', 'valid_until', 'vigenciaHasta', 'vigencia_hasta', 'expiresAt', 'expires_at', 'vigencia']),
+    status: firstText(recordSource, ['status', 'estado', 'stage', 'project.status', 'project.stage', 'data.status']),
+    date: firstText(recordSource, [
+      'issuedAt',
+      'issued_at',
+      'publicDocument.issuedAt',
+      'quotationDocument.publicDocument.issuedAt',
+      'quotation_document.publicDocument.issuedAt',
+      'data.quotationDocument.publicDocument.issuedAt',
+      'data.quotation_document.publicDocument.issuedAt',
+      'createdAt',
+      'created_at',
+      'fecha',
+      'date',
+      'contract.issuedAt'
+    ]),
+    validUntil: firstText(recordSource, [
+      'validUntil',
+      'valid_until',
+      'publicDocument.validUntil',
+      'quotationDocument.publicDocument.validUntil',
+      'quotation_document.publicDocument.validUntil',
+      'data.quotationDocument.publicDocument.validUntil',
+      'data.quotation_document.publicDocument.validUntil',
+      'vigenciaHasta',
+      'vigencia_hasta',
+      'expiresAt',
+      'expires_at',
+      'vigencia'
+    ]),
     customer: {
-      name: firstText(source, [
+      name: firstText(recordSource, [
         'customer.name',
         'customer.fullName',
         'customer.nombre',
@@ -290,7 +376,7 @@ export function normalizeQuotationRecord(source = {}) {
         'clientName',
         'contract.customer.name'
       ]),
-      companyName: firstText(source, [
+      companyName: firstText(recordSource, [
         'customer.companyName',
         'customer.company_name',
         'customer.company',
@@ -302,7 +388,7 @@ export function normalizeQuotationRecord(source = {}) {
         'company_name',
         'contract.customer.companyName'
       ]),
-      phone: firstText(source, [
+      phone: firstText(recordSource, [
         'customer.phone',
         'customer.whatsapp',
         'customer.telefono',
@@ -316,8 +402,8 @@ export function normalizeQuotationRecord(source = {}) {
         'whatsapp',
         'contract.customer.phone'
       ]),
-      email: firstText(source, ['customer.email', 'customer.correo', 'client.email', 'cliente.email', 'correo', 'email', 'contract.customer.email']),
-      address: firstText(source, [
+      email: firstText(recordSource, ['customer.email', 'customer.correo', 'client.email', 'cliente.email', 'correo', 'email', 'contract.customer.email']),
+      address: firstText(recordSource, [
         'customer.address',
         'customer.direccion',
         'client.address',
@@ -327,11 +413,11 @@ export function normalizeQuotationRecord(source = {}) {
         'location',
         'contract.customer.address'
       ]),
-      taxId: firstText(source, ['customer.taxId', 'customer.tax_id', 'customer.ruc', 'rucCliente', 'ruc_cliente'])
+      taxId: firstText(recordSource, ['customer.taxId', 'customer.tax_id', 'customer.ruc', 'rucCliente', 'ruc_cliente'])
     },
     project: {
       title: projectTitle,
-      summary: firstText(source, [
+      summary: firstText(recordSource, [
         'project.summary',
         'project.description',
         'project.descripcion',
@@ -339,9 +425,9 @@ export function normalizeQuotationRecord(source = {}) {
         'description',
         'descripcion'
       ]),
-      category: firstText(source, ['project.category', 'project.categoria', 'categoria', 'category']),
-      location: firstText(source, ['project.location', 'project.ubicacion', 'contract.project.location', 'ubicacion', 'location']),
-      estimatedDelivery: firstText(source, [
+      category: firstText(recordSource, ['project.category', 'project.categoria', 'categoria', 'category']),
+      location: firstText(recordSource, ['project.location', 'project.ubicacion', 'contract.project.location', 'ubicacion', 'location']),
+      estimatedDelivery: firstText(recordSource, [
         'project.estimatedDelivery',
         'project.estimated_delivery',
         'project.expectedDeliveryAt',
@@ -349,9 +435,9 @@ export function normalizeQuotationRecord(source = {}) {
         'tiempoEntrega',
         'tiempo_entrega'
       ]),
-      warranty: firstText(source, ['project.warranty', 'project.garantia', 'garantia', 'warranty'])
+      warranty: firstText(recordSource, ['project.warranty', 'project.garantia', 'garantia', 'warranty'])
     },
-    projectMedia: normalizeImages(source, [
+    projectMedia: normalizeImages(recordSource, [
       'project.heroImage',
       'project.hero_image',
       'project.images',
@@ -367,12 +453,12 @@ export function normalizeQuotationRecord(source = {}) {
     ], projectTitle || quotationNumber),
     items,
     totals: {
-      subtotal: firstPublicAmount(source, ['totals.subtotal', 'totals.subtotalUsd', 'pricing.subtotalUsd', 'contract.pricing.subtotalUsd', 'subtotalUsd', 'subtotal']),
-      discount: firstPublicAmount(source, ['totals.discount', 'totals.discountUsd', 'pricing.discountUsd', 'contract.pricing.discountUsd', 'descuento', 'discountUsd']),
-      taxRate: firstPublicAmount(source, ['totals.taxRate', 'totals.tax_rate', 'pricing.taxRate', 'contract.pricing.taxRate', 'porcentajeIva', 'porcentaje_iva']),
-      tax: firstPublicAmount(source, ['totals.tax', 'totals.taxUsd', 'pricing.taxUsd', 'contract.pricing.taxUsd', 'iva', 'taxUsd']),
-      totalUsd: firstPublicAmount(source, ['totals.totalUsd', 'totals.total', 'pricing.totalUsd', 'contract.pricing.totalUsd', 'totalUsd', 'total_usd', 'total', 'precio_b', 'totalCliente']),
-      nioReference: firstPublicAmount(source, [
+      subtotal: firstPublicAmount(recordSource, ['totals.subtotal', 'totals.subtotalUsd', 'pricing.subtotalUsd', 'contract.pricing.subtotalUsd', 'subtotalUsd', 'subtotal']),
+      discount: firstPublicAmount(recordSource, ['totals.discount', 'totals.discountUsd', 'pricing.discountUsd', 'contract.pricing.discountUsd', 'descuento', 'discountUsd']),
+      taxRate: firstPublicAmount(recordSource, ['totals.taxRate', 'totals.tax_rate', 'pricing.taxRate', 'contract.pricing.taxRate', 'porcentajeIva', 'porcentaje_iva']),
+      tax: firstPublicAmount(recordSource, ['totals.tax', 'totals.taxUsd', 'pricing.taxUsd', 'contract.pricing.taxUsd', 'iva', 'taxUsd']),
+      totalUsd: firstPublicAmount(recordSource, ['totals.totalUsd', 'totals.total', 'pricing.totalUsd', 'contract.pricing.totalUsd', 'totalUsd', 'total_usd', 'total', 'precio_b', 'totalCliente']),
+      nioReference: firstPublicAmount(recordSource, [
         'totals.payableTotalNio',
         'totals.convertedTotal',
         'pricing.payableTotalNio',
@@ -383,12 +469,13 @@ export function normalizeQuotationRecord(source = {}) {
         'totalCordobas',
         'referenciaCordobas'
       ]),
-      exchangeRate: firstPublicAmount(source, ['totals.exchangeRate', 'pricing.exchangeRate', 'contract.pricing.exchangeRate', 'exchangeRate', 'tipoCambio']),
-      exchangeRateDate: firstText(source, ['totals.exchangeRateDate', 'pricing.exchangeRateDate', 'contract.pricing.exchangeRateDate', 'exchangeRateDate', 'tipoCambioFecha'])
+      exchangeRate: firstPublicAmount(recordSource, ['totals.exchangeRate', 'pricing.exchangeRate', 'contract.pricing.exchangeRate', 'exchangeRate', 'tipoCambio']),
+      exchangeRateDate: firstText(recordSource, ['totals.exchangeRateDate', 'pricing.exchangeRateDate', 'contract.pricing.exchangeRateDate', 'exchangeRateDate', 'tipoCambioFecha'])
     },
-    payment: normalizePayment(source),
-    paymentAccounts: normalizeAccounts(source),
-    publicNotes: normalizeTextList(firstValue(source, [
+    payment: normalizePayment(recordSource),
+    paymentAccounts: normalizeAccounts(recordSource),
+    brand: normalizeBrand(recordSource),
+    publicNotes: normalizeTextList(firstValue(recordSource, [
       'publicNotes',
       'public_notes',
       'notasPublicas',
@@ -399,7 +486,7 @@ export function normalizeQuotationRecord(source = {}) {
       'condiciones'
     ])),
     executive: {
-      name: firstText(source, [
+      name: firstText(recordSource, [
         'executive.name',
         'advisor.name',
         'asesorNombre',
@@ -410,9 +497,9 @@ export function normalizeQuotationRecord(source = {}) {
         'commercialExecutive',
         'contract.executive.name'
       ]),
-      role: firstText(source, ['executive.role', 'advisor.role', 'cargoEjecutivo', 'contract.executive.role']),
-      phone: firstText(source, ['executive.phone', 'advisor.phone', 'asesorTelefono', 'asesor_telefono', 'contract.executive.phone']),
-      email: firstText(source, ['executive.email', 'advisor.email', 'asesorEmail', 'asesor_email', 'contract.executive.email'])
+      role: firstText(recordSource, ['executive.role', 'advisor.role', 'cargoEjecutivo', 'contract.executive.role']),
+      phone: firstText(recordSource, ['executive.phone', 'advisor.phone', 'asesorTelefono', 'asesor_telefono', 'contract.executive.phone']),
+      email: firstText(recordSource, ['executive.email', 'advisor.email', 'asesorEmail', 'asesor_email', 'contract.executive.email'])
     }
   };
 }
