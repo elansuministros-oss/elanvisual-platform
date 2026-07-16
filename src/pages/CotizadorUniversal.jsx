@@ -1,22 +1,18 @@
 import React, { useMemo, useState } from 'react';
-import { createQuotationDocument } from '../modules/vqs/contracts/quotationDocument';
-import { createProject } from '../modules/vqs/services/vqsProjectApi';
-import { isEmcConfigured } from '../modules/vqs/services/emcCatalogGateway';
-import VQSQuotationPreview from './VQSQuotationPreview';
+import { projectCoreClient } from '../modules/vqs/services/projectCoreClient';
+import VQSProjectSummary from './VQSProjectSummary';
 import '../styles/cotizador-universal.css';
 
-const emptyItem = () => ({
-  id: crypto.randomUUID(),
-  title: '',
-  commercialDescription: '',
-  quantity: 1,
-  unit: 'unidad',
-  unitPrice: 0,
-  imageUrl: '',
-  features: ''
+const EXECUTIVE = Object.freeze({
+  executiveId: 'EXEC-ERICK-CANO-001',
+  name: 'Erick Cano',
+  role: 'Director Comercial',
+  phone: '+505 8838 8940',
+  email: '',
+  photoUrl: ''
 });
 
-const PAYMENT_PRESETS = {
+const PAYMENT_PRESETS = Object.freeze({
   cash: [{ label: 'Pago total', percentage: 100, dueCondition: 'Al aprobar la cotización' }],
   '60_40': [
     { label: 'Anticipo', percentage: 60, dueCondition: 'Al aprobar la cotización' },
@@ -27,182 +23,128 @@ const PAYMENT_PRESETS = {
     { label: 'Avance', percentage: 20, dueCondition: 'Durante producción' },
     { label: 'Contra entrega', percentage: 20, dueCondition: 'Al finalizar el proyecto' }
   ]
-};
+});
+
+const emptyItem = () => ({
+  id: crypto.randomUUID(), title: '', commercialDescription: '', quantity: 1,
+  unit: 'unidad', unitPrice: 0, imageUrl: '', features: ''
+});
 
 export default function CotizadorUniversal() {
+  const [customerId] = useState(() => `ELANVISUAL-${crypto.randomUUID()}`);
   const [customer, setCustomer] = useState({ name: '', companyName: '', phone: '', email: '', address: '' });
-  const [project, setProject] = useState({ title: '', summary: '', location: '', estimatedDelivery: '', warranty: '' });
+  const [project, setProject] = useState({ title: '', expectedDeliveryAt: '' });
   const [items, setItems] = useState([emptyItem()]);
   const [discountRate, setDiscountRate] = useState(0);
   const [applyTax, setApplyTax] = useState(false);
   const [exchangeRate, setExchangeRate] = useState(36.8);
   const [paymentType, setPaymentType] = useState('60_40');
   const [customInstallments, setCustomInstallments] = useState([{ label: 'Anticipo', percentage: 60 }, { label: 'Saldo', percentage: 40 }]);
-  const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
-  const [savedProject, setSavedProject] = useState(null);
+  const [creation, setCreation] = useState(null);
+  const [savedContract, setSavedContract] = useState(null);
 
-  const subtotalGross = useMemo(
-    () => items.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.unitPrice || 0), 0),
-    [items]
-  );
+  const subtotalGross = useMemo(() => items.reduce(
+    (sum, item) => sum + Number(item.quantity || 0) * Number(item.unitPrice || 0), 0
+  ), [items]);
   const discount = subtotalGross * (Number(discountRate || 0) / 100);
   const subtotal = subtotalGross - discount;
   const tax = applyTax ? subtotal * 0.15 : 0;
   const total = subtotal + tax;
   const payableTotalNio = total * Number(exchangeRate || 0);
-
-  const installmentsSource = paymentType === 'custom' ? customInstallments : PAYMENT_PRESETS[paymentType];
-  const installments = installmentsSource.map((entry, index) => ({
-    id: `payment-${index + 1}`,
-    ...entry,
+  const sourceInstallments = paymentType === 'custom' ? customInstallments : PAYMENT_PRESETS[paymentType];
+  const installments = sourceInstallments.map((entry) => ({
+    label: entry.label,
+    percentage: Number(entry.percentage || 0),
     amountUsd: total * (Number(entry.percentage || 0) / 100),
-    amountNio: payableTotalNio * (Number(entry.percentage || 0) / 100)
+    amountNio: payableTotalNio * (Number(entry.percentage || 0) / 100),
+    dueCondition: entry.dueCondition || ''
   }));
+  const paymentPercentTotal = installments.reduce((sum, entry) => sum + entry.percentage, 0);
 
-  const paymentPercentTotal = installments.reduce((sum, entry) => sum + Number(entry.percentage || 0), 0);
   const normalizedItems = items.map((item) => ({
-    ...item,
+    itemId: item.id,
+    productId: '',
+    designId: '',
+    title: item.title.trim(),
+    description: item.commercialDescription.trim(),
     quantity: Number(item.quantity || 0),
-    unitPrice: Number(item.unitPrice || 0),
-    subtotal: Number(item.quantity || 0) * Number(item.unitPrice || 0),
+    unit: item.unit.trim() || 'unidad',
+    unitPriceUsd: Number(item.unitPrice || 0),
+    subtotalUsd: Number(item.quantity || 0) * Number(item.unitPrice || 0),
+    imageUrl: item.imageUrl.trim(),
+    images: item.imageUrl.trim() ? [item.imageUrl.trim()] : [],
     features: item.features.split(',').map((value) => value.trim()).filter(Boolean),
-    images: item.imageUrl ? [{ role: 'primary', url: item.imageUrl, alt: item.title }] : []
+    internalData: null
   }));
-
-  const document = createQuotationDocument({
-    platformId: 'ELANVISUAL',
-    quotationNumber: savedProject?.quotation_number || 'BORRADOR-VQS',
-    settlementCurrency: 'NIO',
-    customer,
-    executive: {
-      executiveId: 'ELANVISUAL-EXECUTIVE-PENDING',
-      name: 'Ejecutivo por asignar',
-      role: 'Ejecutivo comercial',
-      phone: '',
-      commissionEligible: false
-    },
-    project,
-    items: normalizedItems,
-    totals: {
-      subtotalGross,
-      discount,
-      subtotal,
-      taxRate: applyTax ? 15 : 0,
-      tax,
-      total,
-      exchangeRate: Number(exchangeRate || 0),
-      payableTotalNio
-    },
-    paymentTerms: { type: paymentType, installments }
-  });
 
   const intakeContract = {
     contractVersion: '1.0.0',
     platform: 'ELANVISUAL',
-    source: { type: 'manual', sourceId: '' },
-    customer: {
-      customerId: '',
-      name: customer.name,
-      companyName: customer.companyName,
-      phone: customer.phone,
-      email: customer.email,
-      address: customer.address
-    },
-    executive: {
-      executiveId: 'ELANVISUAL-EXECUTIVE-PENDING',
-      name: 'Ejecutivo por asignar',
-      role: 'Ejecutivo Comercial',
-      phone: '',
-      email: '',
-      photoUrl: ''
-    },
+    source: { type: 'manual', sourceId: '', designRequestId: '', storeProductId: '', storeCartId: '', designMode: 'optional' },
+    customer: { customerId, ...customer },
+    executive: EXECUTIVE,
     project: {
-      title: project.title,
-      summary: project.summary,
-      location: project.location,
-      estimatedDelivery: project.estimatedDelivery,
-      warranty: project.warranty,
+      title: project.title.trim(),
+      priority: 'normal',
+      expectedDeliveryAt: project.expectedDeliveryAt || '',
       images: []
     },
-    items: normalizedItems.map((item) => ({
-      itemId: item.id,
-      title: item.title,
-      description: item.commercialDescription,
-      quantity: item.quantity,
-      unit: item.unit,
-      unitPriceUsd: item.unitPrice,
-      subtotalUsd: item.subtotal,
-      features: item.features,
-      images: item.images,
-      emc: { materialIds: [], pricingSnapshotId: '', inventorySnapshotId: '' }
-    })),
+    items: normalizedItems,
     pricing: {
       currency: 'USD',
       settlementCurrency: 'NIO',
-      subtotalUsd: subtotalGross,
       discountUsd: discount,
-      taxRate: applyTax ? 0.15 : 0,
+      taxRate: applyTax ? 15 : 0,
       taxUsd: tax,
       totalUsd: total,
       exchangeRate: Number(exchangeRate || 0),
-      totalNio: payableTotalNio
+      exchangeRateDate: new Date().toISOString().slice(0, 10),
+      payableTotalNio
     },
-    payments: {
-      type: paymentType,
-      installments: installments.map((entry) => ({
-        label: entry.label,
-        percentage: Number(entry.percentage || 0),
-        amountUsd: entry.amountUsd,
-        amountNio: entry.amountNio,
-        dueCondition: entry.dueCondition || ''
-      }))
-    }
-  };
-
-  const updateItem = (id, field, value) => {
-    setItems((current) => current.map((item) => item.id === id ? { ...item, [field]: value } : item));
+    payments: { type: paymentType, installments },
+    metadata: { sourceScreen: 'CotizadorUniversal', emcStatus: 'interfaces_only' }
   };
 
   const canSubmit = Boolean(
-    customer.name.trim() &&
-    project.title.trim() &&
-    items.every((item) => item.title.trim() && Number(item.quantity) > 0 && Number(item.unitPrice) >= 0) &&
+    customer.name.trim() && project.title.trim() && Number(exchangeRate) > 0 &&
+    normalizedItems.every((item) => item.title && item.quantity > 0 && item.unitPriceUsd >= 0) &&
     Math.abs(paymentPercentTotal - 100) < 0.001
   );
 
-  const saveInProjectCore = async () => {
+  const updateItem = (id, field, value) => setItems((current) =>
+    current.map((item) => item.id === id ? { ...item, [field]: value } : item)
+  );
+
+  async function saveInProjectCore() {
     if (!canSubmit || saving) return;
     setSaving(true);
     setSaveError('');
     try {
-      const response = await createProject(intakeContract);
-      setSavedProject(response.data);
-      setShowPreview(true);
+      const response = await projectCoreClient.createProject(intakeContract);
+      setCreation(response);
+      setSavedContract(intakeContract);
     } catch (error) {
-      setSaveError(error.message || 'No fue posible guardar la cotización en Project Core.');
+      const details = error.details?.length ? ` ${error.details.join(' · ')}` : '';
+      setSaveError(`${error.message || 'No fue posible crear la cotización.'}${details}`);
     } finally {
       setSaving(false);
     }
-  };
+  }
 
-  if (showPreview) {
-    return <VQSQuotationPreview quotation={document} onBack={() => setShowPreview(false)} />;
+  if (creation && savedContract) {
+    return <VQSProjectSummary creation={creation} contract={savedContract} onBack={() => { setCreation(null); setSavedContract(null); }} />;
   }
 
   return (
     <main className="uq-shell">
       <header className="uq-header">
-        <div>
-          <span>ELANVISUAL · VQS</span>
-          <h1>Nueva cotización</h1>
-          <p>Conectada a Project Core mediante Orchestrator. EMC queda preparado para integración posterior.</p>
-        </div>
-        <button type="button" disabled={!canSubmit || saving} onClick={saveInProjectCore}>
-          {saving ? 'Guardando…' : 'Crear cotización'}
-        </button>
+        <div><span>ELANVISUAL · VQS</span><h1>Nueva cotización</h1><p>Conectada directamente a Project Core mediante el Orchestrator.</p></div>
+        <button type="button" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? 'Creando…' : 'Crear cotización'}</button>
       </header>
+
+      {saveError && <section className="uq-card uq-error">{saveError}</section>}
 
       <section className="uq-grid">
         <div className="uq-main">
@@ -221,18 +163,12 @@ export default function CotizadorUniversal() {
             <h2>Proyecto</h2>
             <div className="uq-fields two">
               <label>Nombre del proyecto<input value={project.title} onChange={(e) => setProject({ ...project, title: e.target.value })} /></label>
-              <label>Ubicación<input value={project.location} onChange={(e) => setProject({ ...project, location: e.target.value })} /></label>
-              <label className="wide">Resumen<textarea rows="3" value={project.summary} onChange={(e) => setProject({ ...project, summary: e.target.value })} /></label>
-              <label>Tiempo de entrega<input value={project.estimatedDelivery} onChange={(e) => setProject({ ...project, estimatedDelivery: e.target.value })} /></label>
-              <label>Garantía<input value={project.warranty} onChange={(e) => setProject({ ...project, warranty: e.target.value })} /></label>
+              <label>Entrega estimada<input type="datetime-local" value={project.expectedDeliveryAt} onChange={(e) => setProject({ ...project, expectedDeliveryAt: e.target.value })} /></label>
             </div>
           </section>
 
           <section className="uq-card">
-            <div className="uq-section-title">
-              <div><h2>Productos</h2><small>EMC: {isEmcConfigured() ? 'configurado' : 'pendiente de activar'}</small></div>
-              <button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button>
-            </div>
+            <div className="uq-section-title"><div><h2>Productos</h2><small>EMC preparado mediante interfaces; conexión pendiente.</small></div><button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button></div>
             <div className="uq-items">
               {items.map((item, index) => (
                 <article className="uq-item" key={item.id}>
@@ -258,40 +194,26 @@ export default function CotizadorUniversal() {
                 <button type="button" key={value} className={paymentType === value ? 'active' : ''} onClick={() => setPaymentType(value)}>{label}</button>
               ))}
             </div>
-            {paymentType === 'custom' && (
-              <div className="uq-custom-payments">
-                {customInstallments.map((entry, index) => (
-                  <div key={index}>
-                    <input value={entry.label} onChange={(e) => setCustomInstallments(customInstallments.map((item, i) => i === index ? { ...item, label: e.target.value } : item))} />
-                    <input type="number" value={entry.percentage} onChange={(e) => setCustomInstallments(customInstallments.map((item, i) => i === index ? { ...item, percentage: Number(e.target.value) } : item))} />
-                    <span>%</span>
-                  </div>
-                ))}
-                <button type="button" className="uq-light" onClick={() => setCustomInstallments([...customInstallments, { label: `Cuota ${customInstallments.length + 1}`, percentage: 0 }])}>+ Agregar cuota</button>
-                <p className={Math.abs(paymentPercentTotal - 100) < 0.001 ? 'ok' : 'error'}>Total: {paymentPercentTotal}%</p>
-              </div>
-            )}
+            {paymentType === 'custom' && <div className="uq-custom-payments">
+              {customInstallments.map((entry, index) => <div key={index}><input value={entry.label} onChange={(e) => setCustomInstallments(customInstallments.map((item, i) => i === index ? { ...item, label: e.target.value } : item))} /><input type="number" value={entry.percentage} onChange={(e) => setCustomInstallments(customInstallments.map((item, i) => i === index ? { ...item, percentage: Number(e.target.value) } : item))} /><span>%</span></div>)}
+              <button type="button" className="uq-light" onClick={() => setCustomInstallments([...customInstallments, { label: `Cuota ${customInstallments.length + 1}`, percentage: 0 }])}>+ Agregar cuota</button>
+            </div>}
           </section>
         </div>
 
-        <aside className="uq-sidebar">
-          <section className="uq-card sticky">
-            <h2>Resumen</h2>
-            <label>Descuento<select value={discountRate} onChange={(e) => setDiscountRate(Number(e.target.value))}><option value="0">Sin descuento</option><option value="5">5%</option><option value="10">10%</option></select></label>
-            <label className="uq-check"><input type="checkbox" checked={applyTax} onChange={(e) => setApplyTax(e.target.checked)} /> Aplicar IVA 15%</label>
-            <label>Tipo de cambio<input type="number" step="0.0001" value={exchangeRate} onChange={(e) => setExchangeRate(e.target.value)} /></label>
-            <div className="uq-totals">
-              <span>Subtotal <b>USD {subtotalGross.toFixed(2)}</b></span>
-              {discount > 0 && <span>Descuento <b>-USD {discount.toFixed(2)}</b></span>}
-              {tax > 0 && <span>IVA <b>USD {tax.toFixed(2)}</b></span>}
-              <span>Total USD <b>USD {total.toFixed(2)}</b></span>
-              <strong>Total a pagar <b>C$ {payableTotalNio.toLocaleString('es-NI', { minimumFractionDigits: 2 })}</b></strong>
-            </div>
-            {saveError && <p className="error">{saveError}</p>}
-            {savedProject && <p className="ok">Proyecto {savedProject.project_number} creado.</p>}
-            <button type="button" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? 'Guardando…' : 'Guardar en Project Core'}</button>
-            <button type="button" className="uq-light" disabled={!canSubmit} onClick={() => setShowPreview(true)}>Vista previa sin guardar</button>
+        <aside className="uq-side">
+          <section className="uq-card">
+            <h2>Totales</h2>
+            <label>Descuento %<input type="number" min="0" max="100" value={discountRate} onChange={(e) => setDiscountRate(e.target.value)} /></label>
+            <label><input type="checkbox" checked={applyTax} onChange={(e) => setApplyTax(e.target.checked)} /> Aplicar IVA 15%</label>
+            <label>Tipo de cambio<input type="number" min="0.01" step="0.0001" value={exchangeRate} onChange={(e) => setExchangeRate(e.target.value)} /></label>
+            <div className="uq-summary-row"><span>Subtotal</span><b>USD {subtotalGross.toFixed(2)}</b></div>
+            <div className="uq-summary-row"><span>Descuento</span><b>USD {discount.toFixed(2)}</b></div>
+            <div className="uq-summary-row"><span>IVA</span><b>USD {tax.toFixed(2)}</b></div>
+            <div className="uq-summary-row uq-total"><span>Total</span><b>USD {total.toFixed(2)}</b></div>
+            <div className="uq-summary-row"><span>Total NIO</span><b>C$ {payableTotalNio.toFixed(2)}</b></div>
           </section>
+          <button type="button" className="uq-primary-wide" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? 'Creando…' : 'Crear cotización'}</button>
         </aside>
       </section>
     </main>
