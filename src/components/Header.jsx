@@ -18,6 +18,7 @@ import {
   Settings,
   LayoutDashboard,
   Palette,
+  Calculator,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
@@ -59,6 +60,7 @@ export default function Header({ page, setPage }) {
     ['dashboard', 'Dashboard', <LayoutDashboard size={24} />],
     ['crm', 'CRM', <Users size={24} />],
     ['solicitudesAI', 'Solicitudes Diseño', <Palette size={24} />],
+    ['cotizador', 'Nueva cotización', <Calculator size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['produccion', 'Producción', <Factory size={24} />],
     ['materiales', 'Inventario', <PackageSearch size={24} />],
@@ -70,6 +72,7 @@ export default function Header({ page, setPage }) {
 
   const ventasLinks = [
     ['aiStudio', 'AI', <Palette size={24} />],
+    ['cotizador', 'Nueva cotización', <Calculator size={24} />],
     ['cotizacionesInteligentes', 'Cotizaciones', <ClipboardList size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['miCuenta', 'Cuenta', <Users size={24} />],
@@ -97,24 +100,13 @@ export default function Header({ page, setPage }) {
 
         <nav className="desktop-nav app-desktop-nav">
           {links.map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              className={page === key ? 'nav-active' : ''}
-              onClick={() => go(key)}
-            >
-              {label}
-            </button>
+            <button key={key} type="button" className={page === key ? 'nav-active' : ''} onClick={() => go(key)}>{label}</button>
           ))}
 
           {usuario ? (
-            <button type="button" onClick={salir}>
-              Salir
-            </button>
+            <button type="button" onClick={salir}>Salir</button>
           ) : (
-            <button type="button" onClick={() => go('login')}>
-              Acceso Interno
-            </button>
+            <button type="button" onClick={() => go('login')}>Acceso Interno</button>
           )}
         </nav>
       </header>
@@ -125,18 +117,9 @@ export default function Header({ page, setPage }) {
             <img src="/assets/branding/elanvisual-isotipo.svg" alt={brandName} className="brand-logo-img brand-logo-mobile" />
           </div>
 
-          {usuario && (
-            <button type="button" className="mobile-logout-fixed" onClick={salir}>
-              Salir
-            </button>
-          )}
+          {usuario && <button type="button" className="mobile-logout-fixed" onClick={salir}>Salir</button>}
 
-          <button
-            type="button"
-            className="mobile-menu-btn app-menu-btn"
-            onClick={() => setOpen(!open)}
-            aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
-          >
+          <button type="button" className="mobile-menu-btn app-menu-btn" onClick={() => setOpen(!open)} aria-label={open ? 'Cerrar menú' : 'Abrir menú'}>
             {open ? <X size={42} /> : <Menu size={42} />}
           </button>
         </div>
@@ -145,27 +128,15 @@ export default function Header({ page, setPage }) {
           <div className="app-menu-overlay">
             <nav className="mobile-nav app-mobile-nav">
               {links.map(([key, label, icon]) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={page === key ? 'nav-active' : ''}
-                  onClick={() => go(key)}
-                >
-                  {icon}
-                  <span>{label}</span>
+                <button key={key} type="button" className={page === key ? 'nav-active' : ''} onClick={() => go(key)}>
+                  {icon}<span>{label}</span>
                 </button>
               ))}
 
               {usuario ? (
-                <button type="button" onClick={salir}>
-                  <LogOut size={24} />
-                  <span>Salir</span>
-                </button>
+                <button type="button" onClick={salir}><LogOut size={24} /><span>Salir</span></button>
               ) : (
-                <button type="button" onClick={() => go('login')}>
-                  <LogIn size={24} />
-                  <span>Acceso Interno</span>
-                </button>
+                <button type="button" onClick={() => go('login')}><LogIn size={24} /><span>Acceso Interno</span></button>
               )}
             </nav>
           </div>
