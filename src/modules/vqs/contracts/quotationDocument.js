@@ -1,4 +1,38 @@
-export const VQS_SCHEMA_VERSION = '1.2.0';
+export const VQS_SCHEMA_VERSION = '1.3.0';
+
+function normalizePaymentTerms(paymentTerms = {}, totalUsd = 0, payableTotalNio = 0) {
+  const type = paymentTerms.type || '60_40';
+  const sourceInstallments = Array.isArray(paymentTerms.installments) ? paymentTerms.installments : [];
+  const defaults = {
+    cash: [{ label: 'Pago total', percentage: 100 }],
+    '60_40': [
+      { label: 'Anticipo', percentage: 60 },
+      { label: 'Contra entrega', percentage: 40 }
+    ],
+    '60_20_20': [
+      { label: 'Anticipo', percentage: 60 },
+      { label: 'Avance de producción', percentage: 20 },
+      { label: 'Contra entrega', percentage: 20 }
+    ]
+  };
+  const installments = sourceInstallments.length > 0 ? sourceInstallments : (defaults[type] || []);
+
+  return {
+    type,
+    label: paymentTerms.label || '',
+    installments: installments.map((installment, index) => {
+      const percentage = Number(installment.percentage || 0);
+      return {
+        id: installment.id || `installment-${index + 1}`,
+        label: installment.label || `Pago ${index + 1}`,
+        percentage,
+        amountUsd: Number(installment.amountUsd ?? installment.amount ?? (totalUsd * percentage) / 100),
+        amountNio: Number(installment.amountNio ?? (payableTotalNio * percentage) / 100),
+        dueCondition: installment.dueCondition || ''
+      };
+    })
+  };
+}
 
 export function createQuotationDocument(input = {}) {
   const items = Array.isArray(input.items) ? input.items : [];
@@ -83,10 +117,8 @@ export function createQuotationDocument(input = {}) {
       payableTotalNio,
       convertedTotal: payableTotalNio
     },
-    paymentTerms: input.paymentTerms || { type: '60_40', installments: [] },
-    paymentAccountsSnapshot: Array.isArray(input.paymentAccountsSnapshot)
-      ? input.paymentAccountsSnapshot
-      : [],
+    paymentTerms: normalizePaymentTerms(input.paymentTerms, totalUsd, payableTotalNio),
+    paymentAccountsSnapshot: Array.isArray(input.paymentAccountsSnapshot) ? input.paymentAccountsSnapshot : [],
     publicNotes: Array.isArray(input.publicNotes) ? input.publicNotes : [],
     digitalLinks: input.digitalLinks || {},
     template: {
@@ -113,10 +145,9 @@ export function validateQuotationDocument(document) {
   if (!document?.executive?.name) errors.push('executive.name es obligatorio');
 
   const installments = document?.paymentTerms?.installments || [];
-  if (document?.paymentTerms?.type === 'custom') {
-    const total = installments.reduce((sum, item) => sum + Number(item.percentage || 0), 0);
-    if (Math.abs(total - 100) > 0.001) errors.push('Los pagos personalizados deben sumar 100%');
-  }
+  if (installments.length === 0) errors.push('Debe existir al menos una cuota de pago');
+  const percentageTotal = installments.reduce((sum, item) => sum + Number(item.percentage || 0), 0);
+  if (Math.abs(percentageTotal - 100) > 0.001) errors.push('Las cuotas de pago deben sumar 100%');
 
   return { ok: errors.length === 0, errors };
 }
