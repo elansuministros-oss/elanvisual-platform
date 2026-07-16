@@ -51,6 +51,10 @@ function classifyQuery(value = '') {
   return 'all';
 }
 
+function uniqueStrings(values = []) {
+  return [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))];
+}
+
 function normalizeAssetFiles(images = []) {
   return (Array.isArray(images) ? images : [])
     .filter((asset) => asset && typeof asset === 'object')
@@ -60,15 +64,43 @@ function normalizeAssetFiles(images = []) {
       path: String(asset.path || ''),
       bucket: String(asset.bucket || ''),
       mimeType: String(asset.mimeType || ''),
-      sizeBytes: Number(asset.sizeBytes || 0)
+      sizeBytes: Number(asset.sizeBytes || 0),
+      url: String(asset.url || asset.publicUrl || asset.signedUrl || '')
     }));
 }
 
-function mapContextItem(item = {}) {
-  const stringImages = Array.isArray(item.images)
-    ? item.images.filter((entry) => typeof entry === 'string')
+function getItemImageUrls(item = {}) {
+  const objectUrls = (Array.isArray(item.images) ? item.images : [])
+    .filter((entry) => entry && typeof entry === 'object')
+    .map((entry) => entry.url || entry.publicUrl || entry.signedUrl || '');
+  const stringImages = (Array.isArray(item.images) ? item.images : [])
+    .filter((entry) => typeof entry === 'string');
+  return uniqueStrings([item.imageUrl, ...stringImages, ...objectUrls]);
+}
+
+function getResultImageUrls(result = {}) {
+  const itemImages = (Array.isArray(result.items) ? result.items : []).flatMap(getItemImageUrls);
+  const projectImages = Array.isArray(result.project?.images)
+    ? result.project.images.flatMap((entry) => typeof entry === 'string'
+      ? [entry]
+      : [entry?.url, entry?.publicUrl, entry?.signedUrl])
     : [];
-  const stringImage = typeof item.imageUrl === 'string' ? item.imageUrl : stringImages[0] || '';
+  return uniqueStrings([
+    result.imageUrl,
+    result.thumbnailUrl,
+    result.previewUrl,
+    ...itemImages,
+    ...projectImages
+  ]);
+}
+
+function resultKey(result = {}, index = 0) {
+  return String(result.source?.sourceId || result.sourceId || result.source?.designRequestId || `${result.type}-${index}`);
+}
+
+function mapContextItem(item = {}, selectedImageUrl = '') {
+  const imageUrls = getItemImageUrls(item);
+  const primaryImage = selectedImageUrl || imageUrls[0] || '';
 
   return {
     id: item.itemId || crypto.randomUUID(),
@@ -79,11 +111,11 @@ function mapContextItem(item = {}) {
     quantity: Number(item.quantity || 1),
     unit: item.unit || 'unidad',
     unitPrice: Number(item.unitPriceUsd || 0),
-    imageUrl: stringImage || '',
+    imageUrl: primaryImage,
     features: Array.isArray(item.features) ? item.features.join(', ') : String(item.features || ''),
     assetFiles: normalizeAssetFiles(item.images),
-    manualImages: stringImages
-      .filter((url) => url !== stringImage)
+    manualImages: imageUrls
+      .filter((url) => url !== primaryImage)
       .map((dataUrl, index) => ({
         id: `context-${index}-${crypto.randomUUID()}`,
         name: `Imagen ${index + 2}`,
@@ -109,6 +141,7 @@ export default function CotizadorUniversal() {
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [selectedDesignKey, setSelectedDesignKey] = useState('');
   const [lastAutoQuery, setLastAutoQuery] = useState('');
   const [discountRate, setDiscountRate] = useState(0);
   const [applyTax, setApplyTax] = useState(false);
@@ -139,10 +172,10 @@ export default function CotizadorUniversal() {
   const paymentPercentTotal = installments.reduce((sum, entry) => sum + entry.percentage, 0);
 
   const normalizedItems = items.map((item) => {
-    const images = [
-      String(item.imageUrl || '').trim(),
+    const images = uniqueStrings([
+      item.imageUrl,
       ...(Array.isArray(item.manualImages) ? item.manualImages.map((image) => image.dataUrl) : [])
-    ].filter(Boolean);
+    ]);
 
     return {
       itemId: item.id,
@@ -208,6 +241,29 @@ export default function CotizadorUniversal() {
     current.map((item) => item.id === id ? { ...item, [field]: value } : item)
   );
 
+  function selectItemImage(itemId, selectedUrl) {
+    setItems((current) => current.map((item) => {
+      if (item.id !== itemId || !selectedUrl || selectedUrl === item.imageUrl) return item;
+      const allUrls = uniqueStrings([
+        item.imageUrl,
+        ...(item.manualImages || []).map((image) => image.dataUrl)
+      ]);
+      return {
+        ...item,
+        imageUrl: selectedUrl,
+        manualImages: allUrls
+          .filter((url) => url !== selectedUrl)
+          .map((dataUrl, index) => ({
+            id: `selected-${index}-${crypto.randomUUID()}`,
+            name: `Imagen ${index + 2}`,
+            mimeType: '',
+            sizeBytes: 0,
+            dataUrl
+          }))
+      };
+    }));
+  }
+
   async function addManualImages(itemId, selectedFiles) {
     const files = Array.from(selectedFiles || []);
     if (!files.length) return;
@@ -245,7 +301,7 @@ export default function CotizadorUniversal() {
       : item));
   }
 
-  function applyContext(result, { automatic = false } = {}) {
+  function applyContext(result, { automatic = false, selectedImageUrl = '', selectionKey = '' } = {}) {
     if (result.customer) {
       setCustomerId(result.customer.customerId || `ELANVISUAL-${crypto.randomUUID()}`);
       setCustomer({
@@ -255,15 +311,16 @@ export default function CotizadorUniversal() {
     }
 
     if (result.type === 'design') {
-      const mappedItems = Array.isArray(result.items) ? result.items.map(mapContextItem) : [];
+      const rawItems = Array.isArray(result.items) ? result.items : [];
+      const mappedItems = rawItems.map((item, index) => mapContextItem(item, index === 0 ? selectedImageUrl : ''));
       setProject((current) => ({
         ...current,
         title: result.project?.title || current.title,
-        images: mappedItems.flatMap((item) => item.assetFiles || [])
+        images: uniqueStrings(mappedItems.flatMap((item) => [item.imageUrl, ...(item.manualImages || []).map((image) => image.dataUrl)]))
       }));
       if (mappedItems.length) setItems(mappedItems);
     } else if (result.type === 'store') {
-      const mappedItems = Array.isArray(result.items) ? result.items.map(mapContextItem) : [];
+      const mappedItems = Array.isArray(result.items) ? result.items.map((item) => mapContextItem(item)) : [];
       if (result.project?.title) setProject((current) => ({ ...current, title: current.title || result.project.title }));
       if (mappedItems.length) {
         setItems((current) => {
@@ -284,8 +341,9 @@ export default function CotizadorUniversal() {
       storeCartId: result.source?.storeCartId || '',
       designMode: result.type === 'design' ? 'required' : 'optional'
     });
+    setSelectedDesignKey(selectionKey || result.source?.sourceId || result.sourceId || '');
     setSearchResults([]);
-    setSearchError(automatic ? 'Información cargada automáticamente desde el Orchestrator.' : '');
+    setSearchError(automatic ? 'Información cargada automáticamente desde el Orchestrator.' : 'Diseño e imagen cargados correctamente.');
   }
 
   async function runContextSearch(queryOverride, options = {}) {
@@ -297,10 +355,13 @@ export default function CotizadorUniversal() {
     try {
       const result = await projectContextClient.searchContext(query, { type, limit: 12 });
       const results = Array.isArray(result.results) ? result.results : [];
-      if (options.automatic && results.length === 1) {
-        applyContext(results[0], { automatic: true });
+      const exactDesign = type === 'design' && results.length === 1;
+      if (options.automatic && exactDesign) {
+        const imageUrls = getResultImageUrls(results[0]);
+        applyContext(results[0], { automatic: true, selectedImageUrl: imageUrls[0] || '' });
       } else {
         setSearchResults(results);
+        setSelectedDesignKey('');
         if (!results.length) setSearchError('No se encontraron clientes, diseños o productos con ese dato.');
       }
     } catch (error) {
@@ -356,21 +417,35 @@ export default function CotizadorUniversal() {
 
       <section className="uq-card">
         <h2>Cargar desde el ecosistema</h2>
-        <p>Escribí un teléfono, un código DESIGN, un cliente o un producto. El cotizador consulta y carga automáticamente desde el Orchestrator.</p>
+        <p>Buscá el cliente y seleccioná visualmente el diseño exacto que querés cotizar.</p>
         <div className="uq-fields two">
           <label className="wide">Buscar contexto
             <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runContextSearch()} placeholder="Ej. RESTAURANTES LAS SOPAS, 58401030 o DESIGN-..." />
           </label>
         </div>
         <button type="button" className="uq-light" disabled={searching || searchQuery.trim().length < 2} onClick={() => runContextSearch()}>{searching ? 'Buscando…' : 'Buscar en Orchestrator'}</button>
-        {searchError && <p className={searchError.startsWith('Información cargada') ? '' : 'uq-error'}>{searchError}</p>}
-        {searchResults.length > 0 && <div className="uq-items">
-          {searchResults.map((result, index) => <article className="uq-item" key={`${result.type}-${result.sourceId}-${index}`}>
-            <div className="uq-item-heading"><strong>{result.label || result.type}</strong><button type="button" onClick={() => applyContext(result)}>Cargar</button></div>
-            <small>Fuente: {result.type} · {result.customer?.phone || result.sourceId}</small>
-          </article>)}
+        {searchError && <p className={searchError.includes('correctamente') || searchError.startsWith('Información cargada') ? '' : 'uq-error'}>{searchError}</p>}
+        {searchResults.length > 0 && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 14, marginTop: 16 }}>
+          {searchResults.map((result, index) => {
+            const key = resultKey(result, index);
+            const imageUrls = getResultImageUrls(result);
+            const title = result.project?.title || result.label || (result.type === 'design' ? 'Diseño disponible' : result.type);
+            const description = result.items?.[0]?.description || result.description || '';
+            return <article key={key} style={{ border: selectedDesignKey === key ? '3px solid #c49d1a' : '1px solid #d8dee8', borderRadius: 16, padding: 12, background: '#fff' }}>
+              <strong style={{ display: 'block', marginBottom: 8 }}>{title}</strong>
+              {description && <small style={{ display: 'block', color: '#667085', marginBottom: 10 }}>{description}</small>}
+              {imageUrls.length > 0 ? <div style={{ display: 'grid', gridTemplateColumns: imageUrls.length > 1 ? 'repeat(2, minmax(0, 1fr))' : '1fr', gap: 8 }}>
+                {imageUrls.map((url, imageIndex) => <button key={`${key}-${url}`} type="button" onClick={() => applyContext(result, { selectedImageUrl: url, selectionKey: key })} style={{ border: 0, padding: 0, background: 'transparent', cursor: 'pointer', textAlign: 'left' }}>
+                  <img src={url} alt={`${title} ${imageIndex + 1}`} onError={(event) => { event.currentTarget.style.display = 'none'; event.currentTarget.nextElementSibling.style.display = 'grid'; }} style={{ width: '100%', height: 150, objectFit: 'cover', borderRadius: 12, border: '1px solid #e1e6ed' }} />
+                  <span style={{ display: 'none', placeItems: 'center', height: 150, borderRadius: 12, border: '1px dashed #98a2b3', color: '#667085' }}>Imagen no disponible</span>
+                  <small style={{ display: 'block', textAlign: 'center', marginTop: 6, fontWeight: 800 }}>Usar esta imagen</small>
+                </button>)}
+              </div> : <button type="button" className="uq-light" onClick={() => applyContext(result, { selectionKey: key })}>Cargar datos del diseño</button>}
+              <small style={{ display: 'block', marginTop: 10, color: '#667085' }}>Fuente: {result.type}{result.customer?.phone ? ` · ${result.customer.phone}` : ''}</small>
+            </article>;
+          })}
         </div>}
-        {source.type !== 'manual' && <p><strong>Contexto cargado:</strong> {source.type} · {source.sourceId}</p>}
+        {source.type !== 'manual' && <p><strong>Contexto cargado:</strong> {project.title || customer.companyName || customer.name} {selectedDesignKey ? '· imagen seleccionada' : ''}</p>}
       </section>
 
       {saveError && <section className="uq-card uq-error">{saveError}</section>}
@@ -397,43 +472,41 @@ export default function CotizadorUniversal() {
           </section>
 
           <section className="uq-card">
-            <div className="uq-section-title"><div><h2>Productos</h2><small>Podés combinar diseños del ecosistema con fotos reales de productos existentes.</small></div><button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button></div>
+            <div className="uq-section-title"><div><h2>Productos</h2><small>La imagen principal se selecciona directamente sobre la miniatura.</small></div><button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button></div>
             <div className="uq-items">
-              {items.map((item, index) => (
-                <article className="uq-item" key={item.id}>
+              {items.map((item, index) => {
+                const itemImages = uniqueStrings([item.imageUrl, ...(item.manualImages || []).map((image) => image.dataUrl)]);
+                return <article className="uq-item" key={item.id}>
                   <div className="uq-item-heading"><strong>Ítem {index + 1}</strong>{items.length > 1 && <button type="button" onClick={() => setItems(items.filter((entry) => entry.id !== item.id))}>Eliminar</button>}</div>
+                  {itemImages.length > 0 && <div style={{ marginBottom: 16 }}>
+                    <small style={{ display: 'block', fontWeight: 800, marginBottom: 8 }}>Seleccioná la imagen principal</small>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
+                      {itemImages.map((url, imageIndex) => <button key={`${item.id}-${url}`} type="button" onClick={() => selectItemImage(item.id, url)} style={{ padding: 6, borderRadius: 12, border: url === item.imageUrl ? '3px solid #c49d1a' : '1px solid #d7dde7', background: '#fff', cursor: 'pointer' }}>
+                        <img src={url} alt={`${item.title || 'Diseño'} ${imageIndex + 1}`} style={{ width: '100%', height: 110, objectFit: 'cover', borderRadius: 8 }} />
+                        <small style={{ display: 'block', marginTop: 6, fontWeight: 800 }}>{url === item.imageUrl ? 'Principal ✓' : 'Usar como principal'}</small>
+                      </button>)}
+                    </div>
+                  </div>}
                   <div className="uq-fields two">
                     <label>Producto<input value={item.title} onChange={(e) => updateItem(item.id, 'title', e.target.value)} /></label>
-                    <label>Imagen principal URL<input value={item.imageUrl} onChange={(e) => updateItem(item.id, 'imageUrl', e.target.value)} placeholder="https://..." /></label>
+                    <label>URL avanzada de imagen<input value={item.imageUrl} onChange={(e) => updateItem(item.id, 'imageUrl', e.target.value)} placeholder="Uso manual excepcional" /></label>
                     <label className="wide">Descripción comercial<textarea rows="3" value={item.commercialDescription} onChange={(e) => updateItem(item.id, 'commercialDescription', e.target.value)} /></label>
                     <label>Cantidad<input type="number" min="0.01" step="0.01" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', e.target.value)} /></label>
                     <label>Unidad<input value={item.unit} onChange={(e) => updateItem(item.id, 'unit', e.target.value)} /></label>
                     <label>Precio unitario USD<input type="number" min="0" step="0.01" value={item.unitPrice} onChange={(e) => updateItem(item.id, 'unitPrice', e.target.value)} /></label>
                     <label>Características<input value={item.features} onChange={(e) => updateItem(item.id, 'features', e.target.value)} placeholder="Exterior, LED, instalación" /></label>
                     <label className="wide">Agregar fotos existentes
-                      <input
-                        type="file"
-                        accept=".png,.jpg,.jpeg,.webp"
-                        multiple
-                        onChange={(event) => {
-                          void addManualImages(item.id, event.target.files);
-                          event.target.value = '';
-                        }}
-                      />
+                      <input type="file" accept=".png,.jpg,.jpeg,.webp" multiple onChange={(event) => { void addManualImages(item.id, event.target.files); event.target.value = ''; }} />
                       <small>Hasta 4 fotos por producto. Cada archivo debe pesar menos de 8 MB.</small>
                     </label>
                   </div>
                   {item.uploadError && <p className="uq-error">{item.uploadError}</p>}
-                  {item.manualImages?.length > 0 && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginTop: 12 }}>
-                    {item.manualImages.map((image) => <div key={image.id} style={{ border: '1px solid #d7dde7', borderRadius: 12, padding: 8 }}>
-                      <img src={image.dataUrl} alt={image.name} style={{ width: '100%', height: 110, objectFit: 'cover', borderRadius: 8 }} />
-                      <small style={{ display: 'block', overflowWrap: 'anywhere', margin: '7px 0' }}>{image.name}</small>
-                      <button type="button" className="uq-light" onClick={() => removeManualImage(item.id, image.id)}>Quitar</button>
-                    </div>)}
+                  {item.manualImages?.length > 0 && <div style={{ marginTop: 12 }}>
+                    {(item.manualImages || []).map((image) => <button key={image.id} type="button" className="uq-light" onClick={() => removeManualImage(item.id, image.id)} style={{ marginRight: 8, marginBottom: 8 }}>Quitar {image.name}</button>)}
                   </div>}
                   {item.assetFiles?.length > 0 && <div><small><strong>Archivos del diseño:</strong></small><ul>{item.assetFiles.map((asset, assetIndex) => <li key={`${asset.path}-${assetIndex}`}><small>{asset.kind || 'archivo'} · {asset.name || asset.path}</small></li>)}</ul></div>}
-                </article>
-              ))}
+                </article>;
+              })}
             </div>
           </section>
 
