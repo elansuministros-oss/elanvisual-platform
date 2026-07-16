@@ -3,6 +3,7 @@ import { sampleQuotation } from '../modules/vqs/demo/sampleQuotation';
 import { elanvisualBrand } from '../modules/vqs/config/elanvisualBrand';
 import { validateQuotationDocument } from '../modules/vqs/contracts/quotationDocument';
 import '../styles/vqs-quotation.css';
+import '../styles/vqs-print.css';
 
 const money = (value, currency = 'USD') =>
   new Intl.NumberFormat('es-NI', { style: 'currency', currency }).format(Number(value || 0));
