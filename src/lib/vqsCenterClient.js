@@ -1,4 +1,4 @@
-import { resolveBaseUrl } from './projectCoreClient';
+import { resolveBaseUrl } from '../modules/vqs/services/projectCoreClient';
 
 async function request(path, options = {}) {
   const response = await fetch(`${resolveBaseUrl()}${path}`, {
