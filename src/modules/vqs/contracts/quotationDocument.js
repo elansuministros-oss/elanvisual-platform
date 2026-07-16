@@ -1,4 +1,4 @@
-export const VQS_SCHEMA_VERSION = '1.1.0';
+export const VQS_SCHEMA_VERSION = '1.2.0';
 
 export function createQuotationDocument(input = {}) {
   const items = Array.isArray(input.items) ? input.items : [];
@@ -30,9 +30,19 @@ export function createQuotationDocument(input = {}) {
       email: input.customer?.email || '',
       address: input.customer?.address || ''
     },
+    executive: {
+      executiveId: input.executive?.executiveId || input.advisor?.id || '',
+      name: input.executive?.name || input.advisor?.name || '',
+      role: input.executive?.role || 'Ejecutivo Comercial',
+      phone: input.executive?.phone || input.advisor?.phone || '',
+      email: input.executive?.email || '',
+      photoUrl: input.executive?.photoUrl || '',
+      commissionEligible: Boolean(input.executive?.commissionEligible),
+      registryVersion: input.executive?.registryVersion || ''
+    },
     advisor: {
-      name: input.advisor?.name || '',
-      phone: input.advisor?.phone || ''
+      name: input.executive?.name || input.advisor?.name || '',
+      phone: input.executive?.phone || input.advisor?.phone || ''
     },
     project: {
       title: input.project?.title || 'Proyecto visual',
@@ -99,6 +109,8 @@ export function validateQuotationDocument(document) {
   if (!Number.isFinite(Number(document?.totals?.total))) errors.push('totals.total debe ser numérico');
   if (!(Number(document?.totals?.exchangeRate) > 0)) errors.push('totals.exchangeRate debe ser mayor que cero');
   if (!(Number(document?.totals?.payableTotalNio) >= 0)) errors.push('totals.payableTotalNio debe ser numérico');
+  if (!document?.executive?.executiveId) errors.push('executive.executiveId es obligatorio');
+  if (!document?.executive?.name) errors.push('executive.name es obligatorio');
 
   const installments = document?.paymentTerms?.installments || [];
   if (document?.paymentTerms?.type === 'custom') {
