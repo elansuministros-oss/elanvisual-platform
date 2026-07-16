@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { projectCoreClient } from '../modules/vqs/services/projectCoreClient';
+import { projectContextClient } from '../modules/vqs/services/projectContextClient';
 import VQSProjectSummary from './VQSProjectSummary';
 import '../styles/cotizador-universal.css';
 
@@ -26,15 +27,35 @@ const PAYMENT_PRESETS = Object.freeze({
 });
 
 const emptyItem = () => ({
-  id: crypto.randomUUID(), title: '', commercialDescription: '', quantity: 1,
+  id: crypto.randomUUID(), productId: '', designId: '', title: '', commercialDescription: '', quantity: 1,
   unit: 'unidad', unitPrice: 0, imageUrl: '', features: ''
 });
 
+function mapContextItem(item = {}) {
+  return {
+    id: item.itemId || crypto.randomUUID(),
+    productId: item.productId || '',
+    designId: item.designId || '',
+    title: item.title || '',
+    commercialDescription: item.description || '',
+    quantity: Number(item.quantity || 1),
+    unit: item.unit || 'unidad',
+    unitPrice: Number(item.unitPriceUsd || 0),
+    imageUrl: item.imageUrl || item.images?.[0] || '',
+    features: Array.isArray(item.features) ? item.features.join(', ') : String(item.features || '')
+  };
+}
+
 export default function CotizadorUniversal() {
-  const [customerId] = useState(() => `ELANVISUAL-${crypto.randomUUID()}`);
+  const [customerId, setCustomerId] = useState(() => `ELANVISUAL-${crypto.randomUUID()}`);
   const [customer, setCustomer] = useState({ name: '', companyName: '', phone: '', email: '', address: '' });
   const [project, setProject] = useState({ title: '', expectedDeliveryAt: '' });
   const [items, setItems] = useState([emptyItem()]);
+  const [source, setSource] = useState({ type: 'manual', sourceId: '', designRequestId: '', storeProductId: '', storeCartId: '', designMode: 'optional' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
   const [discountRate, setDiscountRate] = useState(0);
   const [applyTax, setApplyTax] = useState(false);
   const [exchangeRate, setExchangeRate] = useState(36.8);
@@ -65,8 +86,8 @@ export default function CotizadorUniversal() {
 
   const normalizedItems = items.map((item) => ({
     itemId: item.id,
-    productId: '',
-    designId: '',
+    productId: item.productId || '',
+    designId: item.designId || '',
     title: item.title.trim(),
     description: item.commercialDescription.trim(),
     quantity: Number(item.quantity || 0),
@@ -82,7 +103,7 @@ export default function CotizadorUniversal() {
   const intakeContract = {
     contractVersion: '1.0.0',
     platform: 'ELANVISUAL',
-    source: { type: 'manual', sourceId: '', designRequestId: '', storeProductId: '', storeCartId: '', designMode: 'optional' },
+    source,
     customer: { customerId, ...customer },
     executive: EXECUTIVE,
     project: {
@@ -104,7 +125,7 @@ export default function CotizadorUniversal() {
       payableTotalNio
     },
     payments: { type: paymentType, installments },
-    metadata: { sourceScreen: 'CotizadorUniversal', emcStatus: 'interfaces_only' }
+    metadata: { sourceScreen: 'CotizadorUniversal', contextGateway: 'orchestrator', emcStatus: 'interfaces_only' }
   };
 
   const canSubmit = Boolean(
@@ -116,6 +137,52 @@ export default function CotizadorUniversal() {
   const updateItem = (id, field, value) => setItems((current) =>
     current.map((item) => item.id === id ? { ...item, [field]: value } : item)
   );
+
+  async function runContextSearch() {
+    const query = searchQuery.trim();
+    if (query.length < 2 || searching) return;
+    setSearching(true);
+    setSearchError('');
+    try {
+      const result = await projectContextClient.searchContext(query);
+      setSearchResults(Array.isArray(result.results) ? result.results : []);
+      if (!result.results?.length) setSearchError('No se encontraron clientes, diseños o productos con ese dato.');
+    } catch (error) {
+      setSearchResults([]);
+      setSearchError(error.message || 'No fue posible consultar el contexto.');
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  function applyContext(result) {
+    if (result.customer) {
+      setCustomerId(result.customer.customerId || `ELANVISUAL-${crypto.randomUUID()}`);
+      setCustomer({
+        name: result.customer.name || '',
+        companyName: result.customer.companyName || '',
+        phone: result.customer.phone || '',
+        email: result.customer.email || '',
+        address: result.customer.address || ''
+      });
+    }
+    if (result.project?.title) {
+      setProject((current) => ({ ...current, title: result.project.title }));
+    }
+    if (Array.isArray(result.items) && result.items.length) {
+      setItems(result.items.map(mapContextItem));
+    }
+    setSource({
+      type: result.source?.type || result.type || 'manual',
+      sourceId: result.source?.sourceId || result.sourceId || '',
+      designRequestId: result.source?.designRequestId || '',
+      storeProductId: result.source?.storeProductId || '',
+      storeCartId: result.source?.storeCartId || '',
+      designMode: result.type === 'design' ? 'required' : 'optional'
+    });
+    setSearchResults([]);
+    setSearchError('');
+  }
 
   async function saveInProjectCore() {
     if (!canSubmit || saving) return;
@@ -144,6 +211,25 @@ export default function CotizadorUniversal() {
         <button type="button" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? 'Creando…' : 'Crear cotización'}</button>
       </header>
 
+      <section className="uq-card">
+        <h2>Cargar desde el ecosistema</h2>
+        <p>Buscá por teléfono, nombre, empresa, código de diseño o código de producto. Toda consulta pasa por el Orchestrator.</p>
+        <div className="uq-fields two">
+          <label className="wide">Buscar contexto
+            <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runContextSearch()} placeholder="Ej. 78828089, DESIGN-XXXX o código de producto" />
+          </label>
+        </div>
+        <button type="button" className="uq-light" disabled={searching || searchQuery.trim().length < 2} onClick={runContextSearch}>{searching ? 'Buscando…' : 'Buscar en Orchestrator'}</button>
+        {searchError && <p className="uq-error">{searchError}</p>}
+        {searchResults.length > 0 && <div className="uq-items">
+          {searchResults.map((result, index) => <article className="uq-item" key={`${result.type}-${result.sourceId}-${index}`}>
+            <div className="uq-item-heading"><strong>{result.label || result.type}</strong><button type="button" onClick={() => applyContext(result)}>Cargar</button></div>
+            <small>Fuente: {result.type} · {result.customer?.phone || result.sourceId}</small>
+          </article>)}
+        </div>}
+        {source.type !== 'manual' && <p><strong>Contexto cargado:</strong> {source.type} · {source.sourceId}</p>}
+      </section>
+
       {saveError && <section className="uq-card uq-error">{saveError}</section>}
 
       <section className="uq-grid">
@@ -168,7 +254,7 @@ export default function CotizadorUniversal() {
           </section>
 
           <section className="uq-card">
-            <div className="uq-section-title"><div><h2>Productos</h2><small>EMC preparado mediante interfaces; conexión pendiente.</small></div><button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button></div>
+            <div className="uq-section-title"><div><h2>Productos</h2><small>Puede cargarse desde Diseño o Tienda mediante el Orchestrator.</small></div><button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button></div>
             <div className="uq-items">
               {items.map((item, index) => (
                 <article className="uq-item" key={item.id}>
