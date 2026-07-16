@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createQuotationDocument } from '../modules/vqs/contracts/quotationDocument';
+import { createProject } from '../modules/vqs/services/vqsProjectApi';
+import { isEmcConfigured } from '../modules/vqs/services/emcCatalogGateway';
 import VQSQuotationPreview from './VQSQuotationPreview';
 import '../styles/cotizador-universal.css';
 
@@ -37,6 +39,9 @@ export default function CotizadorUniversal() {
   const [paymentType, setPaymentType] = useState('60_40');
   const [customInstallments, setCustomInstallments] = useState([{ label: 'Anticipo', percentage: 60 }, { label: 'Saldo', percentage: 40 }]);
   const [showPreview, setShowPreview] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [savedProject, setSavedProject] = useState(null);
 
   const subtotalGross = useMemo(
     () => items.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.unitPrice || 0), 0),
@@ -57,26 +62,29 @@ export default function CotizadorUniversal() {
   }));
 
   const paymentPercentTotal = installments.reduce((sum, entry) => sum + Number(entry.percentage || 0), 0);
+  const normalizedItems = items.map((item) => ({
+    ...item,
+    quantity: Number(item.quantity || 0),
+    unitPrice: Number(item.unitPrice || 0),
+    subtotal: Number(item.quantity || 0) * Number(item.unitPrice || 0),
+    features: item.features.split(',').map((value) => value.trim()).filter(Boolean),
+    images: item.imageUrl ? [{ role: 'primary', url: item.imageUrl, alt: item.title }] : []
+  }));
 
   const document = createQuotationDocument({
     platformId: 'ELANVISUAL',
-    quotationNumber: 'BORRADOR-VQS',
+    quotationNumber: savedProject?.quotation_number || 'BORRADOR-VQS',
     settlementCurrency: 'NIO',
     customer,
     executive: {
-      executiveId: 'PENDING',
+      executiveId: 'ELANVISUAL-EXECUTIVE-PENDING',
       name: 'Ejecutivo por asignar',
       role: 'Ejecutivo comercial',
       phone: '',
       commissionEligible: false
     },
     project,
-    items: items.map((item) => ({
-      ...item,
-      subtotal: Number(item.quantity || 0) * Number(item.unitPrice || 0),
-      features: item.features.split(',').map((value) => value.trim()).filter(Boolean),
-      images: item.imageUrl ? [{ role: 'primary', url: item.imageUrl, alt: item.title }] : []
-    })),
+    items: normalizedItems,
     totals: {
       subtotalGross,
       discount,
@@ -90,11 +98,94 @@ export default function CotizadorUniversal() {
     paymentTerms: { type: paymentType, installments }
   });
 
+  const intakeContract = {
+    contractVersion: '1.0.0',
+    platform: 'ELANVISUAL',
+    source: { type: 'manual', sourceId: '' },
+    customer: {
+      customerId: '',
+      name: customer.name,
+      companyName: customer.companyName,
+      phone: customer.phone,
+      email: customer.email,
+      address: customer.address
+    },
+    executive: {
+      executiveId: 'ELANVISUAL-EXECUTIVE-PENDING',
+      name: 'Ejecutivo por asignar',
+      role: 'Ejecutivo Comercial',
+      phone: '',
+      email: '',
+      photoUrl: ''
+    },
+    project: {
+      title: project.title,
+      summary: project.summary,
+      location: project.location,
+      estimatedDelivery: project.estimatedDelivery,
+      warranty: project.warranty,
+      images: []
+    },
+    items: normalizedItems.map((item) => ({
+      itemId: item.id,
+      title: item.title,
+      description: item.commercialDescription,
+      quantity: item.quantity,
+      unit: item.unit,
+      unitPriceUsd: item.unitPrice,
+      subtotalUsd: item.subtotal,
+      features: item.features,
+      images: item.images,
+      emc: { materialIds: [], pricingSnapshotId: '', inventorySnapshotId: '' }
+    })),
+    pricing: {
+      currency: 'USD',
+      settlementCurrency: 'NIO',
+      subtotalUsd: subtotalGross,
+      discountUsd: discount,
+      taxRate: applyTax ? 0.15 : 0,
+      taxUsd: tax,
+      totalUsd: total,
+      exchangeRate: Number(exchangeRate || 0),
+      totalNio: payableTotalNio
+    },
+    payments: {
+      type: paymentType,
+      installments: installments.map((entry) => ({
+        label: entry.label,
+        percentage: Number(entry.percentage || 0),
+        amountUsd: entry.amountUsd,
+        amountNio: entry.amountNio,
+        dueCondition: entry.dueCondition || ''
+      }))
+    }
+  };
+
   const updateItem = (id, field, value) => {
     setItems((current) => current.map((item) => item.id === id ? { ...item, [field]: value } : item));
   };
 
-  const canPreview = customer.name.trim() && project.title.trim() && items.every((item) => item.title.trim()) && Math.abs(paymentPercentTotal - 100) < 0.001;
+  const canSubmit = Boolean(
+    customer.name.trim() &&
+    project.title.trim() &&
+    items.every((item) => item.title.trim() && Number(item.quantity) > 0 && Number(item.unitPrice) >= 0) &&
+    Math.abs(paymentPercentTotal - 100) < 0.001
+  );
+
+  const saveInProjectCore = async () => {
+    if (!canSubmit || saving) return;
+    setSaving(true);
+    setSaveError('');
+    try {
+      const response = await createProject(intakeContract);
+      setSavedProject(response.data);
+      setShowPreview(true);
+    } catch (error) {
+      setSaveError(error.message || 'No fue posible guardar la cotización en Project Core.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (showPreview) {
     return <VQSQuotationPreview quotation={document} onBack={() => setShowPreview(false)} />;
@@ -104,11 +195,13 @@ export default function CotizadorUniversal() {
     <main className="uq-shell">
       <header className="uq-header">
         <div>
-          <span>VQS · Nuevo módulo</span>
-          <h1>Cotizador universal</h1>
-          <p>Construido desde cero. Sin conexiones heredadas del cotizador anterior.</p>
+          <span>ELANVISUAL · VQS</span>
+          <h1>Nueva cotización</h1>
+          <p>Conectada a Project Core mediante Orchestrator. EMC queda preparado para integración posterior.</p>
         </div>
-        <button type="button" disabled={!canPreview} onClick={() => setShowPreview(true)}>Vista previa</button>
+        <button type="button" disabled={!canSubmit || saving} onClick={saveInProjectCore}>
+          {saving ? 'Guardando…' : 'Crear cotización'}
+        </button>
       </header>
 
       <section className="uq-grid">
@@ -136,7 +229,10 @@ export default function CotizadorUniversal() {
           </section>
 
           <section className="uq-card">
-            <div className="uq-section-title"><h2>Productos</h2><button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button></div>
+            <div className="uq-section-title">
+              <div><h2>Productos</h2><small>EMC: {isEmcConfigured() ? 'configurado' : 'pendiente de activar'}</small></div>
+              <button type="button" className="uq-light" onClick={() => setItems([...items, emptyItem()])}>+ Agregar producto</button>
+            </div>
             <div className="uq-items">
               {items.map((item, index) => (
                 <article className="uq-item" key={item.id}>
@@ -191,7 +287,10 @@ export default function CotizadorUniversal() {
               <span>Total USD <b>USD {total.toFixed(2)}</b></span>
               <strong>Total a pagar <b>C$ {payableTotalNio.toLocaleString('es-NI', { minimumFractionDigits: 2 })}</b></strong>
             </div>
-            <button type="button" disabled={!canPreview} onClick={() => setShowPreview(true)}>Generar vista previa</button>
+            {saveError && <p className="error">{saveError}</p>}
+            {savedProject && <p className="ok">Proyecto {savedProject.project_number} creado.</p>}
+            <button type="button" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? 'Guardando…' : 'Guardar en Project Core'}</button>
+            <button type="button" className="uq-light" disabled={!canSubmit} onClick={() => setShowPreview(true)}>Vista previa sin guardar</button>
           </section>
         </aside>
       </section>
