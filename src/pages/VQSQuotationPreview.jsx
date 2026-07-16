@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { sampleQuotation } from '../modules/vqs/demo/sampleQuotation';
 import { elanvisualBrand } from '../modules/vqs/config/elanvisualBrand';
 import { validateQuotationDocument } from '../modules/vqs/contracts/quotationDocument';
@@ -25,6 +25,25 @@ export default function VQSQuotationPreview() {
   const validation = validateQuotationDocument(document);
   const showDiscount = Number(document.totals.discount) > 0;
   const showTax = Number(document.totals.tax) > 0 || Number(document.totals.taxRate) > 0;
+  const [printMode, setPrintMode] = useState('print');
+
+  const openPrintDialog = (mode) => {
+    const previousTitle = window.document.title;
+    const fileName = `${document.quotationNumber}-${document.customer.companyName || document.customer.name}`
+      .replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_-]+/g, '-');
+
+    setPrintMode(mode);
+    window.document.title = fileName;
+    window.document.body.dataset.vqsPrintMode = mode;
+
+    window.setTimeout(() => {
+      window.print();
+      window.setTimeout(() => {
+        window.document.title = previousTitle;
+        delete window.document.body.dataset.vqsPrintMode;
+      }, 500);
+    }, 80);
+  };
 
   return (
     <main className="vqs-shell">
@@ -33,10 +52,29 @@ export default function VQSQuotationPreview() {
           <strong>VQS · Vista experimental</strong>
           <span>{validation.ok ? 'Contrato válido' : validation.errors.join(' · ')}</span>
         </div>
-        <button type="button" onClick={() => window.print()}>Imprimir / Guardar PDF</button>
+        <div className="vqs-toolbar-actions">
+          <button type="button" className="vqs-secondary-action" onClick={() => openPrintDialog('print')}>
+            Imprimir cotización
+          </button>
+          <button type="button" onClick={() => openPrintDialog('pdf')}>
+            Descargar PDF
+          </button>
+        </div>
+      </div>
+
+      <div className="vqs-print-notice no-print" role="status">
+        {printMode === 'pdf'
+          ? 'En el diálogo del dispositivo seleccioná “Guardar como PDF”.'
+          : 'Formato Carta preparado para impresión corporativa.'}
       </div>
 
       <article className="vqs-document" style={{ '--vqs-primary': elanvisualBrand.primaryColor, '--vqs-accent': elanvisualBrand.secondaryColor }}>
+        <div className="vqs-print-running-header print-only">
+          <span>{elanvisualBrand.displayName}</span>
+          <b>{document.quotationNumber}</b>
+          <span>{document.customer.companyName || document.customer.name}</span>
+        </div>
+
         <header className="vqs-header">
           <a className="vqs-brand" href={elanvisualBrand.website} target="_blank" rel="noreferrer">
             <img src={elanvisualBrand.logoUrl} alt={elanvisualBrand.displayName} />
@@ -181,6 +219,11 @@ export default function VQSQuotationPreview() {
           <span>RUC {elanvisualBrand.taxId} · WhatsApp {elanvisualBrand.whatsapp}</span>
           <a href={elanvisualBrand.ecosystemUrl} target="_blank" rel="noreferrer">Conoce todo el ecosistema ELANKAV →</a>
         </footer>
+
+        <div className="vqs-print-running-footer print-only">
+          <span>{document.quotationNumber} · Continuación</span>
+          <span className="vqs-page-counter">Página</span>
+        </div>
       </article>
     </main>
   );
