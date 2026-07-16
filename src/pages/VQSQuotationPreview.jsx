@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { sampleQuotation } from '../modules/vqs/demo/sampleQuotation';
 import { elanvisualBrand } from '../modules/vqs/config/elanvisualBrand';
 import { validateQuotationDocument } from '../modules/vqs/contracts/quotationDocument';
@@ -26,16 +26,14 @@ export default function VQSQuotationPreview() {
   const validation = validateQuotationDocument(document);
   const showDiscount = Number(document.totals.discount) > 0;
   const showTax = Number(document.totals.tax) > 0 || Number(document.totals.taxRate) > 0;
-  const [printMode, setPrintMode] = useState('print');
 
-  const openPrintDialog = (mode) => {
+  const downloadQuotation = () => {
     const previousTitle = window.document.title;
     const fileName = `${document.quotationNumber}-${document.customer.companyName || document.customer.name}`
       .replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_-]+/g, '-');
 
-    setPrintMode(mode);
     window.document.title = fileName;
-    window.document.body.dataset.vqsPrintMode = mode;
+    window.document.body.dataset.vqsPrintMode = 'pdf';
 
     window.setTimeout(() => {
       window.print();
@@ -54,19 +52,10 @@ export default function VQSQuotationPreview() {
           <span>{validation.ok ? 'Contrato válido' : validation.errors.join(' · ')}</span>
         </div>
         <div className="vqs-toolbar-actions">
-          <button type="button" className="vqs-secondary-action" onClick={() => openPrintDialog('print')}>
-            Imprimir cotización
-          </button>
-          <button type="button" onClick={() => openPrintDialog('pdf')}>
-            Descargar PDF
+          <button type="button" onClick={downloadQuotation}>
+            Descargar cotización
           </button>
         </div>
-      </div>
-
-      <div className="vqs-print-notice no-print" role="status">
-        {printMode === 'pdf'
-          ? 'En el diálogo del dispositivo seleccioná “Guardar como PDF”.'
-          : 'Formato Carta preparado para impresión corporativa.'}
       </div>
 
       <article className="vqs-document" style={{ '--vqs-primary': elanvisualBrand.primaryColor, '--vqs-accent': elanvisualBrand.secondaryColor }}>
