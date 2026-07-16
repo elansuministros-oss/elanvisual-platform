@@ -65,6 +65,7 @@ export default function Header({ page, setPage }) {
     ['crm', 'CRM', <Users size={24} />],
     ['solicitudesAI', 'Solicitudes Diseño', <Palette size={24} />],
     ['cotizador', 'Nueva cotización', <Calculator size={24} />],
+    ['vqsCenter', 'Cotizaciones', <ClipboardList size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['produccion', 'Producción', <Factory size={24} />],
     ['materiales', 'Inventario', <PackageSearch size={24} />],
@@ -77,7 +78,8 @@ export default function Header({ page, setPage }) {
   const ventasLinks = [
     ['aiStudio', 'AI', <Palette size={24} />],
     ['cotizador', 'Nueva cotización', <Calculator size={24} />],
-    ['cotizacionesInteligentes', 'Cotizaciones', <ClipboardList size={24} />],
+    ['vqsCenter', 'Cotizaciones', <ClipboardList size={24} />],
+    ['cotizacionesInteligentes', 'Cotizaciones anteriores', <ClipboardList size={24} />],
     ['pedidos', 'Pedidos', <ClipboardList size={24} />],
     ['miCuenta', 'Cuenta', <Users size={24} />],
   ];
@@ -96,11 +98,11 @@ export default function Header({ page, setPage }) {
         : ventasLinks;
 
   const primaryKeys = rol === 'admin'
-    ? ['dashboard', 'cotizador']
+    ? ['dashboard', 'cotizador', 'vqsCenter']
     : rol === 'produccion'
       ? ['pedidos', 'produccion']
       : usuario
-        ? ['cotizador', 'pedidos']
+        ? ['cotizador', 'vqsCenter', 'pedidos']
         : links.map(([key]) => key);
 
   const primaryLinks = links.filter(([key]) => primaryKeys.includes(key));
