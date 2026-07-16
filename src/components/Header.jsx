@@ -19,17 +19,21 @@ import {
   LayoutDashboard,
   Palette,
   Calculator,
+  ChevronDown,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
+import '../styles/header-dropdown.css';
 
 export default function Header({ page, setPage }) {
   const { usuario, logout, configuracion } = useApp();
   const [open, setOpen] = useState(false);
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
 
   const go = (p) => {
     setPage(p);
     setOpen(false);
+    setDesktopMenuOpen(false);
   };
 
   const salir = async () => {
@@ -91,6 +95,18 @@ export default function Header({ page, setPage }) {
         ? produccionLinks
         : ventasLinks;
 
+  const primaryKeys = rol === 'admin'
+    ? ['dashboard', 'cotizador']
+    : rol === 'produccion'
+      ? ['pedidos', 'produccion']
+      : usuario
+        ? ['cotizador', 'pedidos']
+        : links.map(([key]) => key);
+
+  const primaryLinks = links.filter(([key]) => primaryKeys.includes(key));
+  const dropdownLinks = links.filter(([key]) => !primaryKeys.includes(key));
+  const dropdownHasActivePage = dropdownLinks.some(([key]) => key === page);
+
   return (
     <>
       <header className="desktop-header app-desktop-header">
@@ -98,13 +114,39 @@ export default function Header({ page, setPage }) {
           <img src="/assets/branding/elanvisual.svg" alt={brandName} className="brand-logo-img brand-logo-desktop" />
         </div>
 
-        <nav className="desktop-nav app-desktop-nav">
-          {links.map(([key, label]) => (
-            <button key={key} type="button" className={page === key ? 'nav-active' : ''} onClick={() => go(key)}>{label}</button>
-          ))}
+        <nav className="desktop-nav app-desktop-nav desktop-nav-compact">
+          <div className="desktop-nav-primary">
+            {primaryLinks.map(([key, label]) => (
+              <button key={key} type="button" className={page === key ? 'nav-active' : ''} onClick={() => go(key)}>{label}</button>
+            ))}
+          </div>
+
+          {dropdownLinks.length > 0 && (
+            <div className="desktop-menu-wrap">
+              <button
+                type="button"
+                className={`desktop-menu-trigger ${desktopMenuOpen ? 'is-open' : ''} ${dropdownHasActivePage ? 'has-active-section' : ''}`}
+                onClick={() => setDesktopMenuOpen((current) => !current)}
+                aria-expanded={desktopMenuOpen}
+                aria-haspopup="menu"
+              >
+                Menú <ChevronDown size={18} />
+              </button>
+
+              {desktopMenuOpen && (
+                <div className="desktop-menu-dropdown" role="menu">
+                  {dropdownLinks.map(([key, label, icon]) => (
+                    <button key={key} type="button" role="menuitem" className={page === key ? 'nav-active' : ''} onClick={() => go(key)}>
+                      {icon}<span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {usuario ? (
-            <button type="button" onClick={salir}>Salir</button>
+            <button type="button" className="desktop-logout-button" onClick={salir}>Salir</button>
           ) : (
             <button type="button" onClick={() => go('login')}>Acceso Interno</button>
           )}
