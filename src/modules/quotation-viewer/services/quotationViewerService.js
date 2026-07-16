@@ -57,6 +57,19 @@ function assertRecord(record) {
   return record;
 }
 
+function assertOfficialDocument(record) {
+  const document = record?.quotation_document || record?.quotationDocument;
+  const publicDocument = document?.publicDocument;
+
+  if (!document || !publicDocument) {
+    const error = new Error('El Orchestrator no entrego el documento oficial de la cotizacion.');
+    error.code = 'OFFICIAL_QUOTATION_DOCUMENT_MISSING';
+    throw error;
+  }
+
+  return record;
+}
+
 export async function listQuotations({ limit = DEFAULT_LIMIT } = {}) {
   const payload = await request('/api/vqs/projects', { platform: PLATFORM, limit });
   const quotations = normalizeQuotationCollection(payload);
@@ -69,27 +82,11 @@ export async function listQuotations({ limit = DEFAULT_LIMIT } = {}) {
 
 export async function getQuotationDetail(id) {
   const requestedId = String(id || '').trim();
-  if (!requestedId) throw new Error('No se recibio el identificador de la cotizacion.');
+  if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
 
-  let directError = null;
-
-  try {
-    const payload = await request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, { platform: PLATFORM });
-    return normalizeQuotationRecord(assertRecord(extractRecord(payload)));
-  } catch (error) {
-    directError = error;
-  }
-
-  const { quotations } = await listQuotations({ limit: DEFAULT_LIMIT });
-  const decodedId = decodeURIComponent(requestedId);
-  const found = quotations.find((quotation) =>
-    quotation.id === decodedId || quotation.quotationNumber === decodedId
-  );
-
-  if (found) return found;
-
-  if (directError) throw directError;
-  throw new Error('No se encontro la cotizacion solicitada.');
+  const payload = await request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, { platform: PLATFORM });
+  const record = assertOfficialDocument(assertRecord(extractRecord(payload)));
+  return normalizeQuotationRecord(record);
 }
 
 export const quotationViewerService = Object.freeze({
