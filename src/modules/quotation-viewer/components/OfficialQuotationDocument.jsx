@@ -1,0 +1,319 @@
+import React from 'react';
+import { ArrowLeft, MessageCircle, Printer } from 'lucide-react';
+
+const BRAND = Object.freeze({
+  name: 'ELANVISUAL',
+  logoUrl: '/assets/branding/elanvisual.svg',
+  taxId: '4012805831001E',
+  website: 'https://visual.elankav.com',
+  whatsapp: '+505 7882 8089'
+});
+
+const empty = 'No registrado';
+
+const hasValue = (value) => value !== undefined && value !== null && value !== '';
+
+function numericValue(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value !== 'string') return null;
+  const cleaned = value.replace(/[^\d.-]/g, '');
+  if (!cleaned) return null;
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function display(value) {
+  return hasValue(value) ? String(value) : empty;
+}
+
+function formatDate(value) {
+  if (!value) return empty;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return String(value);
+  return new Intl.DateTimeFormat('es-NI', { year: 'numeric', month: 'long', day: '2-digit' }).format(parsed);
+}
+
+function formatMoney(value, currency = 'USD') {
+  if (!hasValue(value)) return empty;
+  const parsed = numericValue(value);
+  if (parsed === null) return String(value);
+  return new Intl.NumberFormat('es-NI', { style: 'currency', currency }).format(parsed);
+}
+
+function formatPercent(value) {
+  if (!hasValue(value)) return '';
+  if (typeof value === 'string' && value.includes('%')) return value;
+  return `${value}%`;
+}
+
+function formatDimensions(dimensions) {
+  if (!dimensions) return '';
+  if (typeof dimensions === 'string') return dimensions;
+
+  const unit = dimensions.unit ? ` ${dimensions.unit}` : '';
+  const parts = [
+    ['Ancho', dimensions.width],
+    ['Alto', dimensions.height],
+    ['Fondo', dimensions.depth]
+  ]
+    .filter(([, value]) => hasValue(value))
+    .map(([label, value]) => `${label}: ${value}${unit}`);
+
+  return parts.join(' / ');
+}
+
+function cleanPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (digits.length === 8) return `505${digits}`;
+  if (digits.length >= 11 && digits.startsWith('505')) return digits;
+  if (digits.length > 8) return digits;
+  return '';
+}
+
+function buildWhatsappUrl(phone, quotationNumber) {
+  const target = cleanPhone(phone);
+  if (!target) return '';
+  const message = encodeURIComponent(`Hola, le comparto seguimiento de la cotizacion ${quotationNumber || ''} de ELANVISUAL.`);
+  return `https://wa.me/${target}?text=${message}`;
+}
+
+function collectImages(quotation) {
+  const entries = [
+    ...(quotation.projectMedia || []),
+    ...(quotation.items || []).flatMap((item) => item.images || [])
+  ];
+  const seen = new Set();
+
+  return entries.filter((image) => {
+    if (!image?.url || seen.has(image.url)) return false;
+    seen.add(image.url);
+    return true;
+  });
+}
+
+function InfoRow({ label, value }) {
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{display(value)}</dd>
+    </div>
+  );
+}
+
+export default function OfficialQuotationDocument({ quotation, onBack }) {
+  const images = collectImages(quotation);
+  const whatsappUrl = buildWhatsappUrl(quotation.customer?.phone, quotation.quotationNumber);
+  const payment = quotation.payment || {};
+  const installments = payment.installments || [];
+  const advance = payment.advance || {};
+  const hasAdvance = hasValue(advance.amountUsd) || hasValue(advance.amountNio) || hasValue(advance.percentage);
+  const taxLabel = quotation.totals?.taxRate ? `IVA ${formatPercent(quotation.totals.taxRate)}` : 'IVA';
+
+  return (
+    <main className="qv-detail-shell">
+      <div className="qv-document-actions no-print">
+        <button type="button" className="qv-action-secondary" onClick={onBack}>
+          <ArrowLeft size={18} /> Regresar
+        </button>
+        <button type="button" onClick={() => window.print()}>
+          <Printer size={18} /> Imprimir / PDF
+        </button>
+        {whatsappUrl && (
+          <button type="button" onClick={() => window.open(whatsappUrl, '_blank', 'noopener,noreferrer')}>
+            <MessageCircle size={18} /> WhatsApp
+          </button>
+        )}
+      </div>
+
+      <article className="qv-official-document">
+        <header className="qv-document-header">
+          <a className="qv-document-brand" href={BRAND.website} target="_blank" rel="noreferrer">
+            <img src={BRAND.logoUrl} alt={BRAND.name} />
+          </a>
+          <div className="qv-document-title">
+            <span>Cotizacion</span>
+            <h1>{display(quotation.quotationNumber)}</h1>
+            <p>{display(quotation.status)}</p>
+          </div>
+          <dl className="qv-document-dates">
+            <InfoRow label="Fecha" value={formatDate(quotation.date)} />
+            <InfoRow label="Vigencia" value={formatDate(quotation.validUntil)} />
+          </dl>
+        </header>
+
+        <section className="qv-document-grid">
+          <div className="qv-document-panel">
+            <span className="qv-section-label">Cliente</span>
+            <dl className="qv-info-list">
+              <InfoRow label="Nombre" value={quotation.customer?.name} />
+              <InfoRow label="Empresa" value={quotation.customer?.companyName} />
+              <InfoRow label="Telefono" value={quotation.customer?.phone} />
+              <InfoRow label="Correo" value={quotation.customer?.email} />
+              <InfoRow label="Direccion" value={quotation.customer?.address} />
+              <InfoRow label="RUC cliente" value={quotation.customer?.taxId} />
+            </dl>
+          </div>
+
+          <div className="qv-document-panel">
+            <span className="qv-section-label">Proyecto</span>
+            <dl className="qv-info-list">
+              <InfoRow label="Nombre" value={quotation.project?.title} />
+              <InfoRow label="Categoria" value={quotation.project?.category} />
+              <InfoRow label="Ubicacion" value={quotation.project?.location} />
+              <InfoRow label="Entrega" value={quotation.project?.estimatedDelivery} />
+              <InfoRow label="Garantia" value={quotation.project?.warranty} />
+            </dl>
+            {quotation.project?.summary && <p className="qv-project-summary">{quotation.project.summary}</p>}
+          </div>
+        </section>
+
+        {images.length > 0 && (
+          <section className="qv-document-section">
+            <div className="qv-section-heading">
+              <span className="qv-section-label">Imagenes y renders</span>
+              <h2>Material visual disponible</h2>
+            </div>
+            <div className="qv-media-grid">
+              {images.map((image) => (
+                <figure key={image.url}>
+                  <img src={image.url} alt={image.alt || 'Imagen de cotizacion'} />
+                  {image.alt && <figcaption>{image.alt}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="qv-document-section">
+          <div className="qv-section-heading">
+            <span className="qv-section-label">Productos</span>
+            <h2>Detalle comercial</h2>
+          </div>
+
+          {quotation.items.length > 0 ? (
+            <div className="qv-products-table-wrap">
+              <table className="qv-products-table">
+                <thead>
+                  <tr>
+                    <th>Producto</th>
+                    <th>Descripcion comercial</th>
+                    <th>Medidas</th>
+                    <th>Cantidad</th>
+                    <th>Unidad</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {quotation.items.map((item) => (
+                    <tr key={item.id}>
+                      <td>{display(item.title)}</td>
+                      <td>{display(item.commercialDescription)}</td>
+                      <td>{formatDimensions(item.dimensions) || empty}</td>
+                      <td>{display(item.quantity)}</td>
+                      <td>{display(item.unit)}</td>
+                      <td>{formatMoney(item.subtotal, 'USD')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="qv-empty-inline">No hay productos recibidos desde el Orchestrator.</p>
+          )}
+        </section>
+
+        <section className="qv-summary-section">
+          <div className="qv-document-panel">
+            <span className="qv-section-label">Forma de pago</span>
+            <p className="qv-payment-label">{payment.label || payment.type || empty}</p>
+
+            {hasAdvance && (
+              <div className="qv-payment-row">
+                <span>{advance.label || 'Anticipo'}</span>
+                <strong>
+                  {hasValue(advance.percentage) ? `${formatPercent(advance.percentage)} ` : ''}
+                  {hasValue(advance.amountUsd) ? formatMoney(advance.amountUsd, 'USD') : formatMoney(advance.amountNio, 'NIO')}
+                </strong>
+              </div>
+            )}
+
+            {installments.length > 0 ? (
+              <div className="qv-installments">
+                {installments.map((entry) => (
+                  <div className="qv-payment-row" key={entry.id}>
+                    <span>{display(entry.label)} {hasValue(entry.percentage) ? `(${formatPercent(entry.percentage)})` : ''}</span>
+                    <strong>
+                      {hasValue(entry.amountUsd) ? formatMoney(entry.amountUsd, 'USD') : formatMoney(entry.amountNio, 'NIO')}
+                    </strong>
+                    {entry.dueCondition && <small>{entry.dueCondition}</small>}
+                  </div>
+                ))}
+              </div>
+            ) : !hasAdvance && (
+              <p className="qv-empty-inline">No hay cuotas o anticipo recibidos.</p>
+            )}
+          </div>
+
+          <div className="qv-total-panel">
+            <div><span>Subtotal</span><strong>{formatMoney(quotation.totals?.subtotal, 'USD')}</strong></div>
+            <div><span>Descuento</span><strong>{formatMoney(quotation.totals?.discount, 'USD')}</strong></div>
+            <div><span>{taxLabel}</span><strong>{formatMoney(quotation.totals?.tax, 'USD')}</strong></div>
+            <div className="qv-grand-total"><span>Total USD</span><strong>{formatMoney(quotation.totals?.totalUsd, 'USD')}</strong></div>
+            <div><span>Referencia en cordobas</span><strong>{formatMoney(quotation.totals?.nioReference, 'NIO')}</strong></div>
+            {hasValue(quotation.totals?.exchangeRate) && (
+              <small>Tipo de cambio recibido: {display(quotation.totals.exchangeRate)} {quotation.totals.exchangeRateDate ? ` / ${quotation.totals.exchangeRateDate}` : ''}</small>
+            )}
+          </div>
+        </section>
+
+        {quotation.paymentAccounts.length > 0 && (
+          <section className="qv-document-section">
+            <div className="qv-section-heading">
+              <span className="qv-section-label">Cuentas autorizadas</span>
+              <h2>Opciones de pago</h2>
+            </div>
+            <div className="qv-accounts-grid">
+              {quotation.paymentAccounts.map((account) => (
+                <div className="qv-account" key={account.id}>
+                  <span>{account.label || account.bankName || empty}</span>
+                  {account.currency && <b>{account.currency}</b>}
+                  {account.accountNumber && <strong>{account.accountNumber}</strong>}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {quotation.publicNotes.length > 0 && (
+          <section className="qv-document-section">
+            <div className="qv-section-heading">
+              <span className="qv-section-label">Notas publicas</span>
+              <h2>Condiciones</h2>
+            </div>
+            <div className="qv-notes">
+              {quotation.publicNotes.map((note) => <p key={note}>{note}</p>)}
+            </div>
+          </section>
+        )}
+
+        <section className="qv-executive-section">
+          <div>
+            <span className="qv-section-label">Ejecutivo comercial</span>
+            <h2>{display(quotation.executive?.name)}</h2>
+            <p>{display(quotation.executive?.role)}</p>
+          </div>
+          <dl className="qv-executive-contact">
+            <InfoRow label="Telefono" value={quotation.executive?.phone} />
+            <InfoRow label="Correo" value={quotation.executive?.email} />
+          </dl>
+        </section>
+
+        <footer className="qv-document-footer">
+          <span>RUC {BRAND.taxId}</span>
+          <a href={BRAND.website} target="_blank" rel="noreferrer">visual.elankav.com</a>
+          <span>WhatsApp {BRAND.whatsapp}</span>
+        </footer>
+      </article>
+    </main>
+  );
+}
