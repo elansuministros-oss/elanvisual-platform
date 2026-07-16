@@ -1,0 +1,36 @@
+const DEFAULT_ORCHESTRATOR_URL = 'https://orchestrator.elankav.com';
+
+function resolveBaseUrl() {
+  const configured = typeof import.meta.env === 'object'
+    ? import.meta.env.VITE_ELANKAV_ORCHESTRATOR_URL
+    : '';
+  return String(configured || DEFAULT_ORCHESTRATOR_URL).trim().replace(/\/$/, '');
+}
+
+async function request(path, options = {}) {
+  const response = await fetch(`${resolveBaseUrl()}${path}`, {
+    ...options,
+    headers: {
+      Accept: 'application/json',
+      ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.headers || {})
+    }
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(payload?.error || 'No fue posible procesar la solicitud en Project Core.');
+    error.code = payload?.code || 'PROJECT_CORE_REQUEST_FAILED';
+    error.status = response.status;
+    error.details = Array.isArray(payload?.details) ? payload.details : [];
+    throw error;
+  }
+  return payload;
+}
+
+export const createProject = (contract) => request('/api/vqs/projects', { method: 'POST', body: JSON.stringify(contract) });
+export const getProject = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, { method: 'GET' });
+export const updateProject = (projectId, patch) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, { method: 'PATCH', body: JSON.stringify(patch) });
+export const getProjectStatus = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}/status`, { method: 'GET' });
+
+export const projectCoreClient = Object.freeze({ createProject, getProject, updateProject, getProjectStatus });
+export { DEFAULT_ORCHESTRATOR_URL, resolveBaseUrl };
