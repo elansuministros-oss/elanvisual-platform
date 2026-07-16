@@ -24,7 +24,6 @@ import ProveedoresHub from './pages/ProveedoresHub';
 import RedProveedoresIA from './pages/RedProveedoresIA';
 import InventarioInteligente from './pages/InventarioInteligente';
 import BibliotecaTecnica from './pages/BibliotecaTecnica';
-import CotizadorDirectoAI from './pages/CotizadorDirectoAI';
 import CapturaInteligente from './pages/CapturaInteligente';
 import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
@@ -50,23 +49,19 @@ export default function App() {
     if (pathInicial.startsWith('/produccion')) return 'produccion';
     if (pathInicial.startsWith('/materiales')) return 'materiales';
     if (pathInicial.startsWith('/biblioteca-tecnica')) return 'bibliotecaTecnica';
-    if (pathInicial.startsWith('/cotizador-ai')) return 'cotizadorAI';
-    if (pathInicial.startsWith('/cotizador-visual')) return 'cotizadorVisual';
     if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
     if (pathInicial.startsWith('/diseno-ai')) return 'disenoAI';
     if (pathInicial.startsWith('/diseno') || pathInicial.startsWith('/solicitar-diseno')) return 'disenoPortal';
     if (pathInicial.startsWith('/solicitudes-ai')) return 'solicitudesAI';
     if (pathInicial.startsWith('/ai-studio')) return 'aiStudio';
-    if (pathInicial.startsWith('/cotizador-inteligente')) return 'cotizador';
-    if (pathInicial.startsWith('/cotizador')) return 'cotizador';
     if (pathInicial.startsWith('/orden-trabajo')) return 'ordenTrabajo';
     if (pathInicial.startsWith('/pedidos')) return 'pedidos';
     if (pathInicial.startsWith('/servicios')) return 'servicios';
     if (pathInicial.startsWith('/tienda')) return 'tienda';
     if (pathInicial.startsWith('/catalogo')) return 'servicios';
-if (pathInicial.startsWith('/trabajos')) return 'servicios';
-if (pathInicial.startsWith('/portafolio')) return 'servicios';
+    if (pathInicial.startsWith('/trabajos')) return 'servicios';
+    if (pathInicial.startsWith('/portafolio')) return 'servicios';
     if (pathInicial.startsWith('/carrito')) return 'carrito';
     if (pathInicial.startsWith('/contacto')) return 'contacto';
     if (pathInicial.startsWith('/dashboard')) return 'dashboard';
@@ -108,16 +103,12 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       emc: '/emc',
       emcInventario: '/emc-inventario',
       bibliotecaTecnica: '/biblioteca-tecnica',
-      cotizador: '/cotizador',
-      cotizadorAI: '/cotizador-ai',
-      cotizadorInteligente: '/cotizador',
       cotizacionesInteligentes: '/cotizaciones-inteligentes',
       recomendadorTecnico: '/recomendador-tecnico',
       aiStudio: '/ai-studio',
       solicitudesAI: '/solicitudes-ai',
       disenoAI: '/diseno-ai',
       disenoPortal: '/diseno',
-      cotizadorVisual: '/cotizador-visual',
       pedidos: '/pedidos',
       ordenTrabajo: '/orden-trabajo',
       ventas: '/ventas',
@@ -217,14 +208,14 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       {page === 'materiales' &&
         (accesoAdmin ? <MaterialesCostos /> : <Login setPage={ir} destino="materiales" />)}
 
-{page === 'emc' &&
+      {page === 'emc' &&
         (accesoAdmin ? <EMCImportadorAI22 /> : <Login setPage={ir} destino="admin" />)}
 
       {page === 'emcInventario' &&
         (accesoAdmin ? <EMCInventario /> : <Login setPage={ir} destino="admin" />)}
-  
+
       {page === 'recomendadorTecnico' &&
-        (accesoVentas ? <RecomendadorTecnico /> : <Login setPage={ir} destino="cotizador" />)}
+        (accesoVentas ? <RecomendadorTecnico /> : <Login setPage={ir} destino="ventas" />)}
 
       {page === 'aiStudio' &&
         (accesoVentas ? <AIStudio setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
@@ -232,17 +223,8 @@ if (pathInicial.startsWith('/portafolio')) return 'servicios';
       {page === 'capturaInteligente' &&
         (accesoVentas ? <CapturaInteligente /> : <Login setPage={ir} destino="crm" />)}
 
-      {page === 'cotizador' &&
-        (accesoVentas ? <CotizadorDirectoAI setPage={ir} /> : <Login setPage={ir} destino="cotizador" />)}
-
-      {page === 'cotizadorAI' &&
-        (accesoVentas ? <CotizadorDirectoAI setPage={ir} /> : <Login setPage={ir} destino="cotizadorAI" />)}
-
       {page === 'cotizacionesInteligentes' &&
-        (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="cotizador" />)}
-
-      {page === 'cotizadorVisual' &&
-        (accesoAdmin ? <CotizadorDirectoAI setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
+        (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="ventas" />)}
 
       {page === 'ordenTrabajo' &&
         (accesoPedidos ? <OrdenTrabajo /> : <Login setPage={ir} destino="pedidos" />)}
