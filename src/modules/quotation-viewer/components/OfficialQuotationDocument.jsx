@@ -3,15 +3,25 @@ import { ArrowLeft, MessageCircle, Printer } from 'lucide-react';
 
 const BRAND = Object.freeze({
   name: 'ELANVISUAL',
-  logoUrl: '/assets/branding/elanvisual.svg',
+  fallbackLogoUrl: '/assets/branding/elanvisual.svg',
   taxId: '4012805831001E',
   website: 'https://visual.elankav.com',
   whatsapp: '+505 7882 8089'
 });
 
-const empty = 'No registrado';
+const STATUS_LABELS = Object.freeze({
+  approved: 'Aprobada',
+  sent: 'Enviada',
+  issued: 'Emitida',
+  active: 'Activa',
+  pending_activation: 'Pendiente de activacion',
+  completed: 'Completada',
+  paid: 'Pagada',
+  cancelled: 'Cancelada',
+  expired: 'Vencida'
+});
 
-const hasValue = (value) => value !== undefined && value !== null && value !== '';
+const hasValue = (value) => value !== undefined && value !== null && String(value).trim() !== '';
 
 function numericValue(value) {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -23,18 +33,18 @@ function numericValue(value) {
 }
 
 function display(value) {
-  return hasValue(value) ? String(value) : empty;
+  return hasValue(value) ? String(value) : '';
 }
 
 function formatDate(value) {
-  if (!value) return empty;
+  if (!value) return '';
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return String(value);
   return new Intl.DateTimeFormat('es-NI', { year: 'numeric', month: 'long', day: '2-digit' }).format(parsed);
 }
 
 function formatMoney(value, currency = 'USD') {
-  if (!hasValue(value)) return empty;
+  if (!hasValue(value)) return '';
   const parsed = numericValue(value);
   if (parsed === null) return String(value);
   return new Intl.NumberFormat('es-NI', { style: 'currency', currency }).format(parsed);
@@ -77,6 +87,35 @@ function buildWhatsappUrl(phone, quotationNumber) {
   return `https://wa.me/${target}?text=${message}`;
 }
 
+function addDaysIso(value, days) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return '';
+  const date = new Date(parsed.getTime());
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString();
+}
+
+function formatStatus(status) {
+  const key = String(status || '').trim().toLowerCase();
+  if (!key || key === 'draft') return '';
+  return STATUS_LABELS[key] || '';
+}
+
+function resolveBrand(quotation) {
+  return {
+    ...BRAND,
+    ...(quotation.brand || {})
+  };
+}
+
+function resolveLogoUrl(brand) {
+  return brand.logoForLightBackground || brand.logoLightUrl || brand.logoUrl || brand.fallbackLogoUrl;
+}
+
+function displayWebsite(value) {
+  return String(value || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
 function collectImages(quotation) {
   const entries = [
     ...(quotation.projectMedia || []),
@@ -92,15 +131,19 @@ function collectImages(quotation) {
 }
 
 function InfoRow({ label, value }) {
+  if (!hasValue(value)) return null;
+
   return (
     <div>
       <dt>{label}</dt>
-      <dd>{display(value)}</dd>
+      <dd>{String(value)}</dd>
     </div>
   );
 }
 
 export default function OfficialQuotationDocument({ quotation, onBack }) {
+  const brand = resolveBrand(quotation);
+  const logoUrl = resolveLogoUrl(brand);
   const images = collectImages(quotation);
   const whatsappUrl = buildWhatsappUrl(quotation.customer?.phone, quotation.quotationNumber);
   const payment = quotation.payment || {};
@@ -108,6 +151,19 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
   const advance = payment.advance || {};
   const hasAdvance = hasValue(advance.amountUsd) || hasValue(advance.amountNio) || hasValue(advance.percentage);
   const taxLabel = quotation.totals?.taxRate ? `IVA ${formatPercent(quotation.totals.taxRate)}` : 'IVA';
+  const publicStatus = formatStatus(quotation.status);
+  const validUntil = quotation.validUntil || addDaysIso(quotation.date, 15);
+  const items = quotation.items || [];
+  const paymentAccounts = quotation.paymentAccounts || [];
+  const publicNotes = quotation.publicNotes || [];
+  const hasProjectInfo = [
+    quotation.project?.title,
+    quotation.project?.category,
+    quotation.project?.location,
+    quotation.project?.estimatedDelivery,
+    quotation.project?.warranty,
+    quotation.project?.summary
+  ].some(hasValue);
 
   return (
     <main className="qv-detail-shell">
@@ -127,17 +183,17 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
 
       <article className="qv-official-document">
         <header className="qv-document-header">
-          <a className="qv-document-brand" href={BRAND.website} target="_blank" rel="noreferrer">
-            <img src={BRAND.logoUrl} alt={BRAND.name} />
+          <a className="qv-document-brand" href={brand.website || BRAND.website} target="_blank" rel="noreferrer">
+            <img src={logoUrl} alt={brand.name || BRAND.name} />
           </a>
           <div className="qv-document-title">
             <span>Cotizacion</span>
             <h1>{display(quotation.quotationNumber)}</h1>
-            <p>{display(quotation.status)}</p>
+            {publicStatus && <p>{publicStatus}</p>}
           </div>
           <dl className="qv-document-dates">
             <InfoRow label="Fecha" value={formatDate(quotation.date)} />
-            <InfoRow label="Vigencia" value={formatDate(quotation.validUntil)} />
+            <InfoRow label="Vigencia" value={formatDate(validUntil)} />
           </dl>
         </header>
 
@@ -154,17 +210,19 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
             </dl>
           </div>
 
-          <div className="qv-document-panel">
-            <span className="qv-section-label">Proyecto</span>
-            <dl className="qv-info-list">
-              <InfoRow label="Nombre" value={quotation.project?.title} />
-              <InfoRow label="Categoria" value={quotation.project?.category} />
-              <InfoRow label="Ubicacion" value={quotation.project?.location} />
-              <InfoRow label="Entrega" value={quotation.project?.estimatedDelivery} />
-              <InfoRow label="Garantia" value={quotation.project?.warranty} />
-            </dl>
-            {quotation.project?.summary && <p className="qv-project-summary">{quotation.project.summary}</p>}
-          </div>
+          {hasProjectInfo && (
+            <div className="qv-document-panel">
+              <span className="qv-section-label">Proyecto</span>
+              <dl className="qv-info-list">
+                <InfoRow label="Nombre" value={quotation.project?.title} />
+                <InfoRow label="Categoria" value={quotation.project?.category} />
+                <InfoRow label="Ubicacion" value={quotation.project?.location} />
+                <InfoRow label="Entrega" value={quotation.project?.estimatedDelivery} />
+                <InfoRow label="Garantia" value={quotation.project?.warranty} />
+              </dl>
+              {quotation.project?.summary && <p className="qv-project-summary">{quotation.project.summary}</p>}
+            </div>
+          )}
         </section>
 
         {images.length > 0 && (
@@ -190,7 +248,7 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
             <h2>Detalle comercial</h2>
           </div>
 
-          {quotation.items.length > 0 ? (
+          {items.length > 0 ? (
             <div className="qv-products-table-wrap">
               <table className="qv-products-table">
                 <thead>
@@ -204,11 +262,11 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {quotation.items.map((item) => (
+                  {items.map((item) => (
                     <tr key={item.id}>
                       <td>{display(item.title)}</td>
                       <td>{display(item.commercialDescription)}</td>
-                      <td>{formatDimensions(item.dimensions) || empty}</td>
+                      <td>{formatDimensions(item.dimensions)}</td>
                       <td>{display(item.quantity)}</td>
                       <td>{display(item.unit)}</td>
                       <td>{formatMoney(item.subtotal, 'USD')}</td>
@@ -225,7 +283,7 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
         <section className="qv-summary-section">
           <div className="qv-document-panel">
             <span className="qv-section-label">Forma de pago</span>
-            <p className="qv-payment-label">{payment.label || payment.type || empty}</p>
+            {(payment.label || payment.type) && <p className="qv-payment-label">{payment.label || payment.type}</p>}
 
             {hasAdvance && (
               <div className="qv-payment-row">
@@ -266,32 +324,34 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
           </div>
         </section>
 
-        {quotation.paymentAccounts.length > 0 && (
+        {paymentAccounts.length > 0 && (
           <section className="qv-document-section">
             <div className="qv-section-heading">
               <span className="qv-section-label">Cuentas autorizadas</span>
               <h2>Opciones de pago</h2>
             </div>
             <div className="qv-accounts-grid">
-              {quotation.paymentAccounts.map((account) => (
+              {paymentAccounts.map((account) => (
                 <div className="qv-account" key={account.id}>
-                  <span>{account.label || account.bankName || empty}</span>
+                  <span>{account.label || account.bankName}</span>
                   {account.currency && <b>{account.currency}</b>}
+                  {account.accountType && <small>{account.accountType}</small>}
                   {account.accountNumber && <strong>{account.accountNumber}</strong>}
+                  {account.accountHolder && <small>{account.accountHolder}</small>}
                 </div>
               ))}
             </div>
           </section>
         )}
 
-        {quotation.publicNotes.length > 0 && (
+        {publicNotes.length > 0 && (
           <section className="qv-document-section">
             <div className="qv-section-heading">
               <span className="qv-section-label">Notas publicas</span>
               <h2>Condiciones</h2>
             </div>
             <div className="qv-notes">
-              {quotation.publicNotes.map((note) => <p key={note}>{note}</p>)}
+              {publicNotes.map((note) => <p key={note}>{note}</p>)}
             </div>
           </section>
         )}
@@ -309,9 +369,9 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
         </section>
 
         <footer className="qv-document-footer">
-          <span>RUC {BRAND.taxId}</span>
-          <a href={BRAND.website} target="_blank" rel="noreferrer">visual.elankav.com</a>
-          <span>WhatsApp {BRAND.whatsapp}</span>
+          <span>RUC {brand.taxId || BRAND.taxId}</span>
+          <a href={brand.website || BRAND.website} target="_blank" rel="noreferrer">{displayWebsite(brand.website || BRAND.website)}</a>
+          <span>WhatsApp {brand.whatsapp || BRAND.whatsapp}</span>
         </footer>
       </article>
     </main>

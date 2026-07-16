@@ -97,11 +97,24 @@ function uniqueStrings(values = []) {
     });
 }
 
-function normalizeImageSources(values = []) {
-  return uniqueStrings(
-    (Array.isArray(values) ? values : [values])
-      .map((entry) => resolveAssetUrl(entry))
+function isImageDataUrl(value = '') {
+  return /^data:image\/(?:png|jpe?g|webp);base64,/i.test(String(value || '').trim());
+}
+
+function resolvePrimaryItemImage(item = {}) {
+  const explicitImageUrl = resolveAssetUrl(item.imageUrl);
+  if (explicitImageUrl) return explicitImageUrl;
+
+  const assetFiles = Array.isArray(item.assetFiles) ? item.assetFiles : [];
+  const generatedRender = assetFiles.find((asset) =>
+    String(asset?.kind || '').trim() === 'generated-render' && resolveAssetUrl(asset)
   );
+  if (generatedRender) return resolveAssetUrl(generatedRender);
+
+  const manualImage = (Array.isArray(item.manualImages) ? item.manualImages : [])
+    .find((image) => isImageDataUrl(image?.dataUrl) || isHttpUrl(image?.dataUrl));
+
+  return manualImage?.dataUrl || '';
 }
 
 function normalizeAssetFiles(images = []) {
@@ -168,7 +181,7 @@ function isEmptyItem(item) {
 
 export default function CotizadorUniversal() {
   const [customerId, setCustomerId] = useState(() => `ELANVISUAL-${crypto.randomUUID()}`);
-  const [customer, setCustomer] = useState({ name: '', companyName: '', phone: '', email: '', address: '' });
+  const [customer, setCustomer] = useState({ name: '', companyName: '', phone: '', email: '', address: '', taxId: '' });
   const [project, setProject] = useState({ title: '', expectedDeliveryAt: '', images: [] });
   const [items, setItems] = useState([emptyItem()]);
   const [source, setSource] = useState({ type: 'manual', sourceId: '', designRequestId: '', storeProductId: '', storeCartId: '', designMode: 'optional' });
@@ -206,12 +219,7 @@ export default function CotizadorUniversal() {
   const paymentPercentTotal = installments.reduce((sum, entry) => sum + entry.percentage, 0);
 
   const normalizedItems = items.map((item) => {
-    const contextImageUrls = Array.isArray(item.contextImageUrls) ? item.contextImageUrls : [];
-    const images = uniqueStrings([
-      String(item.imageUrl || '').trim(),
-      ...contextImageUrls,
-      ...(Array.isArray(item.manualImages) ? item.manualImages.map((image) => image.dataUrl) : [])
-    ].filter(Boolean));
+    const primaryImageUrl = resolvePrimaryItemImage(item);
 
     return {
       itemId: item.id,
@@ -223,8 +231,8 @@ export default function CotizadorUniversal() {
       unit: item.unit.trim() || 'unidad',
       unitPriceUsd: Number(item.unitPrice || 0),
       subtotalUsd: Number(item.quantity || 0) * Number(item.unitPrice || 0),
-      imageUrl: images[0] || '',
-      images,
+      imageUrl: primaryImageUrl,
+      images: primaryImageUrl ? [primaryImageUrl] : [],
       features: item.features.split(',').map((value) => value.trim()).filter(Boolean),
       internalData: null
     };
@@ -240,7 +248,7 @@ export default function CotizadorUniversal() {
       title: project.title.trim(),
       priority: 'normal',
       expectedDeliveryAt: project.expectedDeliveryAt || '',
-      images: normalizeImageSources(project.images)
+      images: []
     },
     items: normalizedItems,
     pricing: {
@@ -321,7 +329,8 @@ export default function CotizadorUniversal() {
       setCustomerId(result.customer.customerId || `ELANVISUAL-${crypto.randomUUID()}`);
       setCustomer({
         name: result.customer.name || '', companyName: result.customer.companyName || '',
-        phone: result.customer.phone || '', email: result.customer.email || '', address: result.customer.address || ''
+        phone: result.customer.phone || '', email: result.customer.email || '', address: result.customer.address || '',
+        taxId: result.customer.taxId || result.customer.tax_id || result.customer.ruc || ''
       });
     }
 
@@ -456,6 +465,7 @@ export default function CotizadorUniversal() {
               <label>Teléfono<input value={customer.phone} onChange={(e) => setCustomer({ ...customer, phone: e.target.value })} /></label>
               <label>Correo<input type="email" value={customer.email} onChange={(e) => setCustomer({ ...customer, email: e.target.value })} /></label>
               <label className="wide">Dirección<input value={customer.address} onChange={(e) => setCustomer({ ...customer, address: e.target.value })} /></label>
+              <label>RUC / identificación fiscal<input value={customer.taxId} onChange={(e) => setCustomer({ ...customer, taxId: e.target.value })} /></label>
             </div>
           </section>
 
