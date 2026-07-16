@@ -16,9 +16,15 @@ export const sampleQuotation = createQuotationDocument({
     email: 'cliente@ejemplo.com',
     address: 'Managua, Nicaragua'
   },
-  advisor: {
-    name: 'Equipo ELANVISUAL',
-    phone: '+505 7882 8089'
+  executive: {
+    executiveId: 'EXEC-ERICK-CANO-001',
+    name: 'Erick Cano',
+    role: 'Director Comercial',
+    phone: '+505 8838 8940',
+    email: '',
+    photoUrl: '',
+    commissionEligible: false,
+    registryVersion: '1.0.0'
   },
   project: {
     title: 'Renovación de imagen comercial',
