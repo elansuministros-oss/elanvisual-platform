@@ -23,6 +23,8 @@ function ProductImage({ item }) {
 export default function VQSQuotationPreview() {
   const document = sampleQuotation;
   const validation = validateQuotationDocument(document);
+  const showDiscount = Number(document.totals.discount) > 0;
+  const showTax = Number(document.totals.tax) > 0 || Number(document.totals.taxRate) > 0;
 
   return (
     <main className="vqs-shell">
@@ -45,7 +47,7 @@ export default function VQSQuotationPreview() {
             <div className="vqs-meta-grid">
               <span><b>Fecha</b>{document.issuedAt}</span>
               <span><b>Vigencia</b>{document.validUntil || 'No definida'}</span>
-              <span><b>Moneda</b>{document.currency}</span>
+              <span><b>Precios</b>USD</span>
             </div>
           </div>
         </header>
@@ -102,7 +104,7 @@ export default function VQSQuotationPreview() {
                   </div>
                   <div className="vqs-item-price">
                     <span>{item.quantity} {item.unit}</span>
-                    <strong>{money(item.subtotal, document.currency)}</strong>
+                    <strong>{money(item.subtotal, 'USD')}</strong>
                   </div>
                 </div>
               </article>
@@ -118,18 +120,19 @@ export default function VQSQuotationPreview() {
                 <div key={installment.label}>
                   <strong>{installment.percentage}%</strong>
                   <span>{installment.label}</span>
-                  <b>{money(installment.amount, document.currency)}</b>
+                  <b>{money(installment.amount, 'USD')}</b>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="vqs-total-card">
-            <div><span>Subtotal</span><b>{money(document.totals.subtotal, document.currency)}</b></div>
-            {document.totals.discount > 0 && <div><span>Descuento</span><b>-{money(document.totals.discount, document.currency)}</b></div>}
-            {document.totals.tax > 0 && <div><span>IVA</span><b>{money(document.totals.tax, document.currency)}</b></div>}
-            <div className="vqs-total"><span>Total</span><strong>{money(document.totals.total, document.currency)}</strong></div>
-            {document.totals.convertedTotal > 0 && <small>Referencia: C$ {Number(document.totals.convertedTotal).toLocaleString('es-NI')}</small>}
+            <div><span>Subtotal USD</span><b>{money(document.totals.subtotal, 'USD')}</b></div>
+            {showDiscount && <div><span>Descuento</span><b>-{money(document.totals.discount, 'USD')}</b></div>}
+            {showTax && <div><span>IVA {document.totals.taxRate > 0 ? `${document.totals.taxRate}%` : ''}</span><b>{money(document.totals.tax, 'USD')}</b></div>}
+            <div><span>Total cotizado USD</span><b>{money(document.totals.total, 'USD')}</b></div>
+            <div className="vqs-total"><span>Total a pagar</span><strong>{money(document.totals.payableTotalNio, 'NIO')}</strong></div>
+            <small>Tipo de cambio aplicado: C$ {Number(document.totals.exchangeRate).toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} por USD · {document.totals.exchangeRateDate}</small>
           </div>
         </section>
 
