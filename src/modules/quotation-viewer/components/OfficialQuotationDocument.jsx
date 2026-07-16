@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowLeft, MessageCircle, Printer } from 'lucide-react';
+import '../../../styles/quotation-item-layout.css';
 
 const BRAND = Object.freeze({
   name: 'ELANVISUAL',
@@ -59,17 +60,15 @@ function formatPercent(value) {
 function formatDimensions(dimensions) {
   if (!dimensions) return '';
   if (typeof dimensions === 'string') return dimensions;
-
   const unit = dimensions.unit ? ` ${dimensions.unit}` : '';
-  const parts = [
+  return [
     ['Ancho', dimensions.width],
     ['Alto', dimensions.height],
     ['Fondo', dimensions.depth]
   ]
     .filter(([, value]) => hasValue(value))
-    .map(([label, value]) => `${label}: ${value}${unit}`);
-
-  return parts.join(' / ');
+    .map(([label, value]) => `${label}: ${value}${unit}`)
+    .join(' / ');
 }
 
 function cleanPhone(phone) {
@@ -102,10 +101,7 @@ function formatStatus(status) {
 }
 
 function resolveBrand(quotation) {
-  return {
-    ...BRAND,
-    ...(quotation.brand || {})
-  };
+  return { ...BRAND, ...(quotation.brand || {}) };
 }
 
 function resolveLogoUrl(brand) {
@@ -116,23 +112,8 @@ function displayWebsite(value) {
   return String(value || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
 }
 
-function collectImages(quotation) {
-  const entries = [
-    ...(quotation.projectMedia || []),
-    ...(quotation.items || []).flatMap((item) => item.images || [])
-  ];
-  const seen = new Set();
-
-  return entries.filter((image) => {
-    if (!image?.url || seen.has(image.url)) return false;
-    seen.add(image.url);
-    return true;
-  });
-}
-
 function InfoRow({ label, value }) {
   if (!hasValue(value)) return null;
-
   return (
     <div>
       <dt>{label}</dt>
@@ -141,10 +122,50 @@ function InfoRow({ label, value }) {
   );
 }
 
+function ItemRow({ item }) {
+  const primaryImage = Array.isArray(item.images) ? item.images.find((image) => image?.url) : null;
+
+  return (
+    <article className="qv-item-row">
+      <div className="qv-item-image">
+        {primaryImage ? (
+          <img src={primaryImage.url} alt={primaryImage.alt || item.title || 'Imagen del producto'} />
+        ) : (
+          <div className="qv-item-image-empty">Sin imagen</div>
+        )}
+      </div>
+
+      <div className="qv-item-description">
+        <strong>{display(item.title)}</strong>
+        <p>{display(item.commercialDescription)}</p>
+      </div>
+
+      <div className="qv-item-field">
+        <span>Medidas</span>
+        <strong>{formatDimensions(item.dimensions)}</strong>
+      </div>
+
+      <div className="qv-item-field">
+        <span>Cantidad</span>
+        <strong>{display(item.quantity)}</strong>
+      </div>
+
+      <div className="qv-item-field">
+        <span>Unidad</span>
+        <strong>{display(item.unit)}</strong>
+      </div>
+
+      <div className="qv-item-field">
+        <span>Subtotal</span>
+        <strong>{formatMoney(item.subtotal, 'USD')}</strong>
+      </div>
+    </article>
+  );
+}
+
 export default function OfficialQuotationDocument({ quotation, onBack }) {
   const brand = resolveBrand(quotation);
   const logoUrl = resolveLogoUrl(brand);
-  const images = collectImages(quotation);
   const whatsappUrl = buildWhatsappUrl(quotation.customer?.phone, quotation.quotationNumber);
   const payment = quotation.payment || {};
   const installments = payment.installments || [];
@@ -225,23 +246,6 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
           )}
         </section>
 
-        {images.length > 0 && (
-          <section className="qv-document-section">
-            <div className="qv-section-heading">
-              <span className="qv-section-label">Imagenes y renders</span>
-              <h2>Material visual disponible</h2>
-            </div>
-            <div className="qv-media-grid">
-              {images.map((image) => (
-                <figure key={image.url}>
-                  <img src={image.url} alt={image.alt || 'Imagen de cotizacion'} />
-                  {image.alt && <figcaption>{image.alt}</figcaption>}
-                </figure>
-              ))}
-            </div>
-          </section>
-        )}
-
         <section className="qv-document-section">
           <div className="qv-section-heading">
             <span className="qv-section-label">Productos</span>
@@ -249,31 +253,8 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
           </div>
 
           {items.length > 0 ? (
-            <div className="qv-products-table-wrap">
-              <table className="qv-products-table">
-                <thead>
-                  <tr>
-                    <th>Producto</th>
-                    <th>Descripcion comercial</th>
-                    <th>Medidas</th>
-                    <th>Cantidad</th>
-                    <th>Unidad</th>
-                    <th>Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => (
-                    <tr key={item.id}>
-                      <td>{display(item.title)}</td>
-                      <td>{display(item.commercialDescription)}</td>
-                      <td>{formatDimensions(item.dimensions)}</td>
-                      <td>{display(item.quantity)}</td>
-                      <td>{display(item.unit)}</td>
-                      <td>{formatMoney(item.subtotal, 'USD')}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="qv-item-list">
+              {items.map((item) => <ItemRow key={item.id} item={item} />)}
             </div>
           ) : (
             <p className="qv-empty-inline">No hay productos recibidos desde el Orchestrator.</p>
@@ -284,7 +265,6 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
           <div className="qv-document-panel">
             <span className="qv-section-label">Forma de pago</span>
             {(payment.label || payment.type) && <p className="qv-payment-label">{payment.label || payment.type}</p>}
-
             {hasAdvance && (
               <div className="qv-payment-row">
                 <span>{advance.label || 'Anticipo'}</span>
@@ -294,15 +274,12 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
                 </strong>
               </div>
             )}
-
             {installments.length > 0 ? (
               <div className="qv-installments">
                 {installments.map((entry) => (
                   <div className="qv-payment-row" key={entry.id}>
                     <span>{display(entry.label)} {hasValue(entry.percentage) ? `(${formatPercent(entry.percentage)})` : ''}</span>
-                    <strong>
-                      {hasValue(entry.amountUsd) ? formatMoney(entry.amountUsd, 'USD') : formatMoney(entry.amountNio, 'NIO')}
-                    </strong>
+                    <strong>{hasValue(entry.amountUsd) ? formatMoney(entry.amountUsd, 'USD') : formatMoney(entry.amountNio, 'NIO')}</strong>
                     {entry.dueCondition && <small>{entry.dueCondition}</small>}
                   </div>
                 ))}
