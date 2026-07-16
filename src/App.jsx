@@ -26,6 +26,7 @@ import InventarioInteligente from './pages/InventarioInteligente';
 import BibliotecaTecnica from './pages/BibliotecaTecnica';
 import CapturaInteligente from './pages/CapturaInteligente';
 import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
+import CotizadorUniversal from './pages/CotizadorUniversal';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
 import AIStudio from './pages/AIStudio';
 import SolicitudesDisenoAI from './pages/SolicitudesDisenoAI';
@@ -49,6 +50,7 @@ export default function App() {
     if (pathInicial.startsWith('/produccion')) return 'produccion';
     if (pathInicial.startsWith('/materiales')) return 'materiales';
     if (pathInicial.startsWith('/biblioteca-tecnica')) return 'bibliotecaTecnica';
+    if (pathInicial.startsWith('/cotizador')) return 'cotizador';
     if (pathInicial.startsWith('/cotizaciones-inteligentes')) return 'cotizacionesInteligentes';
     if (pathInicial.startsWith('/recomendador-tecnico')) return 'recomendadorTecnico';
     if (pathInicial.startsWith('/diseno-ai')) return 'disenoAI';
@@ -86,38 +88,15 @@ export default function App() {
 
   const ir = (destino) => {
     const rutas = {
-      home: '/',
-      servicios: '/servicios',
-      tienda: '/tienda',
-      catalogo: '/servicios',
-      carrito: '/carrito',
-      contacto: '/contacto',
-      seguimiento: '/seguimiento',
-      login: '/login',
-      dashboard: '/dashboard',
-      crm: '/crm',
-      clientes: '/clientes',
-      admin: '/admin',
-      produccion: '/produccion',
-      materiales: '/materiales',
-      emc: '/emc',
-      emcInventario: '/emc-inventario',
-      bibliotecaTecnica: '/biblioteca-tecnica',
-      cotizacionesInteligentes: '/cotizaciones-inteligentes',
-      recomendadorTecnico: '/recomendador-tecnico',
-      aiStudio: '/ai-studio',
-      solicitudesAI: '/solicitudes-ai',
-      disenoAI: '/diseno-ai',
-      disenoPortal: '/diseno',
-      pedidos: '/pedidos',
-      ordenTrabajo: '/orden-trabajo',
-      ventas: '/ventas',
-      inventario: '/inventario',
-      finanzas: '/finanzas',
-      reportes: '/reportes',
-      miCuenta: '/mi-cuenta',
-      proveedores: '/proveedores',
-      inventarioReal: '/inventario-real',
+      home: '/', servicios: '/servicios', tienda: '/tienda', catalogo: '/servicios', carrito: '/carrito',
+      contacto: '/contacto', seguimiento: '/seguimiento', login: '/login', dashboard: '/dashboard',
+      crm: '/crm', clientes: '/clientes', admin: '/admin', produccion: '/produccion', materiales: '/materiales',
+      emc: '/emc', emcInventario: '/emc-inventario', bibliotecaTecnica: '/biblioteca-tecnica',
+      cotizador: '/cotizador', cotizacionesInteligentes: '/cotizaciones-inteligentes',
+      recomendadorTecnico: '/recomendador-tecnico', aiStudio: '/ai-studio', solicitudesAI: '/solicitudes-ai',
+      disenoAI: '/diseno-ai', disenoPortal: '/diseno', pedidos: '/pedidos', ordenTrabajo: '/orden-trabajo',
+      ventas: '/ventas', inventario: '/inventario', finanzas: '/finanzas', reportes: '/reportes',
+      miCuenta: '/mi-cuenta', proveedores: '/proveedores', inventarioReal: '/inventario-real'
     };
 
     setPage(destino);
@@ -133,15 +112,8 @@ export default function App() {
 
   return (
     <AIAssistantProvider>
-      {usuario && (rol === 'admin' || rol === 'ventas') && (
-        <>
-          <AIFloatingButton />
-          <AIAssistantPanel />
-        </>
-      )}
-
+      {usuario && (rol === 'admin' || rol === 'ventas') && <><AIFloatingButton /><AIAssistantPanel /></>}
       <Header page={page} setPage={ir} />
-
       {page === 'home' && <Home setPage={ir} />}
       {page === 'servicios' && <Servicios setPage={ir} />}
       {page === 'tienda' && <Tienda setPage={ir} />}
@@ -151,89 +123,31 @@ export default function App() {
       {page === 'disenoPortal' && <DisenoPortal />}
       {page === 'seguimiento' && <Seguimiento />}
       {page === 'login' && <Login setPage={ir} />}
-
-      {page === 'inventarioReal' &&
-        (accesoAdmin ? <InventarioInteligente /> : <Login setPage={ir} destino="admin" />)}
-
-      {page === 'proveedores' &&
-        (accesoAdmin ? <ProveedoresHub /> : <Login setPage={ir} destino="admin" />)}
-
-      {page === 'redProveedoresIA' &&
-        (accesoAdmin ? <RedProveedoresIA /> : <Login setPage={ir} destino="admin" />)}
-
-      {page === 'bibliotecaTecnica' &&
-        (accesoAdmin ? <BibliotecaTecnica /> : <Login setPage={ir} destino="admin" />)}
-
-      {page === 'miCuenta' &&
-        (usuario ? <MiCuenta setPage={ir} /> : <Login setPage={ir} destino="miCuenta" />)}
-
-      {page === 'dashboard' &&
-        (accesoERP ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
-
+      {page === 'inventarioReal' && (accesoAdmin ? <InventarioInteligente /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'proveedores' && (accesoAdmin ? <ProveedoresHub /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'redProveedoresIA' && (accesoAdmin ? <RedProveedoresIA /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'bibliotecaTecnica' && (accesoAdmin ? <BibliotecaTecnica /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'miCuenta' && (usuario ? <MiCuenta setPage={ir} /> : <Login setPage={ir} destino="miCuenta" />)}
+      {page === 'dashboard' && (accesoERP ? <DashboardERP setPage={ir} /> : <Login setPage={ir} destino="admin" />)}
       {page === 'crm' && (accesoAdmin ? <CRM /> : <Login setPage={ir} destino="admin" />)}
-
-      {page === 'clientes' &&
-        (accesoVentas ? <ClientesCRM /> : <Login setPage={ir} destino="clientes" />)}
-
-      {page === 'ventas' &&
-        (accesoVentas ? <PanelVentas setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
-
-      {page === 'inventario' &&
-        (accesoAdmin ? (
-          <DashboardERP setPage={ir} areaInicial="inventario" />
-        ) : (
-          <Login setPage={ir} destino="admin" />
-        ))}
-
-      {page === 'finanzas' &&
-        (accesoAdmin ? (
-          <DashboardERP setPage={ir} areaInicial="finanzas" />
-        ) : (
-          <Login setPage={ir} destino="admin" />
-        ))}
-
-      {page === 'reportes' &&
-        (accesoAdmin ? (
-          <DashboardERP setPage={ir} areaInicial="reportes" />
-        ) : (
-          <Login setPage={ir} destino="admin" />
-        ))}
-
-      {page === 'produccion' &&
-        (accesoProduccion ? <ProduccionPanel /> : <Login setPage={ir} destino="produccion" />)}
-
-      {page === 'admin' &&
-        (accesoAdmin ? <AdminPanel /> : <Login setPage={ir} destino="admin" />)}
-
-      {page === 'materiales' &&
-        (accesoAdmin ? <MaterialesCostos /> : <Login setPage={ir} destino="materiales" />)}
-
-      {page === 'emc' &&
-        (accesoAdmin ? <EMCImportadorAI22 /> : <Login setPage={ir} destino="admin" />)}
-
-      {page === 'emcInventario' &&
-        (accesoAdmin ? <EMCInventario /> : <Login setPage={ir} destino="admin" />)}
-
-      {page === 'recomendadorTecnico' &&
-        (accesoVentas ? <RecomendadorTecnico /> : <Login setPage={ir} destino="ventas" />)}
-
-      {page === 'aiStudio' &&
-        (accesoVentas ? <AIStudio setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
-
-      {page === 'capturaInteligente' &&
-        (accesoVentas ? <CapturaInteligente /> : <Login setPage={ir} destino="crm" />)}
-
-      {page === 'cotizacionesInteligentes' &&
-        (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="ventas" />)}
-
-      {page === 'ordenTrabajo' &&
-        (accesoPedidos ? <OrdenTrabajo /> : <Login setPage={ir} destino="pedidos" />)}
-
-      {page === 'pedidos' &&
-        (accesoPedidos ? <PedidosProduccion /> : <Login setPage={ir} destino="pedidos" />)}
-
-      {page === 'solicitudesAI' &&
-        (accesoAdmin ? <SolicitudesDisenoAI /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'clientes' && (accesoVentas ? <ClientesCRM /> : <Login setPage={ir} destino="clientes" />)}
+      {page === 'ventas' && (accesoVentas ? <PanelVentas setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
+      {page === 'inventario' && (accesoAdmin ? <DashboardERP setPage={ir} areaInicial="inventario" /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'finanzas' && (accesoAdmin ? <DashboardERP setPage={ir} areaInicial="finanzas" /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'reportes' && (accesoAdmin ? <DashboardERP setPage={ir} areaInicial="reportes" /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'produccion' && (accesoProduccion ? <ProduccionPanel /> : <Login setPage={ir} destino="produccion" />)}
+      {page === 'admin' && (accesoAdmin ? <AdminPanel /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'materiales' && (accesoAdmin ? <MaterialesCostos /> : <Login setPage={ir} destino="materiales" />)}
+      {page === 'emc' && (accesoAdmin ? <EMCImportadorAI22 /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'emcInventario' && (accesoAdmin ? <EMCInventario /> : <Login setPage={ir} destino="admin" />)}
+      {page === 'recomendadorTecnico' && (accesoVentas ? <RecomendadorTecnico /> : <Login setPage={ir} destino="ventas" />)}
+      {page === 'aiStudio' && (accesoVentas ? <AIStudio setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
+      {page === 'capturaInteligente' && (accesoVentas ? <CapturaInteligente /> : <Login setPage={ir} destino="crm" />)}
+      {page === 'cotizador' && (accesoVentas ? <CotizadorUniversal /> : <Login setPage={ir} destino="ventas" />)}
+      {page === 'cotizacionesInteligentes' && (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="ventas" />)}
+      {page === 'ordenTrabajo' && (accesoPedidos ? <OrdenTrabajo /> : <Login setPage={ir} destino="pedidos" />)}
+      {page === 'pedidos' && (accesoPedidos ? <PedidosProduccion /> : <Login setPage={ir} destino="pedidos" />)}
+      {page === 'solicitudesAI' && (accesoAdmin ? <SolicitudesDisenoAI /> : <Login setPage={ir} destino="admin" />)}
     </AIAssistantProvider>
   );
 }
