@@ -152,6 +152,22 @@ export default function VQSQuotationPreview() {
           </div>
         </section>
 
+        <section className="vqs-executive-section">
+          <div className="vqs-executive-avatar" aria-hidden="true">
+            {document.executive.photoUrl
+              ? <img src={document.executive.photoUrl} alt="" />
+              : document.executive.name.split(' ').map((part) => part[0]).slice(0, 2).join('')}
+          </div>
+          <div>
+            <span className="vqs-section-label">Ejecutivo Comercial</span>
+            <h2>{document.executive.name}</h2>
+            <p>{document.executive.role}</p>
+            <a href={`tel:${document.executive.phone.replace(/\s+/g, '')}`}>{document.executive.phone}</a>
+            {document.executive.email && <a href={`mailto:${document.executive.email}`}>{document.executive.email}</a>}
+          </div>
+          <small>ID {document.executive.executiveId}</small>
+        </section>
+
         {document.publicNotes.length > 0 && (
           <section className="vqs-notes">
             <span className="vqs-section-label">Condiciones</span>
