@@ -28,6 +28,7 @@ import CapturaInteligente from './pages/CapturaInteligente';
 import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import CotizadorUniversal from './pages/CotizadorUniversal';
 import QuotationDetail from './pages/QuotationDetail';
+import PublicQuotation from './pages/PublicQuotation';
 import QuotationsViewer from './pages/QuotationsViewer';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
 import AIStudio from './pages/AIStudio';
@@ -42,6 +43,7 @@ export default function App() {
   const pathInicial = window.location.pathname || '/';
 
   const paginaInicial = (() => {
+    if (pathInicial.startsWith('/cotizaciones/publicas/')) return 'publicQuotation';
     if (pathInicial.startsWith('/emc-inventario')) return 'emcInventario';
     if (pathInicial.startsWith('/emc')) return 'emc';
     if (pathInicial.startsWith('/clientes')) return 'clientes';
@@ -113,6 +115,7 @@ export default function App() {
   const accesoProduccion = rol === 'admin' || rol === 'produccion';
   const accesoPedidos = rol === 'admin' || rol === 'ventas' || rol === 'produccion';
   const accesoERP = rol === 'admin';
+  const isPublicQuotation = page === 'publicQuotation';
 
   const abrirCotizacion = (id) => {
     if (!id) return;
@@ -127,8 +130,9 @@ export default function App() {
 
   return (
     <AIAssistantProvider>
-      {usuario && (rol === 'admin' || rol === 'ventas') && <><AIFloatingButton /><AIAssistantPanel /></>}
-      <Header page={page} setPage={ir} />
+      {!isPublicQuotation && usuario && (rol === 'admin' || rol === 'ventas') && <><AIFloatingButton /><AIAssistantPanel /></>}
+      {!isPublicQuotation && <Header page={page} setPage={ir} />}
+      {isPublicQuotation && <PublicQuotation />}
       {page === 'home' && <Home setPage={ir} />}
       {page === 'servicios' && <Servicios setPage={ir} />}
       {page === 'tienda' && <Tienda setPage={ir} />}
