@@ -112,7 +112,7 @@ export default function Header({ page, setPage }) {
     <>
       <header className="desktop-header app-desktop-header">
         <div className="brand" onClick={() => go(usuario ? 'dashboard' : 'home')}>
-          <img src="/assets/branding/elanvisual.svg" alt={brandName} className="brand-logo-img brand-logo-desktop" />
+          <img src="/assets/branding/elanvisual-platform.svg" alt={brandName} className="brand-logo-img brand-logo-desktop" />
         </div>
 
         <nav className="desktop-nav app-desktop-nav desktop-nav-compact">
