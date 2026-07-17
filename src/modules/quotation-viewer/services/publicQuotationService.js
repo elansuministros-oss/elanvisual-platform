@@ -7,14 +7,26 @@ const HEADERS = Object.freeze({
   'X-Elankav-Actor-Type': 'public-customer'
 });
 
+function buildPublicQuotationUrl(projectId) {
+  const url = new URL(
+    `${resolveBaseUrl()}/api/vqs/public/quotations/${encodeURIComponent(projectId)}`
+  );
+
+  // Cada consulta debe obtener un documento público fresco porque contiene
+  // Signed URLs temporales de Supabase Storage.
+  url.searchParams.set('_refresh', String(Date.now()));
+  return url.toString();
+}
+
 export async function getPublicQuotation(projectId) {
   const id = String(projectId || '').trim();
   if (!id) throw new Error('No se recibió el identificador de la cotización.');
 
-  const response = await fetch(
-    `${resolveBaseUrl()}/api/vqs/public/quotations/${encodeURIComponent(id)}`,
-    { method: 'GET', headers: HEADERS }
-  );
+  const response = await fetch(buildPublicQuotationUrl(id), {
+    method: 'GET',
+    headers: HEADERS,
+    cache: 'no-store'
+  });
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
