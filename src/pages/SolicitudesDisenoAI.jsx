@@ -116,35 +116,53 @@ export default function SolicitudesDisenoAI() {
     setCargando(true);
     setErrorCarga('');
 
-    const { data, error } = await supabase
-      .from('design_requests')
-      .select([
-        'id',
-        'request_code',
-        'customer_name',
-        'business_name',
-        'whatsapp',
-        'request_type',
-        'installation_environment',
-        'width_cm',
-        'height_cm',
-        'design_notes',
-        'status',
-        'created_at',
-        'files',
-        'result_files',
-      ].join(','))
-      .order('created_at', { ascending: false });
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
-    if (error) {
-      console.error('Error cargando solicitudes de diseño:', error);
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      if (!sessionData?.session?.access_token) {
+        setSolicitudes([]);
+        setErrorCarga('Sesión administrativa requerida. Cierra sesión e ingresa nuevamente para abrir Diseñador.');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('design_requests')
+        .select([
+          'id',
+          'request_code',
+          'customer_name',
+          'business_name',
+          'whatsapp',
+          'request_type',
+          'installation_environment',
+          'width_cm',
+          'height_cm',
+          'design_notes',
+          'status',
+          'created_at',
+          'files',
+          'result_files',
+        ].join(','))
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error cargando solicitudes de diseño:', error);
+        setSolicitudes([]);
+        setErrorCarga(`No fue posible cargar las solicitudes: ${error.message}`);
+      } else {
+        setSolicitudes(data || []);
+      }
+    } catch (error) {
+      console.error('Error validando la sesión administrativa:', error);
       setSolicitudes([]);
-      setErrorCarga(`No fue posible cargar las solicitudes: ${error.message}`);
-    } else {
-      setSolicitudes(data || []);
+      setErrorCarga(`No fue posible validar la sesión administrativa: ${error?.message || 'Error desconocido'}`);
+    } finally {
+      setCargando(false);
     }
-
-    setCargando(false);
   };
 
   useEffect(() => {
@@ -239,7 +257,7 @@ export default function SolicitudesDisenoAI() {
             <option value={50}>50 por página</option>
           </select>
 
-          <button type="button" className="filter-label" onClick={cargar}>
+          <button type="button" className="filter-label" onClick={cargar} disabled={cargando}>
             <RefreshCw size={18} />
             {cargando ? 'Cargando...' : 'Actualizar'}
           </button>
