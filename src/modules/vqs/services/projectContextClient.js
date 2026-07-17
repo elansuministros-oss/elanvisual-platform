@@ -40,24 +40,88 @@ async function request(path, options = {}) {
   }
 }
 
+function normalizeSearchResult(result, { query, type }) {
+  if (Array.isArray(result)) {
+    return { query, type, count: result.length, results: result };
+  }
+
+  const results = Array.isArray(result?.results) ? result.results : [];
+  return {
+    ...(result || {}),
+    query: result?.query || query,
+    type: result?.type || type,
+    count: Number.isFinite(Number(result?.count)) ? Number(result.count) : results.length,
+    results
+  };
+}
+
+function resultIdentity(result = {}, index = 0) {
+  return [
+    result.type,
+    result.sourceId,
+    result.source?.sourceId,
+    result.customer?.customerId,
+    result.customer?.phone,
+    result.label,
+    index
+  ].filter(Boolean).join(':');
+}
+
+async function searchCustomers(normalizedQuery, limit) {
+  const params = new URLSearchParams({
+    q: normalizedQuery,
+    platform: 'elanvisual',
+    limit: String(limit)
+  });
+  const result = await request(`/api/vqs/customers/search?${params.toString()}`, { method: 'GET' });
+  return normalizeSearchResult(result, { query: normalizedQuery, type: 'customer' });
+}
+
+async function searchDesignAndStore(normalizedQuery, type, limit) {
+  const effectiveType = type === 'store' ? 'all' : type;
+  const params = new URLSearchParams({ q: normalizedQuery, type: effectiveType, limit: String(limit) });
+  const result = await request(`/api/vqs/context/search?${params.toString()}`, { method: 'GET' });
+  return normalizeSearchResult(result, { query: normalizedQuery, type: effectiveType });
+}
+
 export async function searchContext(query, { type = 'all', limit = 30 } = {}) {
   const normalizedQuery = String(query || '').trim();
 
   if (type === 'customer') {
-    const params = new URLSearchParams({
-      q: normalizedQuery,
-      platform: 'elanvisual',
-      limit: String(limit)
-    });
-    const result = await request(`/api/vqs/customers/search?${params.toString()}`, { method: 'GET' });
-    return Array.isArray(result)
-      ? { query: normalizedQuery, type: 'customer', count: result.length, results: result }
-      : result;
+    return searchCustomers(normalizedQuery, limit);
   }
 
-  const effectiveType = type === 'store' ? 'all' : type;
-  const params = new URLSearchParams({ q: normalizedQuery, type: effectiveType, limit: String(limit) });
-  return request(`/api/vqs/context/search?${params.toString()}`, { method: 'GET' });
+  if (type !== 'all') {
+    return searchDesignAndStore(normalizedQuery, type, limit);
+  }
+
+  const [customers, context] = await Promise.allSettled([
+    searchCustomers(normalizedQuery, limit),
+    searchDesignAndStore(normalizedQuery, 'all', limit)
+  ]);
+
+  if (customers.status === 'rejected' && context.status === 'rejected') {
+    throw customers.reason || context.reason;
+  }
+
+  const combined = [
+    ...(customers.status === 'fulfilled' ? customers.value.results : []),
+    ...(context.status === 'fulfilled' ? context.value.results : [])
+  ];
+  const seen = new Set();
+  const results = combined.filter((result, index) => {
+    const key = resultIdentity(result, index);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, limit);
+
+  return {
+    query: normalizedQuery,
+    type: 'all',
+    count: results.length,
+    results
+  };
 }
 
 export const projectContextClient = Object.freeze({ searchContext });
