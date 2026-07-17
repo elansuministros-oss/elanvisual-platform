@@ -4,6 +4,8 @@ import OfficialQuotationDocument from '../modules/quotation-viewer/components/Of
 import { getQuotationDetail } from '../modules/quotation-viewer/services/quotationViewerService';
 import '../styles/quotation-viewer.css';
 
+const PUBLIC_QUOTATION_BASE_URL = 'https://visual.elankav.com/cotizaciones/publicas';
+
 function readQuotationIdFromPath() {
   const match = window.location.pathname.match(/^\/cotizaciones\/([^/?#]+)/);
   return match ? decodeURIComponent(match[1]) : '';
@@ -16,14 +18,30 @@ function normalizeWhatsappPhone(phone) {
   return digits.length >= 10 ? digits : '';
 }
 
-function openWhatsappChat(phone, quotationNumber) {
+function buildPublicQuotationUrl(projectId) {
+  const id = String(projectId || '').trim();
+  return id ? `${PUBLIC_QUOTATION_BASE_URL}/${encodeURIComponent(id)}` : '';
+}
+
+function openWhatsappChat(phone, quotationNumber, projectId) {
   const target = normalizeWhatsappPhone(phone);
   if (!target) {
     window.alert('El cliente no tiene un numero de WhatsApp valido registrado.');
     return;
   }
 
-  const message = `Hola, le comparto la cotizacion ${quotationNumber || ''} de ELANVISUAL.`;
+  const publicUrl = buildPublicQuotationUrl(projectId);
+  if (!publicUrl) {
+    window.alert('No fue posible obtener el enlace publico de esta cotizacion.');
+    return;
+  }
+
+  const message = [
+    `Hola, le comparto la cotizacion ${quotationNumber || ''} de ELANVISUAL.`,
+    '',
+    'Puede verla aqui:',
+    publicUrl
+  ].join('\n');
   const encodedMessage = encodeURIComponent(message);
   const appUrl = `whatsapp://send?phone=${target}&text=${encodedMessage}`;
   const webUrl = `https://api.whatsapp.com/send?phone=${target}&text=${encodedMessage}&type=phone_number&app_absent=0`;
@@ -110,7 +128,11 @@ export default function QuotationDetail({ onBack }) {
     event.preventDefault();
     event.stopPropagation();
     event.nativeEvent?.stopImmediatePropagation?.();
-    openWhatsappChat(quotation.customer?.phone, quotation.quotationNumber);
+    openWhatsappChat(
+      quotation.customer?.phone,
+      quotation.quotationNumber,
+      quotation.projectId || quotation.project?.id
+    );
   };
 
   return (
