@@ -1,3 +1,21 @@
+.qv-document-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: min(230px, 100%);
+  min-height: 58px;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: #0d1117;
+}
+
+.qv-document-brand img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
 .qv-item-list {
   display: grid;
   gap: 12px;
@@ -96,6 +114,10 @@
 }
 
 @media (max-width: 680px) {
+  .qv-document-brand {
+    width: 100%;
+  }
+
   .qv-item-row {
     grid-template-columns: 82px minmax(0, 1fr);
   }
@@ -111,6 +133,12 @@
 }
 
 @media print {
+  .qv-document-brand {
+    background: #0d1117 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   .qv-item-row {
     grid-template-columns: 96px minmax(0, 1fr) 80px 62px 72px 90px;
     gap: 9px;
