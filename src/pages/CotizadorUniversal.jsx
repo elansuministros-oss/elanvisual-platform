@@ -189,6 +189,7 @@ export default function CotizadorUniversal() {
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [searchMode, setSearchMode] = useState('context');
   const [lastAutoQuery, setLastAutoQuery] = useState('');
   const [discountRate, setDiscountRate] = useState(0);
   const [applyTax, setApplyTax] = useState(false);
@@ -324,14 +325,39 @@ export default function CotizadorUniversal() {
       : item));
   }
 
+  function setCustomerFromResult(result) {
+    const crmCustomer = result?.customer || result || {};
+    setCustomerId(
+      crmCustomer.customerId || crmCustomer.customer_id || crmCustomer.identityId || crmCustomer.identity_id || crmCustomer.id ||
+      `ELANVISUAL-${crypto.randomUUID()}`
+    );
+    setCustomer({
+      name: crmCustomer.name || crmCustomer.fullName || crmCustomer.full_name || '',
+      companyName: crmCustomer.companyName || crmCustomer.company_name || crmCustomer.company || '',
+      phone: crmCustomer.phone || crmCustomer.whatsapp || crmCustomer.whatsApp || '',
+      email: crmCustomer.email || '',
+      address: crmCustomer.address || '',
+      taxId: crmCustomer.taxId || crmCustomer.tax_id || crmCustomer.ruc || crmCustomer.identification || ''
+    });
+  }
+
+  function applyCustomerOnly(result) {
+    setCustomerFromResult(result);
+    setSource({
+      type: 'customer',
+      sourceId: result?.source?.sourceId || result?.sourceId || result?.customer?.customerId || result?.customer?.id || '',
+      designRequestId: '',
+      storeProductId: '',
+      storeCartId: '',
+      designMode: 'optional'
+    });
+    setSearchResults([]);
+    setSearchError('Cliente CRM cargado. La cotización permanece limpia para llenarla manualmente.');
+  }
+
   function applyContext(result, { automatic = false } = {}) {
     if (result.customer) {
-      setCustomerId(result.customer.customerId || `ELANVISUAL-${crypto.randomUUID()}`);
-      setCustomer({
-        name: result.customer.name || '', companyName: result.customer.companyName || '',
-        phone: result.customer.phone || '', email: result.customer.email || '', address: result.customer.address || '',
-        taxId: result.customer.taxId || result.customer.tax_id || result.customer.ruc || ''
-      });
+      setCustomerFromResult(result);
     }
 
     if (result.type === 'design') {
@@ -372,6 +398,8 @@ export default function CotizadorUniversal() {
     const query = String(queryOverride ?? searchQuery).trim();
     if (query.length < 2 || searching) return;
     const type = options.type || classifyQuery(query);
+    const nextSearchMode = options.customerOnly ? 'customer' : 'context';
+    setSearchMode(nextSearchMode);
     setSearching(true);
     setSearchError('');
     try {
@@ -381,11 +409,17 @@ export default function CotizadorUniversal() {
         applyContext(results[0], { automatic: true });
       } else {
         setSearchResults(results);
-        if (!results.length) setSearchError('No se encontraron clientes, diseños o productos con ese dato.');
+        if (!results.length) {
+          setSearchError(nextSearchMode === 'customer'
+            ? 'No se encontraron clientes en el CRM con ese dato.'
+            : 'No se encontraron clientes, diseños o productos con ese dato.');
+        }
       }
     } catch (error) {
       setSearchResults([]);
-      setSearchError(error.message || 'No fue posible consultar el contexto.');
+      setSearchError(error.message || (nextSearchMode === 'customer'
+        ? 'No fue posible consultar los clientes del CRM.'
+        : 'No fue posible consultar el contexto.'));
     } finally {
       setSearching(false);
     }
@@ -442,11 +476,14 @@ export default function CotizadorUniversal() {
             <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runContextSearch()} placeholder="Ej. RESTAURANTES LAS SOPAS, 58401030 o DESIGN-..." />
           </label>
         </div>
-        <button type="button" className="uq-light" disabled={searching || searchQuery.trim().length < 2} onClick={() => runContextSearch()}>{searching ? 'Buscando…' : 'Buscar en Orchestrator'}</button>
-        {searchError && <p className={searchError.startsWith('Información cargada') ? '' : 'uq-error'}>{searchError}</p>}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          <button type="button" className="uq-light" disabled={searching || searchQuery.trim().length < 2} onClick={() => runContextSearch()}>{searching && searchMode === 'context' ? 'Buscando…' : 'Buscar en Orchestrator'}</button>
+          <button type="button" className="uq-light" disabled={searching || searchQuery.trim().length < 2} onClick={() => runContextSearch(undefined, { type: 'customer', customerOnly: true })}>{searching && searchMode === 'customer' ? 'Buscando cliente…' : 'Buscar cliente CRM'}</button>
+        </div>
+        {searchError && <p className={searchError.startsWith('Información cargada') || searchError.startsWith('Cliente CRM cargado') ? '' : 'uq-error'}>{searchError}</p>}
         {searchResults.length > 0 && <div className="uq-items">
           {searchResults.map((result, index) => <article className="uq-item" key={`${result.type}-${result.sourceId}-${index}`}>
-            <div className="uq-item-heading"><strong>{result.label || result.type}</strong><button type="button" onClick={() => applyContext(result)}>Cargar</button></div>
+            <div className="uq-item-heading"><strong>{result.label || result.type}</strong><button type="button" onClick={() => searchMode === 'customer' ? applyCustomerOnly(result) : applyContext(result)}>{searchMode === 'customer' ? 'Cargar cliente' : 'Cargar'}</button></div>
             <small>Fuente: {result.type} · {result.customer?.phone || result.sourceId}</small>
           </article>)}
         </div>}
