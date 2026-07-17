@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 2095.3 246.5" role="img" aria-labelledby="title desc">
+  <title id="title">ELANVISUAL</title>
+  <desc id="desc">Variante del logotipo para la interfaz de la plataforma. Sustituye las áreas blancas por azul celeste y conserva el dorado original.</desc>
+  <defs>
+    <filter id="platformLogoColor" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feColorMatrix in="SourceGraphic" result="luminanceMask" type="matrix" values="
+        0 0 0 0 1
+        0 0 0 0 1
+        0 0 0 0 1
+        0.2126 0.7152 0.0722 0 0"/>
+      <feComponentTransfer in="luminanceMask" result="whiteMask">
+        <feFuncR type="linear" slope="0" intercept="1"/>
+        <feFuncG type="linear" slope="0" intercept="1"/>
+        <feFuncB type="linear" slope="0" intercept="1"/>
+        <feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 0 0 1"/>
+      </feComponentTransfer>
+      <feFlood flood-color="#0096C7" result="cyanColor"/>
+      <feComposite in="cyanColor" in2="whiteMask" operator="in" result="cyanWhiteAreas"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="cyanWhiteAreas"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <image href="/assets/branding/elanvisual.svg" xlink:href="/assets/branding/elanvisual.svg" x="0" y="0" width="2095.3" height="246.5" preserveAspectRatio="xMidYMid meet" filter="url(#platformLogoColor)"/>
+</svg>
