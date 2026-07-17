@@ -1,11 +1,11 @@
 .qv-document-header {
-  grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+  grid-template-columns: minmax(280px, 1fr) minmax(190px, auto);
   grid-template-areas:
     "brand dates"
     "title dates";
   align-items: start;
   column-gap: 28px;
-  row-gap: 14px;
+  row-gap: 12px;
 }
 
 .qv-document-brand {
@@ -30,15 +30,19 @@
 .qv-document-title {
   grid-area: title;
   min-width: 0;
+  width: max-content;
+  max-width: 100%;
 }
 
 .qv-document-title h1 {
   margin: 4px 0 0;
-  max-width: 100%;
-  font-size: clamp(1.45rem, 2.8vw, 2.15rem);
-  line-height: 1.08;
-  overflow-wrap: anywhere;
-  word-break: normal;
+  max-width: none;
+  font-size: clamp(1.05rem, 2vw, 1.35rem) !important;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
 .qv-document-dates {
@@ -130,7 +134,11 @@
 
 @media (max-width: 900px) {
   .qv-document-header {
-    grid-template-columns: minmax(0, 1fr) minmax(190px, auto);
+    grid-template-columns: minmax(250px, 1fr) minmax(175px, auto);
+  }
+
+  .qv-document-title h1 {
+    font-size: 1.08rem !important;
   }
 
   .qv-item-row {
@@ -161,7 +169,8 @@
   }
 
   .qv-document-title h1 {
-    font-size: 1.45rem;
+    font-size: 1rem !important;
+    white-space: nowrap;
   }
 
   .qv-document-dates {
@@ -184,12 +193,12 @@
 
 @media print {
   .qv-document-header {
-    grid-template-columns: minmax(0, 1fr) 190px;
+    grid-template-columns: minmax(280px, 1fr) 190px;
     grid-template-areas:
       "brand dates"
       "title dates";
     column-gap: 22px;
-    row-gap: 10px;
+    row-gap: 8px;
   }
 
   .qv-document-brand {
@@ -199,7 +208,10 @@
   }
 
   .qv-document-title h1 {
-    font-size: 1.55rem;
+    font-size: 1.05rem !important;
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: keep-all;
   }
 
   .qv-item-row {
