@@ -131,7 +131,7 @@ export default function QuotationDetail({ onBack }) {
     openWhatsappChat(
       quotation.customer?.phone,
       quotation.quotationNumber,
-      quotation.projectId || quotation.project?.id
+      quotation.projectId || quotation.project?.id || quotation.id
     );
   };
 
