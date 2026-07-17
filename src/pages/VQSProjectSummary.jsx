@@ -9,6 +9,10 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
   const data = creation?.data || creation || {};
   const pdfUrl = data.document_url || data.pdf_url || '';
   const projectId = data.project_id || '';
+  const publicQuotationUrl = projectId
+    ? `${window.location.origin}/cotizaciones/publicas/${encodeURIComponent(projectId)}`
+    : '';
+  const shareUrl = pdfUrl || publicQuotationUrl;
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
   const [sendResult, setSendResult] = useState(null);
@@ -43,7 +47,7 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
           percentage: payment.percentage,
           amountUsd: payment.amountUsd
         })),
-        documentUrl: pdfUrl
+        documentUrl: shareUrl
       });
       setSendResult(response?.data || response);
     } catch (error) {
