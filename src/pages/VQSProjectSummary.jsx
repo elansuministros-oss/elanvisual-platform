@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { projectCoreClient } from '../modules/vqs/services/projectCoreClient';
 
 function money(value) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value || 0));
@@ -7,6 +8,50 @@ function money(value) {
 export default function VQSProjectSummary({ creation, contract, onBack }) {
   const data = creation?.data || creation || {};
   const pdfUrl = data.document_url || data.pdf_url || '';
+  const projectId = data.project_id || '';
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
+  const [sendResult, setSendResult] = useState(null);
+  const canSend = Boolean(projectId && String(contract.customer.phone || '').trim());
+
+  async function sendByWhatsApp() {
+    if (!canSend || sending) return;
+    const confirmed = window.confirm(
+      `Enviar ${data.quotation_number || 'la cotización'} directamente a ${contract.customer.name || 'Cliente'} (${contract.customer.phone})?`
+    );
+    if (!confirmed) return;
+
+    setSending(true);
+    setSendError('');
+    setSendResult(null);
+    try {
+      const response = await projectCoreClient.sendQuotationWhatsApp(projectId, {
+        quotationId: data.quotation_id || '',
+        quotationNumber: data.quotation_number || '',
+        customerId: contract.customer.customerId || '',
+        customerName: contract.customer.name || '',
+        phone: contract.customer.phone || '',
+        totalUsd: contract.pricing.totalUsd,
+        items: contract.items.map((item) => ({
+          title: item.title,
+          quantity: item.quantity,
+          unit: item.unit,
+          subtotalUsd: item.subtotalUsd
+        })),
+        installments: contract.payments.installments.map((payment) => ({
+          label: payment.label,
+          percentage: payment.percentage,
+          amountUsd: payment.amountUsd
+        })),
+        documentUrl: pdfUrl
+      });
+      setSendResult(response?.data || response);
+    } catch (error) {
+      setSendError(error.message || 'No fue posible enviar la cotización por WhatsApp.');
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <main className="uq-shell">
@@ -68,13 +113,25 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
           <button
             type="button"
             className="uq-primary-wide"
+            disabled={!canSend || sending}
+            onClick={sendByWhatsApp}
+            title={!projectId ? 'No se recibió el identificador del proyecto' : !contract.customer.phone ? 'Agregá el teléfono del cliente' : 'Enviar mediante Orchestrator y WAHA'}
+          >
+            {sending ? 'Enviando…' : 'Enviar por WhatsApp'}
+          </button>
+          {sendResult && <small className="uq-muted">Enviado correctamente a +{sendResult.phone || contract.customer.phone}.</small>}
+          {sendError && <small className="uq-error">{sendError}</small>}
+
+          <button
+            type="button"
+            className="uq-light uq-primary-wide"
             disabled={!pdfUrl}
             onClick={() => pdfUrl && window.open(pdfUrl, '_blank', 'noopener,noreferrer')}
             title={!pdfUrl ? 'Disponible cuando Document Engine publique el documento' : 'Descargar PDF'}
           >
             Descargar PDF
           </button>
-          {!pdfUrl && <small className="uq-muted">El PDF se habilitará desde Document Engine cuando el Orchestrator entregue la URL oficial.</small>}
+          {!pdfUrl && <small className="uq-muted">El envío directo compartirá el enlace oficial de la cotización. El PDF se habilitará cuando Document Engine publique su URL.</small>}
         </aside>
       </section>
     </main>
