@@ -12,6 +12,8 @@ async function request(path, options = {}) {
     ...options,
     headers: {
       Accept: 'application/json',
+      'X-Elankav-Platform': 'ELANVISUAL',
+      'X-Elankav-Actor-Type': 'user',
       ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       ...(options.headers || {})
     }
@@ -31,6 +33,16 @@ export const createProject = (contract) => request('/api/vqs/projects', { method
 export const getProject = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, { method: 'GET' });
 export const updateProject = (projectId, patch) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, { method: 'PATCH', body: JSON.stringify(patch) });
 export const getProjectStatus = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}/status`, { method: 'GET' });
+export const sendQuotationWhatsApp = (projectId, payload) => request(
+  `/api/vqs/projects/${encodeURIComponent(projectId)}/send-whatsapp`,
+  { method: 'POST', body: JSON.stringify(payload) }
+);
 
-export const projectCoreClient = Object.freeze({ createProject, getProject, updateProject, getProjectStatus });
+export const projectCoreClient = Object.freeze({
+  createProject,
+  getProject,
+  updateProject,
+  getProjectStatus,
+  sendQuotationWhatsApp
+});
 export { DEFAULT_ORCHESTRATOR_URL, resolveBaseUrl };

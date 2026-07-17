@@ -115,3 +115,23 @@
     padding-inline: 14px;
   }
 }
+
+@media (max-width: 768px) {
+  .app-menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1190;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-top: var(--mobile-header-height, 0px);
+  }
+
+  .app-mobile-nav {
+    min-height: 100%;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+  }
+}
