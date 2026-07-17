@@ -170,8 +170,13 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
   const payment = quotation.payment || {};
   const installments = payment.installments || [];
   const advance = payment.advance || {};
+  const totals = quotation.totals || {};
+  const discountValue = numericValue(totals.discount);
+  const taxValue = numericValue(totals.tax);
+  const hasDiscount = discountValue !== null && discountValue > 0;
+  const hasTax = taxValue !== null && taxValue > 0;
   const hasAdvance = hasValue(advance.amountUsd) || hasValue(advance.amountNio) || hasValue(advance.percentage);
-  const taxLabel = quotation.totals?.taxRate ? `IVA ${formatPercent(quotation.totals.taxRate)}` : 'IVA';
+  const taxLabel = totals.taxRate ? `IVA ${formatPercent(totals.taxRate)}` : 'IVA';
   const publicStatus = formatStatus(quotation.status);
   const validUntil = quotation.validUntil || addDaysIso(quotation.date, 15);
   const items = quotation.items || [];
@@ -290,13 +295,17 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
           </div>
 
           <div className="qv-total-panel">
-            <div><span>Subtotal</span><strong>{formatMoney(quotation.totals?.subtotal, 'USD')}</strong></div>
-            <div><span>Descuento</span><strong>{formatMoney(quotation.totals?.discount, 'USD')}</strong></div>
-            <div><span>{taxLabel}</span><strong>{formatMoney(quotation.totals?.tax, 'USD')}</strong></div>
-            <div className="qv-grand-total"><span>Total USD</span><strong>{formatMoney(quotation.totals?.totalUsd, 'USD')}</strong></div>
-            <div><span>Referencia en cordobas</span><strong>{formatMoney(quotation.totals?.nioReference, 'NIO')}</strong></div>
-            {hasValue(quotation.totals?.exchangeRate) && (
-              <small>Tipo de cambio recibido: {display(quotation.totals.exchangeRate)} {quotation.totals.exchangeRateDate ? ` / ${quotation.totals.exchangeRateDate}` : ''}</small>
+            <div><span>Subtotal</span><strong>{formatMoney(totals.subtotal, 'USD')}</strong></div>
+            {hasDiscount && (
+              <div><span>Descuento</span><strong>{formatMoney(totals.discount, 'USD')}</strong></div>
+            )}
+            {hasTax && (
+              <div><span>{taxLabel}</span><strong>{formatMoney(totals.tax, 'USD')}</strong></div>
+            )}
+            <div className="qv-grand-total"><span>Total USD</span><strong>{formatMoney(totals.totalUsd, 'USD')}</strong></div>
+            <div><span>Referencia en cordobas</span><strong>{formatMoney(totals.nioReference, 'NIO')}</strong></div>
+            {hasValue(totals.exchangeRate) && (
+              <small>Tipo de cambio recibido: {display(totals.exchangeRate)} {totals.exchangeRateDate ? ` / ${totals.exchangeRateDate}` : ''}</small>
             )}
           </div>
         </section>
