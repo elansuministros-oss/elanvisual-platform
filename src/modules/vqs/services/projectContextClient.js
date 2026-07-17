@@ -40,7 +40,7 @@ async function request(path, options = {}) {
   }
 }
 
-export function searchContext(query, { type = 'all', limit = 30 } = {}) {
+export async function searchContext(query, { type = 'all', limit = 30 } = {}) {
   const normalizedQuery = String(query || '').trim();
 
   if (type === 'customer') {
@@ -49,7 +49,10 @@ export function searchContext(query, { type = 'all', limit = 30 } = {}) {
       platform: 'elanvisual',
       limit: String(limit)
     });
-    return request(`/api/vqs/customers/search?${params.toString()}`, { method: 'GET' });
+    const result = await request(`/api/vqs/customers/search?${params.toString()}`, { method: 'GET' });
+    return Array.isArray(result)
+      ? { query: normalizedQuery, type: 'customer', count: result.length, results: result }
+      : result;
   }
 
   const effectiveType = type === 'store' ? 'all' : type;
