@@ -1,4 +1,15 @@
+.qv-document-header {
+  grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+  grid-template-areas:
+    "brand dates"
+    "title dates";
+  align-items: start;
+  column-gap: 28px;
+  row-gap: 14px;
+}
+
 .qv-document-brand {
+  grid-area: brand;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -14,6 +25,25 @@
   width: 100%;
   height: auto;
   object-fit: contain;
+}
+
+.qv-document-title {
+  grid-area: title;
+  min-width: 0;
+}
+
+.qv-document-title h1 {
+  margin: 4px 0 0;
+  max-width: 100%;
+  font-size: clamp(1.45rem, 2.8vw, 2.15rem);
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.qv-document-dates {
+  grid-area: dates;
+  align-self: center;
 }
 
 .qv-item-list {
@@ -99,6 +129,10 @@
 }
 
 @media (max-width: 900px) {
+  .qv-document-header {
+    grid-template-columns: minmax(0, 1fr) minmax(190px, auto);
+  }
+
   .qv-item-row {
     grid-template-columns: 96px minmax(0, 1fr) repeat(2, minmax(72px, auto));
   }
@@ -114,8 +148,24 @@
 }
 
 @media (max-width: 680px) {
+  .qv-document-header {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "brand"
+      "title"
+      "dates";
+  }
+
   .qv-document-brand {
-    width: 100%;
+    width: min(230px, 100%);
+  }
+
+  .qv-document-title h1 {
+    font-size: 1.45rem;
+  }
+
+  .qv-document-dates {
+    align-self: start;
   }
 
   .qv-item-row {
@@ -133,10 +183,23 @@
 }
 
 @media print {
+  .qv-document-header {
+    grid-template-columns: minmax(0, 1fr) 190px;
+    grid-template-areas:
+      "brand dates"
+      "title dates";
+    column-gap: 22px;
+    row-gap: 10px;
+  }
+
   .qv-document-brand {
     background: #0d1117 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+
+  .qv-document-title h1 {
+    font-size: 1.55rem;
   }
 
   .qv-item-row {
