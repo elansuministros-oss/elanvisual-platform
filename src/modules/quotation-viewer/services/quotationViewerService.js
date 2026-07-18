@@ -4,6 +4,7 @@ import {
   normalizeQuotationCollection,
   normalizeQuotationRecord
 } from '../adapters/quotationDocumentAdapter';
+import { applyQuotationImageFallback } from '../adapters/quotationImageFallback';
 
 const PLATFORM = 'ELANVISUAL';
 const DEFAULT_LIMIT = 200;
@@ -95,7 +96,7 @@ export async function getQuotationDetail(id) {
   const payload = await request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
     params: { platform: PLATFORM }
   });
-  const record = assertOfficialDocument(assertRecord(extractRecord(payload)));
+  const record = applyQuotationImageFallback(assertOfficialDocument(assertRecord(extractRecord(payload))));
   return normalizeQuotationRecord(record);
 }
 
