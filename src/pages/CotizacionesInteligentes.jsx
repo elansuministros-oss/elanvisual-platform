@@ -367,7 +367,11 @@ export default function CotizacionesInteligentes() {
 
                 <div className="actions">
                   <button type="button" onClick={() => abrirDetalleCotizacion(c)}>
-                    <Eye size={15} /> Ver
+                    <Eye size={15} /> Ver cotización
+                  </button>
+
+                  <button type="button" onClick={() => editarEnCotizador(c)}>
+                    <FileText size={15} /> Editar cotización
                   </button>
 
                   <button
@@ -470,7 +474,7 @@ export default function CotizacionesInteligentes() {
               onClick={() => editarEnCotizador(cotizacionActiva)}
             >
               <FileText size={18} />
-              Editar en Cotizador
+              Editar cotización
             </button>
             <button
               className="primary"
