@@ -1,5 +1,6 @@
 import { resolveBaseUrl } from '../../vqs/services/projectCoreClient';
 import { normalizeQuotationRecord } from '../adapters/quotationDocumentAdapter';
+import { applyQuotationImageFallback } from '../adapters/quotationImageFallback';
 
 const HEADERS = Object.freeze({
   Accept: 'application/json',
@@ -36,7 +37,7 @@ export async function getPublicQuotation(projectId) {
     throw error;
   }
 
-  const record = payload?.data || {};
+  const record = applyQuotationImageFallback(payload?.data || {});
   return {
     quotation: normalizeQuotationRecord(record),
     pdfUrl: String(record.pdfUrl || record.pdf_url || '').trim()
