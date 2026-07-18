@@ -412,6 +412,173 @@ function campoCompleto(valor) {
   return String(valor || '').trim().length > 0;
 }
 
+const STORAGE_COTIZACIONES_DIRECTAS = 'elanvision_cotizaciones_directas';
+
+function leerCotizacionesDirectasLocales() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_COTIZACIONES_DIRECTAS) || '[]');
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+function guardarCotizacionDirectaLocal(payload) {
+  const actual = leerCotizacionesDirectasLocales();
+  const ids = [payload.id, payload.quoteId, payload.codigo].filter(Boolean).map(String);
+  const filtrado = actual.filter((item) => {
+    const itemIds = [item.id, item.quoteId, item.codigo].filter(Boolean).map(String);
+    return !itemIds.some((id) => ids.includes(id));
+  });
+
+  localStorage.setItem(STORAGE_COTIZACIONES_DIRECTAS, JSON.stringify([payload, ...filtrado]));
+}
+
+function buscarCotizacionDirectaLocal(cotizacion) {
+  const ids = [cotizacion?.id, cotizacion?.quoteId, cotizacion?.codigo].filter(Boolean).map(String);
+  if (!ids.length) return null;
+
+  return (
+    leerCotizacionesDirectasLocales().find((item) => {
+      const itemIds = [item.id, item.quoteId, item.codigo].filter(Boolean).map(String);
+      return itemIds.some((id) => ids.includes(id));
+    }) || null
+  );
+}
+
+function resumenDesdeVenta(venta, costo = 0) {
+  const ventaFinal = Number(venta || 0);
+  const costoFinal = Number(costo || 0);
+
+  return {
+    costo: costoFinal,
+    minimo: ventaFinal,
+    recomendado: ventaFinal,
+    objetivo: ventaFinal,
+    venta: ventaFinal,
+  };
+}
+
+function normalizarItemEdicion(item, idx = 0) {
+  const cantidad = Number(item?.cantidad || 1);
+  const venta = Number(item?.resumen?.venta ?? item?.precio ?? item?.subtotal ?? 0);
+  const costo = Number(item?.resumen?.costo || 0);
+
+  return {
+    id: item?.id || `item-edicion-${Date.now()}-${idx}`,
+    descripcion: item?.descripcion || item?.nombre || 'Item cotizado',
+    ancho: Number(item?.ancho || 1),
+    alto: Number(item?.alto || 1),
+    cantidad,
+    precioElegido: item?.precioElegido || 'recomendado',
+    lineas: Array.isArray(item?.lineas) ? item.lineas : [],
+    resumen: item?.resumen || resumenDesdeVenta(venta, costo),
+    archivos: Array.isArray(item?.archivos) ? item.archivos : [],
+  };
+}
+
+function construirEdicionDesdeCotizacion(cotizacion, tipoCambio) {
+  const local = buscarCotizacionDirectaLocal(cotizacion);
+  const fuente = cotizacion?.cotizador_payload || cotizacion?.data || local || {};
+  const formFuente = fuente.form || {};
+  const itemsFuente = Array.isArray(fuente.items) ? fuente.items : [];
+
+  if (itemsFuente.length) {
+    return {
+      form: {
+        buscarCliente: '',
+        cliente: formFuente.cliente || cotizacion.cliente_nombre || '',
+        empresa: formFuente.empresa || cotizacion.cliente_nombre || '',
+        whatsapp: formFuente.whatsapp || cotizacion.celular || '',
+        correo: formFuente.correo || '',
+        direccion: formFuente.direccion || cotizacion.ubicacion || '',
+        ciudad: formFuente.ciudad || cotizacion.ubicacion || '',
+        descripcion: formFuente.descripcion || itemsFuente[0]?.descripcion || cotizacion.descripcion || '',
+        ancho: Number(formFuente.ancho || itemsFuente[0]?.ancho || cotizacion.ancho || 1),
+        alto: Number(formFuente.alto || itemsFuente[0]?.alto || cotizacion.alto || 1),
+        cantidad: Number(formFuente.cantidad || itemsFuente[0]?.cantidad || cotizacion.cantidad || 1),
+        tintaId: formFuente.tintaId || '',
+        precioElegido: formFuente.precioElegido || 'recomendado',
+        descuento: Number(formFuente.descuento || 0),
+        usaIVA: Boolean(formFuente.usaIVA),
+        formaPago: formFuente.formaPago || '6040',
+        p1: Number(formFuente.p1 || 60),
+        p2: Number(formFuente.p2 || 40),
+        p3: Number(formFuente.p3 || 0),
+        archivos: Array.isArray(formFuente.archivos) ? formFuente.archivos : [],
+        moneda: formFuente.moneda || fuente.moneda || 'USD',
+        tipoCambio: Number(formFuente.tipoCambio || fuente.tipoCambio || tipoCambio || 36.8),
+      },
+      items: itemsFuente.map(normalizarItemEdicion),
+    };
+  }
+
+  const descripcion =
+    cotizacion.descripcion ||
+    cotizacion.biblioteca_nombre ||
+    cotizacion.codigo ||
+    'Cotizacion inteligente';
+  const precioBase = Number(cotizacion.precio_b || 0);
+  const costoBase =
+    Number(cotizacion.costo_produccion || 0) +
+    Number(cotizacion.costo_instalacion || 0) +
+    Number(cotizacion.costo_transporte || 0) +
+    Number(cotizacion.costo_viaticos || 0) +
+    Number(cotizacion.costo_equipo || 0) +
+    Number(cotizacion.costo_empresa || 0);
+
+  const lineaEdicion = {
+    id: `ci17-linea-${cotizacion.id}`,
+    nombre: cotizacion.biblioteca_nombre || descripcion,
+    tipo: 'Cotizacion inteligente',
+    unidad: 'servicio',
+    cantidad: Number(cotizacion.cantidad || 1),
+    costoUnitario: costoBase > 0 ? costoBase : precioBase,
+    costoTotal: costoBase > 0 ? costoBase : precioBase,
+    origen: 'cotizaciones_inteligentes',
+  };
+
+  return {
+    form: {
+      buscarCliente: '',
+      cliente: cotizacion.cliente_nombre || '',
+      empresa: cotizacion.cliente_nombre || '',
+      whatsapp: cotizacion.celular || '',
+      correo: '',
+      direccion: cotizacion.ubicacion || '',
+      ciudad: cotizacion.ubicacion || '',
+      descripcion,
+      ancho: Number(cotizacion.ancho || 1),
+      alto: Number(cotizacion.alto || 1),
+      cantidad: Number(cotizacion.cantidad || 1),
+      tintaId: '',
+      precioElegido: 'recomendado',
+      descuento: 0,
+      usaIVA: false,
+      formaPago: '6040',
+      p1: 60,
+      p2: 40,
+      p3: 0,
+      archivos: [],
+      moneda: 'USD',
+      tipoCambio: Number(tipoCambio || 36.8),
+    },
+    items: [
+      {
+        id: `ci17-item-${cotizacion.id}`,
+        descripcion,
+        ancho: Number(cotizacion.ancho || 1),
+        alto: Number(cotizacion.alto || 1),
+        cantidad: Number(cotizacion.cantidad || 1),
+        precioElegido: 'recomendado',
+        lineas: [lineaEdicion],
+        resumen: resumenDesdeVenta(precioBase, costoBase),
+        archivos: [],
+      },
+    ],
+  };
+}
+
 async function calcularConAI23(payload) {
   const res = await fetch('https://elankav-core.vercel.app/api/elan-ai', {
     method: 'POST',
@@ -432,6 +599,7 @@ const normalizarInventarioParaCotizador = (item) => item;
 
 export default function CotizadorDirectoAI({ setPage }) {
   const { configuracion, productos = [] } = useApp();
+  const tipoCambioCotizacion = Number(configuracion?.tipoCambio || 36.8);
   const [materiales, setMateriales] = useState([]);
   const { inventarioReal = [] } = useApp();
   const [productosRegistrados, setProductosRegistrados] = useState([]);
@@ -510,6 +678,8 @@ export default function CotizadorDirectoAI({ setPage }) {
     p2: 40,
     p3: 0,
     archivos: [],
+    moneda: 'USD',
+    tipoCambio: tipoCambioCotizacion,
   });
 
   useEffect(() => {
@@ -577,75 +747,21 @@ setTintas(tintasData);
 
       setCotizacionEdicion(data);
 
-      const descripcion =
-        data.descripcion ||
-        data.biblioteca_nombre ||
-        data.codigo ||
-        'Cotizacion inteligente';
-
-      const precioBase = Number(data.precio_b || 0);
-      const costoBase =
-        Number(data.costo_produccion || 0) +
-        Number(data.costo_instalacion || 0) +
-        Number(data.costo_transporte || 0) +
-        Number(data.costo_viaticos || 0) +
-        Number(data.costo_equipo || 0) +
-        Number(data.costo_empresa || 0);
-
-      const lineaEdicion = {
-        id: `ci17-linea-${data.id}`,
-        nombre: data.biblioteca_nombre || descripcion,
-        tipo: 'Cotizacion inteligente',
-        unidad: 'servicio',
-        cantidad: Number(data.cantidad || 1),
-        costoUnitario: costoBase > 0 ? costoBase : precioBase,
-        origen: 'cotizaciones_inteligentes',
-      };
-
-      const resumenEdicion = resumenItem([lineaEdicion], 'recomendado');
-
-      const itemEdicion = {
-        id: `ci17-item-${data.id}`,
-        descripcion,
-        ancho: Number(data.ancho || 1),
-        alto: Number(data.alto || 1),
-        cantidad: Number(data.cantidad || 1),
-        precioElegido: 'recomendado',
-        lineas: [lineaEdicion],
-        resumen: resumenEdicion,
-        archivos: [],
-      };
+      const edicion = construirEdicionDesdeCotizacion(data, tipoCambioCotizacion);
 
       setForm((prev) => ({
         ...prev,
-        buscarCliente: '',
-        cliente: data.cliente_nombre || '',
-        empresa: data.cliente_nombre || '',
-        whatsapp: data.celular || '',
-        correo: '',
-        direccion: data.ubicacion || '',
-        ciudad: data.ubicacion || '',
-        descripcion,
-        ancho: Number(data.ancho || 1),
-        alto: Number(data.alto || 1),
-        cantidad: Number(data.cantidad || 1),
-        precioElegido: 'recomendado',
-        descuento: 0,
-        usaIVA: false,
-        formaPago: '6040',
-        p1: 60,
-        p2: 40,
-        p3: 0,
+        ...edicion.form,
       }));
 
-      setLineasPreview([lineaEdicion]);
-      setItems([itemEdicion]);
+      setLineasPreview(edicion.items[0]?.lineas || []);
+      setItems(edicion.items);
       setMensaje(`Modo edicion activo: ${data.codigo || data.id}`);
       setCargandoEdicion(false);
     };
 
     cargarCotizacionEdicion();
-  }, [cotizacionIdEdicion]);
+  }, [cotizacionIdEdicion, tipoCambioCotizacion]);
 
   const actualizar = (campo, valor) => setForm((prev) => ({ ...prev, [campo]: valor }));
 
@@ -678,27 +794,14 @@ setTintas(tintasData);
   const guardarClienteLocal = () => {
     if (!form.cliente && !form.empresa) return;
 
-    const resumenFinal = productoSeleccionado
-  ? {
-      costo: Number(productoSeleccionado.precio || productoSeleccionado.precio_total_usd || 0) / POLITICA.recomendado,
-      minimo: Number(productoSeleccionado.precio || productoSeleccionado.precio_total_usd || 0),
-      recomendado: Number(productoSeleccionado.precio || productoSeleccionado.precio_total_usd || 0),
-      objetivo: Number(productoSeleccionado.precio || productoSeleccionado.precio_total_usd || 0),
-      venta: Number(productoSeleccionado.precio || productoSeleccionado.precio_total_usd || 0),
-    }
-  : preview;
-
-const nuevo = {
-  id: `item-${Date.now()}`,
-  descripcion: form.descripcion,
-  ancho: form.ancho,
-  alto: form.alto,
-  cantidad: form.cantidad,
-  precioElegido: productoSeleccionado ? 'producto_registrado' : form.precioElegido,
-  lineas: lineasPreview,
-  resumen: resumenFinal,
-  archivos: form.archivos,
-};
+    const nuevo = {
+      cliente: form.cliente,
+      empresa: form.empresa,
+      whatsapp: form.whatsapp,
+      correo: form.correo,
+      direccion: form.direccion,
+      ciudad: form.ciudad,
+    };
 
     const actual = JSON.parse(localStorage.getItem('elanvision_clientes') || '[]');
     const filtrado = actual.filter(
@@ -972,19 +1075,33 @@ const ai23 = await calcularConAI23({
   const guardar = async () => {
     guardarClienteLocal();
     const clienteSupabaseOk = await guardarClienteSupabase();
+    const fecha = new Date().toISOString();
+    const primerItem = items[0] || {};
+    const costoProduccion = items.reduce((acc, item) => acc + Number(item.resumen?.costo || 0), 0);
+    const cantidadTotal = items.reduce((acc, item) => acc + Number(item.cantidad || 0), 0) || Number(form.cantidad || 1);
+    const descripcionCotizacion =
+      items.map((item) => item.descripcion).filter(Boolean).join(' | ') ||
+      form.descripcion ||
+      cotizacionEdicion?.descripcion ||
+      'Cotizacion directa';
 
     const payload = {
-      id: `cot-dir-${Date.now()}`,
-      fecha: new Date().toISOString(),
+      id: modoEdicion ? cotizacionEdicion?.id || cotizacionIdEdicion : `cot-dir-${Date.now()}`,
+      quoteId: modoEdicion ? cotizacionEdicion?.id || cotizacionIdEdicion : undefined,
+      codigo: modoEdicion ? cotizacionEdicion?.codigo : undefined,
+      fecha,
       origen: 'CotizadorDirecto',
       unidadNegocio: 'ELANVISUAL',
-      form,
+      form: {
+        ...form,
+        tipoCambio: Number(form.tipoCambio || tipoCambioCotizacion),
+        moneda: form.moneda || 'USD',
+      },
       items,
       total,
     };
 
-    const actual = JSON.parse(localStorage.getItem('elanvision_cotizaciones_directas') || '[]');
-    localStorage.setItem('elanvision_cotizaciones_directas', JSON.stringify([payload, ...actual]));
+    guardarCotizacionDirectaLocal(payload);
 
     if (!supabase) {
       setMensaje('Cotizacion guardada localmente. Supabase no disponible.');
@@ -992,6 +1109,54 @@ const ai23 = await calcularConAI23({
     }
 
     try {
+      if (modoEdicion) {
+        const updatePayload = {
+          cliente_nombre: form.cliente || form.empresa || cotizacionEdicion?.cliente_nombre || 'Cliente',
+          celular: form.whatsapp || '',
+          ubicacion: form.direccion || form.ciudad || '',
+          biblioteca_nombre:
+            primerItem.descripcion ||
+            cotizacionEdicion?.biblioteca_nombre ||
+            'Cotizacion directa',
+          descripcion: descripcionCotizacion,
+          ancho: Number(primerItem.ancho || form.ancho || 0),
+          alto: Number(primerItem.alto || form.alto || 0),
+          cantidad: cantidadTotal,
+          precio_b: Number(total.totalCliente || 0),
+          costo_produccion: costoProduccion,
+          estado: cotizacionEdicion?.estado || 'borrador_ai',
+          observaciones: [
+            cotizacionEdicion?.observaciones,
+            `Actualizada desde Cotizador Directo el ${new Date(fecha).toLocaleString('es-NI')}.`,
+          ].filter(Boolean).join('\n'),
+          anticipo_requerido: Number(total.totalCliente || 0) * 0.6,
+          saldo_pendiente: Number(total.totalCliente || 0) * 0.4,
+          actualizado_en: fecha,
+        };
+
+        const { data: actualizada, error } = await supabase
+          .from('cotizaciones_inteligentes')
+          .update(updatePayload)
+          .eq('id', cotizacionEdicion?.id || cotizacionIdEdicion)
+          .select()
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error actualizando cotizacion inteligente:', error);
+          setMensaje('No se pudo actualizar la cotizacion existente en Supabase.');
+          return payload;
+        }
+
+        setCotizacionEdicion((prev) => ({
+          ...(prev || {}),
+          ...(actualizada || updatePayload),
+          id: cotizacionEdicion?.id || cotizacionIdEdicion,
+          codigo: cotizacionEdicion?.codigo,
+        }));
+        setMensaje(clienteSupabaseOk ? 'Cambios guardados en la cotizacion existente.' : 'Cambios guardados. Cliente pendiente de sincronizar.');
+        return payload;
+      }
+
       const { error } = await supabase.from('pedidos').insert({
         numero: payload.id,
         cliente_nombre: form.cliente || form.empresa || 'Cliente',
@@ -1110,6 +1275,12 @@ const ai23 = await calcularConAI23({
     `);
     ventanaImpresion.document.close();
   };
+
+  const codigoDocumento = useMemo(
+    () => cotizacionEdicion?.codigo || `EV-${String(Date.now()).slice(-6)}`,
+    [cotizacionEdicion?.codigo]
+  );
+  const tipoCambioDocumento = Number(form.tipoCambio || tipoCambioCotizacion || 36.8);
 
   return (
     <main className="cot-directo">
@@ -1474,7 +1645,7 @@ cantidad: 1,
           </div>
 
           <button className="secondary" type="button" onClick={guardar}>
-            Guardar cotizacion
+            {modoEdicion ? 'Guardar cambios' : 'Guardar cotizacion'}
           </button>
 
           <button className="primary" type="button" onClick={imprimir}>
@@ -1557,7 +1728,7 @@ cantidad: 1,
             <div className="ev-doc-box">
               <div>
                 <span>COTIZACION</span>
-                <b>{`EV-${String(Date.now()).slice(-6)}`}</b>
+                <b>{codigoDocumento}</b>
               </div>
 
               <div>
@@ -1649,9 +1820,9 @@ cantidad: 1,
               <span>TOTAL</span>
               <b>{moneyUSD(total.totalCliente)}</b>
               <small>Tipo de cambio</small>
-              <em>1 USD = C$36.80</em>
+              <em>{`1 USD = C$${tipoCambioDocumento.toFixed(2)}`}</em>
               <small>Equivalente en cordobas</small>
-              <strong>{money(total.totalCliente * 36.8)}</strong>
+              <strong>{money(total.totalCliente * tipoCambioDocumento)}</strong>
             </div>
           </section>
 
@@ -2551,16 +2722,6 @@ cantidad: 1,
     </main>
   );
 }
-
-
-
-
-
-
-
-
-
-
 
 
 
