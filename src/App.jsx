@@ -125,6 +125,12 @@ export default function App() {
     window.history.pushState({}, '', `/cotizaciones/${encodeURIComponent(id)}`);
   };
 
+  const editarCotizacion = (id) => {
+    if (!id) return;
+    setPage('cotizador');
+    window.history.pushState({}, '', `/cotizador?quotationId=${encodeURIComponent(id)}`);
+  };
+
   const volverACotizaciones = () => {
     setPage('cotizaciones');
     window.history.pushState({}, '', '/cotizaciones');
@@ -166,7 +172,7 @@ export default function App() {
       {page === 'aiStudio' && (accesoVentas ? <AIStudio setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'capturaInteligente' && (accesoVentas ? <CapturaInteligente /> : <Login setPage={ir} destino="crm" />)}
       {page === 'cotizador' && (accesoVentas ? <CotizadorUniversal /> : <Login setPage={ir} destino="ventas" />)}
-      {page === 'cotizaciones' && (accesoVentas ? <QuotationsViewer onOpenQuotation={abrirCotizacion} /> : <Login setPage={ir} destino="ventas" />)}
+      {page === 'cotizaciones' && (accesoVentas ? <QuotationsViewer onOpenQuotation={abrirCotizacion} onEditQuotation={editarCotizacion} /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'quotationDetail' && (accesoVentas ? <QuotationDetail onBack={volverACotizaciones} /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'cotizacionesInteligentes' && (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'ordenTrabajo' && (accesoPedidos ? <OrdenTrabajo /> : <Login setPage={ir} destino="pedidos" />)}

@@ -12,7 +12,7 @@ const asSearchText = (quotation) => [
   quotation.customer?.phone
 ].filter(Boolean).join(' ').toLowerCase();
 
-export default function QuotationsViewer({ onOpenQuotation }) {
+export default function QuotationsViewer({ onOpenQuotation, onEditQuotation }) {
   const [quotations, setQuotations] = useState([]);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
@@ -134,6 +134,7 @@ export default function QuotationsViewer({ onOpenQuotation }) {
               key={quotation.id || quotation.quotationNumber}
               quotation={quotation}
               onOpen={onOpenQuotation}
+              onEdit={onEditQuotation}
             />
           ))}
         </section>

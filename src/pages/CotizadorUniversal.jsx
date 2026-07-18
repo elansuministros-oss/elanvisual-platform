@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { projectCoreClient } from '../modules/vqs/services/projectCoreClient';
 import { projectContextClient } from '../modules/vqs/services/projectContextClient';
+import { getQuotationEditData, updateQuotation } from '../modules/quotation-viewer/services/quotationViewerService';
 import { readDesignFile } from '../services/designPortalService';
 import VQSProjectSummary from './VQSProjectSummary';
 import '../styles/cotizador-universal.css';
@@ -179,7 +180,14 @@ function isEmptyItem(item) {
   return !item.title && !item.productId && !item.designId && Number(item.unitPrice || 0) === 0;
 }
 
+function resolveEditPublicDocument(record = {}) {
+  const document = record.quotation_document || record.quotationDocument || {};
+  return document.publicDocument || document.public_document || {};
+}
+
 export default function CotizadorUniversal() {
+  const editProjectId = new URLSearchParams(window.location.search).get('quotationId')?.trim() || '';
+  const isEditing = Boolean(editProjectId);
   const [customerId, setCustomerId] = useState(() => `ELANVISUAL-${crypto.randomUUID()}`);
   const [customer, setCustomer] = useState({ name: '', companyName: '', phone: '', email: '', address: '', taxId: '' });
   const [project, setProject] = useState({ title: '', expectedDeliveryAt: '', images: [] });
@@ -199,6 +207,8 @@ export default function CotizadorUniversal() {
   const [saveError, setSaveError] = useState('');
   const [creation, setCreation] = useState(null);
   const [savedContract, setSavedContract] = useState(null);
+  const [editLoading, setEditLoading] = useState(isEditing);
+  const [editQuotationNumber, setEditQuotationNumber] = useState('');
 
   const subtotalGross = useMemo(() => items.reduce(
     (sum, item) => sum + Number(item.quantity || 0) * Number(item.unitPrice || 0), 0
@@ -407,17 +417,88 @@ export default function CotizadorUniversal() {
     return () => window.clearTimeout(timer);
   }, [searchQuery, lastAutoQuery]);
 
+  useEffect(() => {
+    if (!isEditing) return undefined;
+    let mounted = true;
+
+    async function loadEditData() {
+      setEditLoading(true);
+      setSaveError('');
+      try {
+        const record = await getQuotationEditData(editProjectId);
+        const publicDocument = resolveEditPublicDocument(record);
+        const pricing = publicDocument.pricing || publicDocument.totals || record.pricing || {};
+        const paymentTerms = publicDocument.paymentTerms || publicDocument.payment_terms || record.paymentTerms || record.payment_terms || {};
+        const customerData = publicDocument.customer || record.customer || {};
+        const projectData = publicDocument.project || record.project || {};
+        const sourceData = publicDocument.source || record.source || {};
+        const loadedItems = Array.isArray(publicDocument.items) ? publicDocument.items.map((item) => mapContextItem(item, publicDocument)) : [];
+        const loadedSubtotal = loadedItems.reduce((sum, item) => sum + Number(item.quantity || 0) * Number(item.unitPrice || 0), 0);
+        const discountUsd = Number(pricing.discountUsd ?? pricing.discount_usd ?? 0);
+        const taxRate = Number(pricing.taxRate ?? pricing.tax_rate ?? 0);
+        const type = paymentTerms.type || '60_40';
+        const loadedInstallments = Array.isArray(paymentTerms.installments) ? paymentTerms.installments : [];
+
+        if (!mounted) return;
+        setEditQuotationNumber(publicDocument.quotationNumber || record.quotationNumber || record.quotation_number || '');
+        setCustomerId(customerData.customerId || customerData.customer_id || record.customerId || record.customer_id || `ELANVISUAL-${crypto.randomUUID()}`);
+        setCustomer({
+          name: customerData.name || '',
+          companyName: customerData.companyName || customerData.company_name || '',
+          phone: customerData.phone || '',
+          email: customerData.email || '',
+          address: customerData.address || '',
+          taxId: customerData.taxId || customerData.tax_id || ''
+        });
+        setProject({
+          title: projectData.title || record.title || '',
+          expectedDeliveryAt: projectData.expectedDeliveryAt || projectData.expected_delivery_at || '',
+          images: Array.isArray(projectData.images) ? projectData.images : []
+        });
+        if (loadedItems.length) setItems(loadedItems);
+        setSource({
+          type: sourceData.type || record.sourceType || 'manual',
+          sourceId: sourceData.sourceId || sourceData.source_id || record.sourceId || '',
+          designRequestId: sourceData.designRequestId || sourceData.design_request_id || '',
+          storeProductId: sourceData.storeProductId || sourceData.store_product_id || '',
+          storeCartId: sourceData.storeCartId || sourceData.store_cart_id || '',
+          designMode: sourceData.designMode || sourceData.design_mode || 'optional'
+        });
+        setDiscountRate(loadedSubtotal > 0 ? (discountUsd / loadedSubtotal) * 100 : 0);
+        setApplyTax(taxRate > 0);
+        setExchangeRate(Number(pricing.exchangeRate ?? pricing.exchange_rate ?? 36.8));
+        setPaymentType(type);
+        if (type === 'custom' && loadedInstallments.length) {
+          setCustomInstallments(loadedInstallments.map((entry) => ({
+            label: entry.label || '',
+            percentage: Number(entry.percentage || 0),
+            dueCondition: entry.dueCondition || entry.due_condition || ''
+          })));
+        }
+      } catch (error) {
+        if (mounted) setSaveError(error.message || 'No fue posible cargar la cotización para editar.');
+      } finally {
+        if (mounted) setEditLoading(false);
+      }
+    }
+
+    loadEditData();
+    return () => { mounted = false; };
+  }, [editProjectId, isEditing]);
+
   async function saveInProjectCore() {
     if (!canSubmit || saving) return;
     setSaving(true);
     setSaveError('');
     try {
-      const response = await projectCoreClient.createProject(intakeContract);
-      setCreation(response);
+      const response = isEditing
+        ? await updateQuotation(editProjectId, intakeContract)
+        : await projectCoreClient.createProject(intakeContract);
+      setCreation(response?.data || response);
       setSavedContract(intakeContract);
     } catch (error) {
       const details = error.details?.length ? ` ${error.details.join(' · ')}` : '';
-      setSaveError(`${error.message || 'No fue posible crear la cotización.'}${details}`);
+      setSaveError(`${error.message || (isEditing ? 'No fue posible guardar los cambios.' : 'No fue posible crear la cotización.')}${details}`);
     } finally {
       setSaving(false);
     }
@@ -427,11 +508,15 @@ export default function CotizadorUniversal() {
     return <VQSProjectSummary creation={creation} contract={savedContract} onBack={() => { setCreation(null); setSavedContract(null); }} />;
   }
 
+  if (editLoading) {
+    return <main className="uq-shell"><section className="uq-card"><h2>Cargando cotización…</h2><p>Consultando los datos oficiales en el Orchestrator.</p></section></main>;
+  }
+
   return (
     <main className="uq-shell">
       <header className="uq-header">
-        <div><span>ELANVISUAL · VQS</span><h1>Nueva cotización</h1><p>Conectada directamente a Project Core mediante el Orchestrator.</p></div>
-        <button type="button" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? 'Creando…' : 'Crear cotización'}</button>
+        <div><span>ELANVISUAL · VQS</span><h1>{isEditing ? `Editar cotización ${editQuotationNumber}` : 'Nueva cotización'}</h1><p>Conectada directamente a Project Core mediante el Orchestrator.</p></div>
+        <button type="button" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? (isEditing ? 'Guardando…' : 'Creando…') : (isEditing ? 'Guardar cambios' : 'Crear cotización')}</button>
       </header>
 
       <section className="uq-card">
@@ -559,7 +644,7 @@ export default function CotizadorUniversal() {
             <div className="uq-summary-row uq-total"><span>Total</span><b>USD {total.toFixed(2)}</b></div>
             <div className="uq-summary-row"><span>Total NIO</span><b>C$ {payableTotalNio.toFixed(2)}</b></div>
           </section>
-          <button type="button" className="uq-primary-wide" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? 'Creando…' : 'Crear cotización'}</button>
+          <button type="button" className="uq-primary-wide" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? (isEditing ? 'Guardando…' : 'Creando…') : (isEditing ? 'Guardar cambios' : 'Crear cotización')}</button>
         </aside>
       </section>
     </main>

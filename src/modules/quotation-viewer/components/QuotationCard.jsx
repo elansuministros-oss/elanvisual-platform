@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, CalendarDays, CircleDollarSign, Phone, UserRound } from 'lucide-react';
+import { ArrowRight, CalendarDays, CircleDollarSign, Pencil, Phone, UserRound } from 'lucide-react';
 
 const empty = 'No registrado';
 
@@ -30,8 +30,9 @@ function display(value) {
   return value || empty;
 }
 
-export default function QuotationCard({ quotation, onOpen }) {
+export default function QuotationCard({ quotation, onOpen, onEdit }) {
   const canOpen = Boolean(quotation?.id);
+  const canEdit = canOpen && quotation?.status === 'draft';
 
   return (
     <article className="qv-card">
@@ -70,14 +71,25 @@ export default function QuotationCard({ quotation, onOpen }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        className="qv-card-action"
-        disabled={!canOpen}
-        onClick={() => canOpen && onOpen(quotation.id)}
-      >
-        Ver cotizacion <ArrowRight size={18} />
-      </button>
+      <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        {canEdit && (
+          <button
+            type="button"
+            className="qv-card-action"
+            onClick={() => onEdit?.(quotation.id)}
+          >
+            Editar cotizacion <Pencil size={18} />
+          </button>
+        )}
+        <button
+          type="button"
+          className="qv-card-action"
+          disabled={!canOpen}
+          onClick={() => canOpen && onOpen(quotation.id)}
+        >
+          Ver cotizacion <ArrowRight size={18} />
+        </button>
+      </div>
     </article>
   );
 }
