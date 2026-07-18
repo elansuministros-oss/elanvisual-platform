@@ -1,3 +1,5 @@
+import { resolveBaseUrl } from '../modules/vqs/services/projectCoreClient';
+
 export function resolveCoreDesignUrl(value = '') {
   const configured = String(value || '').trim().replace(/\/+$/, '');
 
@@ -18,24 +20,70 @@ const CORE_DESIGN_URL = resolveCoreDesignUrl(
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 
-export function readDesignFile(file) {
+function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
-    if (!file) return resolve(null);
-
-    if (file.size > MAX_FILE_BYTES) {
-      return reject(new Error('Cada archivo debe pesar menos de 8 MB.'));
-    }
-
     const reader = new FileReader();
-    reader.onload = () => resolve({
-      name: file.name,
-      mimeType: file.type,
-      sizeBytes: file.size,
-      dataUrl: String(reader.result || '')
-    });
+    reader.onload = () => resolve(String(reader.result || ''));
     reader.onerror = () => reject(new Error('No fue posible leer el archivo.'));
     reader.readAsDataURL(file);
   });
+}
+
+async function uploadQuotationAsset(file, dataUrl) {
+  const response = await fetch(`${resolveBaseUrl()}/api/vqs/assets`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-Elankav-Platform': 'ELANVISUAL',
+      'X-Elankav-Actor-Type': 'user'
+    },
+    body: JSON.stringify({
+      platform: 'ELANVISUAL',
+      itemId: crypto.randomUUID(),
+      name: file.name,
+      mimeType: file.type,
+      dataUrl
+    })
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || !payload?.data?.signedUrl) {
+    throw new Error(payload?.error || 'No fue posible subir la fotografía al Orchestrator.');
+  }
+  return payload.data;
+}
+
+export async function readDesignFile(file) {
+  if (!file) return null;
+  if (file.size > MAX_FILE_BYTES) {
+    throw new Error('Cada archivo debe pesar menos de 8 MB.');
+  }
+
+  const dataUrl = await readFileAsDataUrl(file);
+  const isQuotationUpload = typeof window === 'object' && window.location.pathname.startsWith('/cotizador');
+  if (!isQuotationUpload) {
+    return {
+      name: file.name,
+      mimeType: file.type,
+      sizeBytes: file.size,
+      dataUrl
+    };
+  }
+
+  const asset = await uploadQuotationAsset(file, dataUrl);
+  return {
+    id: crypto.randomUUID(),
+    name: file.name,
+    mimeType: asset.mimeType || file.type,
+    sizeBytes: asset.sizeBytes || file.size,
+    dataUrl: asset.signedUrl,
+    signedUrl: asset.signedUrl,
+    url: asset.signedUrl,
+    bucket: asset.bucket,
+    path: asset.path,
+    objectPath: asset.objectPath || asset.path,
+    kind: asset.kind || 'existing-product-photo'
+  };
 }
 
 export function parseWhatsAppDesignContext(
@@ -117,7 +165,7 @@ export async function loadDesignRequestStatus({ requestCode, accessToken }) {
     throw new Error('No fue posible consultar la propuesta.');
   }
 
-  return data.result;
+  return data;
 }
 
 export async function submitDesignFollowup({
