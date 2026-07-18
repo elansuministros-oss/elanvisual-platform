@@ -1,3 +1,5 @@
+import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry';
+
 const DEFAULT_ORCHESTRATOR_URL = 'https://orchestrator.elankav.com';
 
 function resolveBaseUrl() {
@@ -29,9 +31,21 @@ async function request(path, options = {}) {
   return payload;
 }
 
-export const createProject = (contract) => request('/api/vqs/projects', { method: 'POST', body: JSON.stringify(contract) });
+export const createProject = async (contract) => {
+  const preparedContract = await prepareQuotationContractAssets(contract);
+  return request('/api/vqs/projects', {
+    method: 'POST',
+    body: JSON.stringify(preparedContract)
+  });
+};
 export const getProject = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, { method: 'GET' });
-export const updateProject = (projectId, patch) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, { method: 'PATCH', body: JSON.stringify(patch) });
+export const updateProject = async (projectId, patch) => {
+  const preparedPatch = await prepareQuotationContractAssets(patch);
+  return request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(preparedPatch)
+  });
+};
 export const getProjectStatus = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}/status`, { method: 'GET' });
 export const sendQuotationWhatsApp = (projectId, payload) => request(
   `/api/vqs/projects/${encodeURIComponent(projectId)}/send-whatsapp`,
