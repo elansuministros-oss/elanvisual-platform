@@ -1,7 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ClipboardList, FileText, ShoppingCart } from 'lucide-react';
 import OfficialQuotationDocument from '../modules/quotation-viewer/components/OfficialQuotationDocument';
 import { getQuotationDetail } from '../modules/quotation-viewer/services/quotationViewerService';
+import {
+  createPurchaseOrder,
+  createWorkOrder,
+  listPurchaseOrders,
+  listWorkOrders
+} from '../modules/quotation-viewer/services/operationalOrdersService';
 import '../styles/quotation-viewer.css';
 
 const PUBLIC_QUOTATION_BASE_URL = 'https://visual.elankav.com/cotizaciones/publicas';
@@ -47,9 +53,7 @@ function openWhatsappChat(phone, quotationNumber, projectId) {
   const webUrl = `https://api.whatsapp.com/send?phone=${target}&text=${encodedMessage}&type=phone_number&app_absent=0`;
 
   let fallbackTimer = window.setTimeout(() => {
-    if (document.visibilityState === 'visible') {
-      window.location.assign(webUrl);
-    }
+    if (document.visibilityState === 'visible') window.location.assign(webUrl);
   }, 900);
 
   const clearFallback = () => {
@@ -65,11 +69,93 @@ function openWhatsappChat(phone, quotationNumber, projectId) {
   window.location.href = appUrl;
 }
 
+function OperationalFlowPanel({ projectId, workOrders, purchaseOrders, loading, error, onGenerateWorkOrder, onGeneratePurchaseOrder }) {
+  const [showWorkOrders, setShowWorkOrders] = useState(false);
+  const [showPurchaseOrders, setShowPurchaseOrders] = useState(false);
+  const workOrder = workOrders[0] || null;
+
+  return (
+    <section className="qv-operational-panel" aria-label="Flujo operativo del proyecto">
+      <div className="qv-operational-heading">
+        <div>
+          <span className="qv-eyebrow">Proyecto operativo</span>
+          <h2>OT y OC</h2>
+          <p>{projectId}</p>
+        </div>
+        {loading && <small>Actualizando...</small>}
+      </div>
+
+      {error && <div className="qv-operational-error">{error}</div>}
+
+      <div className="qv-operational-actions">
+        <button type="button" className="qv-card-action" onClick={() => document.getElementById('documento-cotizacion')?.scrollIntoView({ behavior: 'smooth' })}>
+          Ver cotizacion <FileText size={18} />
+        </button>
+        {!workOrder ? (
+          <button type="button" className="qv-card-action" onClick={onGenerateWorkOrder} disabled={loading}>
+            Generar OT <ClipboardList size={18} />
+          </button>
+        ) : (
+          <button type="button" className="qv-card-action" onClick={() => setShowWorkOrders((value) => !value)}>
+            Ver OT <ClipboardList size={18} />
+          </button>
+        )}
+        <button type="button" className="qv-card-action" onClick={onGeneratePurchaseOrder} disabled={loading}>
+          Generar OC <ShoppingCart size={18} />
+        </button>
+        {purchaseOrders.length > 0 && (
+          <button type="button" className="qv-card-action" onClick={() => setShowPurchaseOrders((value) => !value)}>
+            Ver OC <ShoppingCart size={18} />
+          </button>
+        )}
+      </div>
+
+      {showWorkOrders && workOrder && (
+        <div className="qv-operational-record">
+          <strong>{workOrder.workOrderNumber}</strong>
+          <span>Estado: {workOrder.status}</span>
+          <span>Proyecto: {workOrder.projectId}</span>
+        </div>
+      )}
+
+      {showPurchaseOrders && purchaseOrders.map((order) => (
+        <div className="qv-operational-record" key={order.id}>
+          <strong>{order.purchaseOrderNumber}</strong>
+          <span>Proveedor: {order.supplierId}</span>
+          <span>Estado: {order.status}</span>
+        </div>
+      ))}
+    </section>
+  );
+}
+
 export default function QuotationDetail({ onBack }) {
   const quotationId = useMemo(() => readQuotationIdFromPath(), []);
   const [quotation, setQuotation] = useState(null);
+  const [workOrders, setWorkOrders] = useState([]);
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [operationsLoading, setOperationsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [operationError, setOperationError] = useState('');
+
+  async function loadOperations(projectId) {
+    if (!projectId) return;
+    setOperationsLoading(true);
+    setOperationError('');
+    try {
+      const [workOrderRows, purchaseOrderRows] = await Promise.all([
+        listWorkOrders(projectId),
+        listPurchaseOrders(projectId)
+      ]);
+      setWorkOrders(Array.isArray(workOrderRows) ? workOrderRows : []);
+      setPurchaseOrders(Array.isArray(purchaseOrderRows) ? purchaseOrderRows : []);
+    } catch (loadError) {
+      setOperationError(loadError.message || 'No fue posible consultar OT y OC.');
+    } finally {
+      setOperationsLoading(false);
+    }
+  }
 
   useEffect(() => {
     let mounted = true;
@@ -79,7 +165,10 @@ export default function QuotationDetail({ onBack }) {
       setError('');
       try {
         const detail = await getQuotationDetail(quotationId);
-        if (mounted) setQuotation(detail);
+        if (mounted) {
+          setQuotation(detail);
+          await loadOperations(detail.projectId || detail.project?.id || detail.id);
+        }
       } catch (loadError) {
         if (mounted) {
           setQuotation(null);
@@ -91,9 +180,7 @@ export default function QuotationDetail({ onBack }) {
     }
 
     loadDetail();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [quotationId]);
 
   if (loading) {
@@ -121,6 +208,34 @@ export default function QuotationDetail({ onBack }) {
     );
   }
 
+  const projectId = quotation.projectId || quotation.project?.id || quotation.id;
+
+  const handleGenerateWorkOrder = async () => {
+    setOperationsLoading(true);
+    setOperationError('');
+    try {
+      await createWorkOrder(projectId, quotation.quotationId);
+      await loadOperations(projectId);
+    } catch (createError) {
+      setOperationError(createError.message || 'No fue posible generar la OT.');
+      setOperationsLoading(false);
+    }
+  };
+
+  const handleGeneratePurchaseOrder = async () => {
+    const supplierId = window.prompt('Ingrese el identificador o nombre oficial del proveedor:');
+    if (!supplierId?.trim()) return;
+    setOperationsLoading(true);
+    setOperationError('');
+    try {
+      await createPurchaseOrder(projectId, supplierId.trim());
+      await loadOperations(projectId);
+    } catch (createError) {
+      setOperationError(createError.message || 'No fue posible generar la OC.');
+      setOperationsLoading(false);
+    }
+  };
+
   const handleDocumentClickCapture = (event) => {
     const button = event.target.closest('button');
     if (!button || !button.textContent?.toLowerCase().includes('whatsapp')) return;
@@ -131,13 +246,26 @@ export default function QuotationDetail({ onBack }) {
     openWhatsappChat(
       quotation.customer?.phone,
       quotation.quotationNumber,
-      quotation.projectId || quotation.project?.id || quotation.id
+      projectId
     );
   };
 
   return (
     <div onClickCapture={handleDocumentClickCapture}>
-      <OfficialQuotationDocument quotation={quotation} onBack={onBack} />
+      <main className="qv-shell">
+        <OperationalFlowPanel
+          projectId={projectId}
+          workOrders={workOrders}
+          purchaseOrders={purchaseOrders}
+          loading={operationsLoading}
+          error={operationError}
+          onGenerateWorkOrder={handleGenerateWorkOrder}
+          onGeneratePurchaseOrder={handleGeneratePurchaseOrder}
+        />
+      </main>
+      <div id="documento-cotizacion">
+        <OfficialQuotationDocument quotation={quotation} onBack={onBack} />
+      </div>
     </div>
   );
 }
