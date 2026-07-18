@@ -1,4 +1,5 @@
 import { resolveBaseUrl } from '../../vqs/services/projectCoreClient';
+import { prepareQuotationContractAssets } from '../../vqs/services/quotationAssetUploadRegistry';
 import {
   normalizeQuotationCollection,
   normalizeQuotationRecord
@@ -111,10 +112,11 @@ export async function getQuotationEditData(id) {
 export async function updateQuotation(id, contract) {
   const requestedId = String(id || '').trim();
   if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
+  const preparedContract = await prepareQuotationContractAssets(contract);
 
   return request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
     method: 'PATCH',
-    body: contract
+    body: preparedContract
   });
 }
 
