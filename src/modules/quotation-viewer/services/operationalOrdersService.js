@@ -1,4 +1,5 @@
 import { resolveBaseUrl } from '../../vqs/services/projectCoreClient';
+import '../../../styles/operational-flow.css';
 
 const PLATFORM = 'ELANVISUAL';
 
