@@ -1,4 +1,5 @@
 import { resolveBaseUrl } from '../modules/vqs/services/projectCoreClient';
+import { registerQuotationAssetUpload } from '../modules/vqs/services/quotationAssetUploadRegistry';
 
 export function resolveCoreDesignUrl(value = '') {
   const configured = String(value || '').trim().replace(/\/+$/, '');
@@ -70,19 +71,24 @@ export async function readDesignFile(file) {
     };
   }
 
-  const asset = await uploadQuotationAsset(file, dataUrl);
-  return {
-    id: crypto.randomUUID(),
+  const uploadPromise = uploadQuotationAsset(file, dataUrl);
+  const uploadToken = registerQuotationAssetUpload({
     name: file.name,
-    mimeType: asset.mimeType || file.type,
-    sizeBytes: asset.sizeBytes || file.size,
-    dataUrl: asset.signedUrl,
-    signedUrl: asset.signedUrl,
-    url: asset.signedUrl,
-    bucket: asset.bucket,
-    path: asset.path,
-    objectPath: asset.objectPath || asset.path,
-    kind: asset.kind || 'existing-product-photo'
+    mimeType: file.type,
+    sizeBytes: file.size,
+    promise: uploadPromise
+  });
+
+  return {
+    id: uploadToken,
+    uploadToken,
+    name: file.name,
+    mimeType: file.type,
+    sizeBytes: file.size,
+    dataUrl,
+    url: dataUrl,
+    pending: true,
+    kind: 'existing-product-photo'
   };
 }
 
