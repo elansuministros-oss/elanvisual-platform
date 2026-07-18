@@ -33,27 +33,28 @@ async function resolvePendingUploads() {
   const records = [...pendingUploads.values()];
   if (!records.length) return [];
 
-  const resolved = await Promise.all(records.map(async (record) => {
-    try {
-      const asset = await record.promise;
-      return {
-        ...record,
-        asset: {
-          ...asset,
-          name: asset?.name || record.name,
-          mimeType: asset?.mimeType || record.mimeType,
-          sizeBytes: Number(asset?.sizeBytes || record.sizeBytes)
-        }
-      };
-    } catch (error) {
-      const uploadError = new Error(error?.message || 'No fue posible subir la fotografía al Orchestrator.');
-      uploadError.code = error?.code || 'QUOTATION_ASSET_UPLOAD_FAILED';
-      throw uploadError;
-    }
-  }));
-
-  records.forEach((record) => pendingUploads.delete(record.token));
-  return resolved;
+  try {
+    return await Promise.all(records.map(async (record) => {
+      try {
+        const asset = await record.promise;
+        return {
+          ...record,
+          asset: {
+            ...asset,
+            name: asset?.name || record.name,
+            mimeType: asset?.mimeType || record.mimeType,
+            sizeBytes: Number(asset?.sizeBytes || record.sizeBytes)
+          }
+        };
+      } catch (error) {
+        const uploadError = new Error(error?.message || 'No fue posible subir la fotografía al Orchestrator.');
+        uploadError.code = error?.code || 'QUOTATION_ASSET_UPLOAD_FAILED';
+        throw uploadError;
+      }
+    }));
+  } finally {
+    records.forEach((record) => pendingUploads.delete(record.token));
+  }
 }
 
 export async function prepareQuotationContractAssets(contract = {}) {
