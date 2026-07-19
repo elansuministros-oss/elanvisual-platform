@@ -1,4 +1,4 @@
-import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry';
+import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry.js';
 
 const DEFAULT_ORCHESTRATOR_URL = 'https://orchestrator.elankav.com';
 
