@@ -1,5 +1,5 @@
-import { resolveBaseUrl } from '../modules/vqs/services/projectCoreClient';
-import { registerQuotationAssetUpload } from '../modules/vqs/services/quotationAssetUploadRegistry';
+import { resolveBaseUrl } from '../modules/vqs/services/projectCoreClient.js';
+import { registerQuotationAssetUpload } from '../modules/vqs/services/quotationAssetUploadRegistry.js';
 
 export function resolveCoreDesignUrl(value = '') {
   const configured = String(value || '').trim().replace(/\/+$/, '');
@@ -20,6 +20,7 @@ const CORE_DESIGN_URL = resolveCoreDesignUrl(
 );
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
+const ALLOWED_QUOTATION_IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 function readFileAsDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -30,7 +31,14 @@ function readFileAsDataUrl(file) {
   });
 }
 
-async function uploadQuotationAsset(file, dataUrl) {
+function assertAllowedQuotationImage(file) {
+  const mimeType = String(file?.type || '').toLowerCase();
+  if (ALLOWED_QUOTATION_IMAGE_MIME_TYPES.has(mimeType)) return;
+
+  throw new Error('Solo se permiten imagenes JPG, PNG o WEBP. HEIC/HEIF debe convertirse antes de cargar.');
+}
+
+async function uploadQuotationAsset(file, dataUrl, { itemId, uploadToken } = {}) {
   const response = await fetch(`${resolveBaseUrl()}/api/vqs/assets`, {
     method: 'POST',
     headers: {
@@ -41,7 +49,9 @@ async function uploadQuotationAsset(file, dataUrl) {
     },
     body: JSON.stringify({
       platform: 'ELANVISUAL',
-      itemId: crypto.randomUUID(),
+      itemId,
+      uploadToken,
+      assetId: uploadToken,
       name: file.name,
       mimeType: file.type,
       dataUrl
@@ -54,14 +64,16 @@ async function uploadQuotationAsset(file, dataUrl) {
   return payload.data;
 }
 
-export async function readDesignFile(file) {
+export async function readDesignFile(file, options = {}) {
   if (!file) return null;
   if (file.size > MAX_FILE_BYTES) {
     throw new Error('Cada archivo debe pesar menos de 8 MB.');
   }
 
-  const dataUrl = await readFileAsDataUrl(file);
   const isQuotationUpload = typeof window === 'object' && window.location.pathname.startsWith('/cotizador');
+  if (isQuotationUpload) assertAllowedQuotationImage(file);
+
+  const dataUrl = await readFileAsDataUrl(file);
   if (!isQuotationUpload) {
     return {
       name: file.name,
@@ -71,8 +83,14 @@ export async function readDesignFile(file) {
     };
   }
 
-  const uploadPromise = uploadQuotationAsset(file, dataUrl);
-  const uploadToken = registerQuotationAssetUpload({
+  const uploadToken = options.uploadToken || crypto.randomUUID();
+  const itemId = String(options.itemId || uploadToken).trim();
+  const quotationId = String(options.quotationId || 'current-quotation').trim();
+  const uploadPromise = uploadQuotationAsset(file, dataUrl, { itemId, uploadToken });
+  const registeredUploadToken = registerQuotationAssetUpload({
+    quotationId,
+    itemId,
+    uploadToken,
     name: file.name,
     mimeType: file.type,
     sizeBytes: file.size,
@@ -80,15 +98,17 @@ export async function readDesignFile(file) {
   });
 
   return {
-    id: uploadToken,
-    uploadToken,
+    id: registeredUploadToken,
+    uploadToken: registeredUploadToken,
+    itemId,
+    quotationId,
     name: file.name,
     mimeType: file.type,
     sizeBytes: file.size,
     dataUrl,
     url: dataUrl,
     pending: true,
-    kind: 'existing-product-photo'
+    kind: 'quotation-image'
   };
 }
 
@@ -171,7 +191,7 @@ export async function loadDesignRequestStatus({ requestCode, accessToken }) {
     throw new Error('No fue posible consultar la propuesta.');
   }
 
-  return data;
+  return data.result;
 }
 
 export async function submitDesignFollowup({
