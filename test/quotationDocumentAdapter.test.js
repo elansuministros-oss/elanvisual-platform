@@ -57,3 +57,18 @@ test('normaliza publicDocument oficial anidado para el visor de cotizaciones', (
   assert.equal(quotation.items[0].images[0].url, 'https://cdn.example/render.png');
   assert.equal(quotation.totals.totalUsd, 125);
 });
+
+test('normaliza listado VQS usando projectId como identificador del visor', () => {
+  const quotation = normalizeQuotationRecord({
+    projectId: 'project-123',
+    quotationId: 'quotation-456',
+    quotationNumber: 'VQS-000001',
+    status: 'draft',
+    customerName: 'Cliente demo'
+  });
+
+  assert.equal(quotation.id, 'project-123');
+  assert.equal(quotation.projectId, 'project-123');
+  assert.equal(quotation.quotationId, 'quotation-456');
+  assert.equal(quotation.quotationNumber, 'VQS-000001');
+});

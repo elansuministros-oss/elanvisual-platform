@@ -299,6 +299,23 @@ function normalizeBrand(source) {
 export function normalizeQuotationRecord(source = {}) {
   const recordSource = normalizeRecordSource(source);
   const items = normalizeItems(recordSource);
+  const projectId = firstText(recordSource, [
+    'projectId',
+    'project_id',
+    'project.id',
+    'data.projectId',
+    'data.project_id',
+    'vqsProjectId',
+    'vqs_project_id'
+  ]);
+  const quotationId = firstText(recordSource, [
+    'quotationId',
+    'quotation_id',
+    'quotation.id',
+    'quote.id',
+    'data.quotationId',
+    'data.quotation_id'
+  ]);
   const quotationNumber = firstText(recordSource, [
     'quotationNumber',
     'quotation_number',
@@ -326,15 +343,14 @@ export function normalizeQuotationRecord(source = {}) {
   ]);
 
   return {
-    id: firstText(recordSource, [
+    id: projectId || firstText(recordSource, [
       'id',
-      'projectId',
-      'project_id',
       'vqsProjectId',
       'vqs_project_id',
-      'project.id',
       'data.id'
-    ]) || quotationNumber,
+    ]),
+    projectId,
+    quotationId,
     quotationNumber,
     status: firstText(recordSource, ['status', 'estado', 'stage', 'project.status', 'project.stage', 'data.status']),
     date: firstText(recordSource, [
