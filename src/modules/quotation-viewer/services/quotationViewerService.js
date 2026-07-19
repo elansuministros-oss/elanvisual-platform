@@ -1,10 +1,10 @@
-import { resolveBaseUrl } from '../../vqs/services/projectCoreClient';
-import { prepareQuotationContractAssets } from '../../vqs/services/quotationAssetUploadRegistry';
+import { resolveBaseUrl } from '../../vqs/services/projectCoreClient.js';
+import { prepareQuotationContractAssets } from '../../vqs/services/quotationAssetUploadRegistry.js';
 import {
   normalizeQuotationCollection,
   normalizeQuotationRecord
-} from '../adapters/quotationDocumentAdapter';
-import { applyQuotationImageFallback } from '../adapters/quotationImageFallback';
+} from '../adapters/quotationDocumentAdapter.js';
+import { applyQuotationImageFallback } from '../adapters/quotationImageFallback.js';
 
 const PLATFORM = 'ELANVISUAL';
 const DEFAULT_LIMIT = 200;

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { projectCoreClient } from '../modules/vqs/services/projectCoreClient';
 import { projectContextClient } from '../modules/vqs/services/projectContextClient';
 import { getQuotationEditData, updateQuotation } from '../modules/quotation-viewer/services/quotationViewerService';
+import { unregisterQuotationAssetUpload, watchQuotationAssetUpload } from '../modules/vqs/services/quotationAssetUploadRegistry';
 import { readDesignFile } from '../services/designPortalService';
 import VQSProjectSummary from './VQSProjectSummary';
 import '../styles/cotizador-universal.css';
@@ -115,7 +116,7 @@ function resolvePrimaryItemImage(item = {}) {
   const manualImage = (Array.isArray(item.manualImages) ? item.manualImages : [])
     .find((image) => isImageDataUrl(image?.dataUrl) || isHttpUrl(image?.dataUrl));
 
-  return manualImage?.dataUrl || '';
+  return resolveAssetUrl(manualImage) || manualImage?.dataUrl || '';
 }
 
 function normalizeAssetFiles(images = []) {
@@ -125,7 +126,11 @@ function normalizeAssetFiles(images = []) {
       const normalized = {
         kind: String(asset.kind || ''),
         name: String(asset.name || ''),
-        path: String(asset.path || ''),
+        assetId: String(asset.assetId || asset.asset_id || ''),
+        uploadToken: String(asset.uploadToken || ''),
+        itemId: String(asset.itemId || asset.item_id || ''),
+        path: String(asset.path || asset.objectPath || asset.object_path || ''),
+        objectPath: String(asset.objectPath || asset.object_path || asset.path || ''),
         bucket: String(asset.bucket || ''),
         mimeType: String(asset.mimeType || ''),
         sizeBytes: Number(asset.sizeBytes || 0)
@@ -139,6 +144,27 @@ function normalizeAssetFiles(images = []) {
 
       return normalized;
     });
+}
+
+function sourceAssetFromManualImage(image = {}, itemId = '') {
+  const asset = {
+    kind: image.kind || 'quotation-image',
+    name: image.name,
+    mimeType: image.mimeType,
+    sizeBytes: image.sizeBytes,
+    itemId,
+    uploadToken: image.uploadToken,
+    pending: Boolean(image.pending)
+  };
+
+  ['assetId', 'bucket', 'path', 'objectPath', 'signedUrl', 'url', 'publicUrl', 'imageUrl'].forEach((field) => {
+    if (typeof image[field] === 'string' && image[field].trim()) asset[field] = image[field].trim();
+  });
+  if (image.uploadError) {
+    asset.uploadError = image.uploadError;
+    asset.failed = true;
+  }
+  return asset;
 }
 
 function mapContextItem(item = {}, context = {}) {
@@ -188,6 +214,10 @@ function resolveEditPublicDocument(record = {}) {
 export default function CotizadorUniversal() {
   const editProjectId = new URLSearchParams(window.location.search).get('quotationId')?.trim() || '';
   const isEditing = Boolean(editProjectId);
+  const quotationAssetScopeId = useMemo(
+    () => (editProjectId ? `edit:${editProjectId}` : `new:${crypto.randomUUID()}`),
+    [editProjectId]
+  );
   const [customerId, setCustomerId] = useState(() => `ELANVISUAL-${crypto.randomUUID()}`);
   const [customer, setCustomer] = useState({ name: '', companyName: '', phone: '', email: '', address: '', taxId: '' });
   const [project, setProject] = useState({ title: '', expectedDeliveryAt: '', images: [] });
@@ -227,6 +257,12 @@ export default function CotizadorUniversal() {
     dueCondition: entry.dueCondition || ''
   }));
   const paymentPercentTotal = installments.reduce((sum, entry) => sum + entry.percentage, 0);
+  const hasUploadBlockers = items.some((item) =>
+    Boolean(item.uploadError) ||
+    (Array.isArray(item.manualImages) && item.manualImages.some((image) =>
+      image.pending === true || Boolean(image.uploadError) || image.failed === true
+    ))
+  );
 
   const normalizedItems = items.map((item) => {
     const primaryImageUrl = resolvePrimaryItemImage(item);
@@ -272,15 +308,10 @@ export default function CotizadorUniversal() {
       sourceScreen: 'CotizadorUniversal',
       contextGateway: 'orchestrator',
       emcStatus: 'interfaces_only',
+      quotationAssetScopeId,
       sourceAssets: items.flatMap((item) => [
         ...(item.assetFiles || []),
-        ...(item.manualImages || []).map((image) => ({
-          kind: 'existing-product-photo',
-          name: image.name,
-          mimeType: image.mimeType,
-          sizeBytes: image.sizeBytes,
-          itemId: item.id
-        }))
+        ...(item.manualImages || []).map((image) => sourceAssetFromManualImage(image, item.id))
       ])
     }
   };
@@ -288,7 +319,8 @@ export default function CotizadorUniversal() {
   const canSubmit = Boolean(
     customer.name.trim() && project.title.trim() && Number(exchangeRate) > 0 &&
     normalizedItems.every((item) => item.title && item.quantity > 0 && item.unitPriceUsd >= 0) &&
-    Math.abs(paymentPercentTotal - 100) < 0.001
+    Math.abs(paymentPercentTotal - 100) < 0.001 &&
+    !hasUploadBlockers
   );
 
   const updateItem = (id, field, value) => setItems((current) =>
@@ -311,16 +343,48 @@ export default function CotizadorUniversal() {
       const acceptedFiles = files.slice(0, availableSlots);
       const preparedImages = [];
       for (const file of acceptedFiles) {
-        if (!String(file.type || '').startsWith('image/')) {
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(String(file.type || '').toLowerCase())) {
           throw new Error('Solo se permiten imágenes JPG, PNG o WEBP.');
         }
-        const prepared = await readDesignFile(file);
-        preparedImages.push({ id: crypto.randomUUID(), ...prepared });
+        const prepared = await readDesignFile(file, {
+          quotationId: quotationAssetScopeId,
+          itemId
+        });
+        preparedImages.push({ id: prepared.uploadToken || crypto.randomUUID(), ...prepared });
       }
 
       setItems((current) => current.map((entry) => entry.id === itemId
         ? { ...entry, manualImages: [...(entry.manualImages || []), ...preparedImages], uploadError: '' }
         : entry));
+      preparedImages.forEach((image) => {
+        if (!image.uploadToken) return;
+        watchQuotationAssetUpload(image.uploadToken, {
+          onFulfilled: (asset) => {
+            setItems((current) => current.map((entry) => {
+              if (entry.id !== itemId) return entry;
+              const manualImages = (entry.manualImages || []).map((manualImage) =>
+                manualImage.uploadToken === image.uploadToken
+                  ? { ...manualImage, ...asset, dataUrl: manualImage.dataUrl, pending: false, failed: false, uploadError: '' }
+                  : manualImage
+              );
+              const remainingError = manualImages.find((manualImage) => manualImage.uploadError)?.uploadError || '';
+              return { ...entry, manualImages, uploadError: remainingError };
+            }));
+          },
+          onRejected: (error) => {
+            setItems((current) => current.map((entry) => {
+              if (entry.id !== itemId) return entry;
+              const message = error.message || 'No fue posible subir la fotografia.';
+              const manualImages = (entry.manualImages || []).map((manualImage) =>
+                manualImage.uploadToken === image.uploadToken
+                  ? { ...manualImage, pending: false, failed: true, uploadError: message }
+                  : manualImage
+              );
+              return { ...entry, manualImages, uploadError: message };
+            }));
+          }
+        });
+      });
     } catch (error) {
       setItems((current) => current.map((entry) => entry.id === itemId
         ? { ...entry, uploadError: error.message || 'No fue posible agregar la fotografía.' }
@@ -329,6 +393,10 @@ export default function CotizadorUniversal() {
   }
 
   function removeManualImage(itemId, imageId) {
+    const removedImage = items
+      .find((entry) => entry.id === itemId)
+      ?.manualImages?.find((image) => image.id === imageId);
+    if (removedImage?.uploadToken) unregisterQuotationAssetUpload(removedImage.uploadToken);
     setItems((current) => current.map((item) => item.id === itemId
       ? { ...item, manualImages: (item.manualImages || []).filter((image) => image.id !== imageId), uploadError: '' }
       : item));
@@ -579,7 +647,7 @@ export default function CotizadorUniversal() {
                     <label className="wide">Agregar fotos existentes
                       <input
                         type="file"
-                        accept=".png,.jpg,.jpeg,.webp"
+                        accept="image/jpeg,image/png,image/webp"
                         multiple
                         onChange={(event) => {
                           void addManualImages(item.id, event.target.files);

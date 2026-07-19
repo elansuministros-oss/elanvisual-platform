@@ -4,11 +4,13 @@ import assert from 'node:assert/strict';
 import {
   loadDesignGallery,
   parseWhatsAppDesignContext,
+  readDesignFile,
   resolveCoreDesignUrl,
   loadDesignRequestStatus,
   submitDesignFollowup,
   submitDesignRequest
 } from '../src/services/designPortalService.js';
+import { unregisterQuotationAssetUpload } from '../src/modules/vqs/services/quotationAssetUploadRegistry.js';
 
 test('consulta estado privado de la generación con código y token', async () => {
   const originalFetch = globalThis.fetch;
@@ -164,5 +166,79 @@ test('DESIGN-PORTAL-01 consume únicamente la galería pública', async () => {
     assert.equal(result[0].id, 'design-1');
   } finally {
     globalThis.fetch = previousFetch;
+  }
+});
+test('readDesignFile en cotizador registra upload con itemId y uploadToken', async () => {
+  const previousFetch = globalThis.fetch;
+  const previousWindow = globalThis.window;
+  const previousFileReader = globalThis.FileReader;
+  let request = null;
+
+  globalThis.window = { location: { pathname: '/cotizador' } };
+  globalThis.FileReader = class {
+    readAsDataURL(file) {
+      this.result = file.dataUrl;
+      queueMicrotask(() => this.onload?.());
+    }
+  };
+  globalThis.fetch = async (_url, options) => {
+    request = JSON.parse(options.body);
+    return new Response(JSON.stringify({
+      success: true,
+      data: {
+        assetId: request.uploadToken,
+        kind: 'quotation-image',
+        itemId: request.itemId,
+        bucket: 'elanvisual',
+        objectPath: 'ELANVISUAL/quotation-assets/item-1/token-1.jpg',
+        mimeType: 'image/jpeg',
+        sizeBytes: 12,
+        signedUrl: 'https://storage.example/token-1'
+      }
+    }), { status: 201, headers: { 'content-type': 'application/json' } });
+  };
+
+  try {
+    const result = await readDesignFile({
+      name: 'foto.jpg',
+      type: 'image/jpeg',
+      size: 12,
+      dataUrl: 'data:image/jpeg;base64,AAAA'
+    }, {
+      quotationId: 'scope-1',
+      itemId: 'item-1',
+      uploadToken: 'token-1'
+    });
+
+    assert.equal(request.itemId, 'item-1');
+    assert.equal(request.uploadToken, 'token-1');
+    assert.equal(result.uploadToken, 'token-1');
+    assert.equal(result.itemId, 'item-1');
+    assert.equal(result.dataUrl, 'data:image/jpeg;base64,AAAA');
+  } finally {
+    unregisterQuotationAssetUpload('token-1');
+    globalThis.fetch = previousFetch;
+    globalThis.window = previousWindow;
+    globalThis.FileReader = previousFileReader;
+  }
+});
+
+test('readDesignFile rechaza HEIC en cotizador antes de subir', async () => {
+  const previousFetch = globalThis.fetch;
+  const previousWindow = globalThis.window;
+
+  globalThis.window = { location: { pathname: '/cotizador' } };
+  globalThis.fetch = async () => {
+    throw new Error('fetch no debe ejecutarse');
+  };
+
+  try {
+    await assert.rejects(
+      () => readDesignFile({ name: 'foto.heic', type: 'image/heic', size: 12 }),
+      /HEIC\/HEIF/
+    );
+  } finally {
+    globalThis.fetch = previousFetch;
+    globalThis.window = previousWindow;
   }
 });

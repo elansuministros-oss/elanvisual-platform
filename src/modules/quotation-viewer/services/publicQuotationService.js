@@ -1,6 +1,6 @@
-import { resolveBaseUrl } from '../../vqs/services/projectCoreClient';
-import { normalizeQuotationRecord } from '../adapters/quotationDocumentAdapter';
-import { applyQuotationImageFallback } from '../adapters/quotationImageFallback';
+import { resolveBaseUrl } from '../../vqs/services/projectCoreClient.js';
+import { normalizeQuotationRecord } from '../adapters/quotationDocumentAdapter.js';
+import { applyQuotationImageFallback } from '../adapters/quotationImageFallback.js';
 
 const HEADERS = Object.freeze({
   Accept: 'application/json',
