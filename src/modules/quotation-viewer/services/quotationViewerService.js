@@ -16,6 +16,7 @@ const REQUIRED_HEADERS = Object.freeze({
 });
 
 const hasValue = (value) => value !== undefined && value !== null && value !== '';
+const isObject = (value) => value && typeof value === 'object' && !Array.isArray(value);
 
 function buildUrl(path, params = {}) {
   const url = new URL(`${resolveBaseUrl()}${path}`);
@@ -57,6 +58,122 @@ function extractRecord(payload = {}) {
   return payload || {};
 }
 
+function extractRows(payload = {}) {
+  const candidates = [
+    payload,
+    payload.data,
+    payload.projects,
+    payload.items,
+    payload.results,
+    payload.records,
+    payload.quotations,
+    payload.data?.projects,
+    payload.data?.items,
+    payload.data?.results,
+    payload.data?.records,
+    payload.data?.quotations
+  ];
+  return candidates.find(Array.isArray) || [];
+}
+
+function valueAt(source, path) {
+  return path.split('.').reduce((current, key) => {
+    if (!isObject(current) && !Array.isArray(current)) return undefined;
+    return current?.[key];
+  }, source);
+}
+
+function firstText(source, paths) {
+  for (const path of paths) {
+    const value = valueAt(source, path);
+    if (typeof value === 'string' && value.trim()) return value.trim();
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  }
+  return '';
+}
+
+function parsedObject(value) {
+  if (isObject(value)) return value;
+  if (typeof value !== 'string' || !value.trim()) return {};
+  try {
+    const parsed = JSON.parse(value);
+    return isObject(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function snapshotFrom(record, names) {
+  for (const name of names) {
+    const snapshot = parsedObject(valueAt(record, name));
+    if (Object.keys(snapshot).length) return snapshot;
+  }
+  return {};
+}
+
+export function enrichQuotationListRecord(quotation = {}, record = {}) {
+  const customerSnapshot = snapshotFrom(record, [
+    'customerSnapshot',
+    'customer_snapshot',
+    'quotation.customerSnapshot',
+    'quotation.customer_snapshot',
+    'project.customerSnapshot',
+    'project.customer_snapshot'
+  ]);
+  const executiveSnapshot = snapshotFrom(record, [
+    'executiveSnapshot',
+    'executive_snapshot',
+    'quotation.executiveSnapshot',
+    'quotation.executive_snapshot',
+    'project.executiveSnapshot',
+    'project.executive_snapshot'
+  ]);
+
+  return {
+    ...quotation,
+    customer: {
+      ...(quotation.customer || {}),
+      name: quotation.customer?.name || firstText(record, [
+        'customerName',
+        'customer_name',
+        'clientName',
+        'client_name'
+      ]) || firstText(customerSnapshot, ['name', 'fullName', 'full_name', 'nombre']),
+      companyName: quotation.customer?.companyName || firstText(record, [
+        'customerCompanyName',
+        'customer_company_name',
+        'companyName',
+        'company_name'
+      ]) || firstText(customerSnapshot, ['companyName', 'company_name', 'company', 'empresa']),
+      phone: quotation.customer?.phone || firstText(record, [
+        'customerPhone',
+        'customer_phone',
+        'customerWhatsapp',
+        'customer_whatsapp',
+        'phone',
+        'whatsapp'
+      ]) || firstText(customerSnapshot, ['phone', 'whatsapp', 'telefono', 'celular']),
+      email: quotation.customer?.email || firstText(customerSnapshot, ['email', 'correo']),
+      address: quotation.customer?.address || firstText(customerSnapshot, ['address', 'direccion', 'location', 'ubicacion']),
+      taxId: quotation.customer?.taxId || firstText(customerSnapshot, ['taxId', 'tax_id', 'ruc'])
+    },
+    executive: {
+      ...(quotation.executive || {}),
+      name: quotation.executive?.name || firstText(record, [
+        'executiveName',
+        'executive_name',
+        'advisorName',
+        'advisor_name',
+        'sellerName',
+        'seller_name'
+      ]) || firstText(executiveSnapshot, ['name', 'fullName', 'full_name', 'nombre']),
+      role: quotation.executive?.role || firstText(executiveSnapshot, ['role', 'cargo']),
+      phone: quotation.executive?.phone || firstText(executiveSnapshot, ['phone', 'telefono', 'celular']),
+      email: quotation.executive?.email || firstText(executiveSnapshot, ['email', 'correo'])
+    }
+  };
+}
+
 function assertRecord(record) {
   if (!record || (typeof record === 'object' && !Array.isArray(record) && Object.keys(record).length === 0)) {
     throw new Error('No se encontro la cotizacion solicitada.');
@@ -81,7 +198,9 @@ export async function listQuotations({ limit = DEFAULT_LIMIT } = {}) {
   const payload = await request('/api/vqs/projects', {
     params: { platform: PLATFORM, limit }
   });
-  const quotations = normalizeQuotationCollection(payload);
+  const rows = extractRows(payload);
+  const quotations = normalizeQuotationCollection(payload)
+    .map((quotation, index) => enrichQuotationListRecord(quotation, rows[index] || {}));
 
   return {
     quotations,
