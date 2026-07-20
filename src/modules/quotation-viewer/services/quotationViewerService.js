@@ -17,6 +17,7 @@ const REQUIRED_HEADERS = Object.freeze({
 });
 
 const hasValue = (value) => value !== undefined && value !== null && value !== '';
+const text = (value) => String(value ?? '').trim();
 
 function buildUrl(path, params = {}) {
   const url = new URL(`${resolveBaseUrl()}${path}`);
@@ -58,6 +59,22 @@ function extractRecord(payload = {}) {
   return payload || {};
 }
 
+function preserveLineage(normalized = {}, record = {}, requestedProjectId = '') {
+  const projectId = text(
+    record.projectId || record.project_id || record.project?.id || record.id || requestedProjectId
+  );
+  const quotationId = text(
+    record.quotationId || record.quotation_id || record.quotation?.id || record.quote?.id
+  );
+
+  return {
+    ...normalized,
+    id: projectId || normalized.id,
+    projectId: projectId || normalized.projectId || normalized.id,
+    quotationId: quotationId || normalized.quotationId || ''
+  };
+}
+
 function assertRecord(record) {
   if (!record || (typeof record === 'object' && !Array.isArray(record) && Object.keys(record).length === 0)) {
     throw new Error('No se encontro la cotizacion solicitada.');
@@ -91,18 +108,18 @@ export async function listQuotations({ limit = DEFAULT_LIMIT } = {}) {
 }
 
 export async function getQuotationDetail(id) {
-  const requestedId = String(id || '').trim();
+  const requestedId = text(id);
   if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
 
   const payload = await request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
     params: { platform: PLATFORM }
   });
   const record = applyQuotationImageFallback(assertOfficialDocument(assertRecord(extractRecord(payload))));
-  return normalizeQuotationRecord(record);
+  return preserveLineage(normalizeQuotationRecord(record), record, requestedId);
 }
 
 export async function getQuotationEditData(id) {
-  const requestedId = String(id || '').trim();
+  const requestedId = text(id);
   if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
 
   const payload = await request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
@@ -112,7 +129,7 @@ export async function getQuotationEditData(id) {
 }
 
 export async function updateQuotation(id, contract) {
-  const requestedId = String(id || '').trim();
+  const requestedId = text(id);
   if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
   const preparedContract = await prepareQuotationContractAssets(contract);
 
