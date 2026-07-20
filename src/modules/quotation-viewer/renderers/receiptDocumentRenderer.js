@@ -8,7 +8,7 @@ const METHOD_LABELS = Object.freeze({
 
 const PLATFORM_LOGO_FALLBACKS = Object.freeze({
   ELANVISUAL: Object.freeze({
-    logoUrl: '/assets/branding/elanvisual.svg',
+    logoUrl: 'https://visual.elankav.com/assets/branding/elanvisual.svg',
     needsDarkBackground: true
   })
 });
