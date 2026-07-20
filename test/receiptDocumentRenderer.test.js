@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import {
   buildReceiptDocument,
   loadEmbeddedReceiptLogo,
-  officialReceiptNumber
+  officialReceiptNumber,
+  paymentLabel
 } from '../src/modules/quotation-viewer/renderers/receiptDocumentRenderer.js';
 
 const payment = {
@@ -76,13 +77,20 @@ test('mantiene el logo dentro del recuadro negro', () => {
   assert.match(html, /brand-logo-box svg\{display:block;width:205px/);
 });
 
-test('elimina Fecha y Tipo de pago únicamente del encabezado', () => {
+test('elimina Fecha pero conserva la clasificación del pago en el encabezado', () => {
   const html = buildReceiptDocument(payment, quotation, { brand: quotation.brand, logoSvg: INLINE_LOGO });
   const header = html.match(/<header class="head">([\s\S]*?)<\/header>/)?.[1] || '';
   assert.doesNotMatch(header, />Fecha</);
-  assert.doesNotMatch(header, />Tipo de pago</);
+  assert.match(header, />Tipo de pago</);
+  assert.match(header, />Anticipo</);
   assert.match(html, />Fecha de pago</);
   assert.match(html, />Forma de pago</);
+});
+
+test('clasifica Anticipo, Abono y Cancelación', () => {
+  assert.equal(paymentLabel({ pending_balance: 200, previous_paid: 0 }), 'Anticipo');
+  assert.equal(paymentLabel({ pending_balance: 100, previous_paid: 50 }), 'Abono');
+  assert.equal(paymentLabel({ pending_balance: 0, previous_paid: 50 }), 'Cancelación');
 });
 
 test('muestra siempre el número oficial en encabezado y título', () => {
