@@ -46,6 +46,28 @@ test('renderiza el logo y la identidad de la plataforma generadora', () => {
   assert.doesNotMatch(html, /ELANVISUAL · ELANKAV/);
 });
 
+test('no aplica fondo oscuro cuando existe logo específico para fondo claro', () => {
+  const html = buildReceiptDocument(payment, quotation);
+
+  assert.match(html, /class="brand-logo-box"/);
+  assert.doesNotMatch(html, /class="brand-logo-box is-dark"/);
+});
+
+test('aplica recuadro oscuro al logo blanco o genérico de la plataforma', () => {
+  const html = buildReceiptDocument(payment, {
+    ...quotation,
+    brand: {
+      platformId: 'ELANVISUAL',
+      name: 'ELANVISUAL',
+      logoLightUrl: '/assets/branding/elanvisual.svg'
+    }
+  });
+
+  assert.match(html, /class="brand-logo-box is-dark"/);
+  assert.match(html, /background:#111/);
+  assert.match(html, /print-color-adjust:exact/);
+});
+
 test('muestra siempre el número oficial en encabezado y título', () => {
   const html = buildReceiptDocument(payment, quotation);
 
