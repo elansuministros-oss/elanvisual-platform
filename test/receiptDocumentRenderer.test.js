@@ -37,35 +37,51 @@ const quotation = {
   }
 };
 
-test('renderiza el logo y la identidad de la plataforma generadora', () => {
+test('reutiliza el mismo asset normalizado de la cotización', () => {
   const html = buildReceiptDocument(payment, quotation);
 
   assert.match(html, /https:\/\/cdn\.example\/elanhome-logo\.svg/);
   assert.match(html, /alt="ELANHOME"/);
   assert.match(html, /home\.elankav\.com/);
-  assert.doesNotMatch(html, /ELANVISUAL · ELANKAV/);
+  assert.doesNotMatch(html, /PLATFORM_LOGO_FALLBACKS/);
 });
 
-test('no aplica fondo oscuro cuando existe logo específico para fondo claro', () => {
+test('muestra el logo dentro del recuadro negro sin cambiar el documento', () => {
   const html = buildReceiptDocument(payment, quotation);
 
-  assert.match(html, /class="brand-logo-box"/);
-  assert.doesNotMatch(html, /class="brand-logo-box is-dark"/);
+  assert.match(html, /class="brand-logo-box is-dark"/);
+  assert.match(html, /background:#11151b/);
+  assert.match(html, /print-color-adjust:exact/);
 });
 
-test('aplica recuadro oscuro al logo blanco o genérico de la plataforma', () => {
+test('resuelve el fallback relativo contra el origen de la ventana de impresión', () => {
   const html = buildReceiptDocument(payment, {
     ...quotation,
-    brand: {
-      platformId: 'ELANVISUAL',
-      name: 'ELANVISUAL',
-      logoLightUrl: '/assets/branding/elanvisual.svg'
-    }
+    brand: { platformId: 'ELANVISUAL', name: 'ELANVISUAL' }
+  }, {
+    baseUrl: 'https://preview.example'
   });
 
-  assert.match(html, /class="brand-logo-box is-dark"/);
-  assert.match(html, /background:#111/);
-  assert.match(html, /print-color-adjust:exact/);
+  assert.match(html, /https:\/\/preview\.example\/assets\/branding\/elanvisual\.svg/);
+});
+
+test('elimina Fecha y Tipo de pago únicamente del encabezado', () => {
+  const html = buildReceiptDocument(payment, quotation);
+  const header = html.match(/<header class="head">([\s\S]*?)<\/header>/)?.[1] || '';
+
+  assert.doesNotMatch(header, />Fecha</);
+  assert.doesNotMatch(header, />Tipo de pago</);
+  assert.match(html, />Fecha de pago</);
+  assert.match(html, />Forma de pago</);
+});
+
+test('bloquea impresión hasta comprobar que el logo cargó', () => {
+  const html = buildReceiptDocument(payment, quotation);
+
+  assert.match(html, /id="print-receipt" type="button" disabled/);
+  assert.match(html, /logo\.naturalWidth>0/);
+  assert.match(html, /logo\.addEventListener\('load',enable/);
+  assert.match(html, /logo\.addEventListener\('error',fail/);
 });
 
 test('muestra siempre el número oficial en encabezado y título', () => {
@@ -73,7 +89,7 @@ test('muestra siempre el número oficial en encabezado y título', () => {
 
   assert.equal(officialReceiptNumber(payment), 'REC-20260720-0001');
   assert.match(html, /<title>REC-20260720-0001<\/title>/);
-  assert.match(html, /Número oficial<\/span><strong>REC-20260720-0001<\/strong>/);
+  assert.match(html, /class="document-number">REC-20260720-0001<\/h1>/);
 });
 
 test('usa fallback visible cuando un recibo histórico no trae receipt_number', () => {
