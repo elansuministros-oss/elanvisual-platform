@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ClipboardList, FileText, ShoppingCart } from 'lucide-react';
 import OfficialQuotationDocument from '../modules/quotation-viewer/components/OfficialQuotationDocument';
+import CustomerPaymentsPanel from '../modules/quotation-viewer/components/CustomerPaymentsPanel';
 import { getQuotationDetail } from '../modules/quotation-viewer/services/quotationViewerService';
 import {
   createPurchaseOrder,
@@ -9,6 +10,7 @@ import {
   listWorkOrders
 } from '../modules/quotation-viewer/services/operationalOrdersService';
 import '../styles/quotation-viewer.css';
+import '../styles/operational-flow.css';
 
 const PUBLIC_QUOTATION_BASE_URL = 'https://visual.elankav.com/cotizaciones/publicas';
 
@@ -100,7 +102,7 @@ function OperationalFlowPanel({ projectId, workOrders, purchaseOrders, loading, 
             Ver OT <ClipboardList size={18} />
           </button>
         )}
-        <button type="button" className="qv-card-action" onClick={onGeneratePurchaseOrder} disabled={loading}>
+        <button type="button" className="qv-card-action" onClick={onGeneratePurchaseOrder} disabled={loading || !workOrder} title={!workOrder ? 'Primero debe existir una Orden de Trabajo' : ''}>
           Generar OC <ShoppingCart size={18} />
         </button>
         {purchaseOrders.length > 0 && (
@@ -253,6 +255,11 @@ export default function QuotationDetail({ onBack }) {
   return (
     <div onClickCapture={handleDocumentClickCapture}>
       <main className="qv-shell">
+        <CustomerPaymentsPanel
+          projectId={projectId}
+          quotation={quotation}
+          onDepositCompleted={() => loadOperations(projectId)}
+        />
         <OperationalFlowPanel
           projectId={projectId}
           workOrders={workOrders}
