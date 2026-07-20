@@ -171,7 +171,7 @@ export async function loadDesignRequestStatus({ requestCode, accessToken }) {
     throw new Error('No fue posible consultar la propuesta.');
   }
 
-  return data;
+  return data.result;
 }
 
 export async function submitDesignFollowup({
