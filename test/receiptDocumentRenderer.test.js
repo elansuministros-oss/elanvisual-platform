@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   buildReceiptDocument,
+  loadEmbeddedReceiptLogo,
   officialReceiptNumber
 } from '../src/modules/quotation-viewer/renderers/receiptDocumentRenderer.js';
 
@@ -37,36 +38,88 @@ const quotation = {
   }
 };
 
-test('reutiliza el mismo asset normalizado de la cotización', () => {
-  const html = buildReceiptDocument(payment, quotation);
+const EMBEDDED_LOGO = 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=';
 
-  assert.match(html, /https:\/\/cdn\.example\/elanhome-logo\.svg/);
+test('incrusta el logo dentro del HTML sin depender de una URL externa', () => {
+  const html = buildReceiptDocument(payment, quotation, {
+    brand: quotation.brand,
+    logoDataUrl: EMBEDDED_LOGO
+  });
+
+  assert.match(html, /data:image\/svg\+xml;base64,PHN2Zz48L3N2Zz4=/);
+  assert.doesNotMatch(html, /https:\/\/cdn\.example\/elanhome-logo\.svg/);
   assert.match(html, /alt="ELANHOME"/);
-  assert.match(html, /home\.elankav\.com/);
-  assert.doesNotMatch(html, /PLATFORM_LOGO_FALLBACKS/);
 });
 
-test('muestra el logo dentro del recuadro negro sin cambiar el documento', () => {
-  const html = buildReceiptDocument(payment, quotation);
+test('carga el mismo asset de la cotización y lo convierte a data URL', async () => {
+  let requestedUrl = '';
+  class FakeFileReader {
+    readAsDataURL() {
+      this.result = EMBEDDED_LOGO;
+      queueMicrotask(() => this.onload?.());
+    }
+  }
+
+  const result = await loadEmbeddedReceiptLogo(quotation, {
+    baseUrl: 'https://preview.example',
+    fetchFn: async (url) => {
+      requestedUrl = url;
+      return {
+        ok: true,
+        blob: async () => new Blob(['<svg></svg>'], { type: 'image/svg+xml' })
+      };
+    },
+    FileReaderClass: FakeFileReader
+  });
+
+  assert.equal(requestedUrl, 'https://cdn.example/elanhome-logo.svg');
+  assert.equal(result.logoDataUrl, EMBEDDED_LOGO);
+  assert.equal(result.brand.name, 'ELANHOME');
+});
+
+test('resuelve el fallback oficial contra el origen antes de incrustarlo', async () => {
+  let requestedUrl = '';
+  class FakeFileReader {
+    readAsDataURL() {
+      this.result = EMBEDDED_LOGO;
+      queueMicrotask(() => this.onload?.());
+    }
+  }
+
+  await loadEmbeddedReceiptLogo({
+    ...quotation,
+    brand: { platformId: 'ELANVISUAL', name: 'ELANVISUAL' }
+  }, {
+    baseUrl: 'https://preview.example',
+    fetchFn: async (url) => {
+      requestedUrl = url;
+      return {
+        ok: true,
+        blob: async () => new Blob(['<svg></svg>'], { type: 'image/svg+xml' })
+      };
+    },
+    FileReaderClass: FakeFileReader
+  });
+
+  assert.equal(requestedUrl, 'https://preview.example/assets/branding/elanvisual.svg');
+});
+
+test('mantiene el logo dentro del recuadro negro', () => {
+  const html = buildReceiptDocument(payment, quotation, {
+    brand: quotation.brand,
+    logoDataUrl: EMBEDDED_LOGO
+  });
 
   assert.match(html, /class="brand-logo-box is-dark"/);
   assert.match(html, /background:#11151b/);
   assert.match(html, /print-color-adjust:exact/);
 });
 
-test('resuelve el fallback relativo contra el origen de la ventana de impresión', () => {
-  const html = buildReceiptDocument(payment, {
-    ...quotation,
-    brand: { platformId: 'ELANVISUAL', name: 'ELANVISUAL' }
-  }, {
-    baseUrl: 'https://preview.example'
-  });
-
-  assert.match(html, /https:\/\/preview\.example\/assets\/branding\/elanvisual\.svg/);
-});
-
 test('elimina Fecha y Tipo de pago únicamente del encabezado', () => {
-  const html = buildReceiptDocument(payment, quotation);
+  const html = buildReceiptDocument(payment, quotation, {
+    brand: quotation.brand,
+    logoDataUrl: EMBEDDED_LOGO
+  });
   const header = html.match(/<header class="head">([\s\S]*?)<\/header>/)?.[1] || '';
 
   assert.doesNotMatch(header, />Fecha</);
@@ -75,17 +128,11 @@ test('elimina Fecha y Tipo de pago únicamente del encabezado', () => {
   assert.match(html, />Forma de pago</);
 });
 
-test('bloquea impresión hasta comprobar que el logo cargó', () => {
-  const html = buildReceiptDocument(payment, quotation);
-
-  assert.match(html, /id="print-receipt" type="button" disabled/);
-  assert.match(html, /logo\.naturalWidth>0/);
-  assert.match(html, /logo\.addEventListener\('load',enable/);
-  assert.match(html, /logo\.addEventListener\('error',fail/);
-});
-
 test('muestra siempre el número oficial en encabezado y título', () => {
-  const html = buildReceiptDocument(payment, quotation);
+  const html = buildReceiptDocument(payment, quotation, {
+    brand: quotation.brand,
+    logoDataUrl: EMBEDDED_LOGO
+  });
 
   assert.equal(officialReceiptNumber(payment), 'REC-20260720-0001');
   assert.match(html, /<title>REC-20260720-0001<\/title>/);
