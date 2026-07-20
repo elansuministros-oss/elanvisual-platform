@@ -17,7 +17,7 @@ const dateInputValue = () => {
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
   return date.toISOString().slice(0, 16);
 };
-const emptyForm = () => ({ operationType: 'USD_TO_USD', customerAmount: '', bankAmount: '', paymentMethod: 'transfer', paymentReference: '', paidAt: dateInputValue(), notes: '', bankFee: '' });
+const emptyForm = () => ({ operationType: 'USD_TO_USD', customerAmount: '', bankAmount: '', exchangeRate: '', paymentMethod: 'transfer', paymentReference: '', paidAt: dateInputValue(), notes: '', bankFee: '' });
 
 function operationConfig(type) {
   const operation = OPERATIONS.find(([value]) => value === type) || OPERATIONS[0];
@@ -48,7 +48,7 @@ function printReceipt(payment, quotation) {
   const safe = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
   const row = (label, value) => `<div><span>${safe(label)}</span><strong>${safe(value)}</strong></div>`;
   const bankingRows = banking.operationType
-    ? `${row('Cliente envió', money(customerPayment.amount, customerPayment.currency))}${row('Banco acreditó', money(bankCredit.amount, bankCredit.currency))}${customerPayment.currency !== bankCredit.currency ? row('TC efectivo', Number(banking.effectiveExchangeRate || 0).toFixed(4)) : ''}${row('Comisión bancaria', `${money(banking.bankFee || 0, bankCredit.currency)} · absorbida por ELANKAV`)}`
+    ? `${row('Cliente envió', money(customerPayment.amount, customerPayment.currency))}${row('Banco acreditó', money(bankCredit.amount, bankCredit.currency))}${banking.effectiveExchangeRate > 0 ? row('TC efectivo', Number(banking.effectiveExchangeRate).toFixed(4)) : ''}${row('Comisión bancaria', `${money(banking.bankFee || 0, bankCredit.currency)} · absorbida por ELANKAV`)}`
     : '';
   windowRef.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safe(payment.receipt_number)}</title><style>body{font-family:Arial,sans-serif;background:#f3f4f6;color:#111827;margin:0;padding:24px}.receipt{max-width:760px;margin:auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 18px 50px #0002}.head{background:#12385f;color:#fff;padding:28px}.head h1{margin:0}.body{padding:28px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid div{display:flex;justify-content:space-between;gap:20px;border-bottom:1px dashed #d1d5db;padding:10px 0}.total{font-size:22px}.footer{padding:20px 28px;background:#f8fafc}.actions{text-align:center;margin:20px}button{padding:12px 18px;border:0;border-radius:10px;background:#111827;color:#fff;font-weight:700}@media(max-width:640px){body{padding:8px}.body{padding:18px}.grid{grid-template-columns:1fr}}@media print{body{padding:0;background:#fff}.receipt{box-shadow:none}.actions{display:none}}</style></head><body><section class="receipt"><header class="head"><div>ELANVISUAL</div><h1>RECIBO OFICIAL</h1><p>${safe(payment.receipt_number)}</p></header><main class="body"><div class="grid">${row('Tipo', paymentLabel(payment))}${row('Cotización', quotation.quotationNumber || '')}${row('Cliente', customer.name || '')}${row('Empresa', customer.companyName || customer.company_name || '')}${row('Fecha', new Date(payment.paid_at || payment.created_at).toLocaleString('es-NI'))}${row('Método', payment.payment_method || '')}${row('Referencia', payment.payment_reference || '')}${row('Ejecutivo', executive.name || '')}</div><h2>Operación bancaria</h2><div class="grid">${bankingRows || row('Operación', 'Pago USD')}</div><h2>Detalle financiero</h2><div class="grid total">${row('Aplicado a cotización', money(payment.amount))}${row('Total pagado', money(payment.total_paid))}${row('Saldo pendiente', money(payment.pending_balance))}${row('Total cotización', money(payment.quotation_total))}</div><p><strong>Concepto:</strong> ${safe(payment.concept || 'Pago de cotización')}</p></main><footer class="footer">Documento emitido desde ELANKAV · visual.elankav.com</footer></section><div class="actions"><button onclick="window.print()">Imprimir / Guardar PDF</button></div></body></html>`);
   windowRef.document.close();
@@ -69,10 +69,12 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
   const currencies = operationConfig(form.operationType);
   const customerAmount = Number(form.customerAmount || 0);
   const bankAmount = Number(form.bankAmount || 0);
+  const manualExchangeRate = form.operationType === 'NIO_TO_NIO';
   const converted = currencies.customerCurrency !== currencies.bankCurrency;
-  const exchangeRate = converted && customerAmount > 0 && bankAmount > 0
+  const derivedExchangeRate = converted && customerAmount > 0 && bankAmount > 0
     ? (currencies.customerCurrency === 'USD' ? bankAmount / customerAmount : customerAmount / bankAmount)
     : 1;
+  const exchangeRate = manualExchangeRate ? Number(form.exchangeRate || 0) : derivedExchangeRate;
   const appliedAmountUsd = currencies.customerCurrency === 'USD'
     ? customerAmount
     : (currencies.bankCurrency === 'USD' ? bankAmount : (exchangeRate > 0 ? customerAmount / exchangeRate : 0));
@@ -97,6 +99,10 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
     const applied = roundMoney(appliedAmountUsd);
     if (!(customerAmount > 0) || !(bankAmount > 0)) {
       setError('Ingresá los montos enviados y acreditados.');
+      return;
+    }
+    if (manualExchangeRate && !(exchangeRate > 0)) {
+      setError('Ingresá el tipo de cambio en córdobas por cada USD.');
       return;
     }
     if (!(applied > 0)) {
@@ -152,10 +158,10 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
     {error && <div className="qv-operational-error">{error}</div>}
     <div className="qv-finance-metrics"><div><span>Total cotización</span><strong>{money(quotationTotal)}</strong></div><div><span>Total pagado</span><strong>{money(totalPaid)}</strong></div><div><span>Saldo</span><strong>{money(pendingBalance)}</strong></div><div className={depositCompleted ? 'is-complete' : ''}><span>Anticipo</span><strong>{depositCompleted ? 'Confirmado' : 'Pendiente'}</strong></div></div>
     <form className="qv-payment-form" onSubmit={submit}>
-      <label className="wide">Tipo de operación<select value={form.operationType} onChange={(e) => setForm({ ...form, operationType: e.target.value, customerAmount: '', bankAmount: '' })}>{OPERATIONS.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
+      <label className="wide">Tipo de operación<select value={form.operationType} onChange={(e) => setForm({ ...form, operationType: e.target.value, customerAmount: '', bankAmount: '', exchangeRate: '' })}>{OPERATIONS.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
       <label>Monto enviado ({currencies.customerCurrency})<input type="number" min="0.01" step="0.01" value={form.customerAmount} onChange={(e) => setForm({ ...form, customerAmount: e.target.value })} required/></label>
       <label>Monto acreditado ({currencies.bankCurrency})<input type="number" min="0.01" step="0.01" value={form.bankAmount} onChange={(e) => setForm({ ...form, bankAmount: e.target.value })} required/></label>
-      <label>TC efectivo<input value={converted && exchangeRate > 0 ? exchangeRate.toFixed(4) : '1.0000'} readOnly/></label>
+      <label>TC efectivo (NIO por USD)<input type="number" min={manualExchangeRate ? '0.0001' : undefined} step="0.0001" value={manualExchangeRate ? form.exchangeRate : (exchangeRate > 0 ? exchangeRate.toFixed(4) : '')} onChange={manualExchangeRate ? (e) => setForm({ ...form, exchangeRate: e.target.value }) : undefined} readOnly={!manualExchangeRate} required={manualExchangeRate}/></label>
       <label>Aplicado USD<input value={appliedAmountUsd > 0 ? roundMoney(appliedAmountUsd).toFixed(2) : ''} readOnly/></label>
       <label>Método<select value={form.paymentMethod} onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}>{METHODS.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
       <label>Referencia<input value={form.paymentReference} onChange={(e) => setForm({ ...form, paymentReference: e.target.value })} placeholder="Transferencia o depósito"/></label>
