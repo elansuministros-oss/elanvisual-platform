@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/elan-ai",
-      "destination": "https://elankav-core.vercel.app/api/elan-ai"
-    },
-    {
       "source": "/vqs-preview",
       "destination": "/vqs-preview.html"
     },
