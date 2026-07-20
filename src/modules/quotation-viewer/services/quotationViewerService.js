@@ -5,6 +5,7 @@ import {
   normalizeQuotationRecord
 } from '../adapters/quotationDocumentAdapter';
 import { applyQuotationImageFallback } from '../adapters/quotationImageFallback';
+import { applyQuotationListAliasesToPayload } from '../adapters/quotationListAliases';
 
 const PLATFORM = 'ELANVISUAL';
 const DEFAULT_LIMIT = 200;
@@ -81,7 +82,7 @@ export async function listQuotations({ limit = DEFAULT_LIMIT } = {}) {
   const payload = await request('/api/vqs/projects', {
     params: { platform: PLATFORM, limit }
   });
-  const quotations = normalizeQuotationCollection(payload);
+  const quotations = normalizeQuotationCollection(applyQuotationListAliasesToPayload(payload));
 
   return {
     quotations,
