@@ -5,7 +5,7 @@ export function resolveCoreDesignUrl(value = '') {
   const configured = String(value || '').trim().replace(/\/+$/, '');
 
   if (!configured) {
-    return 'https://elankav-core.vercel.app/api/elan-ai';
+    return '/api/elan-ai';
   }
 
   return configured.endsWith('/api/elan-ai')
