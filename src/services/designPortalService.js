@@ -13,11 +13,9 @@ export function resolveCoreDesignUrl(value = '') {
     : `${configured}/api/elan-ai`;
 }
 
-const CORE_DESIGN_URL = resolveCoreDesignUrl(
-  typeof import.meta.env === 'object'
-    ? import.meta.env.VITE_ELANKAV_CORE_URL
-    : ''
-);
+// El portal usa siempre el mismo origen. Vercel reescribe esta ruta hacia
+// ELANKAV Core, evitando que variables de entorno antiguas reactiven CORS.
+const CORE_DESIGN_URL = '/api/elan-ai';
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 
