@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   buildReceiptDocument,
+  financialSummaryRows,
   loadEmbeddedReceiptLogo,
   officialReceiptNumber,
   paymentLabel
@@ -13,6 +14,7 @@ const payment = {
   payment_method: 'deposit',
   payment_reference: 'REF-100',
   amount: 100,
+  previous_paid: 0,
   total_paid: 100,
   pending_balance: 200,
   quotation_total: 300,
@@ -108,6 +110,30 @@ test('configura impresión vertical de 5 por 10 pulgadas', () => {
   const html = buildReceiptDocument(payment, quotation, { brand: quotation.brand, logoSvg: INLINE_LOGO });
   assert.match(html, /@page\{size:5in 10in/);
   assert.match(html, /min-height:10in/);
+});
+
+test('resumen de pago completo evita repetir total pagado y saldo cero', () => {
+  const rows = financialSummaryRows({ amount: 100, previous_paid: 0, total_paid: 100, pending_balance: 0, quotation_total: 100 });
+  assert.match(rows, />Total de la cotización</);
+  assert.match(rows, />Pago recibido</);
+  assert.match(rows, />PAGADO</);
+  assert.doesNotMatch(rows, />Total pagado</);
+  assert.doesNotMatch(rows, />Saldo pendiente</);
+});
+
+test('resumen de anticipo muestra total, pago recibido y saldo', () => {
+  const rows = financialSummaryRows({ amount: 60, previous_paid: 0, total_paid: 60, pending_balance: 40, quotation_total: 100 });
+  assert.match(rows, />Total de la cotización</);
+  assert.match(rows, />Pago recibido</);
+  assert.match(rows, />Saldo pendiente</);
+  assert.doesNotMatch(rows, />Total pagado</);
+});
+
+test('resumen de abono conserva el total pagado acumulado', () => {
+  const rows = financialSummaryRows({ amount: 20, previous_paid: 60, total_paid: 80, pending_balance: 20, quotation_total: 100 });
+  assert.match(rows, />Pago recibido</);
+  assert.match(rows, />Total pagado</);
+  assert.match(rows, />Saldo pendiente</);
 });
 
 test('clasifica Anticipo, Abono y Cancelación', () => {
