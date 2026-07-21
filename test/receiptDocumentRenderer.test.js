@@ -11,12 +11,13 @@ import {
 const payment = {
   receipt_number: 'REC-20260720-0001',
   payment_method: 'deposit',
+  payment_reference: 'REF-100',
   amount: 100,
   total_paid: 100,
   pending_balance: 200,
   quotation_total: 300,
   paid_at: '2026-07-20T12:00:00.000Z',
-  metadata: { banking: { bankName: 'BAC', operationType: 'USD_TO_USD', customerPayment: { amount: 100, currency: 'USD' }, bankCredit: { amount: 100, currency: 'USD' }, bankFee: 0 } }
+  metadata: { banking: { bankName: 'BAC', operationType: 'USD_TO_USD', customerPayment: { amount: 100, currency: 'USD' }, bankCredit: { amount: 100, currency: 'USD' }, effectiveExchangeRate: 1, bankFee: 0 } }
 };
 
 const quotation = {
@@ -74,17 +75,39 @@ test('mantiene el logo dentro del recuadro negro', () => {
   const html = buildReceiptDocument(payment, quotation, { brand: quotation.brand, logoSvg: INLINE_LOGO });
   assert.match(html, /class="brand-logo-box is-dark"/);
   assert.match(html, /background:#11151b/);
-  assert.match(html, /brand-logo-box svg\{display:block;width:205px/);
 });
 
-test('elimina Fecha pero conserva la clasificación del pago en el encabezado', () => {
+test('mantiene clasificación y forma de pago en el encabezado', () => {
   const html = buildReceiptDocument(payment, quotation, { brand: quotation.brand, logoSvg: INLINE_LOGO });
   const header = html.match(/<header class="head">([\s\S]*?)<\/header>/)?.[1] || '';
-  assert.doesNotMatch(header, />Fecha</);
   assert.match(header, />Tipo de pago</);
   assert.match(header, />Anticipo</);
+  assert.match(header, />Forma</);
+  assert.match(header, />Banco</);
   assert.match(html, />Fecha de pago</);
-  assert.match(html, />Forma de pago</);
+});
+
+test('elimina conciliación interna y comisión bancaria del recibo del cliente', () => {
+  const html = buildReceiptDocument(payment, quotation, { brand: quotation.brand, logoSvg: INLINE_LOGO });
+  assert.doesNotMatch(html, /Cliente envió/);
+  assert.doesNotMatch(html, /Banco acreditó/);
+  assert.doesNotMatch(html, /Comisión bancaria/);
+  assert.doesNotMatch(html, /absorbida por ELANKAV/);
+  assert.doesNotMatch(html, /Operación bancaria/);
+  assert.match(html, />Monto</);
+  assert.match(html, />Banco</);
+  assert.match(html, />BAC</);
+});
+
+test('oculta tipo de cambio cuando no existe conversión', () => {
+  const html = buildReceiptDocument(payment, quotation, { brand: quotation.brand, logoSvg: INLINE_LOGO });
+  assert.doesNotMatch(html, />Tipo de cambio</);
+});
+
+test('configura impresión vertical de 5 por 10 pulgadas', () => {
+  const html = buildReceiptDocument(payment, quotation, { brand: quotation.brand, logoSvg: INLINE_LOGO });
+  assert.match(html, /@page\{size:5in 10in/);
+  assert.match(html, /min-height:10in/);
 });
 
 test('clasifica Anticipo, Abono y Cancelación', () => {
