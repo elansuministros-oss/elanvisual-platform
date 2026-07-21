@@ -8,12 +8,10 @@ import {
   printReceiptDocument
 } from '../renderers/receiptDocumentRenderer';
 
-const METHODS = [['transfer', 'Transferencia bancaria'], ['deposit', 'Depósito bancario'], ['cash', 'Efectivo'], ['card', 'Tarjeta'], ['other', 'Otro']];
-const OPERATIONS = [
-  ['USD_TO_USD', 'Pago USD → cuenta USD', 'USD', 'USD'],
-  ['NIO_TO_NIO', 'Pago NIO → cuenta NIO', 'NIO', 'NIO'],
-  ['USD_TO_NIO', 'Cliente envía USD → banco acredita NIO', 'USD', 'NIO'],
-  ['NIO_TO_USD', 'Cliente envía NIO → banco acredita USD', 'NIO', 'USD']
+const METHODS = [
+  ['bank', 'Banco'],
+  ['cash', 'Efectivo'],
+  ['cheque', 'Cheque']
 ];
 
 const money = (value, currency = 'USD') => new Intl.NumberFormat('es-NI', { style: 'currency', currency }).format(Number(value || 0));
@@ -23,12 +21,19 @@ const dateInputValue = () => {
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
   return date.toISOString().slice(0, 16);
 };
-const emptyForm = () => ({ operationType: 'USD_TO_USD', customerAmount: '', bankAmount: '', exchangeRate: '', paymentMethod: 'transfer', bankName: '', paymentReference: '', paidAt: dateInputValue(), notes: '', bankFee: '' });
 
-function operationConfig(type) {
-  const operation = OPERATIONS.find(([value]) => value === type) || OPERATIONS[0];
-  return { customerCurrency: operation[2], bankCurrency: operation[3] };
-}
+const emptyForm = () => ({
+  method: 'bank',
+  currency: 'USD',
+  amount: '',
+  exchangeRate: '',
+  bankName: '',
+  paymentReference: '',
+  chequeNumber: '',
+  chequeDate: '',
+  paidAt: dateInputValue(),
+  notes: ''
+});
 
 export default function CustomerPaymentsPanel({ projectId, quotation, onDepositCompleted }) {
   const [payments, setPayments] = useState([]);
@@ -36,25 +41,20 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState(emptyForm);
+
   const confirmed = useMemo(() => payments.filter((payment) => payment.status === 'confirmed'), [payments]);
   const latest = confirmed[0] || null;
   const quotationTotal = Number(latest?.quotation_total ?? quotation?.totals?.totalUsd ?? 0);
   const totalPaid = confirmed.reduce((sum, payment) => sum + Number(payment.amount || 0), 0);
   const pendingBalance = Math.max(quotationTotal - totalPaid, 0);
   const depositCompleted = confirmed.some((payment) => payment.deposit_completed);
-  const currencies = operationConfig(form.operationType);
-  const customerAmount = Number(form.customerAmount || 0);
-  const bankAmount = Number(form.bankAmount || 0);
-  const manualExchangeRate = form.operationType === 'NIO_TO_NIO';
-  const converted = currencies.customerCurrency !== currencies.bankCurrency;
-  const bankRequired = ['transfer', 'deposit'].includes(form.paymentMethod);
-  const derivedExchangeRate = converted && customerAmount > 0 && bankAmount > 0
-    ? (currencies.customerCurrency === 'USD' ? bankAmount / customerAmount : customerAmount / bankAmount)
-    : 1;
-  const exchangeRate = manualExchangeRate ? Number(form.exchangeRate || 0) : derivedExchangeRate;
-  const appliedAmountUsd = currencies.customerCurrency === 'USD'
-    ? customerAmount
-    : (currencies.bankCurrency === 'USD' ? bankAmount : (exchangeRate > 0 ? customerAmount / exchangeRate : 0));
+
+  const enteredAmount = Number(form.amount || 0);
+  const exchangeRate = Number(form.exchangeRate || 0);
+  const appliedAmountUsd = form.currency === 'USD'
+    ? enteredAmount
+    : (exchangeRate > 0 ? enteredAmount / exchangeRate : 0);
+  const bankRequired = form.method === 'bank' || form.method === 'cheque';
 
   async function load() {
     setLoading(true);
@@ -74,16 +74,21 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
   async function submit(event) {
     event.preventDefault();
     const applied = roundMoney(appliedAmountUsd);
-    if (!(customerAmount > 0) || !(bankAmount > 0)) {
-      setError('Ingresá los montos enviados y acreditados.');
+
+    if (!(enteredAmount > 0)) {
+      setError('Ingresá el monto recibido.');
+      return;
+    }
+    if (form.currency === 'NIO' && !(exchangeRate > 0)) {
+      setError('Ingresá el tipo de cambio en córdobas por cada USD.');
       return;
     }
     if (bankRequired && !form.bankName.trim()) {
-      setError('Indicá el banco receptor del depósito o transferencia.');
+      setError('Indicá el banco.');
       return;
     }
-    if (manualExchangeRate && !(exchangeRate > 0)) {
-      setError('Ingresá el tipo de cambio en córdobas por cada USD.');
+    if (form.method === 'cheque' && !form.chequeNumber.trim()) {
+      setError('Indicá el número de cheque.');
       return;
     }
     if (!(applied > 0)) {
@@ -98,6 +103,34 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
       setError('La cotización no entregó quotationId; no se registró ningún pago.');
       return;
     }
+
+    const paymentMethod = form.method === 'bank' ? 'transfer' : form.method === 'cheque' ? 'other' : 'cash';
+    const metadata = {};
+
+    if (form.method === 'bank') {
+      metadata.banking = {
+        operationType: form.currency === 'USD' ? 'USD_TO_USD' : 'NIO_TO_USD',
+        bankName: form.bankName.trim(),
+        customerPayment: { currency: form.currency, amount: roundMoney(enteredAmount) },
+        bankCredit: { currency: 'USD', amount: applied },
+        effectiveExchangeRate: form.currency === 'USD' ? 1 : roundMoney(exchangeRate),
+        appliedAmountUsd: applied,
+        bankFee: 0,
+        bankFeeAbsorbedBy: 'ELANKAV'
+      };
+    }
+
+    if (form.method === 'cheque') {
+      metadata.cheque = {
+        bankName: form.bankName.trim(),
+        number: form.chequeNumber.trim(),
+        date: form.chequeDate || null,
+        currency: form.currency,
+        amount: roundMoney(enteredAmount),
+        effectiveExchangeRate: form.currency === 'USD' ? 1 : roundMoney(exchangeRate)
+      };
+    }
+
     setSaving(true);
     setError('');
     try {
@@ -107,22 +140,11 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
         concept: pendingBalance && applied >= pendingBalance ? 'Cancelación de cotización' : totalPaid > 0 ? 'Abono de cotización' : 'Anticipo de cotización',
         amount: applied,
         currency: 'USD',
-        paymentMethod: form.paymentMethod,
+        paymentMethod,
         paymentReference: form.paymentReference,
         paidAt: new Date(form.paidAt).toISOString(),
         notes: form.notes,
-        metadata: {
-          banking: {
-            operationType: form.operationType,
-            bankName: form.bankName.trim(),
-            customerPayment: { currency: currencies.customerCurrency, amount: roundMoney(customerAmount) },
-            bankCredit: { currency: currencies.bankCurrency, amount: roundMoney(bankAmount) },
-            effectiveExchangeRate: roundMoney(exchangeRate),
-            appliedAmountUsd: applied,
-            bankFee: roundMoney(form.bankFee || 0),
-            bankFeeAbsorbedBy: 'ELANKAV'
-          }
-        }
+        metadata
       });
       setForm(emptyForm());
       await load();
@@ -136,20 +158,20 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
   }
 
   return <section className="qv-finance-panel" aria-label="Pagos y recibos">
-    <div className="qv-finance-heading"><div><span className="qv-eyebrow">Centro financiero</span><h2>Pagos y recibos</h2><p>Registra pagos USD/NIO y la acreditación bancaria real.</p></div><button type="button" onClick={load} disabled={loading}><RefreshCw size={17}/>{loading ? 'Cargando' : 'Actualizar'}</button></div>
+    <div className="qv-finance-heading"><div><span className="qv-eyebrow">Centro financiero</span><h2>Pagos y recibos</h2><p>Registra el pago con los datos mínimos necesarios.</p></div><button type="button" onClick={load} disabled={loading}><RefreshCw size={17}/>{loading ? 'Cargando' : 'Actualizar'}</button></div>
     {error && <div className="qv-operational-error">{error}</div>}
     <div className="qv-finance-metrics"><div><span>Total cotización</span><strong>{money(quotationTotal)}</strong></div><div><span>Total pagado</span><strong>{money(totalPaid)}</strong></div><div><span>Saldo</span><strong>{money(pendingBalance)}</strong></div><div className={depositCompleted ? 'is-complete' : ''}><span>Anticipo</span><strong>{depositCompleted ? 'Confirmado' : 'Pendiente'}</strong></div></div>
     <form className="qv-payment-form" onSubmit={submit}>
-      <label className="wide">Tipo de operación<select value={form.operationType} onChange={(e) => setForm({ ...form, operationType: e.target.value, customerAmount: '', bankAmount: '', exchangeRate: '' })}>{OPERATIONS.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-      <label>Monto enviado ({currencies.customerCurrency})<input type="number" min="0.01" step="0.01" value={form.customerAmount} onChange={(e) => setForm({ ...form, customerAmount: e.target.value })} required/></label>
-      <label>Monto acreditado ({currencies.bankCurrency})<input type="number" min="0.01" step="0.01" value={form.bankAmount} onChange={(e) => setForm({ ...form, bankAmount: e.target.value })} required/></label>
-      <label>TC efectivo (NIO por USD)<input type="number" min={manualExchangeRate ? '0.0001' : undefined} step="0.0001" value={manualExchangeRate ? form.exchangeRate : (exchangeRate > 0 ? exchangeRate.toFixed(4) : '')} onChange={manualExchangeRate ? (e) => setForm({ ...form, exchangeRate: e.target.value }) : undefined} readOnly={!manualExchangeRate} required={manualExchangeRate}/></label>
-      <label>Aplicado USD<input value={appliedAmountUsd > 0 ? roundMoney(appliedAmountUsd).toFixed(2) : ''} readOnly/></label>
-      <label>Método<select value={form.paymentMethod} onChange={(e) => setForm({ ...form, paymentMethod: e.target.value, bankName: ['transfer', 'deposit'].includes(e.target.value) ? form.bankName : '' })}>{METHODS.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-      <label>Banco receptor<input value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} placeholder={bankRequired ? 'BAC, Banpro, Lafise…' : 'No aplica'} disabled={!bankRequired} required={bankRequired}/></label>
-      <label>Referencia<input value={form.paymentReference} onChange={(e) => setForm({ ...form, paymentReference: e.target.value })} placeholder="Transferencia o depósito"/></label>
-      <label>Fecha<input type="datetime-local" value={form.paidAt} onChange={(e) => setForm({ ...form, paidAt: e.target.value })}/></label>
-      <label>Comisión bancaria<input type="number" min="0" step="0.01" value={form.bankFee} onChange={(e) => setForm({ ...form, bankFee: e.target.value })} placeholder="Absorbida por ELANKAV"/></label>
+      <label>Forma de pago<select value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value, bankName: '', paymentReference: '', chequeNumber: '', chequeDate: '' })}>{METHODS.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
+      <label>Moneda<select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value, exchangeRate: '' })}><option value="USD">USD</option><option value="NIO">NIO</option></select></label>
+      <label>Monto recibido<input type="number" min="0.01" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required/></label>
+      {form.currency === 'NIO' && <label>Tipo de cambio<input type="number" min="0.0001" step="0.0001" value={form.exchangeRate} onChange={(e) => setForm({ ...form, exchangeRate: e.target.value })} required/></label>}
+      {form.currency === 'NIO' && <label>Aplicado USD<input value={appliedAmountUsd > 0 ? roundMoney(appliedAmountUsd).toFixed(2) : ''} readOnly/></label>}
+      {bankRequired && <label>Banco<input value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} placeholder="BAC, Banpro, Lafise…" required/></label>}
+      {form.method === 'bank' && <label>Referencia<input value={form.paymentReference} onChange={(e) => setForm({ ...form, paymentReference: e.target.value })} placeholder="Opcional"/></label>}
+      {form.method === 'cheque' && <label>Número de cheque<input value={form.chequeNumber} onChange={(e) => setForm({ ...form, chequeNumber: e.target.value })} required/></label>}
+      {form.method === 'cheque' && <label>Fecha del cheque<input type="date" value={form.chequeDate} onChange={(e) => setForm({ ...form, chequeDate: e.target.value })}/></label>}
+      <label>Fecha de pago<input type="datetime-local" value={form.paidAt} onChange={(e) => setForm({ ...form, paidAt: e.target.value })}/></label>
       <label className="wide">Observaciones<input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}/></label>
       <button type="submit" disabled={saving || pendingBalance === 0}><Banknote size={18}/>{saving ? 'Registrando…' : pendingBalance === 0 ? 'Cotización cancelada' : 'Registrar pago'}</button>
     </form>
