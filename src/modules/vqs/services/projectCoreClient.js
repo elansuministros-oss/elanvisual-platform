@@ -1,4 +1,5 @@
 import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry';
+import { syncQuotationCommercialFlow } from '../../connect/services/commercialConnectClient';
 
 const DEFAULT_ORCHESTRATOR_URL = 'https://orchestrator.elankav.com';
 
@@ -33,11 +34,27 @@ async function request(path, options = {}) {
 
 export const createProject = async (contract) => {
   const preparedContract = await prepareQuotationContractAssets(contract);
-  return request('/api/vqs/projects', {
+  const projectResponse = await request('/api/vqs/projects', {
     method: 'POST',
     body: JSON.stringify(preparedContract)
   });
+
+  try {
+    const commercialSync = await syncQuotationCommercialFlow(preparedContract, projectResponse);
+    return { ...projectResponse, commercialSync };
+  } catch (error) {
+    console.error('ELANKAV_CONNECT_SYNC_FAILED', error);
+    return {
+      ...projectResponse,
+      commercialSync: {
+        status: 'failed',
+        code: error?.code || 'ELANKAV_CONNECT_SYNC_FAILED',
+        message: error?.message || 'No fue posible sincronizar la cotización con ELANKAV CONNECT.'
+      }
+    };
+  }
 };
+
 export const getProject = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, { method: 'GET' });
 export const updateProject = async (projectId, patch) => {
   const preparedPatch = await prepareQuotationContractAssets(patch);
