@@ -5,7 +5,7 @@ export function resolveCoreDesignUrl(value = '') {
   const configured = String(value || '').trim().replace(/\/+$/, '');
 
   if (!configured) {
-    return 'https://elankav-core.vercel.app/api/elan-ai';
+    return '/api/elan-ai';
   }
 
   return configured.endsWith('/api/elan-ai')
@@ -13,11 +13,9 @@ export function resolveCoreDesignUrl(value = '') {
     : `${configured}/api/elan-ai`;
 }
 
-const CORE_DESIGN_URL = resolveCoreDesignUrl(
-  typeof import.meta.env === 'object'
-    ? import.meta.env.VITE_ELANKAV_CORE_URL
-    : ''
-);
+// El portal usa siempre el mismo origen. Vercel reescribe esta ruta hacia
+// ELANKAV Core, evitando que variables de entorno antiguas reactiven CORS.
+const CORE_DESIGN_URL = '/api/elan-ai';
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 
@@ -171,7 +169,7 @@ export async function loadDesignRequestStatus({ requestCode, accessToken }) {
     throw new Error('No fue posible consultar la propuesta.');
   }
 
-  return data;
+  return data.result;
 }
 
 export async function submitDesignFollowup({
