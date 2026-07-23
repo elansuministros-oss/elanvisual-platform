@@ -1,4 +1,5 @@
 const LOCAL_CONNECT_URL = 'http://localhost:4300';
+const DEFAULT_CONNECT_URL = 'https://elankav-connect.vercel.app';
 const DEFAULT_ELANVISUAL_URL = 'https://visual.elankav.com';
 
 function resolveConnectBaseUrl() {
@@ -14,7 +15,7 @@ function resolveConnectBaseUrl() {
     return LOCAL_CONNECT_URL;
   }
 
-  return '';
+  return DEFAULT_CONNECT_URL;
 }
 
 function resolveElanvisualBaseUrl() {
@@ -27,10 +28,6 @@ function resolveElanvisualBaseUrl() {
 
 async function request(path, options = {}) {
   const baseUrl = resolveConnectBaseUrl();
-  if (!baseUrl) {
-    return { skipped: true, reason: 'ELANKAV_CONNECT_URL_NOT_CONFIGURED' };
-  }
-
   const response = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
@@ -75,19 +72,9 @@ function resolveQuotationNumber(projectResponse = {}) {
     || '';
 }
 
-function resolveEstimatedValue(contract = {}) {
+function resolveCommercialAmounts(contract = {}) {
   const pricing = contract?.pricing || {};
-  const directValue = Number(
-    pricing.totalUsd
-    ?? pricing.totalUSD
-    ?? pricing.total_usd
-    ?? pricing.total
-    ?? 0
-  );
-
-  if (Number.isFinite(directValue) && directValue > 0) return directValue;
-
-  const calculated = (Array.isArray(contract?.items) ? contract.items : []).reduce((sum, item) => {
+  const itemSubtotal = (Array.isArray(contract?.items) ? contract.items : []).reduce((sum, item) => {
     const subtotal = Number(item?.subtotalUsd ?? item?.subtotal_usd);
     if (Number.isFinite(subtotal)) return sum + subtotal;
 
@@ -96,10 +83,66 @@ function resolveEstimatedValue(contract = {}) {
     return sum + (Number.isFinite(quantity) && Number.isFinite(unitPrice) ? quantity * unitPrice : 0);
   }, 0);
 
-  const discount = Number(pricing.discountUsd ?? pricing.discount_usd ?? 0);
-  const tax = Number(pricing.taxUsd ?? pricing.tax_usd ?? 0);
-  const net = calculated - (Number.isFinite(discount) ? discount : 0) + (Number.isFinite(tax) ? tax : 0);
-  return Number.isFinite(net) && net > 0 ? net : 0;
+  const subtotal = Number(
+    pricing.subtotalUsd
+    ?? pricing.subtotalUSD
+    ?? pricing.subtotal_usd
+    ?? pricing.subtotal
+    ?? itemSubtotal
+  );
+  const discountAmount = Number(pricing.discountUsd ?? pricing.discount_usd ?? pricing.discountAmount ?? 0);
+  const taxAmount = Number(pricing.taxUsd ?? pricing.tax_usd ?? pricing.taxAmount ?? 0);
+  const directTotal = Number(
+    pricing.totalUsd
+    ?? pricing.totalUSD
+    ?? pricing.total_usd
+    ?? pricing.total
+    ?? 0
+  );
+  const calculatedTotal = subtotal - discountAmount + taxAmount;
+
+  return {
+    subtotal: Number.isFinite(subtotal) && subtotal >= 0 ? subtotal : 0,
+    discountAmount: Number.isFinite(discountAmount) && discountAmount >= 0 ? discountAmount : 0,
+    taxAmount: Number.isFinite(taxAmount) && taxAmount >= 0 ? taxAmount : 0,
+    total: Number.isFinite(directTotal) && directTotal > 0
+      ? directTotal
+      : (Number.isFinite(calculatedTotal) && calculatedTotal > 0 ? calculatedTotal : 0)
+  };
+}
+
+function resolveEstimatedValue(contract = {}) {
+  return resolveCommercialAmounts(contract).total;
+}
+
+function resolvePaymentTerms(contract = {}) {
+  const terms = contract?.paymentTerms || contract?.payment_terms || contract?.payments || {};
+  if (typeof terms === 'string' && terms.trim()) return terms.trim();
+
+  const installments = Array.isArray(terms?.installments)
+    ? terms.installments
+    : Array.isArray(contract?.paymentPlan)
+      ? contract.paymentPlan
+      : [];
+
+  const formatted = installments.map((entry) => {
+    const percentage = Number(entry?.percentage ?? entry?.percent ?? 0);
+    const label = String(entry?.label || entry?.name || entry?.dueCondition || '').trim();
+    return [percentage > 0 ? `${percentage}%` : '', label].filter(Boolean).join(' ');
+  }).filter(Boolean);
+
+  return formatted.length ? formatted.join(' / ') : undefined;
+}
+
+function resolveValidUntil(contract = {}) {
+  const value = contract?.validUntil
+    || contract?.valid_until
+    || contract?.project?.validUntil
+    || contract?.project?.valid_until;
+  if (!value) return undefined;
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString().slice(0, 10);
 }
 
 function buildCommercialNotes({ quotationNumber, projectId, customer, source }) {
@@ -124,13 +167,14 @@ export async function syncQuotationCommercialFlow(contract, projectResponse = {}
   const source = contract?.source || {};
   const projectId = resolveProjectId(projectResponse);
   const quotationNumber = resolveQuotationNumber(projectResponse);
-  const estimatedValue = resolveEstimatedValue(contract);
+  const amounts = resolveCommercialAmounts(contract);
   const notes = buildCommercialNotes({ quotationNumber, projectId, customer, source });
+  const title = project.title || `Cotización ${quotationNumber || projectId || 'ELANVISUAL'}`;
 
   const lead = await request('/api/v1/leads', {
     method: 'POST',
     body: JSON.stringify({
-      name: project.title || `Cotización ${quotationNumber || projectId || 'ELANVISUAL'}`,
+      name: title,
       company: customer.companyName || undefined,
       contactPerson: customer.name || undefined,
       phone: customer.phone || undefined,
@@ -144,16 +188,14 @@ export async function syncQuotationCommercialFlow(contract, projectResponse = {}
     })
   });
 
-  if (lead?.skipped) return lead;
-
   const opportunity = await request('/api/v1/opportunities', {
     method: 'POST',
     body: JSON.stringify({
       leadId: lead.id,
-      title: project.title || `Cotización ${quotationNumber || projectId || 'ELANVISUAL'}`,
+      title,
       platform: 'ELANVISUAL',
       stage: 'proposal',
-      estimatedValue,
+      estimatedValue: amounts.total,
       currency: 'USD',
       probability: 50,
       expectedCloseDate: project.expectedDeliveryAt || undefined,
@@ -161,11 +203,32 @@ export async function syncQuotationCommercialFlow(contract, projectResponse = {}
     })
   });
 
-  return { lead, opportunity };
+  const quote = await request(`/api/v1/opportunities/${encodeURIComponent(opportunity.id)}/quotes`, {
+    method: 'POST',
+    body: JSON.stringify({
+      title: quotationNumber ? `${quotationNumber} · ${title}` : title,
+      platform: 'ELANVISUAL',
+      currency: 'USD',
+      subtotal: amounts.subtotal,
+      discountAmount: amounts.discountAmount,
+      taxAmount: amounts.taxAmount,
+      validUntil: resolveValidUntil(contract),
+      paymentTerms: resolvePaymentTerms(contract),
+      notes,
+      createdBy: contract?.executive?.name || contract?.seller?.name || 'ELANVISUAL'
+    })
+  });
+
+  return { lead, opportunity, quote };
 }
 
 export const commercialConnectClient = Object.freeze({
   syncQuotationCommercialFlow
 });
 
-export { resolveConnectBaseUrl, resolveEstimatedValue, resolveProjectId };
+export {
+  resolveCommercialAmounts,
+  resolveConnectBaseUrl,
+  resolveEstimatedValue,
+  resolveProjectId
+};
