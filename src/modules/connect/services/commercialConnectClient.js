@@ -54,8 +54,15 @@ async function request(path, options = {}) {
 
 function resolveProjectId(projectResponse = {}) {
   return projectResponse?.data?.projectId
-    || projectResponse?.data?.id
+    || projectResponse?.data?.project_id
+    || projectResponse?.data?.project?.id
+    || projectResponse?.data?.project?.projectId
+    || projectResponse?.data?.project?.project_id
     || projectResponse?.projectId
+    || projectResponse?.project_id
+    || projectResponse?.project?.id
+    || projectResponse?.project?.projectId
+    || projectResponse?.project?.project_id
     || projectResponse?.id
     || '';
 }
@@ -161,4 +168,4 @@ export const commercialConnectClient = Object.freeze({
   syncQuotationCommercialFlow
 });
 
-export { resolveConnectBaseUrl, resolveEstimatedValue };
+export { resolveConnectBaseUrl, resolveEstimatedValue, resolveProjectId };
