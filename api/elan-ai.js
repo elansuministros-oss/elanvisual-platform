@@ -5,7 +5,7 @@ import {
   createDesignRequest,
   getDesignRequestStatus,
   getPublicDesignGallery
-} from '../services/designPortalService.js';
+} from '../src/services/designPortalService.js';
 
 export const config = {
   api: { bodyParser: { sizeLimit: '25mb' } }
