@@ -72,14 +72,26 @@ test('DESIGN-FOLLOWUP-01 envía cambios sobre la misma solicitud', async () => {
   }
 });
 
-test('DESIGN-PORTAL-01 completa el endpoint cuando Vercel entrega solo la base', () => {
+test('DESIGN-PORTAL-01 elimina la dependencia del Core y CONNECT externos', () => {
+  assert.equal(resolveCoreDesignUrl(''), '/api/elan-ai');
   assert.equal(
     resolveCoreDesignUrl('https://elankav-core.vercel.app'),
-    'https://elankav-core.vercel.app/api/elan-ai'
+    '/api/elan-ai'
   );
   assert.equal(
     resolveCoreDesignUrl('https://elankav-core.vercel.app/api/elan-ai'),
-    'https://elankav-core.vercel.app/api/elan-ai'
+    '/api/elan-ai'
+  );
+  assert.equal(
+    resolveCoreDesignUrl('https://elankav-connect.vercel.app'),
+    '/api/elan-ai'
+  );
+});
+
+test('DESIGN-PORTAL-01 conserva endpoints externos explícitos compatibles', () => {
+  assert.equal(
+    resolveCoreDesignUrl('https://orchestrator.elankav.com'),
+    'https://orchestrator.elankav.com/api/elan-ai'
   );
 });
 
@@ -114,11 +126,13 @@ test('DESIGN-PORTAL-01 reconoce la ruta corta oficial de WhatsApp', () => {
   assert.equal(result.whatsapp, '');
 });
 
-test('DESIGN-PORTAL-01 envía el contrato al Core', async () => {
+test('DESIGN-PORTAL-01 envía el contrato al endpoint local', async () => {
   const previousFetch = globalThis.fetch;
   let request = null;
+  let endpoint = null;
 
-  globalThis.fetch = async (_url, options) => {
+  globalThis.fetch = async (url, options) => {
+    endpoint = String(url);
     request = JSON.parse(options.body);
     return {
       ok: true,
@@ -137,6 +151,7 @@ test('DESIGN-PORTAL-01 envía el contrato al Core', async () => {
       customer: { name: 'Reyna' }
     });
 
+    assert.equal(endpoint, '/api/elan-ai');
     assert.equal(request.tipo, 'design-request');
     assert.equal(request.source, 'whatsapp');
     assert.equal(result.result.requestCode, 'DESIGN-TEST-01');
