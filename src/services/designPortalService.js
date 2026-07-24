@@ -1,5 +1,5 @@
-import { resolveBaseUrl } from '../modules/vqs/services/projectCoreClient';
-import { registerQuotationAssetUpload } from '../modules/vqs/services/quotationAssetUploadRegistry';
+import { resolveBaseUrl } from '../modules/vqs/services/projectCoreClient.js';
+import { registerQuotationAssetUpload } from '../modules/vqs/services/quotationAssetUploadRegistry.js';
 
 export function resolveCoreDesignUrl(value = '') {
   const configured = String(value || '').trim().replace(/\/+$/, '');
@@ -171,7 +171,7 @@ export async function loadDesignRequestStatus({ requestCode, accessToken }) {
     throw new Error('No fue posible consultar la propuesta.');
   }
 
-  return data;
+  return data.result;
 }
 
 export async function submitDesignFollowup({

@@ -1,5 +1,5 @@
-import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry';
-import { syncQuotationCommercialFlow } from '../../connect/services/commercialConnectClient';
+import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry.js';
+import { syncQuotationCommercialFlow } from '../../connect/services/commercialConnectClient.js';
 
 const DEFAULT_ORCHESTRATOR_URL = 'https://orchestrator.elankav.com';
 

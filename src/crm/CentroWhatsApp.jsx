@@ -1,5 +1,9 @@
 ﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
+import {
+  isWahaFlowUnavailableError,
+  routeWahaMessageToOrchestrator,
+} from '../modules/connect/services/wahaConnectFlowClient.js';
 
 const UNIDADES_NEGOCIO = [
   'ELANVISUAL',
@@ -152,7 +156,7 @@ export default function CentroWhatsApp() {
     setEditandoId(null);
   };
 
-  const guardar = (e) => {
+  const guardar = async (e) => {
     e.preventDefault();
 
     if (!form.nombre.trim() && !form.whatsapp.trim() && !form.mensaje.trim()) return;
@@ -170,6 +174,14 @@ export default function CentroWhatsApp() {
       seguimiento: form.seguimiento.trim(),
       responsable: form.responsable.trim(),
     };
+
+    if (!editandoId && datos.origenMensaje === 'WhatsApp') {
+      try {
+        await routeWahaMessageToOrchestrator({ lead: datos });
+      } catch (error) {
+        if (!isWahaFlowUnavailableError(error)) throw error;
+      }
+    }
 
     if (editandoId) {
       actualizarLeadWhatsApp(editandoId, datos);
