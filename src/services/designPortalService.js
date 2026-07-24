@@ -1,11 +1,24 @@
 import { resolveBaseUrl } from '../modules/vqs/services/projectCoreClient';
 import { registerQuotationAssetUpload } from '../modules/vqs/services/quotationAssetUploadRegistry';
 
+const LOCAL_DESIGN_ENDPOINT = '/api/elan-ai';
+
 export function resolveCoreDesignUrl(value = '') {
   const configured = String(value || '').trim().replace(/\/+$/, '');
 
   if (!configured) {
-    return 'https://elankav-core.vercel.app/api/elan-ai';
+    return LOCAL_DESIGN_ENDPOINT;
+  }
+
+  try {
+    const url = new URL(configured, 'https://visual.elankav.com');
+    if (
+      ['elankav-core.vercel.app', 'elankav-connect.vercel.app'].includes(url.hostname)
+    ) {
+      return LOCAL_DESIGN_ENDPOINT;
+    }
+  } catch {
+    return LOCAL_DESIGN_ENDPOINT;
   }
 
   return configured.endsWith('/api/elan-ai')
@@ -209,4 +222,4 @@ export async function submitDesignFollowup({
   return data;
 }
 
-export { CORE_DESIGN_URL, MAX_FILE_BYTES };
+export { CORE_DESIGN_URL, LOCAL_DESIGN_ENDPOINT, MAX_FILE_BYTES };
