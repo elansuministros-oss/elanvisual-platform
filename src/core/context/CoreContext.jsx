@@ -1,4 +1,9 @@
 ﻿import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  getCoreSnapshotConnect,
+  mutateCoreEntityConnect,
+} from '../../modules/connect/services/contextConnectClient.js';
+import { isConnectUnavailableError } from '../../modules/connect/services/connectCoreClient.js';
 
 const CoreContext = createContext(null);
 
@@ -303,6 +308,51 @@ export function CoreProvider({ children }) {
     leerStorage('elankav_usuario_activo_crm', 'usuario-admin-general')
   );
 
+  useEffect(() => {
+    let activo = true;
+
+    const cargarSnapshotConnect = async () => {
+      try {
+        const snapshot = await getCoreSnapshotConnect();
+        const data = snapshot?.data || snapshot?.state || snapshot;
+        if (!data || typeof data !== 'object' || !activo) return;
+
+        if (Array.isArray(data.empresas)) setEmpresas(data.empresas);
+        if (Array.isArray(data.contactos)) setContactos(data.contactos);
+        if (Array.isArray(data.seguimiento)) setSeguimiento(data.seguimiento);
+        if (Array.isArray(data.vendedores)) setVendedores(data.vendedores);
+        if (Array.isArray(data.veterinarias)) setVeterinarias(data.veterinarias);
+        if (Array.isArray(data.afiliados)) setAfiliados(data.afiliados);
+        if (Array.isArray(data.proveedores)) setProveedores(data.proveedores);
+        if (Array.isArray(data.compras)) setCompras(data.compras);
+        if (Array.isArray(data.cuentasPorPagar)) setCuentasPorPagar(data.cuentasPorPagar);
+        if (Array.isArray(data.cuentasPorCobrar)) setCuentasPorCobrar(data.cuentasPorCobrar);
+        if (Array.isArray(data.flujoCaja)) setFlujoCaja(data.flujoCaja);
+        if (Array.isArray(data.cotizaciones)) setCotizaciones(data.cotizaciones);
+        if (Array.isArray(data.pedidos)) setPedidos(data.pedidos);
+        if (Array.isArray(data.ordenesTrabajo)) setOrdenesTrabajo(data.ordenesTrabajo);
+        if (Array.isArray(data.produccion)) setProduccion(data.produccion);
+        if (Array.isArray(data.cobros)) setCobros(data.cobros);
+        if (Array.isArray(data.comisiones)) setComisiones(data.comisiones);
+        if (Array.isArray(data.inventario)) setInventario(data.inventario);
+        if (Array.isArray(data.materiales)) setMateriales(data.materiales);
+        if (Array.isArray(data.leadsWhatsApp)) setLeadsWhatsApp(data.leadsWhatsApp);
+        if (Array.isArray(data.usuariosCRM)) setUsuariosCRM(data.usuariosCRM);
+        if (Array.isArray(data.rolesCRM)) setRolesCRM(data.rolesCRM);
+      } catch (error) {
+        if (!isConnectUnavailableError(error)) {
+          console.error('Error cargando CoreContext desde CONNECT:', error);
+        }
+      }
+    };
+
+    cargarSnapshotConnect();
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
   useEffect(() => guardarStorage('elankav_empresas', empresas), [empresas]);
   useEffect(() => guardarStorage('elankav_contactos', contactos), [contactos]);
   useEffect(() => guardarStorage('elankav_seguimiento', seguimiento), [seguimiento]);
@@ -365,6 +415,16 @@ export function CoreProvider({ children }) {
     return registro;
   };
 
+  const sincronizarCoreConnect = async ({ entity, action, id = '', data = {} }) => {
+    try {
+      await mutateCoreEntityConnect({ entity, action, id, data });
+    } catch (error) {
+      if (!isConnectUnavailableError(error)) {
+        console.error(`Error sincronizando ${entity} con CONNECT:`, error);
+      }
+    }
+  };
+
   const limpiarAuditoriaCRM = () => {
     setAuditoriaCRM([]);
     registrarAuditoriaCRM({
@@ -378,6 +438,7 @@ export function CoreProvider({ children }) {
   const crearEmpresa = (datos) => {
     const registro = crearRegistro('empresa', datos);
     setEmpresas((prev) => [registro, ...prev]);
+    void sincronizarCoreConnect({ entity: 'empresas', action: 'create', id: registro.id, data: registro });
     registrarAuditoriaCRM({
       modulo: 'Empresas',
       accion: 'CREAR',
@@ -391,6 +452,7 @@ export function CoreProvider({ children }) {
 
   const actualizarEmpresa = (id, datos) => {
     setEmpresas((prev) => actualizarLista(prev, id, datos));
+    void sincronizarCoreConnect({ entity: 'empresas', action: 'update', id, data: datos });
     registrarAuditoriaCRM({
       modulo: 'Empresas',
       accion: 'EDITAR',
@@ -404,6 +466,7 @@ export function CoreProvider({ children }) {
   const eliminarEmpresa = (id) => {
     const empresa = empresas.find((item) => item.id === id);
     setEmpresas((prev) => eliminarDeLista(prev, id));
+    void sincronizarCoreConnect({ entity: 'empresas', action: 'delete', id, data: empresa || {} });
     setContactos((prev) =>
       prev.map((contacto) =>
         contacto.empresaId === id ? { ...contacto, empresaId: '' } : contacto
@@ -422,6 +485,7 @@ export function CoreProvider({ children }) {
   const crearContacto = (datos) => {
     const registro = crearRegistro('contacto', datos);
     setContactos((prev) => [registro, ...prev]);
+    void sincronizarCoreConnect({ entity: 'contactos', action: 'create', id: registro.id, data: registro });
     registrarAuditoriaCRM({
       modulo: 'Contactos',
       accion: 'CREAR',
@@ -435,6 +499,7 @@ export function CoreProvider({ children }) {
 
   const actualizarContacto = (id, datos) => {
     setContactos((prev) => actualizarLista(prev, id, datos));
+    void sincronizarCoreConnect({ entity: 'contactos', action: 'update', id, data: datos });
     registrarAuditoriaCRM({
       modulo: 'Contactos',
       accion: 'EDITAR',
@@ -448,6 +513,7 @@ export function CoreProvider({ children }) {
   const eliminarContacto = (id) => {
     const registro = contactos.find((item) => item.id === id);
     setContactos((prev) => eliminarDeLista(prev, id));
+    void sincronizarCoreConnect({ entity: 'contactos', action: 'delete', id, data: registro || {} });
     registrarAuditoriaCRM({
       modulo: 'Contactos',
       accion: 'ELIMINAR',
@@ -617,6 +683,7 @@ export function CoreProvider({ children }) {
   const crearProveedor = (datos) => {
     const registro = crearRegistro('proveedor', datos);
     setProveedores((prev) => [registro, ...prev]);
+    void sincronizarCoreConnect({ entity: 'proveedores', action: 'create', id: registro.id, data: registro });
     registrarAuditoriaCRM({
       modulo: 'Proveedores',
       accion: 'CREAR',
@@ -630,6 +697,7 @@ export function CoreProvider({ children }) {
 
   const actualizarProveedor = (id, datos) => {
     setProveedores((prev) => actualizarLista(prev, id, datos));
+    void sincronizarCoreConnect({ entity: 'proveedores', action: 'update', id, data: datos });
     registrarAuditoriaCRM({
       modulo: 'Proveedores',
       accion: 'EDITAR',
@@ -643,6 +711,7 @@ export function CoreProvider({ children }) {
   const eliminarProveedor = (id) => {
     const registro = proveedores.find((item) => item.id === id);
     setProveedores((prev) => eliminarDeLista(prev, id));
+    void sincronizarCoreConnect({ entity: 'proveedores', action: 'delete', id, data: registro || {} });
     registrarAuditoriaCRM({
       modulo: 'Proveedores',
       accion: 'ELIMINAR',
@@ -812,6 +881,7 @@ export function CoreProvider({ children }) {
   const crearCotizacion = (datos) => {
     const registro = crearRegistro('cotizacion', datos);
     setCotizaciones((prev) => [registro, ...prev]);
+    void sincronizarCoreConnect({ entity: 'cotizaciones', action: 'create', id: registro.id, data: registro });
     registrarAuditoriaCRM({
       modulo: 'Cotizaciones',
       accion: 'CREAR',
@@ -825,6 +895,7 @@ export function CoreProvider({ children }) {
 
   const actualizarCotizacion = (id, datos) => {
     setCotizaciones((prev) => actualizarLista(prev, id, datos));
+    void sincronizarCoreConnect({ entity: 'cotizaciones', action: 'update', id, data: datos });
     registrarAuditoriaCRM({
       modulo: 'Cotizaciones',
       accion: 'EDITAR',
@@ -838,6 +909,7 @@ export function CoreProvider({ children }) {
   const eliminarCotizacion = (id) => {
     const registro = cotizaciones.find((item) => item.id === id);
     setCotizaciones((prev) => eliminarDeLista(prev, id));
+    void sincronizarCoreConnect({ entity: 'cotizaciones', action: 'delete', id, data: registro || {} });
     registrarAuditoriaCRM({
       modulo: 'Cotizaciones',
       accion: 'ELIMINAR',
@@ -851,6 +923,7 @@ export function CoreProvider({ children }) {
   const crearPedido = (datos) => {
     const registro = crearRegistro('pedido', datos);
     setPedidos((prev) => [registro, ...prev]);
+    void sincronizarCoreConnect({ entity: 'pedidos', action: 'create', id: registro.id, data: registro });
     registrarAuditoriaCRM({
       modulo: 'Pedidos',
       accion: 'CREAR',
@@ -864,6 +937,7 @@ export function CoreProvider({ children }) {
 
   const actualizarPedido = (id, datos) => {
     setPedidos((prev) => actualizarLista(prev, id, datos));
+    void sincronizarCoreConnect({ entity: 'pedidos', action: 'update', id, data: datos });
     registrarAuditoriaCRM({
       modulo: 'Pedidos',
       accion: 'EDITAR',
@@ -877,6 +951,7 @@ export function CoreProvider({ children }) {
   const eliminarPedido = (id) => {
     const registro = pedidos.find((item) => item.id === id);
     setPedidos((prev) => eliminarDeLista(prev, id));
+    void sincronizarCoreConnect({ entity: 'pedidos', action: 'delete', id, data: registro || {} });
     registrarAuditoriaCRM({
       modulo: 'Pedidos',
       accion: 'ELIMINAR',
@@ -1046,6 +1121,7 @@ export function CoreProvider({ children }) {
   const crearInventario = (datos) => {
     const registro = crearRegistro('inventario', datos);
     setInventario((prev) => [registro, ...prev]);
+    void sincronizarCoreConnect({ entity: 'inventario', action: 'create', id: registro.id, data: registro });
     registrarAuditoriaCRM({
       modulo: 'Inventario',
       accion: 'CREAR',
@@ -1059,6 +1135,7 @@ export function CoreProvider({ children }) {
 
   const actualizarInventario = (id, datos) => {
     setInventario((prev) => actualizarLista(prev, id, datos));
+    void sincronizarCoreConnect({ entity: 'inventario', action: 'update', id, data: datos });
     registrarAuditoriaCRM({
       modulo: 'Inventario',
       accion: 'EDITAR',
@@ -1072,6 +1149,7 @@ export function CoreProvider({ children }) {
   const eliminarInventario = (id) => {
     const registro = inventario.find((item) => item.id === id);
     setInventario((prev) => eliminarDeLista(prev, id));
+    void sincronizarCoreConnect({ entity: 'inventario', action: 'delete', id, data: registro || {} });
     registrarAuditoriaCRM({
       modulo: 'Inventario',
       accion: 'ELIMINAR',
@@ -1085,6 +1163,7 @@ export function CoreProvider({ children }) {
   const crearMaterial = (datos) => {
     const registro = crearRegistro('material', datos);
     setMateriales((prev) => [registro, ...prev]);
+    void sincronizarCoreConnect({ entity: 'materiales', action: 'create', id: registro.id, data: registro });
     registrarAuditoriaCRM({
       modulo: 'Materiales',
       accion: 'CREAR',
@@ -1098,6 +1177,7 @@ export function CoreProvider({ children }) {
 
   const actualizarMaterial = (id, datos) => {
     setMateriales((prev) => actualizarLista(prev, id, datos));
+    void sincronizarCoreConnect({ entity: 'materiales', action: 'update', id, data: datos });
     registrarAuditoriaCRM({
       modulo: 'Materiales',
       accion: 'EDITAR',
@@ -1111,6 +1191,7 @@ export function CoreProvider({ children }) {
   const eliminarMaterial = (id) => {
     const registro = materiales.find((item) => item.id === id);
     setMateriales((prev) => eliminarDeLista(prev, id));
+    void sincronizarCoreConnect({ entity: 'materiales', action: 'delete', id, data: registro || {} });
     registrarAuditoriaCRM({
       modulo: 'Materiales',
       accion: 'ELIMINAR',
@@ -1549,6 +1630,7 @@ export function CoreProvider({ children }) {
     });
 
     setLeadsWhatsApp((prev) => [registro, ...prev]);
+    void sincronizarCoreConnect({ entity: 'leads-whatsapp', action: 'create', id: registro.id, data: registro });
     registrarAuditoriaCRM({
       modulo: 'Centro WhatsApp',
       accion: 'CREAR',
@@ -1561,10 +1643,14 @@ export function CoreProvider({ children }) {
   };
 
   const actualizarLeadWhatsApp = (id, datos) => {
-    setLeadsWhatsApp((prev) => actualizarLista(prev, id, {
+    const payload = {
       ...datos,
       fechaUltimoSeguimiento: datos.fechaUltimoSeguimiento || new Date().toISOString(),
+    };
+    setLeadsWhatsApp((prev) => actualizarLista(prev, id, {
+      ...payload,
     }));
+    void sincronizarCoreConnect({ entity: 'leads-whatsapp', action: 'update', id, data: payload });
     registrarAuditoriaCRM({
       modulo: 'Centro WhatsApp',
       accion: 'EDITAR',
@@ -1578,6 +1664,7 @@ export function CoreProvider({ children }) {
   const eliminarLeadWhatsApp = (id) => {
     const registro = leadsWhatsApp.find((item) => item.id === id);
     setLeadsWhatsApp((prev) => eliminarDeLista(prev, id));
+    void sincronizarCoreConnect({ entity: 'leads-whatsapp', action: 'delete', id, data: registro || {} });
     registrarAuditoriaCRM({
       modulo: 'Centro WhatsApp',
       accion: 'ELIMINAR',

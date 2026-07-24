@@ -23,9 +23,14 @@ export function isConnectConfigured() {
 
 export function isConnectUnavailableError(error) {
   return error?.code === 'ELANKAV_CONNECT_URL_NOT_CONFIGURED'
+    || error?.name === 'TypeError'
     || error?.status === 404
     || error?.status === 501
     || error?.status === 503;
+}
+
+function isFormDataBody(value) {
+  return typeof FormData !== 'undefined' && value instanceof FormData;
 }
 
 export async function requestConnect(path, options = {}) {
@@ -42,7 +47,7 @@ export async function requestConnect(path, options = {}) {
       Accept: 'application/json',
       'X-Elankav-Platform': PLATFORM,
       'X-Elankav-Actor-Type': 'user',
-      ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.body !== undefined && !isFormDataBody(options.body) ? { 'Content-Type': 'application/json' } : {}),
       ...(options.headers || {})
     }
   });
@@ -69,4 +74,3 @@ export function buildQuery(params = {}) {
   const text = query.toString();
   return text ? `?${text}` : '';
 }
-

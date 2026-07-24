@@ -6,6 +6,14 @@ import { prepararArchivosTemporalesAI, construirResumenArchivosTemporales } from
 import { cargarMemoriaOperativaElan } from '../services/memoriaOperativaElan';
 import { crearSolicitudesCostosFaltantes } from '../services/solicitudesCostosService';
 import { ejecutarAccionIA } from '../services/ai/aiDispatcher';
+import {
+  createAiMessageConnect,
+  createAiProjectConnect,
+  listAiMessagesConnect,
+  listAiProjectsConnect,
+  updateAiProjectConnect,
+} from '../modules/connect/services/aiStudioConnectClient.js';
+import { isConnectUnavailableError } from '../modules/connect/services/connectCoreClient.js';
 import '../styles/AIStudio.css';
 
 const CORE_URL = import.meta.env.VITE_ELANKAV_CORE_URL || '';
@@ -96,6 +104,20 @@ export default function AIStudio({ setPage }) {
 
   async function cargarProyectos() {
     setError('');
+
+    try {
+      const lista = await listAiProjectsConnect();
+      setProyectos(lista || []);
+      const visibles = filtrarRegistrosCRM(usuario || {}, lista || []);
+      if (!proyectoActivo && visibles.length) setProyectoActivo(visibles[0]);
+      return;
+    } catch (error) {
+      if (!isConnectUnavailableError(error)) {
+        setError(`Error cargando proyectos AI desde CONNECT: ${error.message}`);
+        return;
+      }
+    }
+
     if (!supabase) {
       setError('Supabase no estÃ¡ configurado.');
       return;
@@ -118,6 +140,19 @@ export default function AIStudio({ setPage }) {
   }
 
   async function cargarMensajes(proyectoId) {
+    if (!proyectoId) return;
+
+    try {
+      const data = await listAiMessagesConnect(proyectoId);
+      setMensajes(data || []);
+      return;
+    } catch (error) {
+      if (!isConnectUnavailableError(error)) {
+        setError(`Error cargando mensajes desde CONNECT: ${error.message}`);
+        return;
+      }
+    }
+
     if (!supabase || !proyectoId) return;
     const { data, error: err } = await supabase
       .from('mensajes_ai')
@@ -143,7 +178,6 @@ export default function AIStudio({ setPage }) {
   async function crearProyecto(e) {
     e.preventDefault();
     setError('');
-    if (!supabase) return setError('Supabase no estÃ¡ configurado.');
     if (!nuevo.nombre.trim()) return setError('IngresÃ¡ el nombre del proyecto.');
 
     const payload = {
@@ -153,13 +187,26 @@ export default function AIStudio({ setPage }) {
       ...firma,
     };
 
-    const { data, error: err } = await supabase
-      .from('proyectos_ai')
-      .insert(payload)
-      .select()
-      .single();
+    let data = null;
 
-    if (err) return setError(`Error creando proyecto: ${err.message}`);
+    try {
+      data = await createAiProjectConnect(payload);
+    } catch (error) {
+      if (!isConnectUnavailableError(error)) return setError(`Error creando proyecto en CONNECT: ${error.message}`);
+    }
+
+    if (!data) {
+      if (!supabase) return setError('Supabase no estÃ¡ configurado.');
+
+      const result = await supabase
+        .from('proyectos_ai')
+        .insert(payload)
+        .select()
+        .single();
+
+      if (result.error) return setError(`Error creando proyecto: ${result.error.message}`);
+      data = result.data;
+    }
 
     setNuevo({ nombre: '', tipo_proyecto: 'Rotulación' });
     setProyectoActivo(data);
@@ -176,6 +223,13 @@ export default function AIStudio({ setPage }) {
       vendedor_id: firma.vendedor_id,
       metadata,
     };
+
+    try {
+      const data = await createAiMessageConnect(proyectoActivo.id, payload);
+      if (data) return data;
+    } catch (error) {
+      if (!isConnectUnavailableError(error)) throw new Error(error.message);
+    }
 
     const { data, error: err } = await supabase
       .from('mensajes_ai')
@@ -362,10 +416,17 @@ export default function AIStudio({ setPage }) {
       setMensajes((prev) => [...prev, msgUser, msgIA]);
       setArchivosTemporales([]);
 
-      await supabase
-        .from('proyectos_ai')
-        .update({ updated_at: new Date().toISOString(), resumen: texto.slice(0, 500) })
-        .eq('id', proyectoActivo.id);
+      const updatePayload = { updated_at: new Date().toISOString(), resumen: texto.slice(0, 500) };
+      try {
+        await updateAiProjectConnect(proyectoActivo.id, updatePayload);
+      } catch (error) {
+        if (!isConnectUnavailableError(error)) throw error;
+
+        await supabase
+          .from('proyectos_ai')
+          .update(updatePayload)
+          .eq('id', proyectoActivo.id);
+      }
 
       setEstado('');
       await cargarProyectos();
@@ -441,16 +502,24 @@ export default function AIStudio({ setPage }) {
 
       if (err) throw new Error(err.message);
 
-      await supabase
-        .from('proyectos_ai')
-        .update({
-          estado: 'Cotización_borrador',
-          datos_Cotización: datos,
-          Cotización_id: Cotización?.id || null,
-          Cotización_codigo: codigo,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', proyectoActivo.id);
+      const projectPatch = {
+        estado: 'Cotización_borrador',
+        datos_Cotización: datos,
+        Cotización_id: Cotización?.id || null,
+        Cotización_codigo: codigo,
+        updated_at: new Date().toISOString(),
+      };
+
+      try {
+        await updateAiProjectConnect(proyectoActivo.id, projectPatch);
+      } catch (error) {
+        if (!isConnectUnavailableError(error)) throw error;
+
+        await supabase
+          .from('proyectos_ai')
+          .update(projectPatch)
+          .eq('id', proyectoActivo.id);
+      }
 
       await guardarMensaje('assistant', `Borrador de Cotización generado: ${codigo}. Revisar en Cotizaciónes Inteligentes.`, { Cotización });
       setEstado(`Cotización borrador creada: ${codigo}`);

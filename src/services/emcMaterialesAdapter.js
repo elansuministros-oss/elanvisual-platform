@@ -1,4 +1,14 @@
+import { listCatalogMaterialsConnect } from '../modules/connect/services/catalogConnectClient.js';
+import { isConnectUnavailableError } from '../modules/connect/services/connectCoreClient.js';
+
 export async function cargarMaterialesEMC(supabase) {
+  try {
+    const data = await listCatalogMaterialsConnect();
+    if (Array.isArray(data)) return { data, error: null, source: 'connect' };
+  } catch (error) {
+    if (!isConnectUnavailableError(error)) return { data: [], error };
+  }
+
   if (!supabase) {
     return { data: [], error: new Error('Supabase no configurado') };
   }

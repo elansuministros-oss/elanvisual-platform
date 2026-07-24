@@ -1,4 +1,5 @@
 ﻿import { supabase } from "../../lib/supabase";
+import { subirArchivosEMCStorage } from "./emcService.js";
 
 const CORE_URL =
   import.meta.env.VITE_ELANKAV_CORE_URL || "https://elankav-core.vercel.app";
@@ -84,17 +85,10 @@ export async function analizarImportacionEMC({
     throw new Error("Subí al menos un archivo PDF, Excel, CSV, TXT o imagen.");
   }
 
-  const archivosSubidos = [];
-
-  for (let index = 0; index < archivosFinales.length; index += 1) {
-    const archivoSubido = await subirArchivoEMC({
-      proveedor,
-      archivo: archivosFinales[index],
-      index,
-    });
-
-    archivosSubidos.push(archivoSubido);
-  }
+  const archivosSubidos = await subirArchivosEMCStorage({
+    proveedor,
+    archivos: archivosFinales,
+  });
 
   const payload = {
     tipo: "importar-emc",

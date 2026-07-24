@@ -7,6 +7,11 @@ import { unirPedidos } from '../services/pedidos/pedidosMapper';
 import { cargarPedidosElanvisual } from '../services/pedidos/queries/pedidosQueryService';
 import { insertarPedidoElanvisual, actualizarPedidoElanvisual, eliminarPedidoElanvisual } from '../services/pedidos/commands/pedidosCommandService';
 import { codigoVendedorElanvisual, obtenerReferenciaVendedorElanvisual, crearComisionInicialElanvisual } from '../services/pedidos/pedidosFactory';
+import {
+  getPlatformStateConnect,
+  updatePlatformStateConnect,
+} from '../modules/connect/services/contextConnectClient.js';
+import { isConnectUnavailableError } from '../modules/connect/services/connectCoreClient.js';
 
 const AppContext = createContext(null);
 
@@ -507,6 +512,34 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
     let activo = true;
 
     const cargarEstadoCompartido = async () => {
+      try {
+        const connectState = await getPlatformStateConnect();
+        const remoto = connectState?.state || connectState?.data || connectState;
+
+        if (estadoCompartidoTieneDatos(remoto)) {
+          if (!activo) return;
+
+          setConfiguracion({
+            ...configuracionInicial,
+            ...(remoto.configuracion || {}),
+            nombreSitio: 'ELANVISUAL',
+            logoTexto: 'ELANVISUAL',
+          });
+          setCuentasBancarias(Array.isArray(remoto.cuentasBancarias) ? remoto.cuentasBancarias : cuentasIniciales);
+          setBanners(normalizarBanners(remoto.banners, bannersIniciales));
+          if (Array.isArray(remoto.categoriasHome)) setCategoriasHome(normalizarCategoriasHome(remoto.categoriasHome, []));
+          setTrabajos(Array.isArray(remoto.trabajos) ? remoto.trabajos : trabajosIniciales);
+          setProductos(Array.isArray(remoto.productos) ? remoto.productos : productosIniciales);
+          setImagenes(Array.isArray(remoto.imagenes) ? remoto.imagenes : []);
+          setEstadoCompartidoCargado(true);
+          return;
+        }
+      } catch (error) {
+        if (!isConnectUnavailableError(error)) {
+          console.error('Error cargando estado compartido desde CONNECT:', error);
+        }
+      }
+
       if (!supabase) {
         setEstadoCompartidoCargado(true);
         return;
@@ -600,6 +633,13 @@ useEffect(() => guardarStorage('elanvisual_fondo_direccion', fondoDireccion), [f
       });
 
       try {
+        try {
+          await updatePlatformStateConnect(estadoCompartido);
+          return;
+        } catch (error) {
+          if (!isConnectUnavailableError(error)) throw error;
+        }
+
         const { error } = await supabase.from(APP_STATE_TABLE).upsert(
           {
             id: APP_STATE_ID,
