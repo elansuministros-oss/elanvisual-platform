@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:vqs": "node scripts/vqs-contract-check.mjs"
+    "test:vqs": "node scripts/vqs-contract-check.mjs && node scripts/vqs-bulk-import-check.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.107.0",
