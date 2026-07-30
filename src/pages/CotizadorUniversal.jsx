@@ -166,7 +166,7 @@ function mapContextItem(item = {}, context = {}) {
     commercialDescription: item.description || '',
     quantity: Number(item.quantity || 1),
     unit: item.unit || 'unidad',
-    unitPrice: Number(item.unitPriceUsd || 0),
+    unitPrice: Number(item.unitPriceUsd ?? item.unitPrice ?? item.unit_price_usd ?? item.unit_price ?? 0),
     imageUrl: primaryImageUrl,
     contextImageUrls,
     features: Array.isArray(item.features) ? item.features.join(', ') : String(item.features || ''),
