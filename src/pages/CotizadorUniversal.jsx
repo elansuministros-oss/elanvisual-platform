@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { projectCoreClient } from '../modules/vqs/services/projectCoreClient';
 import { projectContextClient } from '../modules/vqs/services/projectContextClient';
+import { buildBulkIntakeContract, parseBulkQuotationPayload } from '../modules/vqs/services/bulkQuotationImport';
 import { getQuotationEditData, updateQuotation } from '../modules/quotation-viewer/services/quotationViewerService';
 import { readDesignFile } from '../services/designPortalService';
 import VQSProjectSummary from './VQSProjectSummary';
@@ -209,6 +210,18 @@ export default function CotizadorUniversal() {
   const [savedContract, setSavedContract] = useState(null);
   const [editLoading, setEditLoading] = useState(isEditing);
   const [editQuotationNumber, setEditQuotationNumber] = useState('');
+  const [bulkImport, setBulkImport] = useState(null);
+  const [bulkSelectedKeys, setBulkSelectedKeys] = useState([]);
+  const [bulkError, setBulkError] = useState('');
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ completed: 0, total: 0 });
+  const [bulkResults, setBulkResults] = useState({});
+  const [bulkClient, setBulkClient] = useState({
+    companyName: 'COMEX',
+    phone: '',
+    email: '',
+    taxId: ''
+  });
 
   const subtotalGross = useMemo(() => items.reduce(
     (sum, item) => sum + Number(item.quantity || 0) * Number(item.unitPrice || 0), 0
@@ -258,7 +271,7 @@ export default function CotizadorUniversal() {
       title: project.title.trim(),
       priority: 'normal',
       expectedDeliveryAt: project.expectedDeliveryAt || '',
-      images: []
+      images: uniqueStrings(project.images)
     },
     items: normalizedItems,
     pricing: {
@@ -504,6 +517,115 @@ export default function CotizadorUniversal() {
     }
   }
 
+  async function loadBulkQuotationFile(file) {
+    if (!file) return;
+    setBulkError('');
+    setBulkResults({});
+    setBulkProgress({ completed: 0, total: 0 });
+    try {
+      if (!String(file.name || '').toLowerCase().endsWith('.json')) {
+        throw new Error('Seleccioná el archivo JSON del expediente modular.');
+      }
+      const payload = JSON.parse(await file.text());
+      const parsed = parseBulkQuotationPayload(payload, {
+        companyName: bulkClient.companyName,
+        exchangeRate
+      });
+      setBulkImport(parsed);
+      setBulkClient((current) => ({ ...current, companyName: parsed.companyName }));
+      setBulkSelectedKeys(parsed.quotations.map((quotation) => quotation.key));
+      setExchangeRate(parsed.exchangeRate);
+      setApplyTax(parsed.taxRate > 0);
+    } catch (error) {
+      const details = Array.isArray(error.details) ? ` ${error.details.join(' · ')}` : '';
+      setBulkImport(null);
+      setBulkSelectedKeys([]);
+      setBulkError(`${error.message || 'No fue posible leer el expediente.'}${details}`);
+    }
+  }
+
+  function toggleBulkQuotation(key) {
+    setBulkSelectedKeys((current) => current.includes(key)
+      ? current.filter((entry) => entry !== key)
+      : [...current, key]);
+  }
+
+  async function addBulkReferenceImage(quotationKey, file) {
+    if (!file || !bulkImport) return;
+    setBulkError('');
+    try {
+      if (!String(file.type || '').startsWith('image/')) {
+        throw new Error('La referencia debe ser una imagen JPG, PNG o WEBP.');
+      }
+      const prepared = await readDesignFile(file);
+      setBulkImport((current) => ({
+        ...current,
+        quotations: current.quotations.map((quotation) => quotation.key === quotationKey
+          ? { ...quotation, images: [prepared.dataUrl] }
+          : quotation)
+      }));
+    } catch (error) {
+      setBulkError(error.message || 'No fue posible agregar la imagen de referencia.');
+    }
+  }
+
+  async function createBulkQuotations() {
+    if (!bulkImport || bulkSaving) return;
+    const pending = bulkImport.quotations.filter((quotation) =>
+      bulkSelectedKeys.includes(quotation.key) && bulkResults[quotation.key]?.status !== 'success'
+    );
+    if (!pending.length) {
+      setBulkError('No hay cotizaciones pendientes seleccionadas.');
+      return;
+    }
+
+    setBulkSaving(true);
+    setBulkError('');
+    setBulkProgress({ completed: 0, total: pending.length });
+    let completed = 0;
+    for (const quotation of pending) {
+      setBulkResults((current) => ({
+        ...current,
+        [quotation.key]: { status: 'creating', message: 'Creando…' }
+      }));
+      try {
+        const contract = buildBulkIntakeContract(quotation, bulkImport, {
+          executive: EXECUTIVE,
+          exchangeRate,
+          paymentType,
+          customInstallments,
+          phone: bulkClient.phone,
+          email: bulkClient.email,
+          taxId: bulkClient.taxId
+        });
+        const response = await projectCoreClient.createProject(contract);
+        const result = response?.data || response;
+        setBulkResults((current) => ({
+          ...current,
+          [quotation.key]: {
+            status: 'success',
+            message: 'Cotización creada',
+            projectId: result?.projectId || result?.project_id || result?.id || '',
+            quotationNumber: result?.quotationNumber || result?.quotation_number || ''
+          }
+        }));
+      } catch (error) {
+        const details = error.details?.length ? ` ${error.details.join(' · ')}` : '';
+        setBulkResults((current) => ({
+          ...current,
+          [quotation.key]: {
+            status: 'error',
+            message: `${error.message || 'No fue posible crear la cotización.'}${details}`
+          }
+        }));
+      } finally {
+        completed += 1;
+        setBulkProgress({ completed, total: pending.length });
+      }
+    }
+    setBulkSaving(false);
+  }
+
   if (creation && savedContract) {
     return <VQSProjectSummary creation={creation} contract={savedContract} onBack={() => { setCreation(null); setSavedContract(null); }} />;
   }
@@ -518,6 +640,110 @@ export default function CotizadorUniversal() {
         <div><span>ELANVISUAL · VQS</span><h1>{isEditing ? `Editar cotización ${editQuotationNumber}` : 'Nueva cotización'}</h1><p>Conectada directamente a Project Core mediante el Orchestrator.</p></div>
         <button type="button" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? (isEditing ? 'Guardando…' : 'Creando…') : (isEditing ? 'Guardar cambios' : 'Crear cotización')}</button>
       </header>
+
+      {!isEditing && <section className="uq-card uq-bulk">
+        <div className="uq-section-title">
+          <div>
+            <h2>Crear varias cotizaciones</h2>
+            <small>Cargá un expediente modular JSON, revisá las sucursales y crealas en una sola operación.</small>
+          </div>
+          <label className="uq-file-button">
+            Importar expediente
+            <input
+              type="file"
+              accept=".json,application/json"
+              disabled={bulkSaving}
+              onChange={(event) => {
+                void loadBulkQuotationFile(event.target.files?.[0]);
+                event.target.value = '';
+              }}
+            />
+          </label>
+        </div>
+        {bulkError && <p className="uq-error">{bulkError}</p>}
+        {bulkImport && <>
+          <div className="uq-fields uq-bulk-contact">
+            <label>Empresa
+              <input value={bulkClient.companyName} disabled />
+            </label>
+            <label>Teléfono común
+              <input value={bulkClient.phone} onChange={(event) => setBulkClient({ ...bulkClient, phone: event.target.value })} />
+            </label>
+            <label>Correo común
+              <input type="email" value={bulkClient.email} onChange={(event) => setBulkClient({ ...bulkClient, email: event.target.value })} />
+            </label>
+            <label>RUC / identificación
+              <input value={bulkClient.taxId} onChange={(event) => setBulkClient({ ...bulkClient, taxId: event.target.value })} />
+            </label>
+          </div>
+          <div className="uq-bulk-summary">
+            <span><strong>{bulkImport.quotations.length}</strong> sucursales</span>
+            <span><strong>{bulkImport.quotations.reduce((sum, quotation) => sum + quotation.items.length, 0)}</strong> ítems</span>
+            <span><strong>USD {bulkImport.totalUsd.toFixed(2)}</strong> total expediente</span>
+            <span><strong>{bulkImport.quotations.filter((quotation) => quotation.images.length === 0).length}</strong> sin imagen</span>
+          </div>
+          <div className="uq-bulk-list">
+            {bulkImport.quotations.map((quotation) => {
+              const result = bulkResults[quotation.key];
+              return <details className="uq-bulk-branch" key={quotation.key}>
+                <summary>
+                  <label onClick={(event) => event.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={bulkSelectedKeys.includes(quotation.key)}
+                      disabled={bulkSaving || result?.status === 'success'}
+                      onChange={() => toggleBulkQuotation(quotation.key)}
+                    />
+                    <span>{quotation.customerName}</span>
+                  </label>
+                  <span>{quotation.items.length} ítems · USD {quotation.totalUsd.toFixed(2)}</span>
+                  <span className={`uq-bulk-status ${result?.status || ''}`}>{result?.message || (quotation.images.length ? 'Lista' : 'Lista · sin imagen')}</span>
+                </summary>
+                <div className="uq-bulk-items">
+                  <div className="uq-bulk-reference">
+                    <span>
+                      <strong>Imagen de referencia</strong>
+                      <small>{quotation.images.length ? 'Adjunta al proyecto' : 'Pendiente; la cotización puede crearse sin imagen'}</small>
+                    </span>
+                    {quotation.images[0] && <img src={quotation.images[0]} alt={`Referencia ${quotation.branchName}`} />}
+                    <label className="uq-light uq-bulk-image-button">
+                      {quotation.images.length ? 'Cambiar imagen' : 'Agregar imagen'}
+                      <input
+                        type="file"
+                        accept=".png,.jpg,.jpeg,.webp"
+                        disabled={bulkSaving || result?.status === 'success'}
+                        onChange={(event) => {
+                          void addBulkReferenceImage(quotation.key, event.target.files?.[0]);
+                          event.target.value = '';
+                        }}
+                      />
+                    </label>
+                  </div>
+                  {quotation.items.map((item) => <div key={`${quotation.key}-${item.code}`}>
+                    <span><strong>{item.code}</strong> {item.title}</span>
+                    <span>{item.quantity} {item.unit}</span>
+                    <strong>USD {item.unitPriceUsd.toFixed(2)}</strong>
+                  </div>)}
+                </div>
+              </details>;
+            })}
+          </div>
+          <div className="uq-bulk-actions">
+            <p>
+              {bulkSaving
+                ? `Procesando ${bulkProgress.completed} de ${bulkProgress.total}…`
+                : `${bulkSelectedKeys.length} cotizaciones seleccionadas · forma de pago ${paymentType.replaceAll('_', '/')}`}
+            </p>
+            <button
+              type="button"
+              disabled={bulkSaving || bulkSelectedKeys.length === 0}
+              onClick={createBulkQuotations}
+            >
+              {bulkSaving ? 'Creando cotizaciones…' : `Crear ${bulkSelectedKeys.length} cotizaciones`}
+            </button>
+          </div>
+        </>}
+      </section>}
 
       <section className="uq-card">
         <h2>Cargar desde el ecosistema</h2>
