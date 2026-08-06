@@ -1,23 +1,13 @@
 import { resolveBaseUrl } from '../modules/vqs/services/projectCoreClient.js';
 import { registerQuotationAssetUpload } from '../modules/vqs/services/quotationAssetUploadRegistry.js';
 
-export function resolveCoreDesignUrl(value = '') {
-  const configured = String(value || '').trim().replace(/\/+$/, '');
+const LOCAL_DESIGN_ENDPOINT = '/api/elan-ai';
 
-  if (!configured) {
-    return 'https://elankav-core.vercel.app/api/elan-ai';
-  }
-
-  return configured.endsWith('/api/elan-ai')
-    ? configured
-    : `${configured}/api/elan-ai`;
+export function resolveCoreDesignUrl() {
+  return LOCAL_DESIGN_ENDPOINT;
 }
 
-const CORE_DESIGN_URL = resolveCoreDesignUrl(
-  typeof import.meta.env === 'object'
-    ? import.meta.env.VITE_ELANKAV_CORE_URL
-    : ''
-);
+const CORE_DESIGN_URL = LOCAL_DESIGN_ENDPOINT;
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 
@@ -49,7 +39,7 @@ async function uploadQuotationAsset(file, dataUrl) {
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || !payload?.data?.signedUrl) {
-    throw new Error(payload?.error || 'No fue posible subir la fotografía al Orchestrator.');
+    throw new Error(payload?.error || 'No fue posible subir la fotografía al CONNECT.');
   }
   return payload.data;
 }
@@ -209,4 +199,4 @@ export async function submitDesignFollowup({
   return data;
 }
 
-export { CORE_DESIGN_URL, MAX_FILE_BYTES };
+export { CORE_DESIGN_URL, LOCAL_DESIGN_ENDPOINT, MAX_FILE_BYTES };
