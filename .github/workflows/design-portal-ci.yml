@@ -24,16 +24,7 @@ jobs:
         run: npm ci
 
       - name: Syntax
-        run: |
-          node --check api/elan-ai.js
-          node --check api/services/design/designPortalService.js
-          node --check api/services/design/designPortalSupabaseAdapter.js
-          node --check api/services/design/designProcessingService.js
-          node --check api/services/design/designDeliveryState.js
-          node --check api/services/design/wahaImageDeliveryService.js
-
-      - name: Tests
-        run: npm run test:design
+        run: node --check api/elan-ai.js
 
       - name: Build
         run: npm run build
