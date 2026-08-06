@@ -4,11 +4,17 @@ const DESIGN_ASSETS_BUCKET = 'design-request-assets';
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 
 function resolveDesignSupabaseConfig() {
-  const url = String(process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
+  const url = String(
+    process.env.SUPABASE_URL ||
+    process.env.VITE_SUPABASE_URL ||
+    ''
+  ).trim().replace(/\/+$/, '');
+
   const key = String(
     process.env.SUPABASE_SECRET_KEY ||
     process.env.SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_SERVICE_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY ||
     ''
   ).trim();
 
