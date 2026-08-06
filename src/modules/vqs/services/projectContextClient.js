@@ -1,13 +1,11 @@
-import { DEFAULT_ORCHESTRATOR_URL, resolveBaseUrl } from './projectCoreClient';
+import { DEFAULT_CONNECT_URL, resolveBaseUrl } from './projectCoreClient';
 
 const pendingRequests = new Map();
 
 async function request(path, options = {}) {
   const method = String(options.method || 'GET').toUpperCase();
   const requestKey = `${method}:${path}`;
-  if (method === 'GET' && pendingRequests.has(requestKey)) {
-    return pendingRequests.get(requestKey);
-  }
+  if (method === 'GET' && pendingRequests.has(requestKey)) return pendingRequests.get(requestKey);
 
   const operation = (async () => {
     const response = await fetch(`${resolveBaseUrl()}${path}`, {
@@ -19,11 +17,10 @@ async function request(path, options = {}) {
         ...(options.headers || {})
       }
     });
-
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const error = new Error(payload?.error || 'No fue posible consultar el contexto VQS.');
-      error.code = payload?.code || 'VQS_CONTEXT_REQUEST_FAILED';
+      const error = new Error(payload?.error?.message || payload?.error || 'No fue posible consultar clientes en CONNECT.');
+      error.code = payload?.error?.code || payload?.code || 'CONNECT_CUSTOMER_SEARCH_FAILED';
       error.status = response.status;
       throw error;
     }
@@ -34,95 +31,35 @@ async function request(path, options = {}) {
   try {
     return await operation;
   } finally {
-    if (method === 'GET' && pendingRequests.get(requestKey) === operation) {
-      pendingRequests.delete(requestKey);
-    }
+    if (method === 'GET' && pendingRequests.get(requestKey) === operation) pendingRequests.delete(requestKey);
   }
 }
 
-function normalizeSearchResult(result, { query, type }) {
-  if (Array.isArray(result)) {
-    return { query, type, count: result.length, results: result };
-  }
-
+async function searchCustomers(normalizedQuery, limit) {
+  const params = new URLSearchParams({ q: normalizedQuery, limit: String(limit) });
+  const result = await request(`/api/v1/business/vqs/customers/search?${params.toString()}`, { method: 'GET' });
   const results = Array.isArray(result?.results) ? result.results : [];
   return {
     ...(result || {}),
-    query: result?.query || query,
-    type: result?.type || type,
+    query: result?.query || normalizedQuery,
+    type: 'customer',
     count: Number.isFinite(Number(result?.count)) ? Number(result.count) : results.length,
     results
   };
 }
 
-function resultIdentity(result = {}, index = 0) {
-  return [
-    result.type,
-    result.sourceId,
-    result.source?.sourceId,
-    result.customer?.customerId,
-    result.customer?.phone,
-    result.label,
-    index
-  ].filter(Boolean).join(':');
-}
-
-async function searchCustomers(normalizedQuery, limit) {
-  const params = new URLSearchParams({
-    q: normalizedQuery,
-    platform: 'elanvisual',
-    limit: String(limit)
-  });
-  const result = await request(`/api/vqs/customers/search?${params.toString()}`, { method: 'GET' });
-  return normalizeSearchResult(result, { query: normalizedQuery, type: 'customer' });
-}
-
-async function searchDesignAndStore(normalizedQuery, type, limit) {
-  const effectiveType = type === 'store' ? 'all' : type;
-  const params = new URLSearchParams({ q: normalizedQuery, type: effectiveType, limit: String(limit) });
-  const result = await request(`/api/vqs/context/search?${params.toString()}`, { method: 'GET' });
-  return normalizeSearchResult(result, { query: normalizedQuery, type: effectiveType });
-}
-
 export async function searchContext(query, { type = 'all', limit = 30 } = {}) {
   const normalizedQuery = String(query || '').trim();
+  if (!normalizedQuery) return { query: '', type, count: 0, results: [] };
 
-  if (type === 'customer') {
-    return searchCustomers(normalizedQuery, limit);
+  // El flujo VQS ya no consulta Orchestrator. CONNECT es la fuente oficial de clientes.
+  // Diseños y productos se mantienen como carga manual hasta conectarlos a sus APIs modernas.
+  if (type === 'design' || type === 'store') {
+    return { query: normalizedQuery, type, count: 0, results: [] };
   }
 
-  if (type !== 'all') {
-    return searchDesignAndStore(normalizedQuery, type, limit);
-  }
-
-  const [customers, context] = await Promise.allSettled([
-    searchCustomers(normalizedQuery, limit),
-    searchDesignAndStore(normalizedQuery, 'all', limit)
-  ]);
-
-  if (customers.status === 'rejected' && context.status === 'rejected') {
-    throw customers.reason || context.reason;
-  }
-
-  const combined = [
-    ...(customers.status === 'fulfilled' ? customers.value.results : []),
-    ...(context.status === 'fulfilled' ? context.value.results : [])
-  ];
-  const seen = new Set();
-  const results = combined.filter((result, index) => {
-    const key = resultIdentity(result, index);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  }).slice(0, limit);
-
-  return {
-    query: normalizedQuery,
-    type: 'all',
-    count: results.length,
-    results
-  };
+  return searchCustomers(normalizedQuery, limit);
 }
 
 export const projectContextClient = Object.freeze({ searchContext });
-export { DEFAULT_ORCHESTRATOR_URL };
+export { DEFAULT_CONNECT_URL };
