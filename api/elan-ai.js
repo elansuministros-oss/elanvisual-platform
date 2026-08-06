@@ -43,10 +43,28 @@ function send(res, status, payload) {
   return res.status(status).json(payload);
 }
 
+function sanitizeDiagnosticValue(value, depth = 0) {
+  if (depth > 4) return '[truncated]';
+  if (value === null || value === undefined) return value ?? null;
+  if (typeof value === 'string') return value.slice(0, 1000);
+  if (typeof value === 'number' || typeof value === 'boolean') return value;
+  if (Array.isArray(value)) return value.slice(0, 20).map(item => sanitizeDiagnosticValue(item, depth + 1));
+  if (typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([key]) => !/key|token|authorization|secret|password/i.test(key))
+        .slice(0, 30)
+        .map(([key, item]) => [key, sanitizeDiagnosticValue(item, depth + 1)])
+    );
+  }
+  return String(value).slice(0, 500);
+}
+
 function safeDiagnostic(error) {
   return {
     code: String(error?.code || 'DESIGN_UNKNOWN_ERROR').slice(0, 120),
-    message: String(error?.message || 'Error sin mensaje').slice(0, 500)
+    message: String(error?.message || 'Error sin mensaje').slice(0, 500),
+    details: sanitizeDiagnosticValue(error?.details ?? null)
   };
 }
 
