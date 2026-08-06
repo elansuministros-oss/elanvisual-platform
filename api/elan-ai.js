@@ -1,219 +1,150 @@
-﻿import OpenAI from "openai";
+/* eslint-disable no-console */
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import {
+  continueDesignRequest,
+  createDesignRequest,
+  getDesignRequestStatus,
+  getPublicDesignGallery
+} from './services/design/designPortalService.js';
 
-const ELAN_AI_BOTONES = `
-Eres ELAN AI BOTONES.
+export const config = {
+  api: { bodyParser: { sizeLimit: '25mb' } }
+};
 
-Solo puedes diseñar botones luminosos comerciales.
-No puedes diseñar fachadas ACM, letras 3D, roll up, displays, mesas, neón, directorios ni tótems.
+const ALLOWED_ORIGINS = new Set([
+  'https://visual.elankav.com',
+  'https://connect.elankav.com',
+  'http://localhost:5173',
+  'http://localhost:3000'
+]);
 
-Mantén siempre:
-- Formato de botón.
-- Medida base del producto.
-- Precio base del producto.
-- Acabado base del modelo.
-- Construcción fabricable por ELANVISUAL.
-- Materiales reales: acrílico, PVC, dorado espejo, frost, LED, estructura interna.
-- Iluminación frontal, rebote o contorno según el modelo.
-
-Modelos permitidos:
-1. Botón Transparente — referencia Beauty Therapy — desde USD 100.
-2. Botón con Impresión — referencia La Casa de las Gorras — desde USD 130.
-3. Botón Impresión UV Premium — referencia Fiesta Naty — desde USD 150.
-4. Botón Premium Combinado — referencia Lanza's Ranch — desde USD 190.
-
-Render:
-- Hiperrealista.
-- Escala real.
-- Cámara 50 mm.
-- Fondo limpio.
-- Sombras reales.
-- Reflejos reales.
-- No usar fondos fantasiosos.
-- No generar productos fuera de la categoría botón.
-
-No entregar archivos CNC, DXF, vectores finales ni archivos de producción.
-La propuesta es conceptual. La digitalización final se realiza al confirmar pedido.
-`;
-
-function extraerTexto(reqBody = {}) {
-  if (reqBody.mensaje) return String(reqBody.mensaje);
-
-  if (Array.isArray(reqBody.messages)) {
-    return reqBody.messages
-      .map((m) => m?.content || "")
-      .filter(Boolean)
-      .join("\n\n");
+function isAllowedOrigin(origin = '') {
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  try {
+    const url = new URL(origin);
+    return url.protocol === 'https:'
+      && url.hostname.startsWith('elanvisual-platform-')
+      && url.hostname.endsWith('-elanpetvercelapp.vercel.app');
+  } catch {
+    return false;
   }
-
-  return "";
 }
 
-function prepararImagenesTemporales(archivos = []) {
-  return Array.from(archivos || [])
-    .filter((a) => {
-      return (
-        a &&
-        a.dataUrl &&
-        typeof a.dataUrl === "string" &&
-        a.dataUrl.startsWith("data:image/")
-      );
+function cors(req, res) {
+  const origin = req.headers.origin || '';
+  if (isAllowedOrigin(origin)) res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+}
+
+function send(res, status, payload) {
+  return res.status(status).json(payload);
+}
+
+async function handleChat(payload = {}) {
+  const apiKey = String(process.env.OPENAI_API_KEY || '').trim();
+  if (!apiKey) return { ok: false, error: 'OPENAI_API_KEY no configurada en ELANVISUAL.' };
+
+  const mensaje = String(payload.mensaje || payload.message || payload.prompt || '').trim();
+  if (!mensaje) return { ok: false, error: 'Mensaje vacío.' };
+
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: process.env.ELAN_AI_MODEL || 'gpt-4.1-mini',
+      input: [
+        { role: 'system', content: 'Eres ELAN AI, asistente operativo de ELANVISUAL. Responde de forma clara, comercial y útil.' },
+        { role: 'user', content: mensaje }
+      ]
     })
-    .slice(0, 4)
-    .map((a) => ({
-      type: "input_image",
-      image_url: a.dataUrl,
-    }));
-}
-
-async function generarRenderBotones(body = {}) {
-  const producto = body.producto || {};
-  const cliente = body.cliente || {};
-  const contexto = body.contexto || {};
-  const archivos = prepararImagenesTemporales(body.archivos_temporales);
-
-  const prompt = [
-    ELAN_AI_BOTONES,
-    "",
-    "PRODUCTO SELECCIONADO:",
-    `Nombre: ${producto.nombre || "Botón luminoso"}`,
-    `Categoría: ${producto.categoria || "Botones Publicitarios Premium"}`,
-    `Precio base: ${producto.precio ? `USD ${producto.precio}` : "Consultar"}`,
-    `Medida base: ${contexto.medidaBase || "60 x 60 cm"}`,
-    "",
-    "DATOS DEL CLIENTE:",
-    `Negocio: ${cliente.negocio || "No indicado"}`,
-    `WhatsApp: ${cliente.whatsapp || "No indicado"}`,
-    "",
-    "IDEA DEL CLIENTE:",
-    cliente.idea || body.mensaje || "Crear propuesta visual elegante para el modelo seleccionado.",
-    "",
-    "INSTRUCCIÓN FINAL:",
-    "Genera un render conceptual hiperrealista del botón seleccionado. Mantén el formato de botón, la medida base, el acabado del modelo y el precio base. Usa los archivos adjuntos como referencia visual si existen. No salgas de la categoría Botones.",
-  ].join("\n");
-
-  const input = [
-    {
-      role: "user",
-      content: [
-        {
-          type: "input_text",
-          text: prompt,
-        },
-        ...archivos,
-      ],
-    },
-  ];
-
-  const response = await client.responses.create({
-    model: "gpt-4.1-mini",
-    input,
-    tools: [{ type: "image_generation" }],
   });
-
-  const imageOutput = response.output?.find((item) => item.type === "image_generation_call");
-  const imageBase64 = imageOutput?.result || "";
-
-  return {
-    prompt,
-    render_base64: imageBase64,
-    respuesta: response.output_text || "Render solicitado.",
-  };
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) return { ok: false, error: data?.error?.message || 'Error consultando OpenAI.' };
+  return { ok: true, tipo: 'elan-ai-chat', respuesta: data.output_text || '' };
 }
 
 export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  cors(req, res);
+  if (req.method === 'OPTIONS') return res.status(204).end();
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
+  if (req.method === 'GET') {
+    if (String(req.query?.resource || '') === 'design-gallery') {
+      try {
+        const items = await getPublicDesignGallery();
+        return send(res, 200, { ok: true, items });
+      } catch (error) {
+        console.error('ERROR design-gallery:', error);
+        return send(res, 503, { ok: false, error: 'La galería de diseños no está disponible temporalmente.' });
+      }
+    }
 
-  if (req.method === "GET") {
-    return res.status(200).json({
+    return send(res, 200, {
       ok: true,
-      service: "ELANKAV CORE AI",
-      endpoint: "/api/elan-ai",
-      status: "online",
+      endpoint: '/api/elan-ai',
+      version: 'DESIGN-PORTAL-SERVER-RESTORE-01',
+      status: 'ready'
     });
   }
 
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      ok: false,
-      error: "Método no permitido",
-    });
-  }
+  if (req.method !== 'POST') return send(res, 405, { ok: false, error: 'Método no permitido.' });
 
   try {
-    const body = req.body || {};
+    const payload = req.body || {};
+    const tipo = String(payload.tipo || payload.type || 'chat').trim();
 
-    if (body.tipo === "render-botones") {
-      const render = await generarRenderBotones(body);
-
-      return res.status(200).json({
-        ok: true,
-        tipo: "render-botones",
-        ...render,
-      });
+    if (tipo === 'design-request-action') {
+      try {
+        const result = await continueDesignRequest(payload);
+        return send(res, 202, { ok: true, result, message: result.action === 'render' ? 'Estamos preparando el render hiperrealista.' : 'Estamos preparando una nueva versión con los cambios.' });
+      } catch (error) {
+        const invalid = [
+          'DESIGN_STATUS_ACCESS_INVALID', 'DESIGN_STATUS_NOT_FOUND',
+          'DESIGN_FOLLOWUP_ACTION_INVALID', 'DESIGN_FOLLOWUP_INSTRUCTIONS_REQUIRED',
+          'DESIGN_FOLLOWUP_RENDER_TYPE_REQUIRED', 'DESIGN_FOLLOWUP_ENVIRONMENT_REQUIRED',
+          'DESIGN_FOLLOWUP_NOT_READY', 'DESIGN_FOLLOWUP_CONFLICT'
+        ].includes(error?.code);
+        return send(res, invalid ? 400 : 503, { ok: false, error: invalid ? error.message : 'No fue posible continuar la solicitud.' });
+      }
     }
 
-    const texto = extraerTexto(body);
-    const contexto = body.contexto || body.proyecto || "Sin contexto";
-    const imagenes = prepararImagenesTemporales(body.archivos_temporales);
-
-    if (!texto && imagenes.length === 0) {
-      return res.status(400).json({
-        ok: false,
-        error: "Falta mensaje o archivo visual",
-      });
+    if (tipo === 'design-request-status') {
+      try {
+        const result = await getDesignRequestStatus({ requestCode: payload.requestCode, accessToken: payload.accessToken });
+        return send(res, 200, { ok: true, result });
+      } catch (error) {
+        const notFound = ['DESIGN_STATUS_ACCESS_INVALID', 'DESIGN_STATUS_NOT_FOUND'].includes(error?.code);
+        return send(res, notFound ? 404 : 503, { ok: false, error: notFound ? 'Solicitud no encontrada.' : 'No fue posible consultar la propuesta.' });
+      }
     }
 
-    const contenidoUsuario = [
-      {
-        type: "input_text",
-        text: [
-          `Contexto: ${JSON.stringify(contexto)}`,
-          "",
-          "Solicitud:",
-          texto || "Analiza los archivos adjuntos.",
-        ].join("\n"),
-      },
-      ...imagenes,
-    ];
+    if (tipo === 'design-request') {
+      try {
+        const result = await createDesignRequest(payload);
+        return send(res, 201, { ok: true, result, message: 'Solicitud recibida. La propuesta continuará por WhatsApp.' });
+      } catch (error) {
+        console.error('ERROR design-request:', error);
+        const invalid = String(error?.code || '').startsWith('DESIGN_')
+          && !['DESIGN_SUPABASE_NOT_CONFIGURED', 'DESIGN_FILE_UPLOAD_FAILED', 'DESIGN_REQUEST_INSERT_FAILED'].includes(error.code);
+        return send(res, invalid ? 400 : 503, { ok: false, error: invalid ? error.message : 'No fue posible registrar la solicitud. Intentá nuevamente.' });
+      }
+    }
 
-    const response = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: [
-        {
-          role: "system",
-          content:
-            "Eres ELANVISUAL AI Studio. Ayudas a vendedores a analizar imágenes, fachadas, logos, rótulos, ACM, PVC, acrílico, letras, iluminación, impresión, materiales, proveedores y propuestas técnicas. Primero describe lo visible. Luego recomienda solución fabricable. No inventes precios. Si falta precio, indica solicitud de costo o revisión en CotizadorDirecto. Si recibes una imagen, analízala visualmente y no digas que no puedes verla.",
-        },
-        {
-          role: "user",
-          content: contenidoUsuario,
-        },
-      ],
-    });
+    if (tipo === 'chat' || tipo === 'elan-ai' || tipo === 'mensaje') {
+      const result = await handleChat(payload);
+      return send(res, result.ok ? 200 : 400, result);
+    }
 
-    return res.status(200).json({
-      ok: true,
-      respuesta: response.output_text || "",
-      vision: imagenes.length > 0,
-      archivos_recibidos: Array.isArray(body.archivos_temporales)
-        ? body.archivos_temporales.length
-        : 0,
+    return send(res, 400, {
+      ok: false,
+      error: 'Tipo no soportado por /api/elan-ai.',
+      tipo,
+      tipos_soportados: ['chat', 'elan-ai', 'mensaje', 'design-request', 'design-request-status', 'design-request-action']
     });
   } catch (error) {
-    console.error("Error ELAN AI:", error);
-    return res.status(500).json({
-      ok: false,
-      error: error?.message || "Error conectando ELAN AI",
-    });
+    console.error('ERROR /api/elan-ai:', error);
+    return send(res, 500, { ok: false, endpoint: '/api/elan-ai', error: error.message || 'Error interno en ELAN AI.' });
   }
 }
