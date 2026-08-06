@@ -43,6 +43,13 @@ function send(res, status, payload) {
   return res.status(status).json(payload);
 }
 
+function safeDiagnostic(error) {
+  return {
+    code: String(error?.code || 'DESIGN_UNKNOWN_ERROR').slice(0, 120),
+    message: String(error?.message || 'Error sin mensaje').slice(0, 500)
+  };
+}
+
 async function handleChat(payload = {}) {
   const apiKey = String(process.env.OPENAI_API_KEY || '').trim();
   if (!apiKey) return { ok: false, error: 'OPENAI_API_KEY no configurada en ELANVISUAL.' };
@@ -77,7 +84,11 @@ export default async function handler(req, res) {
         return send(res, 200, { ok: true, items });
       } catch (error) {
         console.error('ERROR design-gallery:', error);
-        return send(res, 503, { ok: false, error: 'La galería de diseños no está disponible temporalmente.' });
+        return send(res, 503, {
+          ok: false,
+          error: 'La galería de diseños no está disponible temporalmente.',
+          debug: safeDiagnostic(error)
+        });
       }
     }
 
@@ -106,7 +117,11 @@ export default async function handler(req, res) {
           'DESIGN_FOLLOWUP_RENDER_TYPE_REQUIRED', 'DESIGN_FOLLOWUP_ENVIRONMENT_REQUIRED',
           'DESIGN_FOLLOWUP_NOT_READY', 'DESIGN_FOLLOWUP_CONFLICT'
         ].includes(error?.code);
-        return send(res, invalid ? 400 : 503, { ok: false, error: invalid ? error.message : 'No fue posible continuar la solicitud.' });
+        return send(res, invalid ? 400 : 503, {
+          ok: false,
+          error: invalid ? error.message : 'No fue posible continuar la solicitud.',
+          debug: invalid ? undefined : safeDiagnostic(error)
+        });
       }
     }
 
@@ -116,7 +131,11 @@ export default async function handler(req, res) {
         return send(res, 200, { ok: true, result });
       } catch (error) {
         const notFound = ['DESIGN_STATUS_ACCESS_INVALID', 'DESIGN_STATUS_NOT_FOUND'].includes(error?.code);
-        return send(res, notFound ? 404 : 503, { ok: false, error: notFound ? 'Solicitud no encontrada.' : 'No fue posible consultar la propuesta.' });
+        return send(res, notFound ? 404 : 503, {
+          ok: false,
+          error: notFound ? 'Solicitud no encontrada.' : 'No fue posible consultar la propuesta.',
+          debug: notFound ? undefined : safeDiagnostic(error)
+        });
       }
     }
 
@@ -128,7 +147,11 @@ export default async function handler(req, res) {
         console.error('ERROR design-request:', error);
         const invalid = String(error?.code || '').startsWith('DESIGN_')
           && !['DESIGN_SUPABASE_NOT_CONFIGURED', 'DESIGN_FILE_UPLOAD_FAILED', 'DESIGN_REQUEST_INSERT_FAILED'].includes(error.code);
-        return send(res, invalid ? 400 : 503, { ok: false, error: invalid ? error.message : 'No fue posible registrar la solicitud. Intentá nuevamente.' });
+        return send(res, invalid ? 400 : 503, {
+          ok: false,
+          error: invalid ? error.message : 'No fue posible registrar la solicitud. Intentá nuevamente.',
+          debug: invalid ? undefined : safeDiagnostic(error)
+        });
       }
     }
 
@@ -145,6 +168,11 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error('ERROR /api/elan-ai:', error);
-    return send(res, 500, { ok: false, endpoint: '/api/elan-ai', error: error.message || 'Error interno en ELAN AI.' });
+    return send(res, 500, {
+      ok: false,
+      endpoint: '/api/elan-ai',
+      error: error.message || 'Error interno en ELAN AI.',
+      debug: safeDiagnostic(error)
+    });
   }
 }
