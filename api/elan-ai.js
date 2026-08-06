@@ -6,9 +6,14 @@ import {
   getDesignRequestStatus,
   getPublicDesignGallery
 } from './services/design/designPortalService.js';
+import {
+  processPendingDesignRequest,
+  retryDesignDelivery
+} from './services/design/designProcessingService.js';
 
 export const config = {
-  api: { bodyParser: { sizeLimit: '25mb' } }
+  api: { bodyParser: { sizeLimit: '25mb' } },
+  maxDuration: 60
 };
 
 const ALLOWED_ORIGINS = new Set([
@@ -71,7 +76,6 @@ function safeDiagnostic(error) {
 async function handleChat(payload = {}) {
   const apiKey = String(process.env.OPENAI_API_KEY || '').trim();
   if (!apiKey) return { ok: false, error: 'OPENAI_API_KEY no configurada en ELANVISUAL.' };
-
   const mensaje = String(payload.mensaje || payload.message || payload.prompt || '').trim();
   if (!mensaje) return { ok: false, error: 'Mensaje vacío.' };
 
@@ -89,6 +93,40 @@ async function handleChat(payload = {}) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) return { ok: false, error: data?.error?.message || 'Error consultando OpenAI.' };
   return { ok: true, tipo: 'elan-ai-chat', respuesta: data.output_text || '' };
+}
+
+async function loadAndAdvanceDesignStatus(payload) {
+  // Primero valida código + token. Solo una consulta autorizada puede iniciar el procesamiento.
+  let result = await getDesignRequestStatus({
+    requestCode: payload.requestCode,
+    accessToken: payload.accessToken
+  });
+
+  if (result.status === 'ai_pending') {
+    try {
+      await processPendingDesignRequest({ requestCode: result.requestCode });
+    } catch (error) {
+      console.error('ERROR design processing:', safeDiagnostic(error));
+    }
+    result = await getDesignRequestStatus({
+      requestCode: payload.requestCode,
+      accessToken: payload.accessToken
+    });
+  }
+
+  if (result.ready && result.deliveredToWhatsApp !== true) {
+    try {
+      await retryDesignDelivery({ requestCode: result.requestCode });
+    } catch (error) {
+      console.error('ERROR design delivery retry:', safeDiagnostic(error));
+    }
+    result = await getDesignRequestStatus({
+      requestCode: payload.requestCode,
+      accessToken: payload.accessToken
+    });
+  }
+
+  return result;
 }
 
 export default async function handler(req, res) {
@@ -109,12 +147,12 @@ export default async function handler(req, res) {
         });
       }
     }
-
     return send(res, 200, {
       ok: true,
       endpoint: '/api/elan-ai',
-      version: 'DESIGN-PORTAL-SERVER-RESTORE-01',
-      status: 'ready'
+      version: 'DESIGN-PORTAL-PROCESSOR-01',
+      status: 'ready',
+      designProcessing: 'enabled'
     });
   }
 
@@ -127,7 +165,13 @@ export default async function handler(req, res) {
     if (tipo === 'design-request-action') {
       try {
         const result = await continueDesignRequest(payload);
-        return send(res, 202, { ok: true, result, message: result.action === 'render' ? 'Estamos preparando el render hiperrealista.' : 'Estamos preparando una nueva versión con los cambios.' });
+        return send(res, 202, {
+          ok: true,
+          result,
+          message: result.action === 'render'
+            ? 'Estamos preparando el render hiperrealista.'
+            : 'Estamos preparando una nueva versión con los cambios.'
+        });
       } catch (error) {
         const invalid = [
           'DESIGN_STATUS_ACCESS_INVALID', 'DESIGN_STATUS_NOT_FOUND',
@@ -145,7 +189,7 @@ export default async function handler(req, res) {
 
     if (tipo === 'design-request-status') {
       try {
-        const result = await getDesignRequestStatus({ requestCode: payload.requestCode, accessToken: payload.accessToken });
+        const result = await loadAndAdvanceDesignStatus(payload);
         return send(res, 200, { ok: true, result });
       } catch (error) {
         const notFound = ['DESIGN_STATUS_ACCESS_INVALID', 'DESIGN_STATUS_NOT_FOUND'].includes(error?.code);
@@ -160,7 +204,11 @@ export default async function handler(req, res) {
     if (tipo === 'design-request') {
       try {
         const result = await createDesignRequest(payload);
-        return send(res, 201, { ok: true, result, message: 'Solicitud recibida. La propuesta continuará por WhatsApp.' });
+        return send(res, 201, {
+          ok: true,
+          result,
+          message: 'Solicitud recibida. La generación iniciará automáticamente en esta pantalla.'
+        });
       } catch (error) {
         console.error('ERROR design-request:', error);
         const invalid = String(error?.code || '').startsWith('DESIGN_')
