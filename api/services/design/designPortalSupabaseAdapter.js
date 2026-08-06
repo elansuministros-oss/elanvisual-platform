@@ -185,6 +185,13 @@ async function listPublishedDesigns({ fetchImpl = globalThis.fetch } = {}) {
   });
   const response = await fetchImpl(`${url}/rest/v1/${DESIGN_GALLERY_TABLE}?${query}`, { headers: createHeaders(key) });
   const data = await response.json().catch(() => null);
+
+  // La galería es opcional. En el Supabase migrado todavía no existe esta tabla;
+  // eso no debe bloquear el formulario principal de solicitudes de diseño.
+  if (response.status === 404 && data?.code === 'PGRST205') {
+    return [];
+  }
+
   if (!response.ok || !Array.isArray(data)) {
     const error = new Error('No fue posible consultar la galería de diseños');
     error.code = 'DESIGN_GALLERY_READ_FAILED';
