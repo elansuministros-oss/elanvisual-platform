@@ -50,11 +50,17 @@ export const getProjectStatus = async (projectId) => {
   return { projectId, status: record?.status || 'quoted' };
 };
 
-export const sendQuotationWhatsApp = async () => {
-  const error = new Error('El envío de WhatsApp debe ejecutarse desde CONNECT.');
-  error.code = 'CONNECT_WHATSAPP_DELIVERY_REQUIRED';
-  throw error;
-};
+export const sendQuotationWhatsApp = (projectId, payload = {}) => request(
+  `/api/v1/business/vqs/quotations/${encodeURIComponent(projectId)}/send-whatsapp`,
+  {
+    method: 'POST',
+    body: JSON.stringify({
+      ...(payload.phone ? { phone: payload.phone } : {}),
+      ...(payload.chatId ? { chatId: payload.chatId } : {}),
+      ...(payload.text ? { text: payload.text } : {})
+    })
+  }
+);
 
 export const projectCoreClient = Object.freeze({
   createProject,
