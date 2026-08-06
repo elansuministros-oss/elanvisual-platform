@@ -73,8 +73,14 @@ async function uploadDesignAsset({ requestCode, kind, file, fetchImpl = globalTh
     body: decoded.bytes
   });
   if (!response.ok) {
+    const data = await response.json().catch(() => null);
     const error = new Error('No fue posible guardar el archivo de diseño');
     error.code = 'DESIGN_FILE_UPLOAD_FAILED';
+    error.details = {
+      status: response.status,
+      statusText: response.statusText,
+      response: data
+    };
     throw error;
   }
   return { kind, name: fileName, mimeType: decoded.mimeType, sizeBytes: decoded.bytes.length, bucket: DESIGN_ASSETS_BUCKET, path };
@@ -91,7 +97,11 @@ async function insertDesignRequest(row, { fetchImpl = globalThis.fetch } = {}) {
   if (!response.ok || !Array.isArray(data) || !data[0]) {
     const error = new Error('No fue posible registrar la solicitud de diseño');
     error.code = 'DESIGN_REQUEST_INSERT_FAILED';
-    error.details = data;
+    error.details = {
+      status: response.status,
+      statusText: response.statusText,
+      response: data
+    };
     throw error;
   }
   return data[0];
@@ -110,6 +120,11 @@ async function findDesignRequestByAccess({ requestCode, accessTokenHash, fetchIm
   if (!response.ok || !Array.isArray(data)) {
     const error = new Error('No fue posible consultar la solicitud de diseño');
     error.code = 'DESIGN_REQUEST_READ_FAILED';
+    error.details = {
+      status: response.status,
+      statusText: response.statusText,
+      response: data
+    };
     throw error;
   }
   return data[0] || null;
@@ -127,6 +142,11 @@ async function updateDesignRequestByAccess({ requestCode, accessTokenHash, value
   if (!response.ok || !Array.isArray(data)) {
     const error = new Error('No fue posible actualizar la solicitud de diseño');
     error.code = 'DESIGN_FOLLOWUP_UPDATE_FAILED';
+    error.details = {
+      status: response.status,
+      statusText: response.statusText,
+      response: data
+    };
     throw error;
   }
   return data[0] || null;
@@ -145,6 +165,11 @@ async function createSignedDesignAssetUrl({ bucket, path, expiresIn = 3600, fetc
   if (!response.ok || !signedPath) {
     const error = new Error('No fue posible preparar el resultado de diseño');
     error.code = 'DESIGN_RESULT_SIGN_FAILED';
+    error.details = {
+      status: response.status,
+      statusText: response.statusText,
+      response: data
+    };
     throw error;
   }
   return String(signedPath).startsWith('http') ? String(signedPath) : `${url}/storage/v1${signedPath}`;
@@ -163,6 +188,11 @@ async function listPublishedDesigns({ fetchImpl = globalThis.fetch } = {}) {
   if (!response.ok || !Array.isArray(data)) {
     const error = new Error('No fue posible consultar la galería de diseños');
     error.code = 'DESIGN_GALLERY_READ_FAILED';
+    error.details = {
+      status: response.status,
+      statusText: response.statusText,
+      response: data
+    };
     throw error;
   }
   return data;
