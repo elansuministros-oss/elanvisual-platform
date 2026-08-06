@@ -1,5 +1,4 @@
 import { resolveBaseUrl } from '../../vqs/services/projectCoreClient';
-import { prepareQuotationContractAssets } from '../../vqs/services/quotationAssetUploadRegistry';
 import {
   normalizeQuotationCollection,
   normalizeQuotationRecord
@@ -36,17 +35,14 @@ async function request(path, { method = 'GET', params = {}, body } = {}) {
     },
     ...(body ? { body: JSON.stringify(body) } : {})
   });
-
   const payload = await response.json().catch(() => ({}));
-
   if (!response.ok) {
-    const error = new Error(payload?.error || payload?.message || 'No fue posible procesar la cotizacion.');
+    const error = new Error(payload?.error?.message || payload?.error || payload?.message || 'No fue posible procesar la cotización en CONNECT.');
     error.status = response.status;
-    error.code = payload?.code || 'QUOTATION_VIEWER_REQUEST_FAILED';
-    error.details = payload?.details || [];
+    error.code = payload?.error?.code || payload?.code || 'CONNECT_QUOTATION_REQUEST_FAILED';
+    error.details = payload?.error?.details || payload?.details || [];
     throw error;
   }
-
   return payload;
 }
 
@@ -60,13 +56,8 @@ function extractRecord(payload = {}) {
 }
 
 function preserveLineage(normalized = {}, record = {}, requestedProjectId = '') {
-  const projectId = text(
-    record.projectId || record.project_id || record.project?.id || record.id || requestedProjectId
-  );
-  const quotationId = text(
-    record.quotationId || record.quotation_id || record.quotation?.id || record.quote?.id
-  );
-
+  const projectId = text(record.projectId || record.project_id || record.project?.id || record.id || requestedProjectId);
+  const quotationId = text(record.quotationId || record.quotation_id || record.quotation?.id || record.quote?.id);
   return {
     ...normalized,
     id: projectId || normalized.id,
@@ -77,30 +68,25 @@ function preserveLineage(normalized = {}, record = {}, requestedProjectId = '') 
 
 function assertRecord(record) {
   if (!record || (typeof record === 'object' && !Array.isArray(record) && Object.keys(record).length === 0)) {
-    throw new Error('No se encontro la cotizacion solicitada.');
+    throw new Error('No se encontró la cotización solicitada.');
   }
   return record;
 }
 
 function assertOfficialDocument(record) {
   const document = record?.quotation_document || record?.quotationDocument;
-  const publicDocument = document?.publicDocument;
-
+  const publicDocument = document?.publicDocument || document?.public_document;
   if (!document || !publicDocument) {
-    const error = new Error('El Orchestrator no entrego el documento oficial de la cotizacion.');
+    const error = new Error('CONNECT no entregó el documento oficial de la cotización.');
     error.code = 'OFFICIAL_QUOTATION_DOCUMENT_MISSING';
     throw error;
   }
-
   return record;
 }
 
 export async function listQuotations({ limit = DEFAULT_LIMIT } = {}) {
-  const payload = await request('/api/vqs/projects', {
-    params: { platform: PLATFORM, limit }
-  });
+  const payload = await request('/api/v1/business/vqs/quotations', { params: { limit } });
   const quotations = normalizeQuotationCollection(applyQuotationListAliasesToPayload(payload));
-
   return {
     quotations,
     count: Number(payload?.count ?? payload?.total ?? quotations.length)
@@ -109,33 +95,25 @@ export async function listQuotations({ limit = DEFAULT_LIMIT } = {}) {
 
 export async function getQuotationDetail(id) {
   const requestedId = text(id);
-  if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
-
-  const payload = await request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
-    params: { platform: PLATFORM }
-  });
+  if (!requestedId) throw new Error('No se recibió el identificador del proyecto.');
+  const payload = await request(`/api/v1/business/vqs/quotations/${encodeURIComponent(requestedId)}`);
   const record = applyQuotationImageFallback(assertOfficialDocument(assertRecord(extractRecord(payload))));
   return preserveLineage(normalizeQuotationRecord(record), record, requestedId);
 }
 
 export async function getQuotationEditData(id) {
   const requestedId = text(id);
-  if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
-
-  const payload = await request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
-    params: { platform: PLATFORM }
-  });
+  if (!requestedId) throw new Error('No se recibió el identificador del proyecto.');
+  const payload = await request(`/api/v1/business/vqs/quotations/${encodeURIComponent(requestedId)}`);
   return assertOfficialDocument(assertRecord(extractRecord(payload)));
 }
 
 export async function updateQuotation(id, contract) {
   const requestedId = text(id);
-  if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
-  const preparedContract = await prepareQuotationContractAssets(contract);
-
-  return request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
+  if (!requestedId) throw new Error('No se recibió el identificador del proyecto.');
+  return request(`/api/v1/business/vqs/quotations/${encodeURIComponent(requestedId)}`, {
     method: 'PATCH',
-    body: preparedContract
+    body: contract
   });
 }
 
