@@ -1,4 +1,10 @@
-﻿import { supabase } from "../../lib/supabase";
+import { supabase } from "../../lib/supabase";
+import {
+  getCatalogSummaryConnect,
+  listCatalogItemsConnect,
+} from "../../modules/connect/services/catalogConnectClient.js";
+import { uploadFileConnect } from "../../modules/connect/services/fileConnectClient.js";
+import { isConnectUnavailableError } from "../../modules/connect/services/connectCoreClient.js";
 
 export const EMC_TABLES = {
   categorias: "elankav_catalogo_categorias",
@@ -57,6 +63,12 @@ async function postCore(payload) {
 }
 
 export async function obtenerResumenEMC() {
+  try {
+    return await getCatalogSummaryConnect();
+  } catch (error) {
+    if (!isConnectUnavailableError(error)) throw error;
+  }
+
   if (!supabase) throw new Error("Supabase no configurado");
 
   const consultas = await Promise.allSettled([
@@ -87,6 +99,17 @@ function mapearPorId(lista = []) {
 }
 
 export async function listarItemsEMC({ busqueda = "", proveedorId = "", limite = 300 } = {}) {
+  try {
+    const items = await listCatalogItemsConnect({
+      query: busqueda,
+      supplierId: proveedorId,
+      limit: limite,
+    });
+    if (Array.isArray(items)) return items;
+  } catch (error) {
+    if (!isConnectUnavailableError(error)) throw error;
+  }
+
   if (!supabase) throw new Error("Supabase no configurado");
 
   let query = supabase
@@ -103,7 +126,6 @@ export async function listarItemsEMC({ busqueda = "", proveedorId = "", limite =
   if (error) throw error;
 
   const ids = (campo) => [...new Set((items || []).map((i) => i[campo]).filter(Boolean))];
-
   const categoriaIds = ids("categoria_id");
   const subcategoriaIds = ids("subcategoria_id");
   const marcaIds = ids("marca_id");
@@ -121,7 +143,6 @@ export async function listarItemsEMC({ busqueda = "", proveedorId = "", limite =
   const subcategorias = mapearPorId(subcategoriasRes.data || []);
   const marcas = mapearPorId(marcasRes.data || []);
   const unidades = mapearPorId(unidadesRes.data || []);
-
   let precios = [];
 
   if (itemIds.length) {
@@ -158,8 +179,6 @@ export async function listarItemsEMC({ busqueda = "", proveedorId = "", limite =
 }
 
 export async function subirArchivosEMCStorage({ proveedor, archivos = [] }) {
-  if (!supabase) throw new Error("Supabase no configurado");
-
   const lista = Array.from(archivos || []).filter(Boolean);
 
   if (!lista.length) {
@@ -171,6 +190,35 @@ export async function subirArchivosEMCStorage({ proveedor, archivos = [] }) {
   for (let index = 0; index < lista.length; index += 1) {
     const archivo = lista[index];
     const storagePath = crearStoragePath({ proveedor, archivo, index });
+
+    try {
+      const data = await uploadFileConnect({
+        file: archivo,
+        library: EMC_STORAGE_BUCKET,
+        folder: `emc/${proveedor?.id || "sin-proveedor"}`,
+        metadata: {
+          proveedor,
+          storage_path: storagePath,
+          origen: "EMC",
+        },
+      });
+
+      subidos.push({
+        nombre: data?.nombre || data?.name || archivo.name,
+        mime: data?.mime || data?.mimeType || archivo.type || "",
+        size: data?.size || data?.sizeBytes || archivo.size || 0,
+        bucket: data?.bucket || EMC_STORAGE_BUCKET,
+        storage_path: data?.storage_path || data?.storagePath || data?.path || storagePath,
+        public_url: data?.public_url || data?.publicUrl || data?.url || null,
+        id: data?.id || null,
+        origen_archivo: "connect",
+      });
+      continue;
+    } catch (error) {
+      if (!isConnectUnavailableError(error)) throw error;
+    }
+
+    if (!supabase) throw new Error("Supabase no configurado");
 
     const { error } = await supabase.storage
       .from(EMC_STORAGE_BUCKET)
@@ -195,6 +243,7 @@ export async function subirArchivosEMCStorage({ proveedor, archivos = [] }) {
       bucket: EMC_STORAGE_BUCKET,
       storage_path: storagePath,
       public_url: publicData?.publicUrl || null,
+      origen_archivo: "supabase-storage",
     });
   }
 
@@ -223,7 +272,9 @@ export async function importarEMC({
     notas,
     proveedor,
     archivos: archivosSubidos,
-    origen_archivo: "supabase-storage",
+    origen_archivo: archivosSubidos.some((archivo) => archivo.origen_archivo === "connect")
+      ? "connect"
+      : "supabase-storage",
   });
 }
 
@@ -249,7 +300,9 @@ export async function crearJobImportacionEMC({
     notas,
     proveedor,
     archivos: archivosSubidos,
-    origen_archivo: "supabase-storage",
+    origen_archivo: archivosSubidos.some((archivo) => archivo.origen_archivo === "connect")
+      ? "connect"
+      : "supabase-storage",
   });
 }
 

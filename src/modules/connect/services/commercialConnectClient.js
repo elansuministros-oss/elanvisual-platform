@@ -1,21 +1,6 @@
-const LOCAL_CONNECT_URL = 'http://localhost:4300';
+import { requestConnect, resolveConnectBaseUrl } from './connectCoreClient.js';
+
 const DEFAULT_ELANVISUAL_URL = 'https://visual.elankav.com';
-
-function resolveConnectBaseUrl() {
-  const configured = typeof import.meta.env === 'object'
-    ? import.meta.env.VITE_ELANKAV_CONNECT_URL
-    : '';
-
-  if (String(configured || '').trim()) {
-    return String(configured).trim().replace(/\/$/, '');
-  }
-
-  if (typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)) {
-    return LOCAL_CONNECT_URL;
-  }
-
-  return '';
-}
 
 function resolveElanvisualBaseUrl() {
   if (typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)) {
@@ -26,30 +11,11 @@ function resolveElanvisualBaseUrl() {
 }
 
 async function request(path, options = {}) {
-  const baseUrl = resolveConnectBaseUrl();
-  if (!baseUrl) {
+  if (!resolveConnectBaseUrl()) {
     return { skipped: true, reason: 'ELANKAV_CONNECT_URL_NOT_CONFIGURED' };
   }
 
-  const response = await fetch(`${baseUrl}${path}`, {
-    ...options,
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      'X-Elankav-Platform': 'ELANVISUAL',
-      ...(options.headers || {})
-    }
-  });
-
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    const error = new Error(payload?.error?.message || 'No fue posible sincronizar con ELANKAV CONNECT.');
-    error.code = payload?.error?.code || 'ELANKAV_CONNECT_REQUEST_FAILED';
-    error.status = response.status;
-    throw error;
-  }
-
-  return payload;
+  return requestConnect(path, options);
 }
 
 function resolveProjectId(projectResponse = {}) {

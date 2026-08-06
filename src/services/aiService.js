@@ -1,6 +1,31 @@
 import { supabase } from '../lib/supabase';
+import {
+  createCustomerDraftConnect,
+  listCrmOrdersConnect,
+  listQuotesConnect,
+  searchCustomersConnect,
+} from '../modules/connect/services/crmConnectClient.js';
+import { isConnectUnavailableError } from '../modules/connect/services/connectCoreClient.js';
 
 export async function buscarCliente(nombre, vendedorId = null) {
+  try {
+    const data = await searchCustomersConnect({ query: nombre, vendedorId });
+    return {
+      ok: true,
+      data: data || [],
+      source: 'connect',
+    };
+  } catch (error) {
+    if (!isConnectUnavailableError(error)) {
+      console.error(error);
+      return {
+        ok: false,
+        mensaje: error.message,
+        data: [],
+      };
+    }
+  }
+
   try {
     let query = supabase
       .from('clientes')
@@ -31,6 +56,24 @@ export async function buscarCliente(nombre, vendedorId = null) {
 }
 
 export async function crearClienteBorrador(data) {
+  try {
+    const result = await createCustomerDraftConnect(data);
+    return {
+      ok: true,
+      borrador: true,
+      data: result,
+      source: 'connect',
+    };
+  } catch (error) {
+    if (!isConnectUnavailableError(error)) {
+      return {
+        ok: false,
+        mensaje: error.message,
+        data: null,
+      };
+    }
+  }
+
   return {
     ok: true,
     borrador: true,
@@ -39,6 +82,15 @@ export async function crearClienteBorrador(data) {
 }
 
 export async function buscarCotizaciones(vendedorId = null) {
+  try {
+    return await listQuotesConnect({ vendedorId });
+  } catch (error) {
+    if (!isConnectUnavailableError(error)) {
+      console.error(error);
+      return [];
+    }
+  }
+
   try {
     let query = supabase
       .from('cotizaciones_inteligentes')
@@ -61,6 +113,15 @@ export async function buscarCotizaciones(vendedorId = null) {
 }
 
 export async function buscarPedidos(vendedorId = null) {
+  try {
+    return await listCrmOrdersConnect({ vendedorId });
+  } catch (error) {
+    if (!isConnectUnavailableError(error)) {
+      console.error(error);
+      return [];
+    }
+  }
+
   try {
     let query = supabase
       .from('pedidos')

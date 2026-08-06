@@ -1,4 +1,6 @@
 import { supabase } from "../../lib/supabase";
+import { listSupplierCatalogItemsConnect } from "../../modules/connect/services/catalogConnectClient.js";
+import { isConnectUnavailableError } from "../../modules/connect/services/connectCoreClient.js";
 
 const CORE_URL =
   import.meta.env.VITE_ELANKAV_CORE_URL || "https://elankav-core.vercel.app";
@@ -172,6 +174,16 @@ export async function guardarResultadoEMCAI22({ proveedor, resultado } = {}) {
 }
 
 export async function listarProductosGuardadosAI22({ proveedor, limite = 50 } = {}) {
+  try {
+    const data = await listSupplierCatalogItemsConnect({
+      supplierId: proveedor?.id,
+      limit: limite,
+    });
+    if (Array.isArray(data)) return data;
+  } catch (error) {
+    if (!isConnectUnavailableError(error)) throw error;
+  }
+
   if (!supabase) {
     throw new Error("Supabase no configurado.");
   }
