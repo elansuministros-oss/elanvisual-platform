@@ -1,13 +1,10 @@
-import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry';
-import { syncQuotationCommercialFlow } from '../../connect/services/commercialConnectClient';
-
-const DEFAULT_ORCHESTRATOR_URL = 'https://orchestrator.elankav.com';
+const DEFAULT_CONNECT_URL = 'https://connect.elankav.com';
 
 function resolveBaseUrl() {
   const configured = typeof import.meta.env === 'object'
-    ? import.meta.env.VITE_ELANKAV_ORCHESTRATOR_URL
+    ? import.meta.env.VITE_ELANKAV_CONNECT_URL
     : '';
-  return String(configured || DEFAULT_ORCHESTRATOR_URL).trim().replace(/\/$/, '');
+  return String(configured || DEFAULT_CONNECT_URL).trim().replace(/\/$/, '');
 }
 
 async function request(path, options = {}) {
@@ -23,51 +20,41 @@ async function request(path, options = {}) {
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(payload?.error || 'No fue posible procesar la solicitud en Project Core.');
-    error.code = payload?.code || 'PROJECT_CORE_REQUEST_FAILED';
+    const error = new Error(payload?.error?.message || payload?.error || 'No fue posible procesar la solicitud en CONNECT.');
+    error.code = payload?.error?.code || payload?.code || 'CONNECT_VQS_REQUEST_FAILED';
     error.status = response.status;
-    error.details = Array.isArray(payload?.details) ? payload.details : [];
+    error.details = payload?.error?.details || payload?.details || [];
     throw error;
   }
   return payload;
 }
 
-export const createProject = async (contract) => {
-  const preparedContract = await prepareQuotationContractAssets(contract);
-  const projectResponse = await request('/api/vqs/projects', {
-    method: 'POST',
-    body: JSON.stringify(preparedContract)
-  });
+export const createProject = (contract) => request('/api/v1/business/vqs/quotations', {
+  method: 'POST',
+  body: JSON.stringify(contract)
+});
 
-  try {
-    const commercialSync = await syncQuotationCommercialFlow(preparedContract, projectResponse);
-    return { ...projectResponse, commercialSync };
-  } catch (error) {
-    console.error('ELANKAV_CONNECT_SYNC_FAILED', error);
-    return {
-      ...projectResponse,
-      commercialSync: {
-        status: 'failed',
-        code: error?.code || 'ELANKAV_CONNECT_SYNC_FAILED',
-        message: error?.message || 'No fue posible sincronizar la cotización con ELANKAV CONNECT.'
-      }
-    };
-  }
-};
-
-export const getProject = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, { method: 'GET' });
-export const updateProject = async (projectId, patch) => {
-  const preparedPatch = await prepareQuotationContractAssets(patch);
-  return request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, {
-    method: 'PATCH',
-    body: JSON.stringify(preparedPatch)
-  });
-};
-export const getProjectStatus = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}/status`, { method: 'GET' });
-export const sendQuotationWhatsApp = (projectId, payload) => request(
-  `/api/vqs/projects/${encodeURIComponent(projectId)}/send-whatsapp`,
-  { method: 'POST', body: JSON.stringify(payload) }
+export const getProject = (projectId) => request(
+  `/api/v1/business/vqs/quotations/${encodeURIComponent(projectId)}`,
+  { method: 'GET' }
 );
+
+export const updateProject = (projectId, contract) => request(
+  `/api/v1/business/vqs/quotations/${encodeURIComponent(projectId)}`,
+  { method: 'PATCH', body: JSON.stringify(contract) }
+);
+
+export const getProjectStatus = async (projectId) => {
+  const payload = await getProject(projectId);
+  const record = payload?.data || payload;
+  return { projectId, status: record?.status || 'quoted' };
+};
+
+export const sendQuotationWhatsApp = async () => {
+  const error = new Error('El envío de WhatsApp debe ejecutarse desde CONNECT.');
+  error.code = 'CONNECT_WHATSAPP_DELIVERY_REQUIRED';
+  throw error;
+};
 
 export const projectCoreClient = Object.freeze({
   createProject,
@@ -76,4 +63,5 @@ export const projectCoreClient = Object.freeze({
   getProjectStatus,
   sendQuotationWhatsApp
 });
-export { DEFAULT_ORCHESTRATOR_URL, resolveBaseUrl };
+
+export { DEFAULT_CONNECT_URL, resolveBaseUrl };
