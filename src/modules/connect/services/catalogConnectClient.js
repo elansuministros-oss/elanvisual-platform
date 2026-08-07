@@ -36,12 +36,25 @@ function firstPositiveNumber(...values) {
   return 0;
 }
 
+function resolveItemMetadata(item = {}) {
+  const rowMetadata = item.metadata && typeof item.metadata === 'object' ? item.metadata : {};
+  const visualMetadata =
+    rowMetadata.metadata && typeof rowMetadata.metadata === 'object'
+      ? rowMetadata.metadata
+      : {};
+
+  return {
+    ...rowMetadata,
+    ...visualMetadata,
+  };
+}
+
 function resolveStorePrice(item = {}) {
   const activePrices = Array.isArray(item.prices)
     ? item.prices.filter((price) => price?.active !== false)
     : [];
   const activePrice = activePrices[0] || {};
-  const metadata = item.metadata && typeof item.metadata === 'object' ? item.metadata : {};
+  const metadata = resolveItemMetadata(item);
 
   return firstPositiveNumber(
     item.salePrice,
@@ -49,12 +62,13 @@ function resolveStorePrice(item = {}) {
     activePrice.price,
     metadata.salePrice,
     metadata.basePrice,
-    metadata.price
+    metadata.price,
+    metadata.precio
   );
 }
 
 function resolveStoreImage(item = {}) {
-  const metadata = item.metadata && typeof item.metadata === 'object' ? item.metadata : {};
+  const metadata = resolveItemMetadata(item);
   const media = Array.isArray(metadata.media) ? metadata.media : [];
   const firstMedia = media.find((entry) => toText(entry?.url || entry?.src || entry?.image));
 
@@ -69,7 +83,7 @@ function resolveStoreImage(item = {}) {
 }
 
 function resolveSaleMode(item = {}) {
-  const metadata = item.metadata && typeof item.metadata === 'object' ? item.metadata : {};
+  const metadata = resolveItemMetadata(item);
   const value = slugify(
     metadata.saleMode ||
       metadata.sale_mode ||
@@ -84,7 +98,7 @@ function resolveSaleMode(item = {}) {
 }
 
 export function mapCatalogItemToStoreProduct(item = {}) {
-  const metadata = item.metadata && typeof item.metadata === 'object' ? item.metadata : {};
+  const metadata = resolveItemMetadata(item);
   const category = toText(item.category) || 'GENERAL';
   const categorySlug =
     slugify(metadata.categorySlug || metadata.category_slug || category) || 'general';
@@ -108,6 +122,9 @@ export function mapCatalogItemToStoreProduct(item = {}) {
     tipoProducto: saleMode,
     aliases: Array.isArray(item.aliases) ? item.aliases : [],
     unidad: toText(item.unit),
+    medidas: toText(metadata.medidas || metadata.measurements),
+    etiqueta: toText(metadata.etiqueta || metadata.label),
+    categoriaHomeId: toText(metadata.categoriaHomeId || metadata.categoryHomeId),
     metadata,
     fuenteCatalogo: 'CONNECT',
   };
@@ -122,7 +139,7 @@ export function buildStoreCategories(products = []) {
 
     const metadata = product.metadata && typeof product.metadata === 'object' ? product.metadata : {};
     categories.set(slug, {
-      id: `connect-category-${slug}`,
+      id: product.categoriaHomeId || `connect-category-${slug}`,
       nombre:
         toText(metadata.categoryLabel || metadata.category_label || product.categoria) ||
         'General',
