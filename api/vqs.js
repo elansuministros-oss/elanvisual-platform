@@ -8,6 +8,7 @@ export const config = {
 const ALLOWED_METHODS = new Set(['GET', 'POST', 'PATCH']);
 const ALLOWED_PATHS = [
   /^customers\/search$/,
+  /^customers\/directory-search$/,
   /^design\/search$/,
   /^quotations$/,
   /^quotations\/[0-9a-f-]{36}$/i,
@@ -17,10 +18,14 @@ const ALLOWED_PATHS = [
 function getConfig() {
   const baseUrl = String(process.env.CONNECT_BASE_URL || process.env.ELANKAV_CONNECT_URL || 'https://connect.elankav.com')
     .trim().replace(/\/+$/, '');
-  const token = String(process.env.CONNECT_VQS_TOKEN || '').trim();
+  const token = String(
+    process.env.CONNECT_VQS_TOKEN ||
+    process.env.CONNECT_DESIGN_TOKEN ||
+    ''
+  ).trim();
   if (!token) {
-    const error = new Error('CONNECT_VQS_TOKEN no configurado en ELANVISUAL.');
-    error.code = 'CONNECT_VQS_NOT_CONFIGURED';
+    const error = new Error('Token interno de CONNECT no configurado en ELANVISUAL.');
+    error.code = 'CONNECT_INTERNAL_TOKEN_NOT_CONFIGURED';
     throw error;
   }
   return { baseUrl, token };
@@ -70,7 +75,7 @@ export default async function handler(req, res) {
     return res.status(response.status).json(payload);
   } catch (error) {
     console.error('ERROR proxy VQS ELANVISUAL → CONNECT:', error);
-    return res.status(error?.code === 'CONNECT_VQS_NOT_CONFIGURED' ? 503 : 502).json({
+    return res.status(error?.code === 'CONNECT_INTERNAL_TOKEN_NOT_CONFIGURED' ? 503 : 502).json({
       error: error?.message || 'No fue posible comunicar ELANVISUAL con CONNECT.',
       code: error?.code || 'CONNECT_VQS_PROXY_FAILED'
     });
