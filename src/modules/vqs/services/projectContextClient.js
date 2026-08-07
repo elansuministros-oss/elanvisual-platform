@@ -3,6 +3,16 @@ import { DEFAULT_ORCHESTRATOR_URL } from './projectCoreClient';
 const pendingRequests = new Map();
 const SOURCE_KEY = '__ELANVISUAL_VQS_SEARCH_SOURCE__';
 
+function messageFromPayload(payload, fallback) {
+  const candidate = payload?.error ?? payload?.message;
+  if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+  if (candidate && typeof candidate === 'object') {
+    const nested = candidate.message || candidate.error || candidate.code;
+    if (typeof nested === 'string' && nested.trim()) return nested.trim();
+  }
+  return fallback;
+}
+
 async function request(path, params = {}) {
   const query = new URLSearchParams({ path, ...params });
   const requestKey = query.toString();
@@ -19,8 +29,11 @@ async function request(path, params = {}) {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const error = new Error(payload?.error || 'No fue posible consultar la información en CONNECT.');
-      error.code = payload?.code || 'VQS_CONTEXT_REQUEST_FAILED';
+      const fallback = response.status === 404
+        ? 'La búsqueda seleccionada todavía no está disponible en CONNECT.'
+        : 'No fue posible consultar la información en CONNECT.';
+      const error = new Error(messageFromPayload(payload, fallback));
+      error.code = payload?.code || payload?.error?.code || 'VQS_CONTEXT_REQUEST_FAILED';
       error.status = response.status;
       throw error;
     }
