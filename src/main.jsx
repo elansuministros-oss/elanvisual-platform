@@ -24,6 +24,9 @@ import App from './App';
 
 import { AppProvider } from './context/AppContext';
 import { CoreProvider } from './core/context/CoreContext';
+import { installVqsSearchSourceEnhancer } from './modules/vqs/services/vqsSearchSourceEnhancer';
+
+installVqsSearchSourceEnhancer();
 
 createRoot(document.getElementById('root')).render(
   <CoreProvider>
