@@ -1,6 +1,7 @@
 import { DEFAULT_ORCHESTRATOR_URL } from './projectCoreClient';
 
 const pendingRequests = new Map();
+const SOURCE_KEY = '__ELANVISUAL_VQS_SEARCH_SOURCE__';
 
 async function request(path, params = {}) {
   const query = new URLSearchParams({ path, ...params });
@@ -18,7 +19,7 @@ async function request(path, params = {}) {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const error = new Error(payload?.error || 'No fue posible consultar el contexto VQS en CONNECT.');
+      const error = new Error(payload?.error || 'No fue posible consultar la información en CONNECT.');
       error.code = payload?.code || 'VQS_CONTEXT_REQUEST_FAILED';
       error.status = response.status;
       throw error;
@@ -46,8 +47,13 @@ function normalizeSearchResult(result, { query, type }) {
   };
 }
 
+function selectedSource() {
+  if (typeof window !== 'undefined') return String(window[SOURCE_KEY] || 'customers');
+  return 'customers';
+}
+
 async function searchCustomers(normalizedQuery, limit) {
-  const result = await request('customers/search', {
+  const result = await request('customers/directory-search', {
     q: normalizedQuery,
     platform: 'elanvisual',
     limit: String(limit)
@@ -55,10 +61,20 @@ async function searchCustomers(normalizedQuery, limit) {
   return normalizeSearchResult(result, { query: normalizedQuery, type: 'customer' });
 }
 
-export async function searchContext(query, { type = 'all', limit = 30 } = {}) {
+async function searchDesigner(normalizedQuery, limit) {
+  const result = await request('design/search', {
+    q: normalizedQuery,
+    platform: 'elanvisual',
+    limit: String(limit)
+  });
+  return normalizeSearchResult(result, { query: normalizedQuery, type: 'design' });
+}
+
+export async function searchContext(query, { limit = 30 } = {}) {
   const normalizedQuery = String(query || '').trim();
-  if (type === 'customer' || type === 'all') return searchCustomers(normalizedQuery, limit);
-  return { query: normalizedQuery, type, count: 0, results: [] };
+  return selectedSource() === 'designer'
+    ? searchDesigner(normalizedQuery, limit)
+    : searchCustomers(normalizedQuery, limit);
 }
 
 export const projectContextClient = Object.freeze({ searchContext });
