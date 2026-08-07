@@ -8,6 +8,7 @@ export const config = {
 const ALLOWED_METHODS = new Set(['GET', 'POST', 'PATCH']);
 const ALLOWED_PATHS = [
   /^customers\/search$/,
+  /^design\/search$/,
   /^quotations$/,
   /^quotations\/[0-9a-f-]{36}$/i,
   /^quotations\/[0-9a-f-]{36}\/send-whatsapp$/i
