@@ -51,28 +51,40 @@ function object(value) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 }
 
+function normalizeSource(source = {}) {
+  const rawType = String(source.type || '').trim().toLowerCase();
+  const type = rawType === 'design-request' ? 'design' : (rawType || 'manual');
+  return {
+    ...source,
+    type,
+    originalType: rawType || source.originalType || ''
+  };
+}
+
 function normalizeQuotationContract(body, path, method) {
   if (!body || method === 'GET' || !/^quotations(?:\/[0-9a-f-]{36})?$/i.test(path)) return body;
 
-  const source = object(body.source);
+  const source = normalizeSource(object(body.source));
   const customer = object(body.customerSnapshot || body.customer);
   const executive = object(body.executiveSnapshot || body.executive);
   const payments = object(body.paymentTerms || body.payments);
   const existingQuotation = object(body.quotation);
   const existingRelations = object(body.relations);
+  const existingQuotationSource = normalizeSource(object(existingQuotation.source));
 
   return {
     ...body,
     quotation: {
       ...existingQuotation,
-      source: Object.keys(object(existingQuotation.source)).length ? existingQuotation.source : source,
+      source: Object.keys(object(existingQuotation.source)).length ? existingQuotationSource : source,
       status: existingQuotation.status || 'draft'
     },
     relations: {
       ...existingRelations,
       customerId: existingRelations.customerId || customer.customerId || customer.id || '',
       executiveId: existingRelations.executiveId || executive.executiveId || executive.id || '',
-      designRequestId: existingRelations.designRequestId || source.designRequestId || ''
+      designRequestId: existingRelations.designRequestId || source.designRequestId || '',
+      originalSourceType: existingRelations.originalSourceType || source.originalType || ''
     },
     customerSnapshot: customer,
     executiveSnapshot: executive,
