@@ -47,6 +47,39 @@ function buildQuery(req) {
   return query ? `?${query}` : '';
 }
 
+function object(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+}
+
+function normalizeQuotationContract(body, path, method) {
+  if (!body || method === 'GET' || !/^quotations(?:\/[0-9a-f-]{36})?$/i.test(path)) return body;
+
+  const source = object(body.source);
+  const customer = object(body.customerSnapshot || body.customer);
+  const executive = object(body.executiveSnapshot || body.executive);
+  const payments = object(body.paymentTerms || body.payments);
+  const existingQuotation = object(body.quotation);
+  const existingRelations = object(body.relations);
+
+  return {
+    ...body,
+    quotation: {
+      ...existingQuotation,
+      source: Object.keys(object(existingQuotation.source)).length ? existingQuotation.source : source,
+      status: existingQuotation.status || 'draft'
+    },
+    relations: {
+      ...existingRelations,
+      customerId: existingRelations.customerId || customer.customerId || customer.id || '',
+      executiveId: existingRelations.executiveId || executive.executiveId || executive.id || '',
+      designRequestId: existingRelations.designRequestId || source.designRequestId || ''
+    },
+    customerSnapshot: customer,
+    executiveSnapshot: executive,
+    paymentTerms: payments
+  };
+}
+
 export default async function handler(req, res) {
   if (!ALLOWED_METHODS.has(req.method)) {
     return res.status(405).json({ error: 'Método no permitido.', code: 'METHOD_NOT_ALLOWED' });
@@ -59,6 +92,7 @@ export default async function handler(req, res) {
 
   try {
     const { baseUrl, token } = getConfig();
+    const requestBody = normalizeQuotationContract(req.body, path, req.method);
     const response = await fetch(`${baseUrl}/api/v1/business/vqs/${path}${buildQuery(req)}`, {
       method: req.method,
       headers: {
@@ -66,10 +100,10 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${token}`,
         'X-Elankav-Platform': 'ELANVISUAL',
         'X-Elankav-Source': 'elanvisual-vqs',
-        ...(req.body !== undefined && req.method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
+        ...(requestBody !== undefined && req.method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
         ...(req.headers['idempotency-key'] ? { 'Idempotency-Key': String(req.headers['idempotency-key']) } : {})
       },
-      ...(req.body !== undefined && req.method !== 'GET' ? { body: JSON.stringify(req.body) } : {})
+      ...(requestBody !== undefined && req.method !== 'GET' ? { body: JSON.stringify(requestBody) } : {})
     });
     const payload = await response.json().catch(() => ({ error: `CONNECT HTTP ${response.status}`, code: 'CONNECT_INVALID_RESPONSE' }));
     return res.status(response.status).json(payload);
