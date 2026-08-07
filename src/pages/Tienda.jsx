@@ -1,4 +1,4 @@
-﻿import React, { useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   PackageSearch,
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { AI_DESIGN_LIMIT, obtenerPerfilIA } from '../data/aiProductProfiles';
+import { getElanvisualStoreCatalog } from '../modules/connect/services/catalogConnectClient.js';
 
 const moneyUSD = (value) =>
   new Intl.NumberFormat('en-US', {
@@ -101,8 +102,19 @@ const resolverModoVenta = (producto = {}) => {
 };
 
 export default function Tienda({ setPage }) {
-  const { productos = [], categoriasHome = [], agregar, carrito = [] } = useApp();
+  const {
+    productos: productosLegacy = [],
+    categoriasHome: categoriasLegacy = [],
+    agregar,
+    carrito = [],
+  } = useApp();
 
+  const [catalogoConnect, setCatalogoConnect] = useState({
+    productos: [],
+    categorias: [],
+    cargado: false,
+    error: null,
+  });
   const [busqueda, setBusqueda] = useState('');
   const [modalAI, setModalAI] = useState(false);
   const [productoAI, setProductoAI] = useState(null);
@@ -120,6 +132,46 @@ export default function Tienda({ setPage }) {
     referenciaDataUrl: '',
     lugarDataUrl: '',
   });
+
+  useEffect(() => {
+    let activo = true;
+
+    const cargarCatalogo = async () => {
+      try {
+        const catalogo = await getElanvisualStoreCatalog();
+        if (!activo) return;
+
+        setCatalogoConnect({
+          productos: Array.isArray(catalogo.products) ? catalogo.products : [],
+          categorias: Array.isArray(catalogo.categories) ? catalogo.categories : [],
+          cargado: true,
+          error: null,
+        });
+      } catch (error) {
+        if (!activo) return;
+        console.error('No se pudo cargar el catálogo oficial desde CONNECT:', error);
+        setCatalogoConnect({
+          productos: [],
+          categorias: [],
+          cargado: true,
+          error,
+        });
+      }
+    };
+
+    cargarCatalogo();
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  const productos = catalogoConnect.productos.length
+    ? catalogoConnect.productos
+    : productosLegacy;
+  const categoriasHome = catalogoConnect.categorias.length
+    ? catalogoConnect.categorias
+    : categoriasLegacy;
 
   const slugInicial = (() => {
     const path = window.location.pathname || '/tienda';
@@ -311,7 +363,7 @@ export default function Tienda({ setPage }) {
         .filter(Boolean)
         .join('\n');
 
-      const response = await fetch('https://elankav-core.vercel.app/api/elan-ai', {
+      const response = await fetch('/api/elan-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -337,10 +389,15 @@ export default function Tienda({ setPage }) {
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok || !data.ok) {
-        throw new Error(data.error || 'No se pudo enviar la solicitud técnica.');
+        throw new Error(
+          data?.error?.message ||
+            data?.error ||
+            data?.message ||
+            'No se pudo enviar la solicitud técnica.'
+        );
       }
 
       const lead = {
@@ -511,7 +568,9 @@ export default function Tienda({ setPage }) {
       {!categoriaActiva && categorias.length === 0 && (
         <section className="panel empty-catalog">
           <p className="note">
-            Agrega productos activos y asígnales una Categoría Home desde el panel administrativo.
+            {catalogoConnect.cargado && catalogoConnect.error
+              ? 'No fue posible consultar el catálogo oficial de CONNECT y tampoco hay catálogo legacy disponible.'
+              : 'Cargando catálogo oficial de ELANVISUAL...'}
           </p>
         </section>
       )}
@@ -519,9 +578,7 @@ export default function Tienda({ setPage }) {
       {categoriaActiva && productosFiltrados.length === 0 && (
         <section className="panel empty-catalog">
           <h2>No hay productos disponibles</h2>
-          <p className="note">
-            Agrega productos activos en esta categoría desde el panel administrativo.
-          </p>
+          <p className="note">No hay productos activos en esta categoría.</p>
         </section>
       )}
 
