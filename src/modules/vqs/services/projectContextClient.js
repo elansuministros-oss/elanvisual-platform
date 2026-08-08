@@ -1,4 +1,4 @@
-import { DEFAULT_ORCHESTRATOR_URL, resolveBaseUrl } from './projectCoreClient';
+import { DEFAULT_VQS_PROXY_URL, resolveBaseUrl } from './projectCoreClient';
 
 const pendingRequests = new Map();
 
@@ -125,4 +125,4 @@ export async function searchContext(query, { type = 'all', limit = 30 } = {}) {
 }
 
 export const projectContextClient = Object.freeze({ searchContext });
-export { DEFAULT_ORCHESTRATOR_URL };
+export { DEFAULT_VQS_PROXY_URL };
