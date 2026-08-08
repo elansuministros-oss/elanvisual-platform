@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   adaptQuotationDocument,
+  mapCatalogItemToContextResult,
   mapVqsPath,
   resolveUpstream
 } from '../api/vqs/[...path].js';
@@ -9,7 +10,7 @@ assert.equal(mapVqsPath('projects'), '/quotations');
 assert.equal(mapVqsPath('projects/project-1'), '/quotations/project-1');
 assert.equal(mapVqsPath('projects/project-1/send-whatsapp'), '/quotations/project-1/send-whatsapp');
 assert.equal(mapVqsPath('customers/search'), '/customers/directory-search');
-assert.equal(mapVqsPath('context/search'), '/design/search');
+assert.equal(mapVqsPath('context/search'), null);
 assert.equal(mapVqsPath('public/quotations/project-1'), '/quotations/project-1');
 assert.equal(mapVqsPath('projects/project-1/payments'), null);
 
@@ -20,6 +21,13 @@ const connect = resolveUpstream({
 assert.equal(connect.mode, 'connect');
 assert.equal(connect.baseUrl, 'https://connect.elankav.com/api/v1/business/vqs');
 assert.equal(connect.token, 'test-token');
+
+const storeContext = mapCatalogItemToContextResult({
+  id: 'product-1', name: 'Caja de luz', description: 'Producto de prueba', unit: 'unidad', salePrice: 125
+});
+assert.equal(storeContext.type, 'store');
+assert.equal(storeContext.source.storeProductId, 'product-1');
+assert.equal(storeContext.items[0].unitPrice, 125);
 
 const legacy = resolveUpstream({ VQS_UPSTREAM: 'legacy' });
 assert.equal(legacy.mode, 'legacy');

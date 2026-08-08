@@ -747,13 +747,13 @@ export default function CotizadorUniversal() {
 
       <section className="uq-card">
         <h2>Cargar desde el ecosistema</h2>
-        <p>Escribí un teléfono, un código DESIGN, un cliente o un producto. El cotizador consulta y carga automáticamente desde el Orchestrator.</p>
+        <p>Escribí un teléfono, un código DESIGN, un cliente o un producto. El cotizador consulta y carga automáticamente desde CONNECT.</p>
         <div className="uq-fields two">
           <label className="wide">Buscar contexto
             <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runContextSearch()} placeholder="Ej. RESTAURANTES LAS SOPAS, 58401030 o DESIGN-..." />
           </label>
         </div>
-        <button type="button" className="uq-light" disabled={searching || searchQuery.trim().length < 2} onClick={() => runContextSearch()}>{searching ? 'Buscando…' : 'Buscar en Orchestrator'}</button>
+        <button type="button" className="uq-light" disabled={searching || searchQuery.trim().length < 2} onClick={() => runContextSearch()}>{searching ? 'Buscando…' : 'Buscar en CONNECT'}</button>
         {searchError && <p className={searchError.startsWith('Información cargada') ? '' : 'uq-error'}>{searchError}</p>}
         {searchResults.length > 0 && <div className="uq-items">
           {searchResults.map((result, index) => <article className="uq-item" key={`${result.type}-${result.sourceId}-${index}`}>

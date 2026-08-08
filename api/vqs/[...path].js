@@ -42,7 +42,10 @@ export function mapVqsPath(pathname, mode = 'connect') {
 
   if (path === '/projects') return '/quotations';
   if (path === '/customers/search') return '/customers/directory-search';
-  if (path === '/context/search') return '/design/search';
+  // Context is an ELANVISUAL aggregate: it must include both DESIGN requests
+  // and Store products.  It is handled by the proxy below, not reduced to the
+  // DESIGN endpoint.
+  if (path === '/context/search') return null;
 
   const project = path.match(/^\/projects\/([^/]+)(?:\/(status|send-whatsapp))?$/);
   if (project) {
@@ -56,6 +59,71 @@ export function mapVqsPath(pathname, mode = 'connect') {
   if (publicQuotation) return `/quotations/${publicQuotation[1]}`;
 
   return null;
+}
+
+function payloadItems(payload) {
+  if (Array.isArray(payload)) return payload;
+  for (const key of ['results', 'items', 'products', 'catalogItems', 'data']) {
+    if (Array.isArray(payload?.[key])) return payload[key];
+  }
+  return [];
+}
+
+export function mapCatalogItemToContextResult(item = {}) {
+  const metadata = item.metadata && typeof item.metadata === 'object' ? item.metadata : {};
+  const prices = Array.isArray(item.prices) ? item.prices : [];
+  const activePrice = prices.find((price) => price?.active !== false) || {};
+  const unitPrice = Number(item.salePrice ?? activePrice.salePrice ?? activePrice.price ?? metadata.salePrice ?? metadata.price ?? 0);
+  const productId = text(item.id || item.code || metadata.sku);
+  const title = text(item.name || item.title || item.code || 'Producto ELANVISUAL');
+  return {
+    type: 'store',
+    sourceId: productId,
+    label: title,
+    project: { title },
+    source: { type: 'store', sourceId: productId, storeProductId: productId },
+    items: [{
+      itemId: productId,
+      productId,
+      title,
+      description: text(item.description),
+      quantity: 1,
+      unit: text(item.unit || 'unidad'),
+      unitPrice: Number.isFinite(unitPrice) ? unitPrice : 0,
+      imageUrl: text(metadata.imageUrl || metadata.image_url || metadata.image)
+    }]
+  };
+}
+
+async function fetchJson(url, options) {
+  const response = await fetch(url, options);
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(`CONNECT respondió ${response.status}.`);
+  return payload?.data ?? payload;
+}
+
+async function searchContextConnect({ upstream, query, type, limit, headers, signal }) {
+  const connectBaseUrl = upstream.baseUrl.replace(/\/api\/v1\/business\/vqs$/, '');
+  const params = new URLSearchParams({ q: query, limit: String(limit), platform: 'ELANVISUAL' });
+  const wantsDesign = type !== 'store';
+  const wantsStore = type !== 'design';
+  const requests = [];
+  if (wantsDesign) requests.push(fetchJson(`${upstream.baseUrl}/design/search?${params}`, { headers, signal }));
+  if (wantsStore) requests.push(fetchJson(`${connectBaseUrl}/api/v1/catalog/items?${params}&active=true`, { headers, signal }));
+  const settled = await Promise.allSettled(requests);
+  const successful = settled.filter((entry) => entry.status === 'fulfilled');
+  if (!successful.length) throw settled[0]?.reason || new Error('CONNECT no pudo consultar el contexto.');
+  let position = 0;
+  const results = [];
+  if (wantsDesign) {
+    const design = settled[position++];
+    if (design?.status === 'fulfilled') results.push(...payloadItems(design.value));
+  }
+  if (wantsStore) {
+    const store = settled[position++];
+    if (store?.status === 'fulfilled') results.push(...payloadItems(store.value).map(mapCatalogItemToContextResult));
+  }
+  return { query, type: type || 'all', count: results.length, results: results.slice(0, limit) };
 }
 
 export function adaptQuotationDocument(body = {}) {
@@ -131,8 +199,9 @@ export default async function handler(req, res) {
   try {
     const upstream = resolveUpstream();
     const localPath = safePath(req);
+    const isContextSearch = upstream.mode === 'connect' && localPath.replace(/^\/+/, '') === 'context/search';
     const upstreamPath = mapVqsPath(localPath, upstream.mode);
-    if (!upstreamPath) {
+    if (!upstreamPath && !isContextSearch) {
       return res.status(404).json({ error: 'Ruta VQS no disponible en CONNECT.', code: 'VQS_ROUTE_NOT_SUPPORTED', requestId });
     }
 
@@ -147,6 +216,16 @@ export default async function handler(req, res) {
       ...(req.headers['idempotency-key'] ? { 'Idempotency-Key': String(req.headers['idempotency-key']) } : {}),
       ...(isWrite(req.method) ? { 'Content-Type': 'application/json' } : {})
     };
+
+    if (isContextSearch) {
+      const query = text(req.query?.q);
+      const type = text(req.query?.type || 'all').toLowerCase();
+      const limit = Math.min(Math.max(Number(req.query?.limit) || 30, 1), 100);
+      if (!query) return res.status(400).json({ error: 'El texto de búsqueda es obligatorio.', code: 'VQS_CONTEXT_QUERY_REQUIRED', requestId });
+      const payload = await searchContextConnect({ upstream, query, type, limit, headers, signal: controller.signal });
+      clearTimeout(timer);
+      return res.status(200).json(payload);
+    }
     const body = isWrite(req.method) && req.body !== undefined
       ? JSON.stringify(upstream.mode === 'connect' && /^(\/projects)(\/|$)/.test(`/${localPath}`) && !/\/send-whatsapp$/.test(localPath)
         ? adaptQuotationDocument(req.body)
