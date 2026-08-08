@@ -51,7 +51,9 @@ assert.equal(document.pricing.totalUsd, 100);
 assert.equal(document.paymentTerms.installments.length, 2);
 
 const vercelConfig = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+const vqsRewrite = vercelConfig.rewrites.find((rewrite) => rewrite.source === '/api/vqs/:path*');
 const spaRewrite = vercelConfig.rewrites.find((rewrite) => rewrite.destination === '/index.html');
+assert.equal(vqsRewrite?.destination, '/api/vqs?path=:path*', 'Las rutas VQS anidadas deben llegar a la función plana /api/vqs.');
 assert.equal(spaRewrite?.source, '/((?!api/).*)', 'El fallback SPA debe excluir todas las rutas /api/.');
 
 console.log('VQS CONNECT proxy check: OK');
