@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:vqs": "node scripts/vqs-contract-check.mjs && node scripts/vqs-bulk-import-check.mjs",
+    "test:vqs": "node scripts/vqs-contract-check.mjs && node scripts/vqs-bulk-import-check.mjs && node scripts/vqs-connect-proxy-check.mjs",
     "test:otoc": "node scripts/erp-otoc-contract-check.mjs"
   },
   "dependencies": {
