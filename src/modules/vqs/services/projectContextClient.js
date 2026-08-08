@@ -20,6 +20,14 @@ async function request(path, options = {}) {
       }
     });
 
+    const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+    if (!contentType.includes('application/json')) {
+      const error = new Error('El proxy VQS no respondió JSON. Revisá el enrutamiento de /api/vqs en producción.');
+      error.code = 'VQS_PROXY_NON_JSON';
+      error.status = response.status;
+      throw error;
+    }
+
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
       const error = new Error(payload?.error || 'No fue posible consultar el contexto VQS.');
