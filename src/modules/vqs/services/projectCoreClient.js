@@ -1,17 +1,19 @@
 import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry';
-import { syncQuotationCommercialFlow } from '../../connect/services/commercialConnectClient';
 
-const DEFAULT_ORCHESTRATOR_URL = 'https://orchestrator.elankav.com';
+const DEFAULT_ORCHESTRATOR_URL = '';
+const VQS_PROXY = '/api/vqs';
 
 function resolveBaseUrl() {
-  const configured = typeof import.meta.env === 'object'
-    ? import.meta.env.VITE_ELANKAV_ORCHESTRATOR_URL
-    : '';
-  return String(configured || DEFAULT_ORCHESTRATOR_URL).trim().replace(/\/$/, '');
+  return '';
+}
+
+function proxyUrl(path) {
+  const params = new URLSearchParams({ path });
+  return `${VQS_PROXY}?${params.toString()}`;
 }
 
 async function request(path, options = {}) {
-  const response = await fetch(`${resolveBaseUrl()}${path}`, {
+  const response = await fetch(proxyUrl(path), {
     ...options,
     headers: {
       Accept: 'application/json',
@@ -23,49 +25,39 @@ async function request(path, options = {}) {
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(payload?.error || 'No fue posible procesar la solicitud en Project Core.');
-    error.code = payload?.code || 'PROJECT_CORE_REQUEST_FAILED';
+    const error = new Error(payload?.error || 'No fue posible procesar la solicitud en CONNECT.');
+    error.code = payload?.code || 'CONNECT_VQS_REQUEST_FAILED';
     error.status = response.status;
     error.details = Array.isArray(payload?.details) ? payload.details : [];
     throw error;
   }
-  return payload;
+  return payload?.data || payload;
 }
 
 export const createProject = async (contract) => {
   const preparedContract = await prepareQuotationContractAssets(contract);
-  const projectResponse = await request('/api/vqs/projects', {
+  const idempotencyKey = globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+  return request('quotations', {
     method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(preparedContract)
   });
-
-  try {
-    const commercialSync = await syncQuotationCommercialFlow(preparedContract, projectResponse);
-    return { ...projectResponse, commercialSync };
-  } catch (error) {
-    console.error('ELANKAV_CONNECT_SYNC_FAILED', error);
-    return {
-      ...projectResponse,
-      commercialSync: {
-        status: 'failed',
-        code: error?.code || 'ELANKAV_CONNECT_SYNC_FAILED',
-        message: error?.message || 'No fue posible sincronizar la cotización con ELANKAV CONNECT.'
-      }
-    };
-  }
 };
 
-export const getProject = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, { method: 'GET' });
+export const getProject = (projectId) => request(`quotations/${encodeURIComponent(projectId)}`, { method: 'GET' });
 export const updateProject = async (projectId, patch) => {
   const preparedPatch = await prepareQuotationContractAssets(patch);
-  return request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, {
+  return request(`quotations/${encodeURIComponent(projectId)}`, {
     method: 'PATCH',
     body: JSON.stringify(preparedPatch)
   });
 };
-export const getProjectStatus = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}/status`, { method: 'GET' });
+export const getProjectStatus = async (projectId) => {
+  const project = await getProject(projectId);
+  return { projectId, status: project?.status || project?.quotation_document?.publicDocument?.status || 'draft' };
+};
 export const sendQuotationWhatsApp = (projectId, payload) => request(
-  `/api/vqs/projects/${encodeURIComponent(projectId)}/send-whatsapp`,
+  `quotations/${encodeURIComponent(projectId)}/send-whatsapp`,
   { method: 'POST', body: JSON.stringify(payload) }
 );
 
