@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/vqs/:path*",
-      "destination": "/api/vqs/:path*"
-    },
-    {
       "source": "/vqs-preview",
       "destination": "/vqs-preview.html"
     },
@@ -13,7 +9,7 @@
       "destination": "/vqs-preview.html"
     },
     {
-      "source": "/:path*",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]
