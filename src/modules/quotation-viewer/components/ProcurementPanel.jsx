@@ -1,0 +1,249 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { Archive, Camera, FileText, PackageCheck, Receipt, RefreshCw, Send, ShoppingCart, Upload, WalletCards } from 'lucide-react';
+import {
+  allocateInvoice,
+  base64PdfToFile,
+  createPurchaseInvoice,
+  createPurchaseOrder,
+  extractProcurementDocument,
+  getCostReport,
+  getPurchaseOrderDocument,
+  listInventory,
+  listOpenWorkOrders,
+  listProviders,
+  listPurchaseInvoices,
+  listRequirements,
+  saveRequirements
+} from '../services/procurementService';
+import '../../../styles/procurement-panel.css';
+
+const money = (value, currency = 'USD') => new Intl.NumberFormat('es-NI', { style: 'currency', currency: currency === 'NIO' ? 'NIO' : 'USD' }).format(Number(value || 0));
+const remaining = (line) => Math.max(0, Number(line.quantity || 0) - Number(line.assignedQty || 0));
+
+function FileButton({ accept, label, icon: Icon = Upload, onFile, disabled }) {
+  const id = `file-${label.replace(/\W+/g, '-').toLowerCase()}`;
+  return <label className={`proc-file-button ${disabled ? 'is-disabled' : ''}`} htmlFor={id}>
+    <Icon size={18}/>{label}
+    <input id={id} type="file" accept={accept} disabled={disabled} onChange={(event) => {
+      const file = event.target.files?.[0];
+      event.target.value = '';
+      if (file) onFile(file);
+    }}/>
+  </label>;
+}
+
+export default function ProcurementPanel({ projectId, workOrder, purchaseOrders = [], onRefresh }) {
+  const [tab, setTab] = useState('needs');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [requirements, setRequirements] = useState([]);
+  const [requirementDraft, setRequirementDraft] = useState(null);
+  const [requirementFileName, setRequirementFileName] = useState('');
+  const [invoiceDraft, setInvoiceDraft] = useState(null);
+  const [invoiceFileName, setInvoiceFileName] = useState('');
+  const [invoices, setInvoices] = useState([]);
+  const [openWorkOrders, setOpenWorkOrders] = useState([]);
+  const [inventory, setInventory] = useState([]);
+  const [providers, setProviders] = useState([]);
+  const [costReport, setCostReport] = useState(null);
+  const [allocationTargets, setAllocationTargets] = useState({});
+  const [ocSupplierId, setOcSupplierId] = useState('');
+  const [ocPaymentCondition, setOcPaymentCondition] = useState('cash');
+  const [ocCreditDays, setOcCreditDays] = useState('30');
+  const [ocLines, setOcLines] = useState({});
+
+  const workOrderId = workOrder?.id || '';
+  const pendingRequirements = useMemo(() => requirements.filter((item) => !['acquired', 'delivered', 'executed', 'cancelled'].includes(item.status)), [requirements]);
+
+  async function loadAll() {
+    setBusy(true); setError('');
+    try {
+      const [needRows, invoiceRows, otRows, inventoryRows, providerRows, report] = await Promise.all([
+        workOrderId ? listRequirements(projectId, workOrderId) : Promise.resolve([]),
+        listPurchaseInvoices('pending'),
+        listOpenWorkOrders(),
+        listInventory(),
+        listProviders(),
+        getCostReport(projectId).catch(() => null)
+      ]);
+      setRequirements(Array.isArray(needRows) ? needRows : []);
+      setInvoices(Array.isArray(invoiceRows) ? invoiceRows : []);
+      setOpenWorkOrders(Array.isArray(otRows) ? otRows : []);
+      setInventory(Array.isArray(inventoryRows) ? inventoryRows : []);
+      setProviders(Array.isArray(providerRows) ? providerRows : []);
+      setCostReport(report);
+    } catch (cause) {
+      setError(cause.message || 'No fue posible cargar Compras.');
+    } finally { setBusy(false); }
+  }
+
+  useEffect(() => { void loadAll(); }, [projectId, workOrderId]);
+
+  async function readRequirements(file) {
+    if (!workOrderId) { setError('Primero debe existir una OT.'); return; }
+    setBusy(true); setError(''); setMessage('');
+    try {
+      const extracted = await extractProcurementDocument('requirements', file);
+      setRequirementDraft(Array.isArray(extracted?.items) ? extracted.items : []);
+      setRequirementFileName(file.name);
+    } catch (cause) { setError(cause.message); } finally { setBusy(false); }
+  }
+
+  async function confirmRequirements() {
+    if (!requirementDraft?.length) return;
+    setBusy(true); setError('');
+    try {
+      await saveRequirements(projectId, workOrderId, requirementDraft, requirementFileName);
+      setRequirementDraft(null); setRequirementFileName(''); setMessage('Lista de necesidades cargada en la OT.');
+      await loadAll();
+    } catch (cause) { setError(cause.message); } finally { setBusy(false); }
+  }
+
+  async function readInvoice(file) {
+    setBusy(true); setError(''); setMessage('');
+    try {
+      const extracted = await extractProcurementDocument('invoice', file);
+      setInvoiceDraft(extracted);
+      setInvoiceFileName(file.name);
+      setTab('invoice');
+    } catch (cause) { setError(cause.message); } finally { setBusy(false); }
+  }
+
+  async function confirmInvoice() {
+    if (!invoiceDraft?.items?.length) return;
+    setBusy(true); setError('');
+    try {
+      const saved = await createPurchaseInvoice({
+        supplier: invoiceDraft.supplier,
+        invoiceNumber: invoiceDraft.invoiceNumber,
+        invoiceDate: invoiceDraft.invoiceDate,
+        currency: invoiceDraft.currency,
+        subtotal: invoiceDraft.subtotal,
+        taxTotal: invoiceDraft.taxTotal,
+        total: invoiceDraft.total,
+        sourceFileName: invoiceFileName,
+        sourceMimeType: 'application/octet-stream',
+        extractionPayload: invoiceDraft,
+        items: invoiceDraft.items
+      });
+      setInvoiceDraft(null); setInvoiceFileName(''); setMessage(`Compra ${saved.invoiceNumber || ''} registrada. Ahora podés asignarla.`);
+      await loadAll();
+    } catch (cause) { setError(cause.message); } finally { setBusy(false); }
+  }
+
+  async function assignInvoice(invoice) {
+    const allocations = [];
+    invoice.lines.forEach((line) => {
+      const qty = remaining(line);
+      const target = allocationTargets[line.id] || '';
+      if (!(qty > 0) || !target || target === 'pending') return;
+      if (target === 'inventory') {
+        allocations.push({ invoiceLineId: line.id, destinationType: 'inventory', quantity: qty, amount: qty * Number(line.unitPrice || 0), reason: 'Ingreso desde factura' });
+        return;
+      }
+      if (target === 'overhead') {
+        allocations.push({ invoiceLineId: line.id, destinationType: 'overhead', quantity: qty, amount: qty * Number(line.unitPrice || 0), reason: 'Gasto general' });
+        return;
+      }
+      const [targetProjectId, targetWorkOrderId] = target.split('|');
+      allocations.push({ invoiceLineId: line.id, destinationType: 'project', projectId: targetProjectId, workOrderId: targetWorkOrderId, quantity: qty, amount: qty * Number(line.unitPrice || 0), reason: 'Compra asignada a OT' });
+    });
+    if (!allocations.length) { setError('Seleccioná al menos un destino para esta factura.'); return; }
+    setBusy(true); setError('');
+    try {
+      await allocateInvoice(invoice.id, allocations);
+      setMessage('Compra asignada correctamente.');
+      await loadAll();
+    } catch (cause) { setError(cause.message); } finally { setBusy(false); }
+  }
+
+  function toggleOcLine(requirement, checked) {
+    setOcLines((current) => {
+      const next = { ...current };
+      if (!checked) delete next[requirement.id];
+      else next[requirement.id] = {
+        requirementId: requirement.id,
+        description: requirement.description,
+        specification: requirement.specification || '',
+        quantity: Number(requirement.requiredQty || 0),
+        unit: requirement.unit || 'unidad',
+        unitPrice: '',
+        includesVat: false
+      };
+      return next;
+    });
+  }
+
+  async function generateOc() {
+    const lines = Object.values(ocLines).map((line) => ({ ...line, unitPrice: Number(line.unitPrice || 0) }));
+    if (!ocSupplierId || !lines.length) { setError('Seleccioná proveedor y al menos una necesidad.'); return; }
+    if (lines.some((line) => !(line.quantity > 0) || line.unitPrice < 0)) { setError('Revisá cantidades y costos unitarios.'); return; }
+    setBusy(true); setError('');
+    try {
+      const order = await createPurchaseOrder(projectId, {
+        workOrderId,
+        supplierId: ocSupplierId,
+        currency: providers.find((provider) => provider.id === ocSupplierId)?.currency || 'USD',
+        paymentCondition: ocPaymentCondition,
+        ...(ocPaymentCondition === 'credit' ? { creditDays: Number(ocCreditDays || 30) } : {}),
+        lines
+      });
+      setOcLines({}); setMessage(`Orden ${order.purchaseOrderNumber} generada.`);
+      await onRefresh?.(); await loadAll();
+    } catch (cause) { setError(cause.message); } finally { setBusy(false); }
+  }
+
+  async function shareOrder(order) {
+    setBusy(true); setError('');
+    try {
+      const document = await getPurchaseOrderDocument(projectId, order.id);
+      const file = base64PdfToFile(document);
+      if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+        await navigator.share({ title: order.purchaseOrderNumber, text: document.whatsappMessage, files: [file] });
+      } else {
+        const url = URL.createObjectURL(file);
+        const link = document.createElement('a');
+        link.href = url; link.download = file.name; link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        const phone = String(document.providerPhone || '').replace(/\D/g, '');
+        if (phone) window.open(`https://wa.me/${phone}?text=${encodeURIComponent(document.whatsappMessage)}`, '_blank', 'noopener,noreferrer');
+        setMessage('PDF descargado. Adjuntalo al chat del proveedor.');
+      }
+    } catch (cause) { if (cause?.name !== 'AbortError') setError(cause.message); } finally { setBusy(false); }
+  }
+
+  return <section className="proc-panel" aria-label="Compras, abastecimiento e inventario">
+    <header className="proc-header">
+      <div><span>Operación</span><h2>Compras / Abastecimiento</h2><p>{workOrder ? `${workOrder.workOrderNumber} · ${projectId}` : 'El anticipo debe aplicarse antes de generar la OT.'}</p></div>
+      <button type="button" onClick={loadAll} disabled={busy}><RefreshCw size={17}/>{busy ? 'Procesando' : 'Actualizar'}</button>
+    </header>
+    {error && <div className="proc-alert is-error">{error}</div>}
+    {message && <div className="proc-alert is-ok">{message}</div>}
+    <nav className="proc-tabs">
+      {[['needs','Necesidades',PackageCheck],['invoice','Factura',Receipt],['orders','OC',ShoppingCart],['inventory','Inventario',Archive],['report','Gastos',WalletCards]].map(([key,label,Icon]) => <button key={key} type="button" className={tab === key ? 'active' : ''} onClick={() => setTab(key)}><Icon size={17}/><span>{label}</span></button>)}
+    </nav>
+
+    {tab === 'needs' && <div className="proc-section">
+      <div className="proc-toolbar"><FileButton accept="application/pdf,image/*,.txt,.csv" label="Cargar lista" onFile={readRequirements} disabled={busy || !workOrderId}/><small>PDF, foto, TXT o CSV. CONNECT extrae materiales y servicios.</small></div>
+      {requirementDraft && <div className="proc-review"><h3>Revisar lista · {requirementFileName}</h3>{requirementDraft.map((item,index) => <div className="proc-line" key={`${item.description}-${index}`}><div><strong>{item.description}</strong><small>{item.kind} · {item.specification || 'Sin especificación'}</small></div><span>{item.quantity} {item.unit}</span></div>)}<button type="button" className="proc-primary" onClick={confirmRequirements}>Confirmar lista</button></div>}
+      <div className="proc-list"><h3>Lista autorizada de la OT</h3>{!requirements.length && <p>No hay necesidades cargadas.</p>}{requirements.map((item) => <article key={item.id}><div><strong>{item.description}</strong><small>{item.specification || item.kind}</small></div><div><b>{item.requiredQty} {item.unit}</b><span className={`proc-status ${item.status}`}>{item.status}</span></div></article>)}</div>
+    </div>}
+
+    {tab === 'invoice' && <div className="proc-section">
+      <div className="proc-toolbar"><FileButton accept="application/pdf,image/*,.txt,.csv" label="Cargar factura" icon={Camera} onFile={readInvoice} disabled={busy}/><small>No necesitás conocer el número de OT al cargarla.</small></div>
+      {invoiceDraft && <div className="proc-review"><h3>{invoiceDraft.supplier?.tradeName || 'Proveedor detectado'}</h3><p>Factura {invoiceDraft.invoiceNumber || 's/n'} · {invoiceDraft.invoiceDate || ''} · <strong>{money(invoiceDraft.total, invoiceDraft.currency)}</strong></p>{invoiceDraft.items?.map((item,index) => <div className="proc-line" key={`${item.description}-${index}`}><div><strong>{item.description}</strong><small>{item.quantity} {item.unit} × {money(item.unitPrice, invoiceDraft.currency)}</small></div><span>{money(item.total, invoiceDraft.currency)}</span></div>)}<button type="button" className="proc-primary" onClick={confirmInvoice}>Confirmar compra</button></div>}
+      <div className="proc-list"><h3>Compras por asignar</h3>{!invoices.length && <p>No hay facturas pendientes.</p>}{invoices.map((invoice) => <article className="proc-invoice" key={invoice.id}><div className="proc-invoice-head"><div><strong>{invoice.supplierName}</strong><small>{invoice.invoiceNumber || 'Sin número'} · {money(invoice.total, invoice.currency)}</small></div><span className="proc-status pending">{invoice.assignmentStatus}</span></div>{invoice.lines.filter((line) => remaining(line) > 0).map((line) => <div className="proc-allocation" key={line.id}><div><strong>{line.description}</strong><small>Pendiente {remaining(line)} {line.unit}</small></div><select value={allocationTargets[line.id] || 'pending'} onChange={(event) => setAllocationTargets((current) => ({ ...current, [line.id]: event.target.value }))}><option value="pending">Asignar después</option><option value="inventory">Inventario</option><option value="overhead">Gasto general</option>{openWorkOrders.map((ot) => <option key={ot.id} value={`${ot.projectId}|${ot.id}`}>{ot.customerName ? `${ot.customerName} · ` : ''}{ot.title || ot.projectNumber} · {ot.workOrderNumber}</option>)}</select></div>)}<button type="button" className="proc-secondary" onClick={() => assignInvoice(invoice)}>Asignar seleccionados</button></article>)}</div>
+    </div>}
+
+    {tab === 'orders' && <div className="proc-section">
+      {!workOrder && <div className="proc-empty">Primero aplicá el anticipo y generá la OT.</div>}
+      {workOrder && <><div className="proc-form-row"><label>Proveedor<select value={ocSupplierId} onChange={(event) => setOcSupplierId(event.target.value)}><option value="">Seleccionar proveedor</option>{providers.map((provider) => <option value={provider.id} key={provider.id}>{provider.name}</option>)}</select></label><label>Condición<select value={ocPaymentCondition} onChange={(event) => setOcPaymentCondition(event.target.value)}><option value="cash">Contado</option><option value="credit">Crédito</option></select></label>{ocPaymentCondition === 'credit' && <label>Días<input type="number" min="1" value={ocCreditDays} onChange={(event) => setOcCreditDays(event.target.value)}/></label>}</div><div className="proc-list"><h3>Seleccionar necesidades para esta OC</h3>{pendingRequirements.map((item) => { const selected = Boolean(ocLines[item.id]); return <article key={item.id} className={selected ? 'selected' : ''}><label className="proc-check"><input type="checkbox" checked={selected} onChange={(event) => toggleOcLine(item, event.target.checked)}/><span><strong>{item.description}</strong><small>{item.requiredQty} {item.unit}</small></span></label>{selected && <input className="proc-price" type="number" min="0" step="0.01" placeholder="Costo unitario real" value={ocLines[item.id]?.unitPrice || ''} onChange={(event) => setOcLines((current) => ({ ...current, [item.id]: { ...current[item.id], unitPrice: event.target.value } }))}/>}</article>})}</div><button type="button" className="proc-primary" onClick={generateOc} disabled={busy}>Generar OC formal</button></>}
+      <div className="proc-list"><h3>Órdenes del proyecto</h3>{!purchaseOrders.length && <p>No hay órdenes.</p>}{purchaseOrders.map((order) => <article key={order.id}><div><strong>{order.purchaseOrderNumber}</strong><small>{order.supplierName || order.supplierId} · {order.status}</small></div><div className="proc-order-actions"><b>{money(order.total, order.currency)}</b><button type="button" onClick={() => shareOrder(order)}><Send size={16}/>PDF / WhatsApp</button></div></article>)}</div>
+    </div>}
+
+    {tab === 'inventory' && <div className="proc-section"><div className="proc-list"><h3>Inventario interno</h3>{!inventory.length && <p>Inventario vacío.</p>}{inventory.map((item) => <article key={item.id}><div><strong>{item.description}</strong><small>Costo promedio {money(item.avgUnitCost, item.currency)}</small></div><div><b>{item.qtyAvailable} {item.unit}</b><small>{item.qtyReserved} reservado</small></div></article>)}</div></div>}
+
+    {tab === 'report' && <div className="proc-section">{costReport ? <div className="proc-report"><div><span>Venta</span><strong>{money(costReport.saleTotal)}</strong></div><div><span>Compras directas</span><strong>{money(costReport.directPurchases)}</strong></div><div><span>Inventario consumido</span><strong>{money(costReport.inventoryConsumption)}</strong></div><div><span>Costo real</span><strong>{money(costReport.realCost)}</strong></div><div className={Number(costReport.profit) >= 0 ? 'profit' : 'loss'}><span>Resultado</span><strong>{money(costReport.profit)}</strong><small>{costReport.marginPercent == null ? '' : `${Number(costReport.marginPercent).toFixed(1)}% margen`}</small></div></div> : <p>Aún no hay costos suficientes para calcular el resultado.</p>}</div>}
+  </section>;
+}
