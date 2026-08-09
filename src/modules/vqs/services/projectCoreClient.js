@@ -1,4 +1,5 @@
 import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry';
+import { runWithSingleServerRetry } from './vqsRequestRetry.js';
 const DEFAULT_VQS_PROXY_URL = '';
 
 function resolveBaseUrl() {
@@ -21,8 +22,12 @@ async function request(path, options = {}) {
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(payload?.error || 'No fue posible procesar la solicitud en Project Core.');
-    error.code = payload?.code || 'PROJECT_CORE_REQUEST_FAILED';
+    const upstreamError = payload?.error;
+    const message = typeof upstreamError === 'string'
+      ? upstreamError
+      : upstreamError?.message;
+    const error = new Error(message || 'No fue posible procesar la solicitud en CONNECT.');
+    error.code = payload?.code || upstreamError?.code || 'VQS_CONNECT_REQUEST_FAILED';
     error.status = response.status;
     error.details = Array.isArray(payload?.details) ? payload.details : [];
     throw error;
@@ -32,10 +37,15 @@ async function request(path, options = {}) {
 
 export const createProject = async (contract) => {
   const preparedContract = await prepareQuotationContractAssets(contract);
-  const projectResponse = await request('/api/vqs/projects', {
+  const requestOptions = {
     method: 'POST',
+    headers: { 'Idempotency-Key': crypto.randomUUID() },
     body: JSON.stringify(preparedContract)
-  });
+  };
+
+  const projectResponse = await runWithSingleServerRetry(
+    () => request('/api/vqs/projects', requestOptions)
+  );
 
   return projectResponse;
 };
