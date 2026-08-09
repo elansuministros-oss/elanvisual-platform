@@ -1,6 +1,8 @@
 import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry';
 import { normalizeQuotationSource } from './quotationSourceNormalization.js';
 import { runWithSingleServerRetry } from './vqsRequestRetry.js';
+import { supabase } from '../../../lib/supabase.js';
+
 const DEFAULT_VQS_PROXY_URL = '';
 
 function resolveBaseUrl() {
@@ -11,10 +13,26 @@ function resolveBaseUrl() {
 }
 
 async function request(path, options = {}) {
+  if (!supabase) {
+    throw new Error('SUPABASE_CLIENT_NOT_CONFIGURED');
+  }
+
+  const { data, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw sessionError;
+
+  const token = data?.session?.access_token || '';
+  if (!token) {
+    const error = new Error('Sesion administrativa requerida.');
+    error.code = 'AUTH_REQUIRED';
+    error.status = 401;
+    throw error;
+  }
+
   const response = await fetch(`${resolveBaseUrl()}${path}`, {
     ...options,
     headers: {
       Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
       'X-Elankav-Platform': 'ELANVISUAL',
       'X-Elankav-Actor-Type': 'user',
       ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
