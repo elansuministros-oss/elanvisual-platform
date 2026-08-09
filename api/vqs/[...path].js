@@ -84,7 +84,7 @@ async function uploadQuotationAsset(req, res, requestId) {
   }
 
   const supabaseUrl = text(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL).replace(/\/+$/, '');
-  const serviceKey = text(process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const serviceKey = text(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY);
   const bucket = text(process.env.VQS_ASSET_BUCKET || process.env.VITE_SUPABASE_BUCKET || DEFAULT_ASSET_BUCKET);
   if (!supabaseUrl || !serviceKey || !bucket) {
     return res.status(503).json({
