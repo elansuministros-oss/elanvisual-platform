@@ -1,5 +1,5 @@
 import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry.js';
-import { syncQuotationCommercialFlow } from '../../connect/services/commercialConnectClient.js';
+import { supabase } from '../../../lib/supabase.js';
 
 const DEFAULT_ORCHESTRATOR_URL = 'https://orchestrator.elankav.com';
 
@@ -11,10 +11,27 @@ function resolveBaseUrl() {
 }
 
 async function request(path, options = {}) {
-  const response = await fetch(`${resolveBaseUrl()}${path}`, {
+  if (!supabase) {
+    throw new Error('SUPABASE_CLIENT_NOT_CONFIGURED');
+  }
+
+  const { data, error: sessionError } = await supabase.auth.getSession();
+
+  if (sessionError) throw sessionError;
+
+  const token = data?.session?.access_token || '';
+
+  if (!token) {
+    const error = new Error('Sesion administrativa requerida.');
+    error.code = 'AUTH_REQUIRED';
+    error.status = 401;
+    throw error;
+  }
+  const response = await fetch(path, {
     ...options,
     headers: {
       Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
       'X-Elankav-Platform': 'ELANVISUAL',
       'X-Elankav-Actor-Type': 'user',
       ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
@@ -34,25 +51,14 @@ async function request(path, options = {}) {
 
 export const createProject = async (contract) => {
   const preparedContract = await prepareQuotationContractAssets(contract);
-  const projectResponse = await request('/api/vqs/projects', {
+
+  return request('/api/vqs/projects', {
     method: 'POST',
+    headers: {
+      'Idempotency-Key': crypto.randomUUID()
+    },
     body: JSON.stringify(preparedContract)
   });
-
-  try {
-    const commercialSync = await syncQuotationCommercialFlow(preparedContract, projectResponse);
-    return { ...projectResponse, commercialSync };
-  } catch (error) {
-    console.error('ELANKAV_CONNECT_SYNC_FAILED', error);
-    return {
-      ...projectResponse,
-      commercialSync: {
-        status: 'failed',
-        code: error?.code || 'ELANKAV_CONNECT_SYNC_FAILED',
-        message: error?.message || 'No fue posible sincronizar la cotización con ELANKAV CONNECT.'
-      }
-    };
-  }
 };
 
 export const getProject = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, { method: 'GET' });

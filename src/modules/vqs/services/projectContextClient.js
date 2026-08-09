@@ -1,36 +1,65 @@
 import { DEFAULT_ORCHESTRATOR_URL, resolveBaseUrl } from './projectCoreClient';
+import { supabase } from '../../../lib/supabase.js';
 
 const pendingRequests = new Map();
 
-async function request(path, options = {}) {
+async function request(path, options = {}, legacy = false) {
   const method = String(options.method || 'GET').toUpperCase();
-  const requestKey = `${method}:${path}`;
+  const requestKey = `${legacy ? 'legacy' : 'connect'}:${method}:${path}`;
+
   if (method === 'GET' && pendingRequests.has(requestKey)) {
     return pendingRequests.get(requestKey);
   }
 
   const operation = (async () => {
-    const response = await fetch(`${resolveBaseUrl()}${path}`, {
+    let authorization = '';
+
+    if (!legacy) {
+      if (!supabase) {
+        throw new Error('SUPABASE_CLIENT_NOT_CONFIGURED');
+      }
+
+      const { data, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+
+      const token = data?.session?.access_token || '';
+      if (!token) {
+        const error = new Error('Sesion administrativa requerida.');
+        error.code = 'AUTH_REQUIRED';
+        error.status = 401;
+        throw error;
+      }
+
+      authorization = `Bearer ${token}`;
+    }
+
+    const target = legacy ? `${resolveBaseUrl()}${path}` : path;
+
+    const response = await fetch(target, {
       ...options,
       headers: {
         Accept: 'application/json',
         'X-Elankav-Platform': 'ELANVISUAL',
         'X-Elankav-Actor-Type': 'user',
+        ...(authorization ? { Authorization: authorization } : {}),
         ...(options.headers || {})
       }
     });
 
     const payload = await response.json().catch(() => ({}));
+
     if (!response.ok) {
       const error = new Error(payload?.error || 'No fue posible consultar el contexto VQS.');
       error.code = payload?.code || 'VQS_CONTEXT_REQUEST_FAILED';
       error.status = response.status;
       throw error;
     }
+
     return payload?.data || payload;
   })();
 
   if (method === 'GET') pendingRequests.set(requestKey, operation);
+
   try {
     return await operation;
   } finally {
@@ -46,6 +75,7 @@ function normalizeSearchResult(result, { query, type }) {
   }
 
   const results = Array.isArray(result?.results) ? result.results : [];
+
   return {
     ...(result || {}),
     query: result?.query || query,
@@ -73,15 +103,60 @@ async function searchCustomers(normalizedQuery, limit) {
     platform: 'elanvisual',
     limit: String(limit)
   });
-  const result = await request(`/api/vqs/customers/search?${params.toString()}`, { method: 'GET' });
-  return normalizeSearchResult(result, { query: normalizedQuery, type: 'customer' });
+
+  const result = await request(`/api/vqs/customers/search?${params.toString()}`, {
+    method: 'GET'
+  });
+
+  return normalizeSearchResult(result, {
+    query: normalizedQuery,
+    type: 'customer'
+  });
 }
 
-async function searchDesignAndStore(normalizedQuery, type, limit) {
-  const effectiveType = type === 'store' ? 'all' : type;
-  const params = new URLSearchParams({ q: normalizedQuery, type: effectiveType, limit: String(limit) });
-  const result = await request(`/api/vqs/context/search?${params.toString()}`, { method: 'GET' });
-  return normalizeSearchResult(result, { query: normalizedQuery, type: effectiveType });
+async function searchDesign(normalizedQuery, limit) {
+  const params = new URLSearchParams({
+    q: normalizedQuery,
+    type: 'design',
+    limit: String(limit)
+  });
+
+  const result = await request(`/api/vqs/context/search?${params.toString()}`, {
+    method: 'GET'
+  });
+
+  return normalizeSearchResult(result, {
+    query: normalizedQuery,
+    type: 'design'
+  });
+}
+
+async function searchStoreLegacy(normalizedQuery, limit) {
+  const params = new URLSearchParams({
+    q: normalizedQuery,
+    type: 'all',
+    limit: String(limit)
+  });
+
+  const result = await request(
+    `/api/vqs/context/search?${params.toString()}`,
+    { method: 'GET' },
+    true
+  );
+
+  const normalized = normalizeSearchResult(result, {
+    query: normalizedQuery,
+    type: 'store'
+  });
+
+  const results = normalized.results.filter((item) => item?.type !== 'design');
+
+  return {
+    ...normalized,
+    type: 'store',
+    count: results.length,
+    results
+  };
 }
 
 export async function searchContext(query, { type = 'all', limit = 30 } = {}) {
@@ -91,24 +166,36 @@ export async function searchContext(query, { type = 'all', limit = 30 } = {}) {
     return searchCustomers(normalizedQuery, limit);
   }
 
-  if (type !== 'all') {
-    return searchDesignAndStore(normalizedQuery, type, limit);
+  if (type === 'design') {
+    return searchDesign(normalizedQuery, limit);
   }
 
-  const [customers, context] = await Promise.allSettled([
+  if (type === 'store') {
+    return searchStoreLegacy(normalizedQuery, limit);
+  }
+
+  const [customers, design, store] = await Promise.allSettled([
     searchCustomers(normalizedQuery, limit),
-    searchDesignAndStore(normalizedQuery, 'all', limit)
+    searchDesign(normalizedQuery, limit),
+    searchStoreLegacy(normalizedQuery, limit)
   ]);
 
-  if (customers.status === 'rejected' && context.status === 'rejected') {
-    throw customers.reason || context.reason;
+  if (
+    customers.status === 'rejected' &&
+    design.status === 'rejected' &&
+    store.status === 'rejected'
+  ) {
+    throw customers.reason || design.reason || store.reason;
   }
 
   const combined = [
     ...(customers.status === 'fulfilled' ? customers.value.results : []),
-    ...(context.status === 'fulfilled' ? context.value.results : [])
+    ...(design.status === 'fulfilled' ? design.value.results : []),
+    ...(store.status === 'fulfilled' ? store.value.results : [])
   ];
+
   const seen = new Set();
+
   const results = combined.filter((result, index) => {
     const key = resultIdentity(result, index);
     if (seen.has(key)) return false;
