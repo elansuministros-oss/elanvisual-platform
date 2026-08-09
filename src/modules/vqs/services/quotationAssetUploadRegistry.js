@@ -47,7 +47,7 @@ async function resolvePendingUploads() {
           }
         };
       } catch (error) {
-        const uploadError = new Error(error?.message || 'No fue posible subir la fotografía al Orchestrator.');
+        const uploadError = new Error(error?.message || 'No fue posible guardar la fotografía en CONNECT.');
         uploadError.code = error?.code || 'QUOTATION_ASSET_UPLOAD_FAILED';
         throw uploadError;
       }

@@ -62,7 +62,9 @@ async function uploadQuotationAsset(file, dataUrl) {
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok || !payload?.data?.signedUrl) {
-    throw new Error(payload?.error || 'No fue posible subir la fotografía al Orchestrator.');
+    const error = new Error(payload?.error || 'No fue posible guardar la fotografía en CONNECT.');
+    error.code = payload?.code || 'QUOTATION_ASSET_UPLOAD_FAILED';
+    throw error;
   }
   return payload.data;
 }

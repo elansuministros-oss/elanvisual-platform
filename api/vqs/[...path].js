@@ -41,6 +41,7 @@ export function mapVqsPath(pathname, mode = 'connect') {
   if (mode === 'legacy') return `/api/vqs${path}`;
 
   if (path === '/projects') return '/quotations';
+  if (path === '/assets') return '/assets';
   if (path === '/customers/search') return '/customers/directory-search';
   // Context is an ELANVISUAL aggregate: it must include both DESIGN requests
   // and Store products.  It is handled by the proxy below, not reduced to the
