@@ -172,6 +172,12 @@ export function mapVqsPath(pathname, mode = 'connect') {
   // DESIGN endpoint.
   if (path === '/context/search') return null;
 
+  const operationalOrder = path.match(/^\/projects\/([^/]+)\/(work-orders|purchase-orders)(?:\/([^/]+))?$/);
+  if (operationalOrder) {
+    const [, id, resource, itemId] = operationalOrder;
+    return `/quotations/${id}/${resource}${itemId ? `/${itemId}` : ''}`;
+  }
+
   const project = path.match(/^\/projects\/([^/]+)(?:\/(status|send-whatsapp))?$/);
   if (project) {
     const [, id, operation] = project;
@@ -317,6 +323,11 @@ function isWrite(method) {
   return ['POST', 'PATCH', 'PUT', 'DELETE'].includes(String(method || '').toUpperCase());
 }
 
+function isQuotationDocumentPath(localPath) {
+  const path = `/${String(localPath || '').replace(/^\/+/, '')}`;
+  return path === '/projects' || /^\/projects\/[^/]+$/.test(path);
+}
+
 export default async function handler(req, res) {
   const requestId = text(req.headers['x-request-id']) || crypto.randomUUID();
   res.setHeader('X-Request-Id', requestId);
@@ -356,7 +367,7 @@ export default async function handler(req, res) {
       return res.status(200).json(payload);
     }
     const body = isWrite(req.method) && req.body !== undefined
-      ? JSON.stringify(upstream.mode === 'connect' && /^(\/projects)(\/|$)/.test(`/${localPath}`) && !/\/send-whatsapp$/.test(localPath)
+      ? JSON.stringify(upstream.mode === 'connect' && isQuotationDocumentPath(localPath)
         ? adaptQuotationDocument(req.body)
         : req.body)
       : undefined;

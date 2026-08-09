@@ -12,10 +12,18 @@ assert.equal(mapVqsPath('projects'), '/quotations');
 assert.equal(mapVqsPath('assets'), '/assets');
 assert.equal(mapVqsPath('projects/project-1'), '/quotations/project-1');
 assert.equal(mapVqsPath('projects/project-1/send-whatsapp'), '/quotations/project-1/send-whatsapp');
+assert.equal(mapVqsPath('projects/project-1/work-orders'), '/quotations/project-1/work-orders');
+assert.equal(mapVqsPath('projects/project-1/work-orders/wo-1'), '/quotations/project-1/work-orders/wo-1');
+assert.equal(mapVqsPath('projects/project-1/purchase-orders'), '/quotations/project-1/purchase-orders');
+assert.equal(mapVqsPath('projects/project-1/purchase-orders/po-1'), '/quotations/project-1/purchase-orders/po-1');
 assert.equal(mapVqsPath('customers/search'), '/customers/directory-search');
 assert.equal(mapVqsPath('context/search'), null);
 assert.equal(mapVqsPath('public/quotations/project-1'), '/quotations/project-1');
 assert.equal(mapVqsPath('projects/project-1/payments'), null);
+
+const proxySource = readFileSync(new URL('../api/vqs/[...path].js', import.meta.url), 'utf8');
+assert.ok(proxySource.includes('isQuotationDocumentPath(localPath)'), 'El proxy debe adaptar solo documentos de cotización.');
+assert.ok(proxySource.includes("path === '/projects' || /^\\/projects\\/[^/]+$/.test(path)"), 'Las rutas OT/OC no deben transformarse como cotizaciones.');
 
 const pngAsset = parseQuotationAsset({
   name: 'fachada prueba.png',
