@@ -132,5 +132,10 @@ export async function searchContext(query, { type = 'all', limit = 30 } = {}) {
   };
 }
 
-export const projectContextClient = Object.freeze({ searchContext });
+export async function searchDesignContext(query, { type = 'all', limit = 30 } = {}) {
+  const normalizedQuery = String(query || '').trim();
+  return searchDesignAndStore(normalizedQuery, type, limit);
+}
+
+export const projectContextClient = Object.freeze({ searchContext, searchDesignContext });
 export { DEFAULT_VQS_PROXY_URL };
