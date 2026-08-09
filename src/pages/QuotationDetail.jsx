@@ -245,8 +245,15 @@ export default function QuotationDetail({ onBack }) {
       return;
     }
 
+    try {
+      await navigator.clipboard?.writeText?.(quotationNumber);
+    } catch {
+      // El campo queda prellenado incluso si el navegador no permite usar el portapapeles.
+    }
+
     const typed = window.prompt(
-      `ADMINISTRADOR: esta accion elimina la cotizacion y sus OT/OC asociadas si no existen pagos, facturas de compra ni movimientos de inventario.\n\nEscribi exactamente ${quotationNumber} para continuar:`
+      `ADMINISTRADOR: esta accion elimina la cotizacion y sus OT/OC asociadas si no existen pagos, facturas de compra ni movimientos de inventario.\n\nEl numero ${quotationNumber} ya esta listo en el campo. Revisalo y toca Aceptar para continuar:`,
+      quotationNumber
     );
     if (typed === null) return;
     if (typed.trim() !== quotationNumber) {
