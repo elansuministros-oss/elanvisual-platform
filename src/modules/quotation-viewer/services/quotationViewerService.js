@@ -27,11 +27,13 @@ function buildUrl(path, params = {}) {
   return url.toString();
 }
 
-async function request(path, { method = 'GET', params = {}, body } = {}) {
+async function request(path, { method = 'GET', params = {}, body, role, userId } = {}) {
   const response = await fetch(buildUrl(path, params), {
     method,
     headers: {
       ...REQUIRED_HEADERS,
+      ...(role ? { 'X-Elankav-Role': role } : {}),
+      ...(userId ? { 'X-Elankav-User-Id': userId } : {}),
       ...(body ? { 'Content-Type': 'application/json' } : {})
     },
     ...(body ? { body: JSON.stringify(body) } : {})
@@ -40,10 +42,14 @@ async function request(path, { method = 'GET', params = {}, body } = {}) {
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const error = new Error(payload?.error || payload?.message || 'No fue posible procesar la cotizacion.');
+    const error = new Error(
+      typeof payload?.error === 'string'
+        ? payload.error
+        : payload?.error?.message || payload?.message || 'No fue posible procesar la cotizacion.'
+    );
     error.status = response.status;
-    error.code = payload?.code || 'QUOTATION_VIEWER_REQUEST_FAILED';
-    error.details = payload?.details || [];
+    error.code = payload?.code || payload?.error?.code || 'QUOTATION_VIEWER_REQUEST_FAILED';
+    error.details = payload?.details || payload?.error?.details || [];
     throw error;
   }
 
@@ -87,7 +93,7 @@ function assertOfficialDocument(record) {
   const publicDocument = document?.publicDocument;
 
   if (!document || !publicDocument) {
-    const error = new Error('El Orchestrator no entrego el documento oficial de la cotizacion.');
+    const error = new Error('CONNECT no entrego el documento oficial de la cotizacion.');
     error.code = 'OFFICIAL_QUOTATION_DOCUMENT_MISSING';
     throw error;
   }
@@ -139,9 +145,24 @@ export async function updateQuotation(id, contract) {
   });
 }
 
+export async function deleteQuotation(id, { confirmation, role = 'admin', userId = '' } = {}) {
+  const requestedId = text(id);
+  const confirmedNumber = text(confirmation);
+  if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
+  if (!confirmedNumber) throw new Error('Debes confirmar el numero exacto de la cotizacion.');
+
+  return request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
+    method: 'DELETE',
+    body: { confirmation: confirmedNumber },
+    role,
+    userId
+  });
+}
+
 export const quotationViewerService = Object.freeze({
   listQuotations,
   getQuotationDetail,
   getQuotationEditData,
-  updateQuotation
+  updateQuotation,
+  deleteQuotation
 });
