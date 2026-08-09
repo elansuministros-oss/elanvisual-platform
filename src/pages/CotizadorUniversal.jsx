@@ -290,6 +290,7 @@ export default function CotizadorUniversal() {
         ...(item.assetFiles || []),
         ...(item.manualImages || []).map((image) => ({
           kind: 'existing-product-photo',
+          uploadToken: image.uploadToken || image.id || '',
           name: image.name,
           mimeType: image.mimeType,
           sizeBytes: image.sizeBytes,
