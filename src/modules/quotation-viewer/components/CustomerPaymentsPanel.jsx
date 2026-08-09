@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Banknote, CheckCircle2, Printer, ReceiptText, RefreshCw } from 'lucide-react';
+import { Banknote, CheckCircle2, Printer, ReceiptText, RefreshCw, Send } from 'lucide-react';
 import { createCustomerPayment, listCustomerPayments } from '../services/customerPaymentsService';
 import {
   bankingData,
@@ -34,6 +34,62 @@ const emptyForm = () => ({
   paidAt: dateInputValue(),
   notes: ''
 });
+
+function normalizeWhatsappPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (digits.length === 8) return `505${digits}`;
+  if (digits.startsWith('505') && digits.length === 11) return digits;
+  return digits.length >= 10 ? digits : '';
+}
+
+function openWhatsappReceipt(payment, quotation) {
+  const target = normalizeWhatsappPhone(
+    payment.customer_snapshot?.phone
+    || payment.customer_snapshot?.whatsapp
+    || quotation.customer?.phone
+    || quotation.customer?.whatsapp
+  );
+
+  if (!target) {
+    window.alert('El cliente no tiene un número de WhatsApp válido registrado.');
+    return;
+  }
+
+  const receiptNumber = officialReceiptNumber(payment);
+  const customerName = payment.customer_snapshot?.name || quotation.customer?.name || '';
+  const brandName = quotation.brand?.name || quotation.brand?.displayName || 'ELANVISUAL';
+  const message = [
+    customerName ? `Hola ${customerName},` : 'Hola,',
+    '',
+    `Le compartimos su recibo oficial ${receiptNumber} de ${brandName}.`,
+    `Pago recibido: ${money(payment.amount, payment.currency || 'USD')}.`,
+    Number(payment.pending_balance) > 0
+      ? `Saldo pendiente: ${money(payment.pending_balance, payment.currency || 'USD')}.`
+      : 'Estado: PAGADO.',
+    '',
+    'Adjuntaremos el documento oficial en este chat.'
+  ].join('\n');
+
+  const encodedMessage = encodeURIComponent(message);
+  const appUrl = `whatsapp://send?phone=${target}&text=${encodedMessage}`;
+  const webUrl = `https://api.whatsapp.com/send?phone=${target}&text=${encodedMessage}&type=phone_number&app_absent=0`;
+
+  const fallbackTimer = window.setTimeout(() => {
+    if (document.visibilityState === 'visible') window.location.assign(webUrl);
+  }, 900);
+
+  const clearFallback = () => {
+    window.clearTimeout(fallbackTimer);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+  };
+
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') clearFallback();
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.location.href = appUrl;
+}
 
 export default function CustomerPaymentsPanel({ projectId, quotation, onDepositCompleted }) {
   const [payments, setPayments] = useState([]);
@@ -175,6 +231,6 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
       <label className="wide">Observaciones<input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}/></label>
       <button type="submit" disabled={saving || pendingBalance === 0}><Banknote size={18}/>{saving ? 'Registrando…' : pendingBalance === 0 ? 'Cotización cancelada' : 'Registrar pago'}</button>
     </form>
-    <div className="qv-payment-history"><h3>Historial</h3>{!loading && payments.length === 0 && <p>No hay pagos registrados.</p>}{payments.map((payment) => { const banking = bankingData(payment); return <article key={payment.id}><div><ReceiptText size={18}/><strong>{officialReceiptNumber(payment)}</strong><span>{paymentLabel(payment)} · {new Date(payment.paid_at || payment.created_at).toLocaleDateString('es-NI')}{banking.bankName ? ` · ${banking.bankName}` : ''}</span></div><div><strong>{money(payment.amount)}</strong><small>Saldo {money(payment.pending_balance)}</small></div><button type="button" onClick={() => printReceiptDocument(payment, quotation)}><Printer size={17}/>Imprimir</button>{payment.deposit_completed && <CheckCircle2 size={19} className="qv-payment-ok"/>}</article>; })}</div>
+    <div className="qv-payment-history"><h3>Historial</h3>{!loading && payments.length === 0 && <p>No hay pagos registrados.</p>}{payments.map((payment) => { const banking = bankingData(payment); return <article key={payment.id}><div><ReceiptText size={18}/><strong>{officialReceiptNumber(payment)}</strong><span>{paymentLabel(payment)} · {new Date(payment.paid_at || payment.created_at).toLocaleDateString('es-NI')}{banking.bankName ? ` · ${banking.bankName}` : ''}</span></div><div><strong>{money(payment.amount)}</strong><small>Saldo {money(payment.pending_balance)}</small></div><div className="qv-payment-actions"><button type="button" onClick={() => printReceiptDocument(payment, quotation)}><Printer size={17}/>Imprimir</button><button type="button" onClick={() => openWhatsappReceipt(payment, quotation)}><Send size={17}/>Enviar al cliente</button></div>{payment.deposit_completed && <CheckCircle2 size={19} className="qv-payment-ok"/>}</article>; })}</div>
   </section>;
 }
