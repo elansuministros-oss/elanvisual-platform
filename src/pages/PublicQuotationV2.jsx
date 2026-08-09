@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Download, FileText, RefreshCw } from 'lucide-react';
-import { resolveBaseUrl } from '../modules/vqs/services/projectCoreClient';
 import '../styles/public-quotation-v2.css';
 
 const HEADERS = Object.freeze({
@@ -96,7 +95,7 @@ function normalizeRecord(payload) {
 }
 
 async function fetchQuotation(projectId) {
-  const url = new URL(`${resolveBaseUrl()}/api/vqs/public/quotations/${encodeURIComponent(projectId)}`);
+  const url = new URL(`/api/vqs/public/quotations/${encodeURIComponent(projectId)}`, window.location.origin);
   url.searchParams.set('_refresh', String(Date.now()));
 
   const response = await fetch(url.toString(), {

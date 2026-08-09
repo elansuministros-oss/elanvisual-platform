@@ -1,4 +1,3 @@
-import { resolveBaseUrl } from '../../vqs/services/projectCoreClient';
 import { normalizeQuotationRecord } from '../adapters/quotationDocumentAdapter';
 import { applyQuotationImageFallback } from '../adapters/quotationImageFallback';
 
@@ -10,7 +9,7 @@ const HEADERS = Object.freeze({
 
 function buildPublicQuotationUrl(projectId) {
   const url = new URL(
-    `${resolveBaseUrl()}/api/vqs/public/quotations/${encodeURIComponent(projectId)}`
+    `/api/vqs/public/quotations/${encodeURIComponent(projectId)}`, window.location.origin
   );
 
   // Cada consulta debe obtener un documento público fresco porque contiene
