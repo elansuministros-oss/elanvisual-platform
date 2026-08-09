@@ -8,6 +8,7 @@ import {
 } from '../api/vqs/[...path].js';
 
 assert.equal(mapVqsPath('projects'), '/quotations');
+assert.equal(mapVqsPath('assets'), '/assets');
 assert.equal(mapVqsPath('projects/project-1'), '/quotations/project-1');
 assert.equal(mapVqsPath('projects/project-1/send-whatsapp'), '/quotations/project-1/send-whatsapp');
 assert.equal(mapVqsPath('customers/search'), '/customers/directory-search');
