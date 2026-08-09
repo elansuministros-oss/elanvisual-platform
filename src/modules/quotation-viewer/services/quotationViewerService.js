@@ -1,5 +1,6 @@
 import { resolveBaseUrl } from '../../vqs/services/projectCoreClient';
 import { prepareQuotationContractAssets } from '../../vqs/services/quotationAssetUploadRegistry';
+import { supabase } from '../../../lib/supabase';
 import {
   normalizeQuotationCollection,
   normalizeQuotationRecord
@@ -28,10 +29,26 @@ function buildUrl(path, params = {}) {
 }
 
 async function request(path, { method = 'GET', params = {}, body, role, userId } = {}) {
+  if (!supabase) {
+    throw new Error('SUPABASE_CLIENT_NOT_CONFIGURED');
+  }
+
+  const { data, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError) throw sessionError;
+
+  const token = data?.session?.access_token || '';
+  if (!token) {
+    const error = new Error('Sesion administrativa requerida.');
+    error.code = 'AUTH_REQUIRED';
+    error.status = 401;
+    throw error;
+  }
+
   const response = await fetch(buildUrl(path, params), {
     method,
     headers: {
       ...REQUIRED_HEADERS,
+      Authorization: `Bearer ${token}`,
       ...(role ? { 'X-Elankav-Role': role } : {}),
       ...(userId ? { 'X-Elankav-User-Id': userId } : {}),
       ...(body ? { 'Content-Type': 'application/json' } : {})
