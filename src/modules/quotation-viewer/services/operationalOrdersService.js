@@ -22,9 +22,10 @@ async function request(path, { method = 'GET', body } = {}) {
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(payload?.error || 'No fue posible procesar la operación.');
-    error.code = payload?.code || 'OPERATIONAL_ORDER_REQUEST_FAILED';
+    const error = new Error(payload?.error?.message || payload?.error || 'No fue posible procesar la operación.');
+    error.code = payload?.error?.code || payload?.code || 'OPERATIONAL_ORDER_REQUEST_FAILED';
     error.status = response.status;
+    error.details = payload?.error?.details || payload?.details || [];
     throw error;
   }
   return payload?.data ?? null;
@@ -62,10 +63,10 @@ export function listPurchaseOrders(projectId) {
   return request(projectPath(projectId, 'purchase-orders'));
 }
 
-export function createPurchaseOrder(projectId, supplierId) {
+export function createPurchaseOrder(projectId, input) {
   return request(projectPath(projectId, 'purchase-orders'), {
     method: 'POST',
-    body: { supplierId }
+    body: input
   });
 }
 

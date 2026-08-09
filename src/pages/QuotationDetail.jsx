@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, ClipboardList, FileText, ShoppingCart } from 'lucide-react';
 import OfficialQuotationDocument from '../modules/quotation-viewer/components/OfficialQuotationDocument';
 import CustomerPaymentsPanel from '../modules/quotation-viewer/components/CustomerPaymentsPanel';
+import ProcurementPanel from '../modules/quotation-viewer/components/ProcurementPanel';
 import { getQuotationDetail } from '../modules/quotation-viewer/services/quotationViewerService';
 import {
-  createPurchaseOrder,
   createWorkOrder,
   listPurchaseOrders,
   listWorkOrders
@@ -71,9 +71,8 @@ function openWhatsappChat(phone, quotationNumber, projectId) {
   window.location.href = appUrl;
 }
 
-function OperationalFlowPanel({ projectId, workOrders, purchaseOrders, loading, error, onGenerateWorkOrder, onGeneratePurchaseOrder }) {
+function OperationalFlowPanel({ projectId, workOrders, purchaseOrders, loading, error, onGenerateWorkOrder, procurementOpen, onToggleProcurement }) {
   const [showWorkOrders, setShowWorkOrders] = useState(false);
-  const [showPurchaseOrders, setShowPurchaseOrders] = useState(false);
   const workOrder = workOrders[0] || null;
 
   return (
@@ -81,7 +80,7 @@ function OperationalFlowPanel({ projectId, workOrders, purchaseOrders, loading, 
       <div className="qv-operational-heading">
         <div>
           <span className="qv-eyebrow">Proyecto operativo</span>
-          <h2>OT y OC</h2>
+          <h2>OT y Compras</h2>
           <p>{projectId}</p>
         </div>
         {loading && <small>Actualizando...</small>}
@@ -102,14 +101,9 @@ function OperationalFlowPanel({ projectId, workOrders, purchaseOrders, loading, 
             Ver OT <ClipboardList size={18} />
           </button>
         )}
-        <button type="button" className="qv-card-action" onClick={onGeneratePurchaseOrder} disabled={loading || !workOrder} title={!workOrder ? 'Primero debe existir una Orden de Trabajo' : ''}>
-          Generar OC <ShoppingCart size={18} />
+        <button type="button" className="qv-card-action" onClick={onToggleProcurement} disabled={loading}>
+          {procurementOpen ? 'Cerrar Compras' : 'Compras / Abastecimiento'} <ShoppingCart size={18} />
         </button>
-        {purchaseOrders.length > 0 && (
-          <button type="button" className="qv-card-action" onClick={() => setShowPurchaseOrders((value) => !value)}>
-            Ver OC <ShoppingCart size={18} />
-          </button>
-        )}
       </div>
 
       {showWorkOrders && workOrder && (
@@ -117,16 +111,9 @@ function OperationalFlowPanel({ projectId, workOrders, purchaseOrders, loading, 
           <strong>{workOrder.workOrderNumber}</strong>
           <span>Estado: {workOrder.status}</span>
           <span>Proyecto: {workOrder.projectId}</span>
+          <span>OC: {purchaseOrders.length}</span>
         </div>
       )}
-
-      {showPurchaseOrders && purchaseOrders.map((order) => (
-        <div className="qv-operational-record" key={order.id}>
-          <strong>{order.purchaseOrderNumber}</strong>
-          <span>Proveedor: {order.supplierId}</span>
-          <span>Estado: {order.status}</span>
-        </div>
-      ))}
     </section>
   );
 }
@@ -138,6 +125,7 @@ export default function QuotationDetail({ onBack }) {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [operationsLoading, setOperationsLoading] = useState(false);
+  const [procurementOpen, setProcurementOpen] = useState(false);
   const [error, setError] = useState('');
   const [operationError, setOperationError] = useState('');
 
@@ -190,7 +178,7 @@ export default function QuotationDetail({ onBack }) {
       <main className="qv-shell">
         <section className="qv-state">
           <strong>Cargando cotizacion...</strong>
-          <p>Consultando el detalle en el Orchestrator.</p>
+          <p>Consultando el detalle operativo.</p>
         </section>
       </main>
     );
@@ -201,7 +189,7 @@ export default function QuotationDetail({ onBack }) {
       <main className="qv-shell">
         <section className="qv-state qv-state-error">
           <strong>No se pudo cargar la cotizacion.</strong>
-          <p>{error || 'No se recibio informacion del Orchestrator.'}</p>
+          <p>{error || 'No se recibio informacion de la cotizacion.'}</p>
           <button type="button" onClick={onBack}>
             <ArrowLeft size={18} /> Regresar al listado
           </button>
@@ -211,6 +199,7 @@ export default function QuotationDetail({ onBack }) {
   }
 
   const projectId = quotation.projectId || quotation.project?.id || quotation.id;
+  const workOrder = workOrders[0] || null;
 
   const handleGenerateWorkOrder = async () => {
     setOperationsLoading(true);
@@ -218,29 +207,16 @@ export default function QuotationDetail({ onBack }) {
     try {
       await createWorkOrder(projectId, quotation.quotationId);
       await loadOperations(projectId);
+      setProcurementOpen(true);
     } catch (createError) {
       setOperationError(createError.message || 'No fue posible generar la OT.');
       setOperationsLoading(false);
     }
   };
 
-  const handleGeneratePurchaseOrder = async () => {
-    const supplierId = window.prompt('Ingrese el identificador o nombre oficial del proveedor:');
-    if (!supplierId?.trim()) return;
-    setOperationsLoading(true);
-    setOperationError('');
-    try {
-      await createPurchaseOrder(projectId, supplierId.trim());
-      await loadOperations(projectId);
-    } catch (createError) {
-      setOperationError(createError.message || 'No fue posible generar la OC.');
-      setOperationsLoading(false);
-    }
-  };
-
   const handleDocumentClickCapture = (event) => {
     const button = event.target.closest('button');
-    if (!button || !button.textContent?.toLowerCase().includes('whatsapp')) return;
+    if (!button || !button.closest('#documento-cotizacion') || !button.textContent?.toLowerCase().includes('whatsapp')) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -267,8 +243,17 @@ export default function QuotationDetail({ onBack }) {
           loading={operationsLoading}
           error={operationError}
           onGenerateWorkOrder={handleGenerateWorkOrder}
-          onGeneratePurchaseOrder={handleGeneratePurchaseOrder}
+          procurementOpen={procurementOpen}
+          onToggleProcurement={() => setProcurementOpen((value) => !value)}
         />
+        {procurementOpen && (
+          <ProcurementPanel
+            projectId={projectId}
+            workOrder={workOrder}
+            purchaseOrders={purchaseOrders}
+            onRefresh={() => loadOperations(projectId)}
+          />
+        )}
       </main>
       <div id="documento-cotizacion">
         <OfficialQuotationDocument quotation={quotation} onBack={onBack} />

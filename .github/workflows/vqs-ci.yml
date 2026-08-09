@@ -6,8 +6,14 @@ on:
       - elanvisual-desde-elanpet
     paths:
       - 'src/modules/vqs/**'
+      - 'src/modules/quotation-viewer/**'
       - 'src/pages/VQSQuotationPreview.jsx'
+      - 'src/pages/QuotationDetail.jsx'
       - 'src/styles/vqs-quotation.css'
+      - 'src/styles/operational-flow.css'
+      - 'src/styles/procurement-panel.css'
+      - 'api/vqs/**'
+      - 'api/ops/**'
       - 'public/vqs-preview.html'
       - 'scripts/vqs-contract-check.mjs'
       - 'package.json'
