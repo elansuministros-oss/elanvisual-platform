@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Archive, Camera, FileText, PackageCheck, Receipt, RefreshCw, Send, ShoppingCart, Upload, WalletCards } from 'lucide-react';
+import { Archive, Camera, PackageCheck, Receipt, RefreshCw, Send, ShoppingCart, Upload, WalletCards } from 'lucide-react';
 import {
   allocateInvoice,
   base64PdfToFile,
@@ -8,6 +8,7 @@ import {
   extractProcurementDocument,
   getCostReport,
   getPurchaseOrderDocument,
+  issueInventory,
   listInventory,
   listOpenWorkOrders,
   listProviders,
@@ -48,13 +49,18 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
   const [providers, setProviders] = useState([]);
   const [costReport, setCostReport] = useState(null);
   const [allocationTargets, setAllocationTargets] = useState({});
+  const [allocationQty, setAllocationQty] = useState({});
   const [ocSupplierId, setOcSupplierId] = useState('');
   const [ocPaymentCondition, setOcPaymentCondition] = useState('cash');
   const [ocCreditDays, setOcCreditDays] = useState('30');
   const [ocLines, setOcLines] = useState({});
+  const [inventoryIssueQty, setInventoryIssueQty] = useState({});
+  const [inventoryRequirement, setInventoryRequirement] = useState({});
+  const [inventoryReason, setInventoryReason] = useState({});
 
   const workOrderId = workOrder?.id || '';
   const pendingRequirements = useMemo(() => requirements.filter((item) => !['acquired', 'delivered', 'executed', 'cancelled'].includes(item.status)), [requirements]);
+  const materialRequirements = useMemo(() => requirements.filter((item) => item.kind === 'material' && item.status !== 'cancelled'), [requirements]);
 
   async function loadAll() {
     setBusy(true); setError('');
@@ -135,7 +141,9 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
   async function assignInvoice(invoice) {
     const allocations = [];
     invoice.lines.forEach((line) => {
-      const qty = remaining(line);
+      const pendingQty = remaining(line);
+      const requestedQty = Number(allocationQty[line.id] || pendingQty);
+      const qty = Math.min(pendingQty, requestedQty);
       const target = allocationTargets[line.id] || '';
       if (!(qty > 0) || !target || target === 'pending') return;
       if (target === 'inventory') {
@@ -153,7 +161,8 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
     setBusy(true); setError('');
     try {
       await allocateInvoice(invoice.id, allocations);
-      setMessage('Compra asignada correctamente.');
+      setAllocationQty({});
+      setMessage('Compra asignada. Si quedó cantidad pendiente podés asignarla a otro proyecto o inventario.');
       await loadAll();
     } catch (cause) { setError(cause.message); } finally { setBusy(false); }
   }
@@ -197,20 +206,42 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
   async function shareOrder(order) {
     setBusy(true); setError('');
     try {
-      const document = await getPurchaseOrderDocument(projectId, order.id);
-      const file = base64PdfToFile(document);
+      const ocDocument = await getPurchaseOrderDocument(projectId, order.id);
+      const file = base64PdfToFile(ocDocument);
       if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
-        await navigator.share({ title: order.purchaseOrderNumber, text: document.whatsappMessage, files: [file] });
+        await navigator.share({ title: order.purchaseOrderNumber, text: ocDocument.whatsappMessage, files: [file] });
       } else {
         const url = URL.createObjectURL(file);
-        const link = document.createElement('a');
+        const link = window.document.createElement('a');
         link.href = url; link.download = file.name; link.click();
         setTimeout(() => URL.revokeObjectURL(url), 2000);
-        const phone = String(document.providerPhone || '').replace(/\D/g, '');
-        if (phone) window.open(`https://wa.me/${phone}?text=${encodeURIComponent(document.whatsappMessage)}`, '_blank', 'noopener,noreferrer');
+        const phone = String(ocDocument.providerPhone || '').replace(/\D/g, '');
+        if (phone) window.open(`https://wa.me/${phone}?text=${encodeURIComponent(ocDocument.whatsappMessage)}`, '_blank', 'noopener,noreferrer');
         setMessage('PDF descargado. Adjuntalo al chat del proveedor.');
       }
     } catch (cause) { if (cause?.name !== 'AbortError') setError(cause.message); } finally { setBusy(false); }
+  }
+
+  async function deliverInventory(item) {
+    if (!workOrderId) { setError('Primero debe existir una OT.'); return; }
+    const quantity = Number(inventoryIssueQty[item.id] || 0);
+    const requirementId = inventoryRequirement[item.id] || '';
+    const reason = inventoryReason[item.id] || '';
+    if (!(quantity > 0)) { setError('Indicá la cantidad a entregar.'); return; }
+    setBusy(true); setError('');
+    try {
+      const result = await issueInventory(item.id, {
+        projectId,
+        workOrderId,
+        quantity,
+        ...(requirementId ? { requirementId } : {}),
+        ...(reason ? { reason } : {})
+      });
+      setInventoryIssueQty((current) => ({ ...current, [item.id]: '' }));
+      setInventoryReason((current) => ({ ...current, [item.id]: '' }));
+      setMessage(result.extra ? 'Salida adicional registrada con su justificación.' : 'Material entregado a la OT.');
+      await loadAll();
+    } catch (cause) { setError(cause.message); } finally { setBusy(false); }
   }
 
   return <section className="proc-panel" aria-label="Compras, abastecimiento e inventario">
@@ -233,7 +264,7 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
     {tab === 'invoice' && <div className="proc-section">
       <div className="proc-toolbar"><FileButton accept="application/pdf,image/*,.txt,.csv" label="Cargar factura" icon={Camera} onFile={readInvoice} disabled={busy}/><small>No necesitás conocer el número de OT al cargarla.</small></div>
       {invoiceDraft && <div className="proc-review"><h3>{invoiceDraft.supplier?.tradeName || 'Proveedor detectado'}</h3><p>Factura {invoiceDraft.invoiceNumber || 's/n'} · {invoiceDraft.invoiceDate || ''} · <strong>{money(invoiceDraft.total, invoiceDraft.currency)}</strong></p>{invoiceDraft.items?.map((item,index) => <div className="proc-line" key={`${item.description}-${index}`}><div><strong>{item.description}</strong><small>{item.quantity} {item.unit} × {money(item.unitPrice, invoiceDraft.currency)}</small></div><span>{money(item.total, invoiceDraft.currency)}</span></div>)}<button type="button" className="proc-primary" onClick={confirmInvoice}>Confirmar compra</button></div>}
-      <div className="proc-list"><h3>Compras por asignar</h3>{!invoices.length && <p>No hay facturas pendientes.</p>}{invoices.map((invoice) => <article className="proc-invoice" key={invoice.id}><div className="proc-invoice-head"><div><strong>{invoice.supplierName}</strong><small>{invoice.invoiceNumber || 'Sin número'} · {money(invoice.total, invoice.currency)}</small></div><span className="proc-status pending">{invoice.assignmentStatus}</span></div>{invoice.lines.filter((line) => remaining(line) > 0).map((line) => <div className="proc-allocation" key={line.id}><div><strong>{line.description}</strong><small>Pendiente {remaining(line)} {line.unit}</small></div><select value={allocationTargets[line.id] || 'pending'} onChange={(event) => setAllocationTargets((current) => ({ ...current, [line.id]: event.target.value }))}><option value="pending">Asignar después</option><option value="inventory">Inventario</option><option value="overhead">Gasto general</option>{openWorkOrders.map((ot) => <option key={ot.id} value={`${ot.projectId}|${ot.id}`}>{ot.customerName ? `${ot.customerName} · ` : ''}{ot.title || ot.projectNumber} · {ot.workOrderNumber}</option>)}</select></div>)}<button type="button" className="proc-secondary" onClick={() => assignInvoice(invoice)}>Asignar seleccionados</button></article>)}</div>
+      <div className="proc-list"><h3>Compras por asignar</h3>{!invoices.length && <p>No hay facturas pendientes.</p>}{invoices.map((invoice) => <article className="proc-invoice" key={invoice.id}><div className="proc-invoice-head"><div><strong>{invoice.supplierName}</strong><small>{invoice.invoiceNumber || 'Sin número'} · {money(invoice.total, invoice.currency)}</small></div><span className="proc-status pending">{invoice.assignmentStatus}</span></div>{invoice.lines.filter((line) => remaining(line) > 0).map((line) => <div className="proc-allocation" key={line.id}><div><strong>{line.description}</strong><small>Pendiente {remaining(line)} {line.unit}</small></div><input type="number" min="0.0001" max={remaining(line)} step="0.0001" placeholder={`Cantidad · ${remaining(line)}`} value={allocationQty[line.id] || ''} onChange={(event) => setAllocationQty((current) => ({ ...current, [line.id]: event.target.value }))}/><select value={allocationTargets[line.id] || 'pending'} onChange={(event) => setAllocationTargets((current) => ({ ...current, [line.id]: event.target.value }))}><option value="pending">Asignar después</option><option value="inventory">Inventario</option><option value="overhead">Gasto general</option>{openWorkOrders.map((ot) => <option key={ot.id} value={`${ot.projectId}|${ot.id}`}>{ot.customerName ? `${ot.customerName} · ` : ''}{ot.title || ot.projectNumber} · {ot.workOrderNumber}</option>)}</select></div>)}<button type="button" className="proc-secondary" onClick={() => assignInvoice(invoice)}>Asignar seleccionados</button></article>)}</div>
     </div>}
 
     {tab === 'orders' && <div className="proc-section">
@@ -242,7 +273,7 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
       <div className="proc-list"><h3>Órdenes del proyecto</h3>{!purchaseOrders.length && <p>No hay órdenes.</p>}{purchaseOrders.map((order) => <article key={order.id}><div><strong>{order.purchaseOrderNumber}</strong><small>{order.supplierName || order.supplierId} · {order.status}</small></div><div className="proc-order-actions"><b>{money(order.total, order.currency)}</b><button type="button" onClick={() => shareOrder(order)}><Send size={16}/>PDF / WhatsApp</button></div></article>)}</div>
     </div>}
 
-    {tab === 'inventory' && <div className="proc-section"><div className="proc-list"><h3>Inventario interno</h3>{!inventory.length && <p>Inventario vacío.</p>}{inventory.map((item) => <article key={item.id}><div><strong>{item.description}</strong><small>Costo promedio {money(item.avgUnitCost, item.currency)}</small></div><div><b>{item.qtyAvailable} {item.unit}</b><small>{item.qtyReserved} reservado</small></div></article>)}</div></div>}
+    {tab === 'inventory' && <div className="proc-section"><div className="proc-list"><h3>Inventario interno</h3>{!inventory.length && <p>Inventario vacío.</p>}{inventory.map((item) => <article className="proc-inventory-row" key={item.id}><div><strong>{item.description}</strong><small>Costo promedio {money(item.avgUnitCost, item.currency)} · Disponible {item.qtyAvailable} {item.unit}</small></div>{workOrder ? <div className="proc-inventory-issue"><select value={inventoryRequirement[item.id] || ''} onChange={(event) => setInventoryRequirement((current) => ({ ...current, [item.id]: event.target.value }))}><option value="">Salida general de esta OT</option>{materialRequirements.map((requirement) => <option key={requirement.id} value={requirement.id}>{requirement.description} · autorizado {requirement.requiredQty} {requirement.unit}</option>)}</select><input type="number" min="0.0001" step="0.0001" placeholder="Cantidad" value={inventoryIssueQty[item.id] || ''} onChange={(event) => setInventoryIssueQty((current) => ({ ...current, [item.id]: event.target.value }))}/><input type="text" placeholder="Motivo si es adicional" value={inventoryReason[item.id] || ''} onChange={(event) => setInventoryReason((current) => ({ ...current, [item.id]: event.target.value }))}/><button type="button" className="proc-secondary" onClick={() => deliverInventory(item)}>Entregar a OT</button></div> : <b>{item.qtyAvailable} {item.unit}</b>}</article>)}</div></div>}
 
     {tab === 'report' && <div className="proc-section">{costReport ? <div className="proc-report"><div><span>Venta</span><strong>{money(costReport.saleTotal)}</strong></div><div><span>Compras directas</span><strong>{money(costReport.directPurchases)}</strong></div><div><span>Inventario consumido</span><strong>{money(costReport.inventoryConsumption)}</strong></div><div><span>Costo real</span><strong>{money(costReport.realCost)}</strong></div><div className={Number(costReport.profit) >= 0 ? 'profit' : 'loss'}><span>Resultado</span><strong>{money(costReport.profit)}</strong><small>{costReport.marginPercent == null ? '' : `${Number(costReport.marginPercent).toFixed(1)}% margen`}</small></div></div> : <p>Aún no hay costos suficientes para calcular el resultado.</p>}</div>}
   </section>;
