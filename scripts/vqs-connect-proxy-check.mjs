@@ -4,6 +4,7 @@ import {
   adaptQuotationDocument,
   mapCatalogItemToContextResult,
   mapVqsPath,
+  parseQuotationAsset,
   resolveUpstream
 } from '../api/vqs/[...path].js';
 
@@ -15,6 +16,20 @@ assert.equal(mapVqsPath('customers/search'), '/customers/directory-search');
 assert.equal(mapVqsPath('context/search'), null);
 assert.equal(mapVqsPath('public/quotations/project-1'), '/quotations/project-1');
 assert.equal(mapVqsPath('projects/project-1/payments'), null);
+
+const pngAsset = parseQuotationAsset({
+  name: 'fachada prueba.png',
+  itemId: 'item-1',
+  dataUrl: 'data:image/png;base64,iVBORw0KGgo='
+});
+assert.equal(pngAsset.name, 'fachada-prueba.png');
+assert.equal(pngAsset.itemId, 'item-1');
+assert.equal(pngAsset.mimeType, 'image/png');
+assert.ok(pngAsset.bytes.length > 0);
+assert.throws(
+  () => parseQuotationAsset({ name: 'archivo.txt', dataUrl: 'data:text/plain;base64,SG9sYQ==' }),
+  (error) => error?.code === 'VQS_ASSET_INVALID'
+);
 
 const connect = resolveUpstream({
   CONNECT_BASE_URL: 'https://connect.elankav.com/',
