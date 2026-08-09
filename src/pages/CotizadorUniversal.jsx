@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { projectCoreClient } from '../modules/vqs/services/projectCoreClient';
 import { projectContextClient } from '../modules/vqs/services/projectContextClient';
+import { getQuotationSaveIssues } from '../modules/vqs/services/quotationSaveValidation';
 import { buildBulkIntakeContract, parseBulkQuotationPayload } from '../modules/vqs/services/bulkQuotationImport';
 import { getQuotationEditData, updateQuotation } from '../modules/quotation-viewer/services/quotationViewerService';
 import { readDesignFile } from '../services/designPortalService';
@@ -300,11 +301,14 @@ export default function CotizadorUniversal() {
     }
   };
 
-  const canSubmit = Boolean(
-    customer.name.trim() && project.title.trim() && Number(exchangeRate) > 0 &&
-    normalizedItems.every((item) => item.title && item.quantity > 0 && item.unitPriceUsd >= 0) &&
-    Math.abs(paymentPercentTotal - 100) < 0.001
-  );
+  const saveIssues = getQuotationSaveIssues({
+    customerName: customer.name,
+    projectTitle: project.title,
+    exchangeRate,
+    items: normalizedItems,
+    paymentPercentTotal
+  });
+  const canSubmit = saveIssues.length === 0;
 
   const updateItem = (id, field, value) => setItems((current) =>
     current.map((item) => item.id === id
@@ -536,7 +540,14 @@ export default function CotizadorUniversal() {
   }, [editProjectId, isEditing]);
 
   async function saveInProjectCore() {
-    if (!canSubmit || saving) return;
+    if (saving) return;
+    if (!canSubmit) {
+      setSaveError(`No se puede guardar todavía. Completá: ${saveIssues.join(' · ')}.`);
+      window.requestAnimationFrame(() => {
+        document.querySelector('.uq-save-feedback')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      return;
+    }
     setSaving(true);
     setSaveError('');
     try {
@@ -674,7 +685,7 @@ export default function CotizadorUniversal() {
     <main className="uq-shell">
       <header className="uq-header">
         <div><span>ELANVISUAL · VQS</span><h1>{isEditing ? `Editar cotización ${editQuotationNumber}` : 'Nueva cotización'}</h1><p>Conectada directamente a Project Core mediante el Orchestrator.</p></div>
-        <button type="button" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? (isEditing ? 'Guardando…' : 'Creando…') : (isEditing ? 'Guardar cambios' : 'Crear cotización')}</button>
+        <button type="button" disabled={saving} onClick={saveInProjectCore}>{saving ? 'Guardando…' : (isEditing ? 'Guardar cambios' : 'Guardar cotización')}</button>
       </header>
 
       {!isEditing && <section className="uq-card uq-bulk">
@@ -803,7 +814,7 @@ export default function CotizadorUniversal() {
         {source.type !== 'manual' && <p><strong>Contexto cargado:</strong> {source.type} · {source.sourceId}</p>}
       </section>
 
-      {saveError && <section className="uq-card uq-error">{saveError}</section>}
+      {saveError && <section className="uq-card uq-error uq-save-feedback" role="alert">{saveError}</section>}
 
       <section className="uq-grid">
         <div className="uq-main">
@@ -909,7 +920,8 @@ export default function CotizadorUniversal() {
             <div className="uq-summary-row uq-total"><span>Total</span><b>USD {total.toFixed(2)}</b></div>
             <div className="uq-summary-row"><span>Total NIO</span><b>C$ {payableTotalNio.toFixed(2)}</b></div>
           </section>
-          <button type="button" className="uq-primary-wide" disabled={!canSubmit || saving} onClick={saveInProjectCore}>{saving ? (isEditing ? 'Guardando…' : 'Creando…') : (isEditing ? 'Guardar cambios' : 'Crear cotización')}</button>
+          {!canSubmit && <small className="uq-save-hint">Faltan {saveIssues.length} datos obligatorios. Pulsá Guardar para ver cuáles.</small>}
+          <button type="button" className="uq-primary-wide" disabled={saving} onClick={saveInProjectCore}>{saving ? 'Guardando…' : (isEditing ? 'Guardar cambios' : 'Guardar cotización')}</button>
         </aside>
       </section>
     </main>
