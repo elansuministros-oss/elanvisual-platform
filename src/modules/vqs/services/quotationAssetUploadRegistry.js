@@ -1,4 +1,5 @@
 const pendingUploads = new Map();
+const resolvedUploads = new Map();
 
 function assetKey(asset = {}) {
   return [
@@ -37,7 +38,7 @@ async function resolvePendingUploads() {
     return await Promise.all(records.map(async (record) => {
       try {
         const asset = await record.promise;
-        return {
+        const resolved = {
           ...record,
           asset: {
             ...asset,
@@ -46,6 +47,8 @@ async function resolvePendingUploads() {
             sizeBytes: Number(asset?.sizeBytes || record.sizeBytes)
           }
         };
+        resolvedUploads.set(record.token, resolved);
+        return resolved;
       } catch (error) {
         const uploadError = new Error(error?.message || 'No fue posible guardar la fotografía en CONNECT.');
         uploadError.code = error?.code || 'QUOTATION_ASSET_UPLOAD_FAILED';
@@ -58,17 +61,20 @@ async function resolvePendingUploads() {
 }
 
 export async function prepareQuotationContractAssets(contract = {}) {
-  const resolvedUploads = await resolvePendingUploads();
-  if (!resolvedUploads.length) return contract;
+  await resolvePendingUploads();
+  const availableUploads = [...resolvedUploads.values()];
+  if (!availableUploads.length) return contract;
 
   const prepared = structuredClone(contract);
-  const uploadsByKey = new Map(resolvedUploads.map((entry) => [assetKey(entry.asset), entry.asset]));
+  const uploadsByToken = new Map(availableUploads.map((entry) => [entry.token, entry.asset]));
+  const uploadsByKey = new Map(availableUploads.map((entry) => [assetKey(entry.asset), entry.asset]));
   const sourceAssets = Array.isArray(prepared?.metadata?.sourceAssets)
     ? prepared.metadata.sourceAssets
     : [];
 
   sourceAssets.forEach((sourceAsset) => {
-    const uploaded = uploadsByKey.get(assetKey(sourceAsset));
+    const uploaded = uploadsByToken.get(String(sourceAsset.uploadToken || ''))
+      || uploadsByKey.get(assetKey(sourceAsset));
     if (!uploaded) return;
     Object.assign(sourceAsset, {
       bucket: uploaded.bucket || '',
@@ -86,8 +92,6 @@ export async function prepareQuotationContractAssets(contract = {}) {
     const uploadedUrls = relatedAssets
       .map((asset) => asset.signedUrl || asset.url)
       .filter(Boolean);
-    if (!uploadedUrls.length) return;
-
     const existingImages = Array.isArray(item.images) ? item.images.filter((url) => !isDataImage(url)) : [];
     item.images = unique([...uploadedUrls, ...existingImages]);
     if (!item.imageUrl || isDataImage(item.imageUrl)) item.imageUrl = item.images[0] || '';
