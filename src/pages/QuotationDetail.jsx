@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, ClipboardList, FileText, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, ClipboardList, FileText, ShoppingCart, Trash2 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import OfficialQuotationDocument from '../modules/quotation-viewer/components/OfficialQuotationDocument';
 import CustomerPaymentsPanel from '../modules/quotation-viewer/components/CustomerPaymentsPanel';
 import ProcurementPanel from '../modules/quotation-viewer/components/ProcurementPanel';
-import { getQuotationDetail } from '../modules/quotation-viewer/services/quotationViewerService';
+import { deleteQuotation, getQuotationDetail } from '../modules/quotation-viewer/services/quotationViewerService';
 import {
   createWorkOrder,
   listPurchaseOrders,
@@ -71,7 +72,19 @@ function openWhatsappChat(phone, quotationNumber, projectId) {
   window.location.href = appUrl;
 }
 
-function OperationalFlowPanel({ projectId, workOrders, purchaseOrders, loading, error, onGenerateWorkOrder, procurementOpen, onToggleProcurement }) {
+function OperationalFlowPanel({
+  projectId,
+  workOrders,
+  purchaseOrders,
+  loading,
+  error,
+  onGenerateWorkOrder,
+  procurementOpen,
+  onToggleProcurement,
+  isAdmin,
+  deleting,
+  onDeleteQuotation
+}) {
   const [showWorkOrders, setShowWorkOrders] = useState(false);
   const workOrder = workOrders[0] || null;
 
@@ -93,17 +106,22 @@ function OperationalFlowPanel({ projectId, workOrders, purchaseOrders, loading, 
           Ver cotizacion <FileText size={18} />
         </button>
         {!workOrder ? (
-          <button type="button" className="qv-card-action" onClick={onGenerateWorkOrder} disabled={loading}>
+          <button type="button" className="qv-card-action" onClick={onGenerateWorkOrder} disabled={loading || deleting}>
             Generar OT <ClipboardList size={18} />
           </button>
         ) : (
-          <button type="button" className="qv-card-action" onClick={() => setShowWorkOrders((value) => !value)}>
+          <button type="button" className="qv-card-action" onClick={() => setShowWorkOrders((value) => !value)} disabled={deleting}>
             Ver OT <ClipboardList size={18} />
           </button>
         )}
-        <button type="button" className="qv-card-action" onClick={onToggleProcurement} disabled={loading}>
+        <button type="button" className="qv-card-action" onClick={onToggleProcurement} disabled={loading || deleting}>
           {procurementOpen ? 'Cerrar Compras' : 'Compras / Abastecimiento'} <ShoppingCart size={18} />
         </button>
+        {isAdmin && (
+          <button type="button" className="qv-card-action qv-card-danger" onClick={onDeleteQuotation} disabled={loading || deleting}>
+            {deleting ? 'Eliminando...' : 'Eliminar cotizacion'} <Trash2 size={18} />
+          </button>
+        )}
       </div>
 
       {showWorkOrders && workOrder && (
@@ -119,6 +137,7 @@ function OperationalFlowPanel({ projectId, workOrders, purchaseOrders, loading, 
 }
 
 export default function QuotationDetail({ onBack }) {
+  const { usuario } = useApp();
   const quotationId = useMemo(() => readQuotationIdFromPath(), []);
   const [quotation, setQuotation] = useState(null);
   const [workOrders, setWorkOrders] = useState([]);
@@ -126,8 +145,11 @@ export default function QuotationDetail({ onBack }) {
   const [loading, setLoading] = useState(true);
   const [operationsLoading, setOperationsLoading] = useState(false);
   const [procurementOpen, setProcurementOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const [operationError, setOperationError] = useState('');
+
+  const isAdmin = String(usuario?.rol || '').toLowerCase() === 'admin';
 
   async function loadOperations(projectId) {
     if (!projectId) return;
@@ -214,6 +236,46 @@ export default function QuotationDetail({ onBack }) {
     }
   };
 
+  const handleDeleteQuotation = async () => {
+    if (!isAdmin || deleting) return;
+
+    const quotationNumber = String(quotation.quotationNumber || '').trim();
+    if (!quotationNumber) {
+      setOperationError('Esta cotizacion no tiene numero oficial y no puede eliminarse desde esta pantalla.');
+      return;
+    }
+
+    const typed = window.prompt(
+      `ADMINISTRADOR: esta accion elimina la cotizacion y sus OT/OC asociadas si no existen pagos, facturas de compra ni movimientos de inventario.\n\nEscribi exactamente ${quotationNumber} para continuar:`
+    );
+    if (typed === null) return;
+    if (typed.trim() !== quotationNumber) {
+      setOperationError('La confirmacion no coincide con el numero de cotizacion. No se elimino nada.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Confirmar eliminacion definitiva de ${quotationNumber}. Se conservara una auditoria administrativa del expediente.`
+    );
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setOperationError('');
+    try {
+      await deleteQuotation(projectId, {
+        confirmation: quotationNumber,
+        role: 'admin',
+        userId: usuario?.id || usuario?.email || 'admin'
+      });
+      window.alert(`Cotizacion ${quotationNumber} eliminada.`);
+      onBack?.();
+    } catch (deleteError) {
+      setOperationError(deleteError.message || 'No fue posible eliminar la cotizacion.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleDocumentClickCapture = (event) => {
     const button = event.target.closest('button');
     if (!button || !button.closest('#documento-cotizacion') || !button.textContent?.toLowerCase().includes('whatsapp')) return;
@@ -245,6 +307,9 @@ export default function QuotationDetail({ onBack }) {
           onGenerateWorkOrder={handleGenerateWorkOrder}
           procurementOpen={procurementOpen}
           onToggleProcurement={() => setProcurementOpen((value) => !value)}
+          isAdmin={isAdmin}
+          deleting={deleting}
+          onDeleteQuotation={handleDeleteQuotation}
         />
         {procurementOpen && (
           <ProcurementPanel
