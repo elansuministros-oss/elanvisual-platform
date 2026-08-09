@@ -7,9 +7,133 @@ const CONNECT_VQS_PATH = '/api/v1/business/vqs';
 const DEFAULT_CONNECT_URL = 'https://connect.elankav.com';
 const DEFAULT_LEGACY_URL = 'https://orchestrator.elankav.com';
 const TIMEOUT_MS = 12_000;
+const MAX_ASSET_BYTES = 8 * 1024 * 1024;
+const DEFAULT_ASSET_BUCKET = 'elanvisual';
+const ASSET_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 function text(value) {
   return String(value || '').trim();
+}
+
+function storageHeaders(serviceKey, extra = {}) {
+  return {
+    apikey: serviceKey,
+    ...(serviceKey.startsWith('sb_secret_') ? {} : { Authorization: `Bearer ${serviceKey}` }),
+    ...extra
+  };
+}
+
+function sanitizeAssetName(value) {
+  const name = text(value || 'imagen').slice(0, 120).replace(/[^a-zA-Z0-9._-]+/g, '-');
+  return name || 'imagen';
+}
+
+function isTrustedAssetRequest(req) {
+  if (text(req.headers['sec-fetch-site']).toLowerCase() === 'same-origin') return true;
+  const origin = text(req.headers.origin);
+  if (!origin) return process.env.VERCEL_ENV !== 'production';
+  try {
+    const url = new URL(origin);
+    return origin === 'https://visual.elankav.com'
+      || ['localhost', '127.0.0.1'].includes(url.hostname)
+      || (url.protocol === 'https:'
+        && url.hostname.startsWith('elanvisual-platform-')
+        && url.hostname.endsWith('.vercel.app'));
+  } catch {
+    return false;
+  }
+}
+
+export function parseQuotationAsset(body = {}) {
+  const match = text(body.dataUrl).match(/^data:(image\/(?:png|jpeg|webp));base64,([a-z0-9+/=\s]+)$/i);
+  if (!match) {
+    const error = new Error('La fotografía debe ser JPG, PNG o WEBP.');
+    error.code = 'VQS_ASSET_INVALID';
+    error.status = 400;
+    throw error;
+  }
+  const mimeType = match[1].toLowerCase();
+  if (!ASSET_MIME_TYPES.has(mimeType)) {
+    const error = new Error('Formato de fotografía no permitido.');
+    error.code = 'VQS_ASSET_MIME_NOT_ALLOWED';
+    error.status = 400;
+    throw error;
+  }
+  const bytes = Buffer.from(match[2].replace(/\s+/g, ''), 'base64');
+  if (!bytes.length || bytes.length > MAX_ASSET_BYTES) {
+    const error = new Error('Cada fotografía debe pesar menos de 8 MB.');
+    error.code = 'VQS_ASSET_SIZE_INVALID';
+    error.status = 400;
+    throw error;
+  }
+  return {
+    bytes,
+    mimeType,
+    name: sanitizeAssetName(body.name),
+    itemId: sanitizeAssetName(body.itemId || 'item')
+  };
+}
+
+async function uploadQuotationAsset(req, res, requestId) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+    return res.status(405).json({ error: 'Método no permitido.', code: 'METHOD_NOT_ALLOWED', requestId });
+  }
+  if (!isTrustedAssetRequest(req)) {
+    return res.status(403).json({ error: 'Origen no permitido.', code: 'VQS_ASSET_ORIGIN_FORBIDDEN', requestId });
+  }
+
+  const supabaseUrl = text(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL).replace(/\/+$/, '');
+  const serviceKey = text(process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const bucket = text(process.env.VQS_ASSET_BUCKET || process.env.VITE_SUPABASE_BUCKET || DEFAULT_ASSET_BUCKET);
+  if (!supabaseUrl || !serviceKey || !bucket) {
+    return res.status(503).json({
+      error: 'El almacenamiento de fotografías no está configurado.',
+      code: 'VQS_ASSET_STORAGE_NOT_CONFIGURED',
+      requestId
+    });
+  }
+
+  const asset = parseQuotationAsset(req.body || {});
+  const day = new Date().toISOString().slice(0, 10);
+  const objectPath = `quotations/${day}/${asset.itemId}-${crypto.randomUUID()}-${asset.name}`;
+  const encodedPath = objectPath.split('/').map(encodeURIComponent).join('/');
+  const response = await fetch(
+    `${supabaseUrl}/storage/v1/object/${encodeURIComponent(bucket)}/${encodedPath}`,
+    {
+      method: 'POST',
+      headers: storageHeaders(serviceKey, {
+        'Content-Type': asset.mimeType,
+        'x-upsert': 'false'
+      }),
+      body: asset.bytes
+    }
+  );
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    return res.status(502).json({
+      error: payload?.message || payload?.error || 'No fue posible almacenar la fotografía.',
+      code: 'VQS_ASSET_STORAGE_FAILED',
+      requestId
+    });
+  }
+
+  const publicUrl = `${supabaseUrl}/storage/v1/object/public/${encodeURIComponent(bucket)}/${encodedPath}`;
+  return res.status(201).json({
+    data: {
+      kind: 'existing-product-photo',
+      name: asset.name,
+      mimeType: asset.mimeType,
+      sizeBytes: asset.bytes.length,
+      bucket,
+      path: objectPath,
+      objectPath,
+      publicUrl,
+      signedUrl: publicUrl,
+      url: publicUrl
+    },
+    requestId
+  });
 }
 
 export function resolveUpstream(env = process.env) {
@@ -198,8 +322,12 @@ export default async function handler(req, res) {
   res.setHeader('X-Request-Id', requestId);
 
   try {
-    const upstream = resolveUpstream();
     const localPath = safePath(req);
+    if (localPath.replace(/^\/+/, '') === 'assets') {
+      return await uploadQuotationAsset(req, res, requestId);
+    }
+
+    const upstream = resolveUpstream();
     const isContextSearch = upstream.mode === 'connect' && localPath.replace(/^\/+/, '') === 'context/search';
     const upstreamPath = mapVqsPath(localPath, upstream.mode);
     if (!upstreamPath && !isContextSearch) {
