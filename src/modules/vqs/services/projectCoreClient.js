@@ -1,4 +1,5 @@
 import { prepareQuotationContractAssets } from './quotationAssetUploadRegistry';
+import { normalizeQuotationSource } from './quotationSourceNormalization.js';
 import { runWithSingleServerRetry } from './vqsRequestRetry.js';
 const DEFAULT_VQS_PROXY_URL = '';
 
@@ -36,7 +37,7 @@ async function request(path, options = {}) {
 }
 
 export const createProject = async (contract) => {
-  const preparedContract = await prepareQuotationContractAssets(contract);
+  const preparedContract = normalizeQuotationSource(await prepareQuotationContractAssets(contract));
   const requestOptions = {
     method: 'POST',
     headers: { 'Idempotency-Key': crypto.randomUUID() },
@@ -52,7 +53,7 @@ export const createProject = async (contract) => {
 
 export const getProject = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, { method: 'GET' });
 export const updateProject = async (projectId, patch) => {
-  const preparedPatch = await prepareQuotationContractAssets(patch);
+  const preparedPatch = normalizeQuotationSource(await prepareQuotationContractAssets(patch));
   return request(`/api/vqs/projects/${encodeURIComponent(projectId)}`, {
     method: 'PATCH',
     body: JSON.stringify(preparedPatch)
