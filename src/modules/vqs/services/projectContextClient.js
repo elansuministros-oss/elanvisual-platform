@@ -1,4 +1,5 @@
 import { DEFAULT_VQS_PROXY_URL, resolveBaseUrl } from './projectCoreClient';
+import { supabase } from '../../../lib/supabase.js';
 
 const pendingRequests = new Map();
 
@@ -10,10 +11,26 @@ async function request(path, options = {}) {
   }
 
   const operation = (async () => {
+    if (!supabase) {
+      throw new Error('SUPABASE_CLIENT_NOT_CONFIGURED');
+    }
+
+    const { data, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
+
+    const token = data?.session?.access_token || '';
+    if (!token) {
+      const error = new Error('Sesion administrativa requerida.');
+      error.code = 'AUTH_REQUIRED';
+      error.status = 401;
+      throw error;
+    }
+
     const response = await fetch(`${resolveBaseUrl()}${path}`, {
       ...options,
       headers: {
         Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
         'X-Elankav-Platform': 'ELANVISUAL',
         'X-Elankav-Actor-Type': 'user',
         ...(options.headers || {})
