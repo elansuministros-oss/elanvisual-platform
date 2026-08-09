@@ -216,7 +216,7 @@ export default function QuotationDetail({ onBack }) {
 
   const handleDocumentClickCapture = (event) => {
     const button = event.target.closest('button');
-    if (!button || !button.textContent?.toLowerCase().includes('whatsapp')) return;
+    if (!button || !button.closest('#documento-cotizacion') || !button.textContent?.toLowerCase().includes('whatsapp')) return;
 
     event.preventDefault();
     event.stopPropagation();
