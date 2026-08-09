@@ -167,9 +167,6 @@ export function mapVqsPath(pathname, mode = 'connect') {
   if (path === '/projects') return '/quotations';
   if (path === '/assets') return '/assets';
   if (path === '/customers/search') return '/customers/directory-search';
-  // Context is an ELANVISUAL aggregate: it must include both DESIGN requests
-  // and Store products.  It is handled by the proxy below, not reduced to the
-  // DESIGN endpoint.
   if (path === '/context/search') return null;
 
   const operationalOrder = path.match(/^\/projects\/([^/]+)\/(work-orders|purchase-orders)(?:\/([^/]+))?$/);
@@ -328,6 +325,12 @@ function isQuotationDocumentPath(localPath) {
   return path === '/projects' || /^\/projects\/[^/]+$/.test(path);
 }
 
+function shouldAdaptQuotationDocument(method, localPath, mode) {
+  return mode === 'connect'
+    && ['POST', 'PATCH', 'PUT'].includes(String(method || '').toUpperCase())
+    && isQuotationDocumentPath(localPath);
+}
+
 export default async function handler(req, res) {
   const requestId = text(req.headers['x-request-id']) || crypto.randomUUID();
   res.setHeader('X-Request-Id', requestId);
@@ -352,6 +355,8 @@ export default async function handler(req, res) {
       'X-Elankav-Platform': 'ELANVISUAL',
       'X-Elankav-Actor-Type': text(req.headers['x-elankav-actor-type']) || 'user',
       'X-Request-Id': requestId,
+      ...(req.headers['x-elankav-role'] ? { 'X-Elankav-Role': String(req.headers['x-elankav-role']) } : {}),
+      ...(req.headers['x-elankav-user-id'] ? { 'X-Elankav-User-Id': String(req.headers['x-elankav-user-id']) } : {}),
       ...(upstream.token ? { Authorization: `Bearer ${upstream.token}` } : {}),
       ...(req.headers['idempotency-key'] ? { 'Idempotency-Key': String(req.headers['idempotency-key']) } : {}),
       ...(isWrite(req.method) ? { 'Content-Type': 'application/json' } : {})
@@ -366,8 +371,9 @@ export default async function handler(req, res) {
       clearTimeout(timer);
       return res.status(200).json(payload);
     }
+
     const body = isWrite(req.method) && req.body !== undefined
-      ? JSON.stringify(upstream.mode === 'connect' && isQuotationDocumentPath(localPath)
+      ? JSON.stringify(shouldAdaptQuotationDocument(req.method, localPath, upstream.mode)
         ? adaptQuotationDocument(req.body)
         : req.body)
       : undefined;
