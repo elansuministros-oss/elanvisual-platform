@@ -1,4 +1,5 @@
 const LOCAL_CONNECT_URL = 'http://localhost:4300';
+const OFFICIAL_CONNECT_URL = 'https://connect.elankav.com';
 const PLATFORM = 'ELANVISUAL';
 
 export function resolveConnectBaseUrl() {
@@ -14,7 +15,7 @@ export function resolveConnectBaseUrl() {
     return LOCAL_CONNECT_URL;
   }
 
-  return '';
+  return OFFICIAL_CONNECT_URL;
 }
 
 export function isConnectConfigured() {
