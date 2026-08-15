@@ -115,8 +115,21 @@ export function updatePurchaseOrder(projectId, purchaseOrderId, patch) {
   });
 }
 
-export function getPurchaseOrderDocument(projectId, purchaseOrderId) {
-  return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/document`);
+export async function getPurchaseOrderDocument(projectId, purchaseOrderId) {
+  const document = await request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/document`);
+  if (typeof window !== 'undefined' && document?.dataBase64) {
+    const file = base64PdfToFile(document);
+    const url = URL.createObjectURL(file);
+    const preview = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!preview) {
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = file.name;
+      link.click();
+    }
+    window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+  return document;
 }
 
 export function createPurchaseInvoice(input) {
