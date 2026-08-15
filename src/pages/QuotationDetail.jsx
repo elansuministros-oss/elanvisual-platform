@@ -6,6 +6,7 @@ import CustomerPaymentsPanel from '../modules/quotation-viewer/components/Custom
 import ProcurementPanel from '../modules/quotation-viewer/components/ProcurementPanel';
 import { deleteQuotation, getQuotationDetail } from '../modules/quotation-viewer/services/quotationViewerService';
 import { getPublicCustomerDossier } from '../modules/quotation-viewer/services/publicQuotationService';
+import { downloadQuotationPdf } from '../modules/quotation-viewer/services/quotationPdfGenerator';
 import {
   createWorkOrder,
   listPurchaseOrders,
@@ -332,9 +333,27 @@ export default function QuotationDetail({ onBack }) {
     }
   };
 
-  const handleDocumentClickCapture = (event) => {
+  const handleDocumentClickCapture = async (event) => {
     const button = event.target.closest('button');
-    if (!button || !button.closest('#documento-cotizacion') || !button.textContent?.toLowerCase().includes('whatsapp')) return;
+    if (!button || !button.closest('#documento-cotizacion')) return;
+
+    const label = button.textContent?.toLowerCase() || '';
+
+    if (label.includes('imprimir') || label.includes('pdf')) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.nativeEvent?.stopImmediatePropagation?.();
+
+      try {
+        await downloadQuotationPdf({ quotation, dossier });
+      } catch (pdfError) {
+        console.error('No fue posible generar el PDF directo:', pdfError);
+        window.alert('No fue posible generar el PDF. Intente nuevamente.');
+      }
+      return;
+    }
+
+    if (!label.includes('whatsapp')) return;
 
     event.preventDefault();
     event.stopPropagation();
