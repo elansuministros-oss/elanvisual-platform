@@ -65,6 +65,8 @@ export default function PublicReceipt() {
   const isPaid = Number(receipt.pendingBalanceUsd || 0) <= 0.009 && Number(receipt.quotationTotalUsd || 0) > 0;
   const originalCurrency = String(receipt.originalCurrency || 'USD').toUpperCase();
   const isNio = originalCurrency === 'NIO';
+  const isWithdrawal = String(receipt.paymentMethod || '').toLowerCase() === 'electronic_withdrawal';
+  const priorPaidUsd = Number(receipt.priorPaidUsd || 0);
 
   return (
     <main className="public-receipt-shell">
@@ -94,7 +96,7 @@ export default function PublicReceipt() {
           <div className="receipt-grid">
             <Row label="Forma de pago" value={paymentMethodLabel(receipt.paymentMethod)} />
             <Row label="Banco" value={receipt.bankName} />
-            <Row label="Referencia bancaria" value={receipt.paymentReference} />
+            <Row label={isWithdrawal ? 'Referencia / operación' : 'Referencia bancaria'} value={receipt.paymentReference} />
             {isNio ? <Row label="Monto recibido" value={money(receipt.originalAmount, 'NIO')} strong /> : null}
             {isNio ? <Row label="Tipo de cambio" value={`C$ ${Number(receipt.exchangeRate || 0).toFixed(4)} / USD`} /> : null}
             <Row label={isNio ? 'Monto aplicado' : 'Monto recibido'} value={money(receipt.amountUsd, 'USD')} strong />
@@ -103,6 +105,8 @@ export default function PublicReceipt() {
           <h2 className="receipt-section-title">Resumen al emitir este recibo</h2>
           <div className="receipt-grid receipt-financial">
             <Row label="Total de la cotización" value={money(receipt.quotationTotalUsd)} />
+            <Row label="Abonos anteriores" value={money(priorPaidUsd)} />
+            <Row label="Este pago" value={money(receipt.amountUsd)} />
             <Row label="Pagado acumulado" value={money(receipt.totalPaidUsd)} />
             <Row label="Saldo después de este pago" value={money(receipt.pendingBalanceUsd)} strong />
           </div>
