@@ -373,3 +373,76 @@
     font-size: 5.8pt;
   }
 }
+
+/* QUOTE-PRINT-DESCRIPTION-WRAP-01
+   La descripción comercial debe imprimirse completa,
+   sin scroll horizontal ni recorte. */
+@media print {
+  .qprint-detail {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .qprint-detail table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+    overflow: visible !important;
+  }
+
+  .qprint-detail tbody,
+  .qprint-detail tr,
+  .qprint-detail td {
+    overflow: visible !important;
+  }
+
+  .qprint-detail td {
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  .qprint-detail td:nth-child(2) {
+    width: auto !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .qprint-detail td:nth-child(2) strong,
+  .qprint-detail td:nth-child(2) p,
+  .qprint-detail td:nth-child(2) small {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+    -webkit-line-clamp: unset !important;
+    line-clamp: unset !important;
+    max-height: none !important;
+  }
+
+  .qprint-detail td:nth-child(2) p {
+    margin: 2px 0 0 !important;
+    line-height: 1.3 !important;
+  }
+
+  .qprint-detail tr {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  /* Evitar cualquier scrollbar heredado del layout web */
+  .qprint-document,
+  .qprint-detail,
+  .qprint-detail table,
+  .qprint-detail tbody {
+    overflow-x: visible !important;
+  }
+}
