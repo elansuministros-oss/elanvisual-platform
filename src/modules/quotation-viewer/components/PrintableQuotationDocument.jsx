@@ -462,6 +462,95 @@ export default function PrintableQuotationDocument({ quotation, dossier = null }
         </section>
       )}
 
+      {(workOrder || receipts.length > 0) && (
+        <section className="qprint-linked-dossier">
+
+          <div className="qprint-linked-title">
+            EXPEDIENTE DEL PROYECTO
+          </div>
+
+          {workOrder && (
+            <div className="qprint-linked-row">
+
+              <div className="qprint-linked-info">
+                <span>ORDEN DE TRABAJO</span>
+
+                <strong>
+                  {display(workOrder.workOrderNumber)}
+                </strong>
+
+                <small>
+                  {display(workOrder.statusLabel)}
+                </small>
+              </div>
+
+              <a
+                href={absolutePublicUrl(
+                  workOrder.viewUrl
+                )}
+              >
+                ABRIR OT
+              </a>
+
+            </div>
+          )}
+
+
+          {receipts.map((receipt) => (
+            <div
+              className="qprint-linked-row"
+              key={receipt.receiptNumber}
+            >
+
+              <div className="qprint-linked-info">
+                <span>RECIBO</span>
+
+                <strong>
+                  {display(
+                    receipt.receiptNumber
+                  )}
+                </strong>
+
+                <small>
+                  {money(
+                    receipt.amountUsd,
+                    'USD'
+                  )}
+                </small>
+              </div>
+
+              <a
+                href={absolutePublicUrl(
+                  receipt.viewUrl
+                )}
+              >
+                ABRIR RECIBO
+              </a>
+
+            </div>
+          ))}
+
+
+          {portalUrl && (
+            <div className="qprint-linked-portal">
+
+              <span>
+                EXPEDIENTE COMPLETO
+              </span>
+
+              <a href={portalUrl}>
+                {portalUrl.replace(
+                  'https://',
+                  ''
+                )}
+              </a>
+
+            </div>
+          )}
+
+        </section>
+      )}
+
       <footer className="qprint-footer">
         <span>RUC 4012805831001E</span>
         <span>visual.elankav.com</span>
