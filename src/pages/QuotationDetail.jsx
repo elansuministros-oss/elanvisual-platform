@@ -5,6 +5,7 @@ import OfficialQuotationDocument from '../modules/quotation-viewer/components/Of
 import CustomerPaymentsPanel from '../modules/quotation-viewer/components/CustomerPaymentsPanel';
 import ProcurementPanel from '../modules/quotation-viewer/components/ProcurementPanel';
 import { deleteQuotation, getQuotationDetail } from '../modules/quotation-viewer/services/quotationViewerService';
+import { getPublicCustomerDossier } from '../modules/quotation-viewer/services/publicQuotationService';
 import {
   createWorkOrder,
   listPurchaseOrders,
@@ -14,6 +15,14 @@ import '../styles/quotation-viewer.css';
 import '../styles/operational-flow.css';
 
 const PUBLIC_QUOTATION_BASE_URL = 'https://visual.elankav.com/q';
+
+function extractPublicAccessCode(value) {
+  const match = String(value || '').match(
+    /\/q\/([A-Za-z0-9_-]{22})(?:[/?#]|$)/
+  );
+
+  return match ? match[1] : '';
+}
 
 function readQuotationIdFromPath() {
   const match = window.location.pathname.match(/^\/cotizaciones\/([^/?#]+)/);
@@ -143,6 +152,7 @@ export default function QuotationDetail({ onBack }) {
   const { usuario } = useApp();
   const quotationId = useMemo(() => readQuotationIdFromPath(), []);
   const [quotation, setQuotation] = useState(null);
+  const [dossier, setDossier] = useState(null);
   const [workOrders, setWorkOrders] = useState([]);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -180,9 +190,45 @@ export default function QuotationDetail({ onBack }) {
       setError('');
       try {
         const detail = await getQuotationDetail(quotationId);
+
         if (mounted) {
           setQuotation(detail);
-          await loadOperations(detail.projectId || detail.project?.id || detail.id);
+        }
+
+        const projectId =
+          detail.projectId ||
+          detail.project?.id ||
+          detail.id;
+
+        await loadOperations(projectId);
+
+        const accessCode =
+          extractPublicAccessCode(
+            detail.publicUrl
+          );
+
+        if (accessCode) {
+          try {
+            const publicDossier =
+              await getPublicCustomerDossier(
+                accessCode
+              );
+
+            if (mounted) {
+              setDossier(publicDossier);
+            }
+          } catch (dossierError) {
+            console.error(
+              'No fue posible cargar el expediente público:',
+              dossierError
+            );
+
+            if (mounted) {
+              setDossier(null);
+            }
+          }
+        } else if (mounted) {
+          setDossier(null);
         }
       } catch (loadError) {
         if (mounted) {
@@ -332,7 +378,11 @@ export default function QuotationDetail({ onBack }) {
         )}
       </main>
       <div id="documento-cotizacion">
-        <OfficialQuotationDocument quotation={quotation} onBack={onBack} />
+        <OfficialQuotationDocument
+          quotation={quotation}
+          dossier={dossier}
+          onBack={onBack}
+        />
       </div>
     </div>
   );
