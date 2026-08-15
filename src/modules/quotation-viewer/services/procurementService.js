@@ -67,24 +67,18 @@ export async function createPurchaseOrder(projectId, input) {
 
   let invoices = [];
   const needsRecoveredCost = originalLines.some((line) => !(Number(line?.unitPrice) > 0));
-  if (needsRecoveredCost) {
-    invoices = await listPurchaseInvoices();
-  }
+  if (needsRecoveredCost) invoices = await listPurchaseInvoices();
 
   const supplierId = String(input?.supplierId || '');
   const matchingInvoices = invoices.filter((invoice) => !supplierId || String(invoice?.supplierId || '') === supplierId);
   const enrichedLines = originalLines.map((line) => {
     const explicitPrice = Number(line?.unitPrice || 0);
     if (explicitPrice > 0) return { ...line, unitPrice: explicitPrice };
-
     const targetKey = normalizeLineKey(line?.description);
     let recovered = null;
     for (const invoice of matchingInvoices) {
       const matches = (Array.isArray(invoice?.lines) ? invoice.lines : []).filter((invoiceLine) => normalizeLineKey(invoiceLine?.description) === targetKey && Number(invoiceLine?.unitPrice) > 0);
-      if (matches.length === 1) {
-        recovered = { invoice, line: matches[0] };
-        break;
-      }
+      if (matches.length === 1) { recovered = { invoice, line: matches[0] }; break; }
     }
     if (!recovered) return { ...line, unitPrice: 0 };
     return { ...line, unitPrice: Number(recovered.line.unitPrice) };
@@ -98,21 +92,27 @@ export async function createPurchaseOrder(projectId, input) {
   }
 
   let currency = String(input?.currency || '').toUpperCase();
-  if (!['USD', 'NIO'].includes(currency) && matchingInvoices[0] && ['USD', 'NIO'].includes(String(matchingInvoices[0].currency || '').toUpperCase())) {
-    currency = String(matchingInvoices[0].currency).toUpperCase();
-  }
+  if (!['USD', 'NIO'].includes(currency) && matchingInvoices[0] && ['USD', 'NIO'].includes(String(matchingInvoices[0].currency || '').toUpperCase())) currency = String(matchingInvoices[0].currency).toUpperCase();
 
   return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders`, {
-    method: 'POST',
-    body: { ...input, ...(currency ? { currency } : {}), lines: enrichedLines }
+    method: 'POST', body: { ...input, ...(currency ? { currency } : {}), lines: enrichedLines }
   });
 }
 
 export function updatePurchaseOrder(projectId, purchaseOrderId, patch) {
-  return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}`, {
-    method: 'PATCH',
-    body: patch
-  });
+  return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}`, { method: 'PATCH', body: patch });
+}
+
+export function getSupplierPurchaseOrderAccess(projectId, purchaseOrderId) {
+  return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/supplier-access`, { method: 'POST' });
+}
+
+export function receivePurchaseOrder(projectId, purchaseOrderId, items) {
+  return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/receipt`, { method: 'PATCH', body: { items } });
+}
+
+export function updateSupplierPayment(projectId, purchaseOrderId, input) {
+  return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/payment`, { method: 'PATCH', body: input });
 }
 
 export async function getPurchaseOrderDocument(projectId, purchaseOrderId) {
@@ -132,29 +132,12 @@ export async function getPurchaseOrderDocument(projectId, purchaseOrderId) {
   return document;
 }
 
-export function createPurchaseInvoice(input) {
-  return request('procurement/invoices', { method: 'POST', body: input });
-}
-
-export function listPurchaseInvoices(assignmentStatus = '') {
-  return request(`procurement/invoices${assignmentStatus ? `?assignmentStatus=${encodeURIComponent(assignmentStatus)}` : ''}`);
-}
-
-export function allocateInvoice(invoiceId, allocations) {
-  return request(`procurement/invoices/${encodeURIComponent(invoiceId)}/allocations`, { method: 'POST', body: { allocations } });
-}
-
-export function listInventory() {
-  return request('procurement/inventory');
-}
-
-export function issueInventory(inventoryItemId, input) {
-  return request(`procurement/inventory/${encodeURIComponent(inventoryItemId)}/issue`, { method: 'POST', body: input });
-}
-
-export function getCostReport(projectId) {
-  return request(`quotations/${encodeURIComponent(projectId)}/cost-report`);
-}
+export function createPurchaseInvoice(input) { return request('procurement/invoices', { method: 'POST', body: input }); }
+export function listPurchaseInvoices(assignmentStatus = '') { return request(`procurement/invoices${assignmentStatus ? `?assignmentStatus=${encodeURIComponent(assignmentStatus)}` : ''}`); }
+export function allocateInvoice(invoiceId, allocations) { return request(`procurement/invoices/${encodeURIComponent(invoiceId)}/allocations`, { method: 'POST', body: { allocations } }); }
+export function listInventory() { return request('procurement/inventory'); }
+export function issueInventory(inventoryItemId, input) { return request(`procurement/inventory/${encodeURIComponent(inventoryItemId)}/issue`, { method: 'POST', body: input }); }
+export function getCostReport(projectId) { return request(`quotations/${encodeURIComponent(projectId)}/cost-report`); }
 
 export function base64PdfToFile(document) {
   const binary = atob(document.dataBase64 || '');
