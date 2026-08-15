@@ -17,6 +17,12 @@ const METHODS = [
 
 const money = (value, currency = 'USD') => new Intl.NumberFormat('es-NI', { style: 'currency', currency }).format(Number(value || 0));
 const roundMoney = (value) => Math.round((Number(value || 0) + Number.EPSILON) * 100) / 100;
+const normalizeWhatsappPhone = (phone) => {
+  const digits = String(phone || '').replace(/\D/g, '');
+  if (digits.length === 8) return `505${digits}`;
+  if (digits.startsWith('505') && digits.length === 11) return digits;
+  return digits.length >= 10 ? digits : '';
+};
 const dateInputValue = () => {
   const date = new Date();
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
@@ -43,12 +49,13 @@ function publicReceiptUrl(payment) {
   return `https://visual.elankav.com/${encodeURIComponent(receiptNumber)}`;
 }
 
-function whatsappReceiptUrl(payment) {
+function whatsappReceiptUrl(payment, phone) {
   const receiptNumber = officialReceiptNumber(payment);
   const receiptUrl = publicReceiptUrl(payment);
-  if (!receiptUrl) return '';
+  const target = normalizeWhatsappPhone(phone);
+  if (!receiptUrl || !target) return '';
   const message = `Hola, le compartimos su recibo ELANVISUAL ${receiptNumber}. Puede verlo o descargarlo en PDF aquí: ${receiptUrl}`;
-  return `https://wa.me/?text=${encodeURIComponent(message)}`;
+  return `https://api.whatsapp.com/send?phone=${target}&text=${encodeURIComponent(message)}&type=phone_number&app_absent=0`;
 }
 
 export default function CustomerPaymentsPanel({ projectId, quotation, onDepositCompleted }) {
@@ -220,6 +227,6 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
       <label className="wide">Observaciones<input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}/></label>
       <button type="submit" disabled={saving || pendingBalance === 0}><Banknote size={18}/>{saving ? 'Registrando…' : pendingBalance === 0 ? 'Cotización cancelada' : 'Registrar pago'}</button>
     </form>
-    <div className="qv-payment-history"><h3>Historial</h3>{!loading && payments.length === 0 && <p>No hay pagos registrados.</p>}{payments.map((payment) => { const banking = bankingData(payment); const publicUrl = publicReceiptUrl(payment); const whatsappUrl = whatsappReceiptUrl(payment); return <article key={payment.id}><div><ReceiptText size={18}/><strong>{officialReceiptNumber(payment)}</strong><span>{paymentLabel(payment)} · {new Date(payment.paid_at || payment.created_at).toLocaleDateString('es-NI')}{banking.bankName ? ` · ${banking.bankName}` : ''}</span></div><div><strong>{money(payment.amount)}</strong><small>Saldo {money(payment.pending_balance)}</small></div>{publicUrl && <button type="button" onClick={() => window.open(publicUrl, '_blank', 'noopener,noreferrer')}><ExternalLink size={17}/>PDF</button>}{whatsappUrl && <button type="button" onClick={() => window.open(whatsappUrl, '_blank', 'noopener,noreferrer')}><MessageCircle size={17}/>WhatsApp</button>}<button type="button" onClick={() => printReceiptDocument(payment, quotation)}><Printer size={17}/>Imprimir</button>{payment.deposit_completed && <CheckCircle2 size={19} className="qv-payment-ok"/>}</article>; })}</div>
+    <div className="qv-payment-history"><h3>Historial</h3>{!loading && payments.length === 0 && <p>No hay pagos registrados.</p>}{payments.map((payment) => { const banking = bankingData(payment); const publicUrl = publicReceiptUrl(payment); const whatsappUrl = whatsappReceiptUrl(payment, quotation?.customer?.phone); return <article key={payment.id}><div><ReceiptText size={18}/><strong>{officialReceiptNumber(payment)}</strong><span>{paymentLabel(payment)} · {new Date(payment.paid_at || payment.created_at).toLocaleDateString('es-NI')}{banking.bankName ? ` · ${banking.bankName}` : ''}</span></div><div><strong>{money(payment.amount)}</strong><small>Saldo {money(payment.pending_balance)}</small></div>{publicUrl && <button type="button" onClick={() => window.open(publicUrl, '_blank', 'noopener,noreferrer')}><ExternalLink size={17}/>PDF</button>}{whatsappUrl && <button type="button" onClick={() => window.open(whatsappUrl, '_blank', 'noopener,noreferrer')}><MessageCircle size={17}/>WhatsApp</button>}<button type="button" onClick={() => printReceiptDocument(payment, quotation)}><Printer size={17}/>Imprimir</button>{payment.deposit_completed && <CheckCircle2 size={19} className="qv-payment-ok"/>}</article>; })}</div>
   </section>;
 }
