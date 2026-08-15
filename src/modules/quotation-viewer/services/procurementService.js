@@ -116,10 +116,19 @@ export function updateSupplierPayment(projectId, purchaseOrderId, input) {
 }
 
 export function sendPurchaseOrderOfficialWhatsApp(projectId, purchaseOrderId, document, phone = '') {
+  let targetPhone = String(phone || document?.providerPhone || '').trim();
+  if (!targetPhone && typeof window !== 'undefined') {
+    targetPhone = String(window.prompt('Ingresá el número de WhatsApp del proveedor para enviar esta OC desde el número oficial de ELANVISUAL. Ejemplo: 88881234', '') || '').trim();
+  }
+  if (!targetPhone) {
+    const error = new Error('El proveedor no tiene WhatsApp registrado. Ingresá el número para enviar la OC.');
+    error.code = 'SUPPLIER_WHATSAPP_REQUIRED';
+    throw error;
+  }
   return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/send-whatsapp`, {
     method: 'POST',
     body: {
-      ...(phone || document?.providerPhone ? { phone: phone || document.providerPhone } : {}),
+      phone: targetPhone,
       text: document?.whatsappMessage,
       fileName: document?.fileName || 'orden-compra.pdf',
       mimeType: document?.mimeType || 'application/pdf',
