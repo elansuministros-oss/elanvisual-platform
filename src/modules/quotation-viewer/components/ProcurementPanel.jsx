@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Archive, Camera, PackageCheck, Receipt, RefreshCw, Send, ShoppingCart, Upload, WalletCards } from 'lucide-react';
+import { Archive, Camera, Download, PackageCheck, Receipt, RefreshCw, Send, ShoppingCart, Upload, WalletCards } from 'lucide-react';
 import {
   allocateInvoice,
-  base64PdfToFile,
   createPurchaseInvoice,
   createPurchaseOrder,
   extractProcurementDocument,
@@ -15,6 +14,7 @@ import {
   listPurchaseInvoices,
   listRequirements,
   saveRequirements,
+  sendPurchaseOrderOfficialWhatsApp,
   updatePurchaseOrder
 } from '../services/procurementService';
 import '../../../styles/procurement-panel.css';
@@ -283,23 +283,27 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
     } catch (cause) { setError(cause.message); } finally { setBusy(false); }
   }
 
-  async function shareOrder(order) {
-    setBusy(true); setError('');
+  async function downloadOrder(order) {
+    setBusy(true); setError(''); setMessage('');
     try {
-      const ocDocument = await getPurchaseOrderDocument(projectId, order.id);
-      const file = base64PdfToFile(ocDocument);
-      if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
-        await navigator.share({ title: order.purchaseOrderNumber, text: ocDocument.whatsappMessage, files: [file] });
-      } else {
-        const url = URL.createObjectURL(file);
-        const link = window.document.createElement('a');
-        link.href = url; link.download = file.name; link.click();
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
-        const phone = String(ocDocument.providerPhone || '').replace(/\D/g, '');
-        if (phone) window.open(`https://wa.me/${phone}?text=${encodeURIComponent(ocDocument.whatsappMessage)}`, '_blank', 'noopener,noreferrer');
-        setMessage('PDF descargado. Adjuntalo al chat del proveedor.');
+      await getPurchaseOrderDocument(projectId, order.id, { preview: true });
+      setMessage(`${order.purchaseOrderNumber} abierta en PDF.`);
+    } catch (cause) { setError(cause.message); } finally { setBusy(false); }
+  }
+
+  async function sendOrderWhatsApp(order) {
+    setBusy(true); setError(''); setMessage('');
+    try {
+      const provider = providers.find((item) => String(item.id) === String(order.supplierId));
+      const providerPhone = String(provider?.whatsapp || provider?.phone || '').trim();
+      if (!providerPhone) {
+        setError(`El proveedor ${provider?.name || order.supplierName || ''} no tiene WhatsApp registrado. Actualizá su ficha de proveedor y volvé a enviar.`);
+        return;
       }
-    } catch (cause) { if (cause?.name !== 'AbortError') setError(cause.message); } finally { setBusy(false); }
+      const ocDocument = await getPurchaseOrderDocument(projectId, order.id, { preview: false });
+      const delivery = await sendPurchaseOrderOfficialWhatsApp(projectId, order.id, ocDocument, providerPhone);
+      setMessage(`${order.purchaseOrderNumber} enviada por WhatsApp oficial a ${provider?.name || order.supplierName || 'proveedor'} (${providerPhone}).${delivery?.supplierPortalUrl ? ` Seguimiento: ${delivery.supplierPortalUrl}` : ''}`);
+    } catch (cause) { setError(cause.message); } finally { setBusy(false); }
   }
 
   async function cancelInvalidOrder(order) {
@@ -343,6 +347,8 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
     } catch (cause) { setError(cause.message); } finally { setBusy(false); }
   }
 
+  const orderActions = (order) => <div className="proc-order-actions"><b>{money(order.total, order.currency)}</b><button type="button" onClick={() => downloadOrder(order)} disabled={busy}><Download size={16}/>PDF</button><button type="button" onClick={() => sendOrderWhatsApp(order)} disabled={busy}><Send size={16}/>WhatsApp</button></div>;
+
   return <section className="proc-panel" aria-label="Compras, abastecimiento e inventario">
     <header className="proc-header">
       <div><span>Operación</span><h2>Compras / Abastecimiento</h2><p>{workOrder ? `${workOrder.workOrderNumber} · ${projectId}` : 'El anticipo debe aplicarse antes de generar la OT.'}</p></div>
@@ -368,9 +374,9 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
 
     {tab === 'orders' && <div className="proc-section">
       {!workOrder && <div className="proc-empty">Primero aplicá el anticipo y generá la OT.</div>}
-      {workOrder && activePurchaseOrder && <div className="proc-list"><h3>OC vigente</h3><article className="selected"><div><strong>{activePurchaseOrder.purchaseOrderNumber}</strong><small>{activePurchaseOrder.supplierName || activePurchaseOrder.supplierId} · {activePurchaseOrder.status}</small></div><div className="proc-order-actions"><b>{money(activePurchaseOrder.total, activePurchaseOrder.currency)}</b><button type="button" onClick={() => shareOrder(activePurchaseOrder)}><Send size={16}/>PDF / WhatsApp</button></div></article><p>Esta OT ya tiene una OC válida. La secuencia de creación está cerrada para evitar órdenes duplicadas.</p></div>}
-      {workOrder && !activePurchaseOrder && <><div className="proc-form-row"><label>Proveedor<select value={ocSupplierId} onChange={(event) => { setOcSupplierId(event.target.value); if (!Object.keys(ocLines).length) setOcCurrency(''); }}><option value="">Seleccionar proveedor</option>{providers.map((provider) => <option value={provider.id} key={provider.id}>{provider.name}</option>)}</select></label><label>Condición<select value={ocPaymentCondition} onChange={(event) => setOcPaymentCondition(event.target.value)}><option value="cash">Contado</option><option value="credit">Crédito</option></select></label>{ocPaymentCondition === 'credit' && <label>Días<input type="number" min="1" value={ocCreditDays} onChange={(event) => setOcCreditDays(event.target.value)}/></label>}</div>{ocCurrency && <div className="proc-alert is-ok">Moneda de la OC tomada de la factura: <strong>{ocCurrency}</strong></div>}<div className="proc-list"><h3>Seleccionar necesidades para esta OC</h3>{!ocRequirements.length && <><p>Esta OT todavía no tiene necesidades. Recuperá una compra ya registrada —aunque ya haya sido asignada— para reconstruir las necesidades y preparar la OC.</p>{!recoverableInvoices.length && <p>No hay compras registradas para recuperar.</p>}{recoverableInvoices.map((invoice) => <article key={invoice.id}><div><strong>{invoice.supplierName}</strong><small>{invoice.invoiceNumber || 'Sin número'} · {money(invoice.total, invoice.currency)} · {invoice.assignmentStatus}</small></div><button type="button" className="proc-secondary" onClick={() => addInvoiceAsRequirements(invoice)} disabled={busy}>Recuperar esta compra y preparar OC</button></article>)}</>}{ocRequirements.map((item) => { const selected = Boolean(ocLines[item.id]); return <article key={item.id} className={selected ? 'selected' : ''}><label className="proc-check"><input type="checkbox" checked={selected} onChange={(event) => toggleOcLine(item, event.target.checked)}/><span><strong>{item.description}</strong><small>{item.requiredQty} {item.unit}{['acquired','delivered','executed'].includes(item.status) ? ` · ${item.status}` : ''}</small></span></label>{selected && <input className="proc-price" type="number" min="0" step="0.01" placeholder="Costo unitario real" value={ocLines[item.id]?.unitPrice || ''} onChange={(event) => setOcLines((current) => ({ ...current, [item.id]: { ...current[item.id], unitPrice: event.target.value } }))}/>}</article>})}</div><button type="button" className="proc-primary" onClick={generateOc} disabled={busy || !ocSupplierId || !Object.keys(ocLines).length}>Generar OC formal</button></>}
-      <div className="proc-list"><h3>{activePurchaseOrder ? 'Historial / registros anteriores' : 'Órdenes del proyecto'}</h3>{!purchaseOrders.length && <p>No hay órdenes.</p>}{purchaseOrders.filter((order) => !activePurchaseOrder || order.id !== activePurchaseOrder.id).map((order) => { const invalid = order.status === 'cancelled' || Number(order.total || 0) <= 0; const cancelled = order.status === 'cancelled'; return <article key={order.id}><div><strong>{order.purchaseOrderNumber}</strong><small>{order.supplierName || order.supplierId} · {cancelled ? 'ANULADA' : invalid ? 'registro inválido' : order.status}</small></div><div className="proc-order-actions"><b>{money(order.total, order.currency)}</b>{!invalid && <button type="button" onClick={() => shareOrder(order)}><Send size={16}/>PDF / WhatsApp</button>}{invalid && !cancelled && <button type="button" onClick={() => cancelInvalidOrder(order)} disabled={busy}>Anular OC</button>}</div></article>; })}{activePurchaseOrder && invalidPurchaseOrders.length > 0 && <p>Las órdenes en C$0.00 pueden anularse y se conservan solo como trazabilidad.</p>}</div>
+      {workOrder && activePurchaseOrder && <div className="proc-list"><h3>OC vigente</h3><article className="selected"><div><strong>{activePurchaseOrder.purchaseOrderNumber}</strong><small>{activePurchaseOrder.supplierName || activePurchaseOrder.supplierId} · {activePurchaseOrder.status}</small></div>{orderActions(activePurchaseOrder)}</article><p>Esta OT ya tiene una OC válida. La secuencia de creación está cerrada para evitar órdenes duplicadas.</p></div>}
+      {workOrder && !activePurchaseOrder && <><div className="proc-form-row"><label>Proveedor<select value={ocSupplierId} onChange={(event) => { setOcSupplierId(event.target.value); if (!Object.keys(ocLines).length) setOcCurrency(''); }}><option value="">Seleccionar proveedor</option>{providers.map((provider) => <option value={provider.id} key={provider.id}>{provider.name}{provider.whatsapp || provider.phone ? ` · ${provider.whatsapp || provider.phone}` : ''}</option>)}</select></label><label>Condición<select value={ocPaymentCondition} onChange={(event) => setOcPaymentCondition(event.target.value)}><option value="cash">Contado</option><option value="credit">Crédito</option></select></label>{ocPaymentCondition === 'credit' && <label>Días<input type="number" min="1" value={ocCreditDays} onChange={(event) => setOcCreditDays(event.target.value)}/></label>}</div>{ocCurrency && <div className="proc-alert is-ok">Moneda de la OC tomada de la factura: <strong>{ocCurrency}</strong></div>}<div className="proc-list"><h3>Seleccionar necesidades para esta OC</h3>{!ocRequirements.length && <><p>Esta OT todavía no tiene necesidades. Recuperá una compra ya registrada —aunque ya haya sido asignada— para reconstruir las necesidades y preparar la OC.</p>{!recoverableInvoices.length && <p>No hay compras registradas para recuperar.</p>}{recoverableInvoices.map((invoice) => <article key={invoice.id}><div><strong>{invoice.supplierName}</strong><small>{invoice.invoiceNumber || 'Sin número'} · {money(invoice.total, invoice.currency)} · {invoice.assignmentStatus}</small></div><button type="button" className="proc-secondary" onClick={() => addInvoiceAsRequirements(invoice)} disabled={busy}>Recuperar esta compra y preparar OC</button></article>)}</>}{ocRequirements.map((item) => { const selected = Boolean(ocLines[item.id]); return <article key={item.id} className={selected ? 'selected' : ''}><label className="proc-check"><input type="checkbox" checked={selected} onChange={(event) => toggleOcLine(item, event.target.checked)}/><span><strong>{item.description}</strong><small>{item.requiredQty} {item.unit}{['acquired','delivered','executed'].includes(item.status) ? ` · ${item.status}` : ''}</small></span></label>{selected && <input className="proc-price" type="number" min="0" step="0.01" placeholder="Costo unitario real" value={ocLines[item.id]?.unitPrice || ''} onChange={(event) => setOcLines((current) => ({ ...current, [item.id]: { ...current[item.id], unitPrice: event.target.value } }))}/>}</article>})}</div><button type="button" className="proc-primary" onClick={generateOc} disabled={busy || !ocSupplierId || !Object.keys(ocLines).length}>Generar OC formal</button></>}
+      <div className="proc-list"><h3>{activePurchaseOrder ? 'Historial / registros anteriores' : 'Órdenes del proyecto'}</h3>{!purchaseOrders.length && <p>No hay órdenes.</p>}{purchaseOrders.filter((order) => !activePurchaseOrder || order.id !== activePurchaseOrder.id).map((order) => { const invalid = order.status === 'cancelled' || Number(order.total || 0) <= 0; const cancelled = order.status === 'cancelled'; return <article key={order.id}><div><strong>{order.purchaseOrderNumber}</strong><small>{order.supplierName || order.supplierId} · {cancelled ? 'ANULADA' : invalid ? 'registro inválido' : order.status}</small></div>{!invalid ? orderActions(order) : <div className="proc-order-actions"><b>{money(order.total, order.currency)}</b>{!cancelled && <button type="button" onClick={() => cancelInvalidOrder(order)} disabled={busy}>Anular OC</button>}</div>}</article>; })}{activePurchaseOrder && invalidPurchaseOrders.length > 0 && <p>Las órdenes en C$0.00 pueden anularse y se conservan solo como trazabilidad.</p>}</div>
     </div>}
 
     {tab === 'inventory' && <div className="proc-section"><div className="proc-list"><h3>Inventario interno</h3>{!inventory.length && <p>Inventario vacío.</p>}{inventory.map((item) => <article className="proc-inventory-row" key={item.id}><div><strong>{item.description}</strong><small>Costo promedio {money(item.avgUnitCost, item.currency)} · Disponible {item.qtyAvailable} {item.unit}</small></div>{workOrder ? <div className="proc-inventory-issue"><select value={inventoryRequirement[item.id] || ''} onChange={(event) => setInventoryRequirement((current) => ({ ...current, [item.id]: event.target.value }))}><option value="">Salida general de esta OT</option>{materialRequirements.map((requirement) => <option key={requirement.id} value={requirement.id}>{requirement.description} · autorizado {requirement.requiredQty} {requirement.unit}</option>)}</select><input type="number" min="0.0001" step="0.0001" placeholder="Cantidad" value={inventoryIssueQty[item.id] || ''} onChange={(event) => setInventoryIssueQty((current) => ({ ...current, [item.id]: event.target.value }))}/><input type="text" placeholder="Motivo si es adicional" value={inventoryReason[item.id] || ''} onChange={(event) => setInventoryReason((current) => ({ ...current, [item.id]: event.target.value }))}/><button type="button" className="proc-secondary" onClick={() => deliverInventory(item)}>Entregar a OT</button></div> : <b>{item.qtyAvailable} {item.unit}</b>}</article>)}</div></div>}
