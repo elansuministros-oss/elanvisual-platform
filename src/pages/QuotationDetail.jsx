@@ -13,7 +13,7 @@ import {
 import '../styles/quotation-viewer.css';
 import '../styles/operational-flow.css';
 
-const PUBLIC_QUOTATION_BASE_URL = 'https://visual.elankav.com/cotizaciones/publicas';
+const PUBLIC_QUOTATION_BASE_URL = 'https://visual.elankav.com/q';
 
 function readQuotationIdFromPath() {
   const match = window.location.pathname.match(/^\/cotizaciones\/([^/?#]+)/);
