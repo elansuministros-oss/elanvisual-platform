@@ -8,7 +8,8 @@ import '../styles/public-quotation.css';
 const PUBLIC_QUOTATION_REFRESH_MS = 45 * 60 * 1000;
 
 function readProjectId() {
-  const match = window.location.pathname.match(/^\/cotizaciones\/publicas\/([^/?#]+)/);
+  const path = window.location.pathname;
+  const match = path.match(/^\/q\/([^/?#]+)/) || path.match(/^\/cotizaciones\/publicas\/([^/?#]+)/);
   return match ? decodeURIComponent(match[1]) : '';
 }
 
