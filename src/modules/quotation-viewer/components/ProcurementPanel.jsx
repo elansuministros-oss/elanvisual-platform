@@ -64,6 +64,7 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
 
   const workOrderId = workOrder?.id || '';
   const pendingRequirements = useMemo(() => requirements.filter((item) => !['acquired', 'delivered', 'executed', 'cancelled'].includes(item.status)), [requirements]);
+  const ocRequirements = useMemo(() => requirements.filter((item) => item.status !== 'cancelled' && (!['acquired', 'delivered', 'executed'].includes(item.status) || Boolean(ocLines[item.id]))), [requirements, ocLines]);
   const materialRequirements = useMemo(() => requirements.filter((item) => item.kind === 'material' && item.status !== 'cancelled'), [requirements]);
 
   async function loadAll() {
@@ -143,51 +144,58 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
     } catch (cause) { setError(cause.message); } finally { setBusy(false); }
   }
 
-  async function addInvoiceAsRequirements(invoice) {
-    if (!workOrderId) { setError('Primero debe existir una OT.'); return; }
+  async function prepareInvoiceForCurrentOt(invoice) {
+    if (!workOrderId) return false;
     const sourceLines = Array.isArray(invoice?.lines) ? invoice.lines.filter((line) => Number(line.quantity || 0) > 0) : [];
-    if (!sourceLines.length) { setError('La factura no tiene líneas utilizables.'); return; }
+    if (!sourceLines.length) return false;
 
-    const existingKeys = new Set(requirements.map((item) => requirementKey(item.description, item.unit)));
+    let currentRequirements = Array.isArray(requirements) ? requirements : [];
+    const existingKeys = new Set(currentRequirements.map((item) => requirementKey(item.description, item.unit)));
     const newLines = sourceLines.filter((line) => !existingKeys.has(requirementKey(line.description, line.unit)));
-    if (!newLines.length) {
-      setMessage('Las líneas de esta factura ya están registradas como necesidades de la OT.');
-      setTab('orders');
-      return;
+
+    if (newLines.length) {
+      const items = newLines.map((line) => ({
+        kind: inferRequirementKind(line.description),
+        description: line.description,
+        specification: `Origen: factura ${invoice.invoiceNumber || 's/n'} · ${invoice.supplierName || 'proveedor'}`,
+        quantity: Number(line.quantity || 0),
+        unit: line.unit || 'unidad',
+        critical: false
+      }));
+      await saveRequirements(projectId, workOrderId, items, invoice.sourceFileName || `factura-${invoice.invoiceNumber || invoice.id || 'compra'}`);
+      currentRequirements = await listRequirements(projectId, workOrderId);
+      setRequirements(Array.isArray(currentRequirements) ? currentRequirements : []);
     }
 
-    const items = newLines.map((line) => ({
-      kind: inferRequirementKind(line.description),
-      description: line.description,
-      specification: `Origen: factura ${invoice.invoiceNumber || 's/n'} · ${invoice.supplierName || 'proveedor'}`,
-      quantity: Number(line.quantity || 0),
-      unit: line.unit || 'unidad',
-      critical: false
-    }));
+    const requirementMap = new Map((Array.isArray(currentRequirements) ? currentRequirements : []).map((item) => [requirementKey(item.description, item.unit), item]));
+    const prepared = {};
+    sourceLines.forEach((line) => {
+      const requirement = requirementMap.get(requirementKey(line.description, line.unit));
+      if (!requirement?.id) return;
+      prepared[requirement.id] = {
+        requirementId: requirement.id,
+        description: requirement.description,
+        specification: requirement.specification || '',
+        quantity: Number(requirement.requiredQty || line.quantity || 0),
+        unit: requirement.unit || line.unit || 'unidad',
+        unitPrice: String(Number(line.unitPrice || 0)),
+        includesVat: false
+      };
+    });
 
+    if (invoice.supplierId) setOcSupplierId(String(invoice.supplierId));
+    setOcCurrency(['NIO','USD'].includes(String(invoice.currency || '').toUpperCase()) ? String(invoice.currency).toUpperCase() : '');
+    setOcLines(prepared);
+    return Object.keys(prepared).length > 0;
+  }
+
+  async function addInvoiceAsRequirements(invoice) {
+    if (!workOrderId) { setError('Primero debe existir una OT.'); return; }
     setBusy(true); setError(''); setMessage('');
     try {
-      const created = await saveRequirements(projectId, workOrderId, items, invoice.sourceFileName || `factura-${invoice.invoiceNumber || invoice.id || 'compra'}`);
-      const createdRows = Array.isArray(created) ? created : [];
-      const prepared = {};
-      createdRows.forEach((requirement, index) => {
-        const sourceLine = newLines[index];
-        if (!requirement?.id || !sourceLine) return;
-        prepared[requirement.id] = {
-          requirementId: requirement.id,
-          description: requirement.description,
-          specification: requirement.specification || '',
-          quantity: Number(requirement.requiredQty || sourceLine.quantity || 0),
-          unit: requirement.unit || sourceLine.unit || 'unidad',
-          unitPrice: String(Number(sourceLine.unitPrice || 0)),
-          includesVat: false
-        };
-      });
-      if (invoice.supplierId) setOcSupplierId(String(invoice.supplierId));
-      setOcCurrency(['NIO','USD'].includes(String(invoice.currency || '').toUpperCase()) ? String(invoice.currency).toUpperCase() : '');
-      setOcLines(prepared);
-      setMessage(`Factura ${invoice.invoiceNumber || 's/n'} convertida en necesidades de ${workOrder.workOrderNumber}. La OC quedó preparada con cantidades y costos de la factura.`);
-      await loadAll();
+      const prepared = await prepareInvoiceForCurrentOt(invoice);
+      if (!prepared) { setError('No fue posible preparar las líneas de la factura para esta OT.'); return; }
+      setMessage(`Factura ${invoice.invoiceNumber || 's/n'} convertida/reconciliada con las necesidades de ${workOrder.workOrderNumber}. La OC quedó preparada con cantidades y costos de la factura.`);
       setTab('orders');
     } catch (cause) { setError(cause.message); } finally { setBusy(false); }
   }
@@ -212,12 +220,22 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
       allocations.push({ invoiceLineId: line.id, destinationType: 'project', projectId: targetProjectId, workOrderId: targetWorkOrderId, quantity: qty, amount: qty * Number(line.unitPrice || 0), reason: 'Compra asignada a OT' });
     });
     if (!allocations.length) { setError('Seleccioná al menos un destino para esta factura.'); return; }
-    setBusy(true); setError('');
+    setBusy(true); setError(''); setMessage('');
     try {
+      const touchesCurrentOt = allocations.some((item) => item.destinationType === 'project' && item.projectId === projectId && item.workOrderId === workOrderId);
+      let ocPrepared = false;
+      if (touchesCurrentOt) ocPrepared = await prepareInvoiceForCurrentOt(invoice);
+
       await allocateInvoice(invoice.id, allocations);
       setAllocationQty({});
-      setMessage('Compra asignada. Si quedó cantidad pendiente podés asignarla a otro proyecto o inventario.');
       await loadAll();
+
+      if (ocPrepared) {
+        setMessage(`Compra asignada a ${workOrder.workOrderNumber}. Sus líneas quedaron reconciliadas como necesidades y la OC está preparada con proveedor, moneda, cantidades y costos de la factura.`);
+        setTab('orders');
+      } else {
+        setMessage('Compra asignada. Si quedó cantidad pendiente podés asignarla a otro proyecto o inventario.');
+      }
     } catch (cause) { setError(cause.message); } finally { setBusy(false); }
   }
 
@@ -323,7 +341,7 @@ export default function ProcurementPanel({ projectId, workOrder, purchaseOrders 
 
     {tab === 'orders' && <div className="proc-section">
       {!workOrder && <div className="proc-empty">Primero aplicá el anticipo y generá la OT.</div>}
-      {workOrder && <><div className="proc-form-row"><label>Proveedor<select value={ocSupplierId} onChange={(event) => { setOcSupplierId(event.target.value); if (!Object.keys(ocLines).length) setOcCurrency(''); }}><option value="">Seleccionar proveedor</option>{providers.map((provider) => <option value={provider.id} key={provider.id}>{provider.name}</option>)}</select></label><label>Condición<select value={ocPaymentCondition} onChange={(event) => setOcPaymentCondition(event.target.value)}><option value="cash">Contado</option><option value="credit">Crédito</option></select></label>{ocPaymentCondition === 'credit' && <label>Días<input type="number" min="1" value={ocCreditDays} onChange={(event) => setOcCreditDays(event.target.value)}/></label>}</div>{ocCurrency && <div className="proc-alert is-ok">Moneda de la OC tomada de la factura: <strong>{ocCurrency}</strong></div>}<div className="proc-list"><h3>Seleccionar necesidades para esta OC</h3>{!pendingRequirements.length && <><p>Esta OT todavía no tiene necesidades. Podés convertir una compra pendiente en necesidades sin volver a cargar la lista.</p>{invoices.map((invoice) => <article key={invoice.id}><div><strong>{invoice.supplierName}</strong><small>{invoice.invoiceNumber || 'Sin número'} · {money(invoice.total, invoice.currency)}</small></div><button type="button" className="proc-secondary" onClick={() => addInvoiceAsRequirements(invoice)} disabled={busy}>Usar esta factura</button></article>)}</>}{pendingRequirements.map((item) => { const selected = Boolean(ocLines[item.id]); return <article key={item.id} className={selected ? 'selected' : ''}><label className="proc-check"><input type="checkbox" checked={selected} onChange={(event) => toggleOcLine(item, event.target.checked)}/><span><strong>{item.description}</strong><small>{item.requiredQty} {item.unit}</small></span></label>{selected && <input className="proc-price" type="number" min="0" step="0.01" placeholder="Costo unitario real" value={ocLines[item.id]?.unitPrice || ''} onChange={(event) => setOcLines((current) => ({ ...current, [item.id]: { ...current[item.id], unitPrice: event.target.value } }))}/>}</article>})}</div><button type="button" className="proc-primary" onClick={generateOc} disabled={busy}>Generar OC formal</button></>}
+      {workOrder && <><div className="proc-form-row"><label>Proveedor<select value={ocSupplierId} onChange={(event) => { setOcSupplierId(event.target.value); if (!Object.keys(ocLines).length) setOcCurrency(''); }}><option value="">Seleccionar proveedor</option>{providers.map((provider) => <option value={provider.id} key={provider.id}>{provider.name}</option>)}</select></label><label>Condición<select value={ocPaymentCondition} onChange={(event) => setOcPaymentCondition(event.target.value)}><option value="cash">Contado</option><option value="credit">Crédito</option></select></label>{ocPaymentCondition === 'credit' && <label>Días<input type="number" min="1" value={ocCreditDays} onChange={(event) => setOcCreditDays(event.target.value)}/></label>}</div>{ocCurrency && <div className="proc-alert is-ok">Moneda de la OC tomada de la factura: <strong>{ocCurrency}</strong></div>}<div className="proc-list"><h3>Seleccionar necesidades para esta OC</h3>{!ocRequirements.length && <><p>Esta OT todavía no tiene necesidades. Podés convertir una compra pendiente en necesidades sin volver a cargar la lista.</p>{invoices.map((invoice) => <article key={invoice.id}><div><strong>{invoice.supplierName}</strong><small>{invoice.invoiceNumber || 'Sin número'} · {money(invoice.total, invoice.currency)}</small></div><button type="button" className="proc-secondary" onClick={() => addInvoiceAsRequirements(invoice)} disabled={busy}>Usar esta factura</button></article>)}</>}{ocRequirements.map((item) => { const selected = Boolean(ocLines[item.id]); return <article key={item.id} className={selected ? 'selected' : ''}><label className="proc-check"><input type="checkbox" checked={selected} onChange={(event) => toggleOcLine(item, event.target.checked)}/><span><strong>{item.description}</strong><small>{item.requiredQty} {item.unit}{['acquired','delivered','executed'].includes(item.status) ? ` · ${item.status}` : ''}</small></span></label>{selected && <input className="proc-price" type="number" min="0" step="0.01" placeholder="Costo unitario real" value={ocLines[item.id]?.unitPrice || ''} onChange={(event) => setOcLines((current) => ({ ...current, [item.id]: { ...current[item.id], unitPrice: event.target.value } }))}/>}</article>})}</div><button type="button" className="proc-primary" onClick={generateOc} disabled={busy || !ocSupplierId || !Object.keys(ocLines).length}>Generar OC formal</button></>}
       <div className="proc-list"><h3>Órdenes del proyecto</h3>{!purchaseOrders.length && <p>No hay órdenes.</p>}{purchaseOrders.map((order) => <article key={order.id}><div><strong>{order.purchaseOrderNumber}</strong><small>{order.supplierName || order.supplierId} · {order.status}</small></div><div className="proc-order-actions"><b>{money(order.total, order.currency)}</b><button type="button" onClick={() => shareOrder(order)}><Send size={16}/>PDF / WhatsApp</button></div></article>)}</div>
     </div>}
 
