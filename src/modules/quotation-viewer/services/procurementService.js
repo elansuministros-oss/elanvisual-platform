@@ -20,6 +20,13 @@ async function request(path, { method = 'GET', body } = {}) {
   return payload?.data ?? payload;
 }
 
+const normalizeLineKey = (value) => String(value || '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, ' ')
+  .trim();
+
 export function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -54,8 +61,51 @@ export function listOpenWorkOrders(q = '') {
   return request(`procurement/open-work-orders${q ? `?q=${encodeURIComponent(q)}` : ''}`);
 }
 
-export function createPurchaseOrder(projectId, input) {
-  return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders`, { method: 'POST', body: input });
+export async function createPurchaseOrder(projectId, input) {
+  const originalLines = Array.isArray(input?.lines) ? input.lines : [];
+  if (!originalLines.length) throw new Error('La OC requiere al menos una necesidad seleccionada.');
+
+  let invoices = [];
+  const needsRecoveredCost = originalLines.some((line) => !(Number(line?.unitPrice) > 0));
+  if (needsRecoveredCost) {
+    invoices = await listPurchaseInvoices();
+  }
+
+  const supplierId = String(input?.supplierId || '');
+  const matchingInvoices = invoices.filter((invoice) => !supplierId || String(invoice?.supplierId || '') === supplierId);
+  const enrichedLines = originalLines.map((line) => {
+    const explicitPrice = Number(line?.unitPrice || 0);
+    if (explicitPrice > 0) return { ...line, unitPrice: explicitPrice };
+
+    const targetKey = normalizeLineKey(line?.description);
+    let recovered = null;
+    for (const invoice of matchingInvoices) {
+      const matches = (Array.isArray(invoice?.lines) ? invoice.lines : []).filter((invoiceLine) => normalizeLineKey(invoiceLine?.description) === targetKey && Number(invoiceLine?.unitPrice) > 0);
+      if (matches.length === 1) {
+        recovered = { invoice, line: matches[0] };
+        break;
+      }
+    }
+    if (!recovered) return { ...line, unitPrice: 0 };
+    return { ...line, unitPrice: Number(recovered.line.unitPrice) };
+  });
+
+  const invalid = enrichedLines.filter((line) => !(Number(line?.quantity) > 0) || !(Number(line?.unitPrice) > 0));
+  if (invalid.length) {
+    const error = new Error('No se puede generar una OC con cantidades o costos en cero. Recuperá la compra/factura para cargar los costos reales antes de continuar.');
+    error.code = 'PURCHASE_ORDER_ZERO_COST_BLOCKED';
+    throw error;
+  }
+
+  let currency = String(input?.currency || '').toUpperCase();
+  if (!['USD', 'NIO'].includes(currency) && matchingInvoices[0] && ['USD', 'NIO'].includes(String(matchingInvoices[0].currency || '').toUpperCase())) {
+    currency = String(matchingInvoices[0].currency).toUpperCase();
+  }
+
+  return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders`, {
+    method: 'POST',
+    body: { ...input, ...(currency ? { currency } : {}), lines: enrichedLines }
+  });
 }
 
 export function getPurchaseOrderDocument(projectId, purchaseOrderId) {
