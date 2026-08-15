@@ -639,3 +639,282 @@
     color: #374151;
   }
 }
+
+/* QUOTE-PRINT-COMPACT-01
+   Solo afecta impresión/PDF.
+   La vista web permanece intacta. */
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 7mm 8mm;
+  }
+
+  html,
+  body {
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    font-size: 9pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .desktop-header,
+  .mobile-header,
+  .qv-document-actions,
+  .no-print {
+    display: none !important;
+  }
+
+  .qv-detail-shell {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .qv-official-document {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Encabezado comercial compacto */
+  .qv-document-header {
+    grid-template-columns: 155px minmax(0, 1fr) 145px !important;
+    grid-template-areas: "brand title dates" !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1.5px solid #111827 !important;
+  }
+
+  .qv-document-brand {
+    width: 150px !important;
+    min-height: 38px !important;
+    padding: 6px 9px !important;
+    border-radius: 5px !important;
+  }
+
+  .qv-document-brand img {
+    width: 100% !important;
+    max-height: 34px !important;
+    object-fit: contain !important;
+  }
+
+  .qv-document-title {
+    width: auto !important;
+  }
+
+  .qv-document-title span {
+    font-size: 7pt !important;
+  }
+
+  .qv-document-title h1 {
+    margin: 2px 0 0 !important;
+    font-size: 12pt !important;
+    line-height: 1.05 !important;
+    white-space: nowrap !important;
+  }
+
+  .qv-document-title p {
+    margin-top: 2px !important;
+    font-size: 7.5pt !important;
+  }
+
+  .qv-document-dates {
+    gap: 4px !important;
+  }
+
+  .qv-document-dates div {
+    gap: 0 !important;
+  }
+
+  .qv-document-dates dt {
+    font-size: 6.5pt !important;
+  }
+
+  .qv-document-dates dd {
+    font-size: 8pt !important;
+  }
+
+  /* Cliente + proyecto como resumen compacto */
+  .qv-document-grid {
+    grid-template-columns: 1fr 1.35fr !important;
+    gap: 7px !important;
+    margin-top: 8px !important;
+  }
+
+  .qv-document-panel {
+    padding: 7px 9px !important;
+    border-radius: 4px !important;
+  }
+
+  .qv-section-label {
+    font-size: 6.5pt !important;
+  }
+
+  .qv-info-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3px 9px !important;
+    margin-top: 5px !important;
+  }
+
+  .qv-info-list div {
+    gap: 0 !important;
+  }
+
+  .qv-info-list dt {
+    font-size: 6pt !important;
+  }
+
+  .qv-info-list dd {
+    font-size: 8pt !important;
+    line-height: 1.15 !important;
+  }
+
+  .qv-project-summary {
+    margin-top: 4px !important;
+    font-size: 7pt !important;
+    line-height: 1.25 !important;
+  }
+
+  /* Secciones */
+  .qv-document-section,
+  .qv-summary-section,
+  .qv-executive-section {
+    margin-top: 9px !important;
+  }
+
+  .qv-section-heading {
+    margin-bottom: 5px !important;
+  }
+
+  .qv-section-heading h2,
+  .qv-executive-section h2 {
+    margin: 0 !important;
+    font-size: 10pt !important;
+  }
+
+  /* Pago + totales */
+  .qv-summary-section {
+    grid-template-columns: 1.15fr 0.85fr !important;
+    gap: 7px !important;
+  }
+
+  .qv-payment-label {
+    margin: 4px 0 !important;
+    font-size: 8pt !important;
+  }
+
+  .qv-installments {
+    gap: 2px !important;
+  }
+
+  .qv-payment-row {
+    gap: 2px 6px !important;
+    padding-top: 4px !important;
+    font-size: 7.5pt !important;
+  }
+
+  .qv-payment-row small {
+    font-size: 6.5pt !important;
+  }
+
+  .qv-total-panel {
+    gap: 4px !important;
+    padding: 7px 9px !important;
+    border: 1px solid #111827 !important;
+    border-radius: 4px !important;
+  }
+
+  .qv-total-panel div {
+    gap: 8px !important;
+    font-size: 8pt !important;
+  }
+
+  .qv-grand-total {
+    padding: 5px 0 !important;
+    font-size: 10pt !important;
+  }
+
+  .qv-total-panel small {
+    font-size: 6.5pt !important;
+  }
+
+  /* Cuentas bancarias compactas */
+  .qv-accounts-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+  }
+
+  .qv-account {
+    gap: 1px !important;
+    padding: 5px 6px !important;
+    border-radius: 4px !important;
+    font-size: 7pt !important;
+  }
+
+  .qv-account span {
+    font-size: 7pt !important;
+  }
+
+  .qv-account strong {
+    font-size: 7.5pt !important;
+  }
+
+  .qv-account small {
+    font-size: 6pt !important;
+  }
+
+  /* Ejecutivo + footer */
+  .qv-executive-section {
+    padding: 6px 0 !important;
+    gap: 8px !important;
+  }
+
+  .qv-executive-section h2 {
+    font-size: 9pt !important;
+  }
+
+  .qv-executive-section p {
+    margin-top: 1px !important;
+    font-size: 7pt !important;
+  }
+
+  .qv-executive-contact {
+    gap: 2px !important;
+  }
+
+  .qv-executive-contact dt {
+    font-size: 6pt !important;
+  }
+
+  .qv-executive-contact dd {
+    font-size: 7.5pt !important;
+  }
+
+  .qv-document-footer {
+    margin-top: 6px !important;
+    padding-top: 5px !important;
+    gap: 6px !important;
+    font-size: 6.5pt !important;
+  }
+
+  /* Evitar cortes feos */
+  .qv-document-header,
+  .qv-document-grid,
+  .qv-item-row,
+  .qv-summary-section,
+  .qv-accounts-grid,
+  .qv-executive-section,
+  .qv-document-footer {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

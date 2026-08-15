@@ -155,8 +155,25 @@ function ItemRow({ item }) {
         <strong>{display(item.unit)}</strong>
       </div>
 
+      <div className="qv-item-field qv-unit-price">
+        <span>P. Unit.</span>
+        <strong>
+          {formatMoney(
+            hasValue(item.unitPrice)
+              ? item.unitPrice
+              : (
+                  numericValue(item.subtotal) !== null &&
+                  numericValue(item.quantity) > 0
+                    ? numericValue(item.subtotal) / numericValue(item.quantity)
+                    : ''
+                ),
+            'USD'
+          )}
+        </strong>
+      </div>
+
       <div className="qv-item-field">
-        <span>Subtotal</span>
+        <span>Total</span>
         <strong>{formatMoney(item.subtotal, 'USD')}</strong>
       </div>
     </article>

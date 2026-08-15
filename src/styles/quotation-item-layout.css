@@ -225,3 +225,59 @@
     height: 72px;
   }
 }
+
+/* QUOTE-PRINT-COMPACT-01 */
+@media print {
+  .qv-item-list {
+    gap: 4px !important;
+  }
+
+  .qv-item-row {
+    grid-template-columns:
+      minmax(0, 1fr)
+      68px
+      42px
+      52px
+      64px
+      68px !important;
+    gap: 5px !important;
+    align-items: start !important;
+    padding: 5px 6px !important;
+    border-radius: 3px !important;
+  }
+
+  /* La imagen se mantiene en pantalla,
+     pero no ocupa papel en la cotización comercial. */
+  .qv-item-image {
+    display: none !important;
+  }
+
+  .qv-item-description {
+    grid-column: 1 !important;
+  }
+
+  .qv-item-description strong {
+    margin-bottom: 2px !important;
+    font-size: 7.8pt !important;
+    line-height: 1.15 !important;
+  }
+
+  .qv-item-description p {
+    font-size: 7pt !important;
+    line-height: 1.22 !important;
+  }
+
+  .qv-item-field {
+    grid-column: auto !important;
+    gap: 1px !important;
+  }
+
+  .qv-item-field span {
+    font-size: 5.8pt !important;
+  }
+
+  .qv-item-field strong {
+    font-size: 7pt !important;
+    line-height: 1.15 !important;
+  }
+}

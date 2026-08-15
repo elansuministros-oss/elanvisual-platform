@@ -299,7 +299,7 @@ export default function QuotationDetail({ onBack }) {
 
   return (
     <div onClickCapture={handleDocumentClickCapture}>
-      <main className="qv-shell">
+      <main className="qv-shell no-print">
         <CustomerPaymentsPanel
           projectId={projectId}
           quotation={quotation}
