@@ -108,6 +108,13 @@ export async function createPurchaseOrder(projectId, input) {
   });
 }
 
+export function updatePurchaseOrder(projectId, purchaseOrderId, patch) {
+  return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}`, {
+    method: 'PATCH',
+    body: patch
+  });
+}
+
 export function getPurchaseOrderDocument(projectId, purchaseOrderId) {
   return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/document`);
 }
