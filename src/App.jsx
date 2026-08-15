@@ -45,7 +45,7 @@ export default function App() {
 
   const paginaInicial = (() => {
     if (pathInicial.startsWith('/cotizaciones/v2/')) return 'publicQuotationV2';
-    if (pathInicial.startsWith('/cotizaciones/publicas/')) return 'publicQuotation';
+    if (pathInicial.startsWith('/cotizaciones/publicas/') || pathInicial.startsWith('/q/')) return 'publicQuotation';
     if (pathInicial.startsWith('/emc-inventario')) return 'emcInventario';
     if (pathInicial.startsWith('/emc')) return 'emc';
     if (pathInicial.startsWith('/clientes')) return 'clientes';
