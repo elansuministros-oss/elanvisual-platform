@@ -70,7 +70,9 @@ export default function PublicReceipt() {
     <main className="public-receipt-shell">
       <section className="public-receipt-card">
         <header className="receipt-head">
-          <img className="receipt-brand-logo" src={OFFICIAL_LOGO} alt="Visual Kay" />
+          <div className="receipt-brand-box">
+            <img className="receipt-brand-logo" src={OFFICIAL_LOGO} alt="Visual KAV" />
+          </div>
           <span>RECIBO OFICIAL</span>
           <h1>{receipt.receiptNumber}</h1>
         </header>
