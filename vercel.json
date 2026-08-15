@@ -5,6 +5,10 @@
       "destination": "/api/vqs?path=:path*"
     },
     {
+      "source": "/api/ops/:path*",
+      "destination": "/api/ops?path=:path*"
+    },
+    {
       "source": "/vqs-preview",
       "destination": "/vqs-preview.html"
     },
