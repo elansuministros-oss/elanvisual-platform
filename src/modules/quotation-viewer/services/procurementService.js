@@ -115,6 +115,19 @@ export function updateSupplierPayment(projectId, purchaseOrderId, input) {
   return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/payment`, { method: 'PATCH', body: input });
 }
 
+export function sendPurchaseOrderOfficialWhatsApp(projectId, purchaseOrderId, document, phone = '') {
+  return request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/send-whatsapp`, {
+    method: 'POST',
+    body: {
+      ...(phone || document?.providerPhone ? { phone: phone || document.providerPhone } : {}),
+      text: document?.whatsappMessage,
+      fileName: document?.fileName || 'orden-compra.pdf',
+      mimeType: document?.mimeType || 'application/pdf',
+      dataBase64: document?.dataBase64 || ''
+    }
+  });
+}
+
 export async function getPurchaseOrderDocument(projectId, purchaseOrderId) {
   const document = await request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/document`);
   if (typeof window !== 'undefined' && document?.dataBase64) {
