@@ -7,6 +7,7 @@ import {
   parseQuotationAsset,
   resolveUpstream
 } from '../api/vqs/[...path].js';
+import { localPath as mapOpsPath } from '../api/ops/[...path].js';
 
 assert.equal(mapVqsPath('projects'), '/quotations');
 assert.equal(mapVqsPath('assets'), '/assets');
@@ -20,6 +21,16 @@ assert.equal(mapVqsPath('customers/search'), '/customers/directory-search');
 assert.equal(mapVqsPath('context/search'), null);
 assert.equal(mapVqsPath('public/quotations/project-1'), '/quotations/project-1');
 assert.equal(mapVqsPath('projects/project-1/payments'), null);
+assert.equal(
+  mapOpsPath({ query: { path: 'quotations/project-1/payments' } }),
+  'quotations/project-1/payments',
+  'El proxy operativo plano debe conservar los segmentos de la ruta.'
+);
+assert.equal(
+  mapOpsPath({ query: { path: ['quotations', 'project-1', 'payments'] } }),
+  'quotations/project-1/payments',
+  'El proxy operativo anidado debe conservar los segmentos de la ruta.'
+);
 
 const proxySource = readFileSync(new URL('../api/vqs/[...path].js', import.meta.url), 'utf8');
 assert.ok(proxySource.includes('isQuotationDocumentPath(localPath)'), 'El proxy debe adaptar solo documentos de cotización.');
