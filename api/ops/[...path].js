@@ -24,9 +24,13 @@ function isTrustedRequest(req) {
   }
 }
 
-function localPath(req) {
+export function localPath(req) {
   const parts = Array.isArray(req.query?.path) ? req.query.path : [req.query?.path].filter(Boolean);
-  return parts.map((part) => encodeURIComponent(decodeURIComponent(String(part)))).join('/');
+  return parts
+    .flatMap((part) => String(part).split('/'))
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(decodeURIComponent(part)))
+    .join('/');
 }
 
 export default async function handler(req, res) {
