@@ -134,6 +134,26 @@ export default function PublicQuotation() {
                 publicKey
               );
 
+            const canonicalPublicUrl =
+              String(result.publicUrl || '').trim();
+
+            const canonicalMatch =
+              canonicalPublicUrl.match(
+                /\/q\/([A-Za-z0-9_-]{22})(?:[/?#]|$)/
+              );
+
+            if (canonicalMatch) {
+              const shortPath =
+                `/q/${canonicalMatch[1]}`;
+
+              if (
+                window.location.pathname !== shortPath
+              ) {
+                window.location.replace(shortPath);
+                return;
+              }
+            }
+
             setQuotation(result.quotation);
             setPdfUrl(result.pdfUrl);
           }
@@ -289,6 +309,7 @@ export default function PublicQuotation() {
             )
           }
           quotation={quotation}
+          dossier={dossier}
         />
       </div>
 

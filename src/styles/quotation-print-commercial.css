@@ -5,7 +5,7 @@
 @media print {
   @page {
     size: letter portrait;
-    margin: 7mm 8mm;
+    margin: 0;
   }
 
   html,
@@ -31,6 +31,7 @@
     position: absolute;
     inset: 0 auto auto 0;
     width: 100%;
+    padding: 7mm 8mm;
     color: #1f2937;
     background: #fff;
     font-family:
@@ -444,5 +445,87 @@
   .qprint-detail table,
   .qprint-detail tbody {
     overflow-x: visible !important;
+  }
+}
+
+
+/* CUSTOMER-DOSSIER-PRINT-01 */
+@media print {
+  .qprint-dossier {
+    margin-top: 9px;
+    border: 1px solid #cbd5e1;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .qprint-dossier-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 7px;
+    background: #eef3f7 !important;
+  }
+
+  .qprint-dossier-title span {
+    color: #66727e;
+    font-size: 5.8pt;
+    font-weight: 900;
+  }
+
+  .qprint-dossier-title strong {
+    color: #26313b;
+    font-size: 6.8pt;
+  }
+
+  .qprint-dossier-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .qprint-dossier-record {
+    min-height: 34px;
+    padding: 5px 7px;
+    border-top: 1px solid #cbd5e1;
+    border-right: 1px solid #cbd5e1;
+  }
+
+  .qprint-dossier-record:nth-child(3n) {
+    border-right: 0;
+  }
+
+  .qprint-dossier-record span,
+  .qprint-dossier-url span {
+    display: block;
+    color: #66727e;
+    font-size: 5.3pt;
+    font-weight: 900;
+  }
+
+  .qprint-dossier-record strong {
+    display: block;
+    margin-top: 2px;
+    color: #1f2937;
+    font-size: 6.6pt;
+  }
+
+  .qprint-dossier-record small {
+    display: block;
+    margin-top: 1px;
+    color: #59636e;
+    font-size: 5.5pt;
+  }
+
+  .qprint-dossier-url {
+    padding: 5px 7px;
+    border-top: 1px solid #cbd5e1;
+    background: #f8fafc !important;
+  }
+
+  .qprint-dossier-url strong {
+    display: block;
+    margin-top: 2px;
+    color: #10365d;
+    font-size: 6pt;
   }
 }

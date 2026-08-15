@@ -170,7 +170,7 @@ function accountCurrency(account = {}) {
   return display(account.currency).toUpperCase();
 }
 
-export default function PrintableQuotationDocument({ quotation }) {
+export default function PrintableQuotationDocument({ quotation, dossier = null }) {
   const totals = quotation?.totals || {};
   const project = quotation?.project || {};
   const customer = quotation?.customer || {};
@@ -182,6 +182,25 @@ export default function PrintableQuotationDocument({ quotation }) {
   const notes = Array.isArray(quotation?.publicNotes)
     ? quotation.publicNotes.filter(Boolean)
     : [];
+
+  const dossierDocuments =
+    dossier?.documents || {};
+
+  const dossierWorkOrder =
+    dossierDocuments.workOrder || null;
+
+  const dossierReceipts =
+    Array.isArray(dossierDocuments.receipts)
+      ? dossierDocuments.receipts
+      : [];
+
+  const dossierAccessCode =
+    display(dossier?.accessCode);
+
+  const dossierUrl =
+    dossierAccessCode
+      ? `visual.elankav.com/q/${dossierAccessCode}`
+      : '';
 
   const totalUsd =
     numberValue(totals.totalUsd) ??
@@ -395,6 +414,51 @@ export default function PrintableQuotationDocument({ quotation }) {
               </div>
             ))}
           </div>
+        </section>
+      )}
+
+      {(dossierWorkOrder || dossierReceipts.length > 0) && (
+        <section className="qprint-dossier">
+          <div className="qprint-dossier-title">
+            <span>EXPEDIENTE DEL PROYECTO</span>
+            <strong>Documentos vinculados</strong>
+          </div>
+
+          <div className="qprint-dossier-grid">
+            {dossierWorkOrder && (
+              <div className="qprint-dossier-record">
+                <span>ORDEN DE TRABAJO</span>
+                <strong>
+                  {display(dossierWorkOrder.workOrderNumber)}
+                </strong>
+                <small>
+                  {display(dossierWorkOrder.statusLabel)}
+                </small>
+              </div>
+            )}
+
+            {dossierReceipts.map((receipt) => (
+              <div
+                className="qprint-dossier-record"
+                key={receipt.receiptNumber}
+              >
+                <span>RECIBO</span>
+                <strong>
+                  {display(receipt.receiptNumber)}
+                </strong>
+                <small>
+                  USD {money(receipt.amountUsd, 'USD')}
+                </small>
+              </div>
+            ))}
+          </div>
+
+          {dossierUrl && (
+            <div className="qprint-dossier-url">
+              <span>EXPEDIENTE EN LÍNEA</span>
+              <strong>{dossierUrl}</strong>
+            </div>
+          )}
         </section>
       )}
 

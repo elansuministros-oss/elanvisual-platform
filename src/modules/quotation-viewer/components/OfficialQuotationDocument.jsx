@@ -181,7 +181,7 @@ function ItemRow({ item }) {
   );
 }
 
-export default function OfficialQuotationDocument({ quotation, onBack }) {
+export default function OfficialQuotationDocument({ quotation, onBack, dossier = null }) {
   const brand = resolveBrand(quotation);
   const logoUrl = resolveLogoUrl(brand);
   const whatsappUrl = buildWhatsappUrl(quotation.customer?.phone, quotation.quotationNumber);
@@ -379,7 +379,10 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
         </footer>
       </article>
 
-      <PrintableQuotationDocument quotation={quotation} />
+      <PrintableQuotationDocument
+        quotation={quotation}
+        dossier={dossier}
+      />
     </main>
   );
 }

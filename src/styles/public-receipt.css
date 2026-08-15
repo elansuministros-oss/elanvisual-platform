@@ -32,3 +32,37 @@
     display: none !important;
   }
 }
+
+/* CLEAN-RECEIPT-PDF-01 */
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 0;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .public-receipt-shell {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .public-receipt-card {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 10mm !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .receipt-actions,
+  .receipt-related {
+    display: none !important;
+  }
+}

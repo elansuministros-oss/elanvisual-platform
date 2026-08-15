@@ -40,7 +40,14 @@ export async function getPublicQuotation(projectId) {
   const record = applyQuotationImageFallback(payload?.data || {});
   return {
     quotation: normalizeQuotationRecord(record),
-    pdfUrl: String(record.pdfUrl || record.pdf_url || '').trim()
+    pdfUrl: String(record.pdfUrl || record.pdf_url || '').trim(),
+    publicUrl: String(
+      record.publicUrl ||
+      record.public_url ||
+      record.quotation_document?.publicDocument?.publicUrl ||
+      record.quotationDocument?.publicDocument?.publicUrl ||
+      ''
+    ).trim()
   };
 }
 
