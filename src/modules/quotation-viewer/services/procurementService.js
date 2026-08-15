@@ -116,12 +116,9 @@ export function updateSupplierPayment(projectId, purchaseOrderId, input) {
 }
 
 export function sendPurchaseOrderOfficialWhatsApp(projectId, purchaseOrderId, document, phone = '') {
-  let targetPhone = String(phone || document?.providerPhone || '').trim();
-  if (!targetPhone && typeof window !== 'undefined') {
-    targetPhone = String(window.prompt('Ingresá el número de WhatsApp del proveedor para enviar esta OC desde el número oficial de ELANVISUAL. Ejemplo: 88881234', '') || '').trim();
-  }
+  const targetPhone = String(phone || document?.providerPhone || '').trim();
   if (!targetPhone) {
-    const error = new Error('El proveedor no tiene WhatsApp registrado. Ingresá el número para enviar la OC.');
+    const error = new Error('El proveedor seleccionado no tiene un número de WhatsApp registrado. Actualizá su ficha de proveedor antes de enviar la OC.');
     error.code = 'SUPPLIER_WHATSAPP_REQUIRED';
     throw error;
   }
@@ -137,16 +134,13 @@ export function sendPurchaseOrderOfficialWhatsApp(projectId, purchaseOrderId, do
   });
 }
 
-export async function getPurchaseOrderDocument(projectId, purchaseOrderId) {
+export async function getPurchaseOrderDocument(projectId, purchaseOrderId, { preview = true } = {}) {
   const document = await request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/document`);
-  const officialDelivery = await sendPurchaseOrderOfficialWhatsApp(projectId, purchaseOrderId, document);
-  document.officialSent = true;
-  document.officialDelivery = officialDelivery;
-  if (typeof window !== 'undefined' && document?.dataBase64) {
-    const file = base64PdfToFile(document, true);
+  if (preview && typeof window !== 'undefined' && document?.dataBase64) {
+    const file = base64PdfToFile(document);
     const url = URL.createObjectURL(file);
-    const preview = window.open(url, '_blank', 'noopener,noreferrer');
-    if (!preview) {
+    const previewWindow = window.open(url, '_blank', 'noopener,noreferrer');
+    if (!previewWindow) {
       const link = window.document.createElement('a');
       link.href = url;
       link.download = file.name;
@@ -164,12 +158,7 @@ export function listInventory() { return request('procurement/inventory'); }
 export function issueInventory(inventoryItemId, input) { return request(`procurement/inventory/${encodeURIComponent(inventoryItemId)}/issue`, { method: 'POST', body: input }); }
 export function getCostReport(projectId) { return request(`quotations/${encodeURIComponent(projectId)}/cost-report`); }
 
-export function base64PdfToFile(document, allowOfficialPreview = false) {
-  if (document?.officialSent && !allowOfficialPreview) {
-    const handled = new Error('La OC ya fue enviada desde el WhatsApp oficial.');
-    handled.name = 'AbortError';
-    throw handled;
-  }
+export function base64PdfToFile(document) {
   const binary = atob(document.dataBase64 || '');
   const bytes = new Uint8Array(binary.length);
   for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
