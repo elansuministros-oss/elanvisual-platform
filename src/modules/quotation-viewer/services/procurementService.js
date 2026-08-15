@@ -130,8 +130,11 @@ export function sendPurchaseOrderOfficialWhatsApp(projectId, purchaseOrderId, do
 
 export async function getPurchaseOrderDocument(projectId, purchaseOrderId) {
   const document = await request(`quotations/${encodeURIComponent(projectId)}/purchase-orders/${encodeURIComponent(purchaseOrderId)}/document`);
+  const officialDelivery = await sendPurchaseOrderOfficialWhatsApp(projectId, purchaseOrderId, document);
+  document.officialSent = true;
+  document.officialDelivery = officialDelivery;
   if (typeof window !== 'undefined' && document?.dataBase64) {
-    const file = base64PdfToFile(document);
+    const file = base64PdfToFile(document, true);
     const url = URL.createObjectURL(file);
     const preview = window.open(url, '_blank', 'noopener,noreferrer');
     if (!preview) {
@@ -152,7 +155,12 @@ export function listInventory() { return request('procurement/inventory'); }
 export function issueInventory(inventoryItemId, input) { return request(`procurement/inventory/${encodeURIComponent(inventoryItemId)}/issue`, { method: 'POST', body: input }); }
 export function getCostReport(projectId) { return request(`quotations/${encodeURIComponent(projectId)}/cost-report`); }
 
-export function base64PdfToFile(document) {
+export function base64PdfToFile(document, allowOfficialPreview = false) {
+  if (document?.officialSent && !allowOfficialPreview) {
+    const handled = new Error('La OC ya fue enviada desde el WhatsApp oficial.');
+    handled.name = 'AbortError';
+    throw handled;
+  }
   const binary = atob(document.dataBase64 || '');
   const bytes = new Uint8Array(binary.length);
   for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
