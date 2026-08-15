@@ -32,15 +32,18 @@ function buildPublicQuotationUrl(projectId) {
   return id ? `${PUBLIC_QUOTATION_BASE_URL}/${encodeURIComponent(id)}` : '';
 }
 
-function openWhatsappChat(phone, quotationNumber, projectId) {
+function openWhatsappChat(phone, quotationNumber, publicUrl, projectId) {
   const target = normalizeWhatsappPhone(phone);
   if (!target) {
     window.alert('El cliente no tiene un numero de WhatsApp valido registrado.');
     return;
   }
 
-  const publicUrl = buildPublicQuotationUrl(projectId);
-  if (!publicUrl) {
+  const resolvedPublicUrl =
+    String(publicUrl || '').trim() ||
+    buildPublicQuotationUrl(projectId);
+
+  if (!resolvedPublicUrl) {
     window.alert('No fue posible obtener el enlace publico de esta cotizacion.');
     return;
   }
@@ -49,7 +52,7 @@ function openWhatsappChat(phone, quotationNumber, projectId) {
     `Hola, le comparto la cotizacion ${quotationNumber || ''} de ELANVISUAL.`,
     '',
     'Puede verla aqui:',
-    publicUrl
+    resolvedPublicUrl
   ].join('\n');
   const encodedMessage = encodeURIComponent(message);
   const appUrl = `whatsapp://send?phone=${target}&text=${encodedMessage}`;
@@ -293,6 +296,7 @@ export default function QuotationDetail({ onBack }) {
     openWhatsappChat(
       quotation.customer?.phone,
       quotation.quotationNumber,
+      quotation.publicUrl,
       projectId
     );
   };

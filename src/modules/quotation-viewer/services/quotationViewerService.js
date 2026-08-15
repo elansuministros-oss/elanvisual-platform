@@ -77,7 +77,14 @@ function preserveLineage(normalized = {}, record = {}, requestedProjectId = '') 
     ...normalized,
     id: projectId || normalized.id,
     projectId: projectId || normalized.projectId || normalized.id,
-    quotationId: quotationId || normalized.quotationId || ''
+    quotationId: quotationId || normalized.quotationId || '',
+    publicUrl: text(
+      record.publicUrl ||
+      record.public_url ||
+      record.quotation_document?.publicDocument?.publicUrl ||
+      record.quotationDocument?.publicDocument?.publicUrl ||
+      normalized.publicUrl
+    )
   };
 }
 

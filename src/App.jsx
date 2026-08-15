@@ -30,6 +30,8 @@ import CotizadorUniversal from './pages/CotizadorUniversal';
 import QuotationDetail from './pages/QuotationDetail';
 import PublicQuotation from './pages/PublicQuotation';
 import PublicQuotationV2 from './pages/PublicQuotationV2';
+import PublicReceipt from './pages/PublicReceipt';
+import PublicWorkOrder from './pages/PublicWorkOrder';
 import SupplierPurchaseOrderPortal from './pages/SupplierPurchaseOrderPortal';
 import QuotationsViewer from './pages/QuotationsViewer';
 import RecomendadorTecnico from './pages/RecomendadorTecnico';
@@ -46,6 +48,9 @@ export default function App() {
 
   const paginaInicial = (() => {
     if (pathInicial.startsWith('/oc/proveedor/')) return 'supplierPurchaseOrder';
+    if (pathInicial.startsWith('/r/')) return 'publicReceipt';
+    if (pathInicial.startsWith('/ot/')) return 'publicWorkOrder';
+    if (/^\/ELV-REC-\d{4}-\d{6}\/?$/i.test(pathInicial)) return 'publicReceipt';
     if (pathInicial.startsWith('/cotizaciones/v2/')) return 'publicQuotationV2';
     if (pathInicial.startsWith('/cotizaciones/publicas/') || pathInicial.startsWith('/q/')) return 'publicQuotation';
     if (pathInicial.startsWith('/emc-inventario')) return 'emcInventario';
@@ -119,7 +124,12 @@ export default function App() {
   const accesoProduccion = rol === 'admin' || rol === 'produccion';
   const accesoPedidos = rol === 'admin' || rol === 'ventas' || rol === 'produccion';
   const accesoERP = rol === 'admin';
-  const isPublicQuotation = page === 'publicQuotation' || page === 'publicQuotationV2' || page === 'supplierPurchaseOrder';
+  const isPublicQuotation =
+    page === 'publicQuotation' ||
+    page === 'publicQuotationV2' ||
+    page === 'publicReceipt' ||
+    page === 'publicWorkOrder' ||
+    page === 'supplierPurchaseOrder';
 
   const abrirCotizacion = (id) => {
     if (!id) return;
@@ -145,6 +155,8 @@ export default function App() {
       {page === 'supplierPurchaseOrder' && <SupplierPurchaseOrderPortal />}
       {page === 'publicQuotation' && <PublicQuotation />}
       {page === 'publicQuotationV2' && <PublicQuotationV2 />}
+      {page === 'publicReceipt' && <PublicReceipt />}
+      {page === 'publicWorkOrder' && <PublicWorkOrder />}
       {page === 'home' && <Home setPage={ir} />}
       {page === 'servicios' && <Servicios setPage={ir} />}
       {page === 'tienda' && <Tienda setPage={ir} />}

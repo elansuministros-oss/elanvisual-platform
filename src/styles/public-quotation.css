@@ -64,3 +64,102 @@
   .public-quotation-page { padding: 0; background: white; }
   .public-quotation-toolbar { display: none !important; }
 }
+/* CUSTOMER CONNECTED DOSSIER */
+
+.customer-dossier {
+  width: min(1100px, calc(100% - 28px));
+  margin: 22px auto 44px;
+  padding: 22px;
+  border: 1px solid #d9dee7;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.customer-dossier-heading span {
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.customer-dossier-heading h2 {
+  margin: 5px 0 4px;
+}
+
+.customer-dossier-heading p {
+  margin: 0 0 18px;
+  color: #6b7280;
+}
+
+.customer-receipts {
+  margin-top: 20px;
+}
+
+.customer-receipts h3 {
+  margin: 0 0 9px;
+}
+
+.customer-document-card {
+  display: grid;
+  grid-template-columns:
+    auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+  padding: 14px;
+  border: 1px solid #e2e6ec;
+  border-radius: 12px;
+}
+
+.customer-document-card div {
+  min-width: 0;
+}
+
+.customer-document-card span,
+.customer-document-card small {
+  display: block;
+  color: #6b7280;
+  font-size: 11px;
+}
+
+.customer-document-card strong {
+  display: block;
+  margin: 2px 0;
+}
+
+.customer-document-card a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 9px;
+  background: #111827;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .customer-dossier {
+    width: calc(100% - 18px);
+    margin-top: 12px;
+    padding: 14px;
+  }
+
+  .customer-document-card {
+    grid-template-columns:
+      auto minmax(0, 1fr);
+  }
+
+  .customer-document-card a {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media print {
+  .customer-dossier {
+    display: none !important;
+  }
+}

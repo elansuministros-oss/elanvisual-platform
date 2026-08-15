@@ -45,3 +45,74 @@ export async function getPublicQuotation(projectId) {
 }
 
 export const publicQuotationService = Object.freeze({ getPublicQuotation });
+
+
+const CONNECT_PUBLIC_BASE_URL = 'https://connect.elankav.com';
+
+function normalizeCustomerAccessCode(value) {
+  const code = String(value || '').trim();
+
+  return /^[A-Za-z0-9_-]{22}$/.test(code)
+    ? code
+    : '';
+}
+
+export async function getPublicCustomerDossier(accessCode) {
+  const code = normalizeCustomerAccessCode(accessCode);
+
+  if (!code) {
+    const error = new Error(
+      'El enlace público no es válido.'
+    );
+    error.status = 400;
+    throw error;
+  }
+
+  const url = new URL(
+    `${CONNECT_PUBLIC_BASE_URL}/api/v1/business/vqs/public/customer/${encodeURIComponent(code)}`
+  );
+
+  url.searchParams.set(
+    '_refresh',
+    String(Date.now())
+  );
+
+  const response = await fetch(
+    url.toString(),
+    {
+      method: 'GET',
+      headers: HEADERS,
+      cache: 'no-store'
+    }
+  );
+
+  const payload =
+    await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(
+      payload?.error?.message ||
+      'No fue posible consultar el expediente.'
+    );
+
+    error.status = response.status;
+    error.code =
+      payload?.error?.code ||
+      'PUBLIC_CUSTOMER_DOSSIER_FAILED';
+
+    throw error;
+  }
+
+  const data = payload?.data || {};
+
+  const record =
+    applyQuotationImageFallback(
+      data.quotation || {}
+    );
+
+  return {
+    ...data,
+    quotation:
+      normalizeQuotationRecord(record)
+  };
+}
