@@ -9,7 +9,8 @@ import {
 } from '../renderers/receiptDocumentRenderer';
 
 const METHODS = [
-  ['bank', 'Banco'],
+  ['bank', 'Transferencia / depósito bancario'],
+  ['electronic_withdrawal', 'Retiro sin tarjeta / electrónico'],
   ['cash', 'Efectivo'],
   ['cheque', 'Cheque']
 ];
@@ -31,6 +32,7 @@ const emptyForm = () => ({
   paymentReference: '',
   chequeNumber: '',
   chequeDate: '',
+  withdrawalCollected: false,
   paidAt: dateInputValue(),
   notes: ''
 });
@@ -68,7 +70,8 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
   const appliedAmountUsd = form.currency === 'USD'
     ? enteredAmount
     : (exchangeRate > 0 ? enteredAmount / exchangeRate : 0);
-  const bankRequired = form.method === 'bank' || form.method === 'cheque';
+  const bankRequired = ['bank', 'cheque', 'electronic_withdrawal'].includes(form.method);
+  const referenceRequired = ['bank', 'electronic_withdrawal'].includes(form.method);
 
   async function load() {
     setLoading(true);
@@ -101,8 +104,16 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
       setError('Indicá el banco.');
       return;
     }
+    if (referenceRequired && !form.paymentReference.trim()) {
+      setError('Indicá la referencia bancaria u operación.');
+      return;
+    }
     if (form.method === 'cheque' && !form.chequeNumber.trim()) {
       setError('Indicá el número de cheque.');
+      return;
+    }
+    if (form.method === 'electronic_withdrawal' && !form.withdrawalCollected) {
+      setError('Confirmá que el retiro electrónico ya fue cobrado antes de registrarlo como pago.');
       return;
     }
     if (!(applied > 0)) {
@@ -118,19 +129,38 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
       return;
     }
 
-    const paymentMethod = form.method === 'bank' ? 'transfer' : form.method === 'cheque' ? 'other' : 'cash';
+    const paymentMethod = form.method === 'bank'
+      ? 'transfer'
+      : form.method === 'electronic_withdrawal'
+        ? 'electronic_withdrawal'
+        : form.method === 'cheque'
+          ? 'cheque'
+          : 'cash';
     const metadata = {};
 
     if (form.method === 'bank') {
       metadata.banking = {
         operationType: form.currency === 'USD' ? 'USD_TO_USD' : 'NIO_TO_USD',
         bankName: form.bankName.trim(),
+        reference: form.paymentReference.trim(),
         customerPayment: { currency: form.currency, amount: roundMoney(enteredAmount) },
         bankCredit: { currency: 'USD', amount: applied },
         effectiveExchangeRate: form.currency === 'USD' ? 1 : roundMoney(exchangeRate),
         appliedAmountUsd: applied,
         bankFee: 0,
         bankFeeAbsorbedBy: 'ELANKAV'
+      };
+    }
+
+    if (form.method === 'electronic_withdrawal') {
+      metadata.electronicWithdrawal = {
+        collected: true,
+        bankName: form.bankName.trim(),
+        reference: form.paymentReference.trim(),
+        currency: form.currency,
+        amount: roundMoney(enteredAmount),
+        effectiveExchangeRate: form.currency === 'USD' ? 1 : roundMoney(exchangeRate),
+        appliedAmountUsd: applied
       };
     }
 
@@ -176,15 +206,16 @@ export default function CustomerPaymentsPanel({ projectId, quotation, onDepositC
     {error && <div className="qv-operational-error">{error}</div>}
     <div className="qv-finance-metrics"><div><span>Total cotización</span><strong>{money(quotationTotal)}</strong></div><div><span>Total pagado</span><strong>{money(totalPaid)}</strong></div><div><span>Saldo</span><strong>{money(pendingBalance)}</strong></div><div className={depositCompleted ? 'is-complete' : ''}><span>Anticipo</span><strong>{depositCompleted ? 'Confirmado' : 'Pendiente'}</strong></div></div>
     <form className="qv-payment-form" onSubmit={submit}>
-      <label>Forma de pago<select value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value, bankName: '', paymentReference: '', chequeNumber: '', chequeDate: '' })}>{METHODS.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-      <label>Moneda<select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value, exchangeRate: '' })}><option value="USD">USD</option><option value="NIO">NIO</option></select></label>
+      <label>Forma de pago<select value={form.method} onChange={(e) => setForm({ ...form, method: e.target.value, bankName: '', paymentReference: '', chequeNumber: '', chequeDate: '', withdrawalCollected: false })}>{METHODS.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
+      <label>Moneda<select value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value, exchangeRate: '' })}><option value="USD">USD</option><option value="NIO">NIO - Córdoba</option></select></label>
       <label>Monto recibido<input type="number" min="0.01" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required/></label>
-      {form.currency === 'NIO' && <label>Tipo de cambio<input type="number" min="0.0001" step="0.0001" value={form.exchangeRate} onChange={(e) => setForm({ ...form, exchangeRate: e.target.value })} required/></label>}
-      {form.currency === 'NIO' && <label>Aplicado USD<input value={appliedAmountUsd > 0 ? roundMoney(appliedAmountUsd).toFixed(2) : ''} readOnly/></label>}
-      {bankRequired && <label>Banco<input value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} placeholder="BAC, Banpro, Lafise…" required/></label>}
-      {form.method === 'bank' && <label>Referencia<input value={form.paymentReference} onChange={(e) => setForm({ ...form, paymentReference: e.target.value })} placeholder="Opcional"/></label>}
+      {form.currency === 'NIO' && <label>Tipo de cambio C$/USD<input type="number" min="0.0001" step="0.0001" value={form.exchangeRate} onChange={(e) => setForm({ ...form, exchangeRate: e.target.value })} required/></label>}
+      {form.currency === 'NIO' && <label>Monto aplicado USD<input value={appliedAmountUsd > 0 ? roundMoney(appliedAmountUsd).toFixed(2) : ''} readOnly/></label>}
+      {bankRequired && <label>Banco<input value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} placeholder="BAC, Banpro, LAFISE…" required/></label>}
+      {referenceRequired && <label>Referencia bancaria / operación<input value={form.paymentReference} onChange={(e) => setForm({ ...form, paymentReference: e.target.value })} placeholder="Número o referencia" required/></label>}
       {form.method === 'cheque' && <label>Número de cheque<input value={form.chequeNumber} onChange={(e) => setForm({ ...form, chequeNumber: e.target.value })} required/></label>}
       {form.method === 'cheque' && <label>Fecha del cheque<input type="date" value={form.chequeDate} onChange={(e) => setForm({ ...form, chequeDate: e.target.value })}/></label>}
+      {form.method === 'electronic_withdrawal' && <label className="wide"><input type="checkbox" checked={form.withdrawalCollected} onChange={(e) => setForm({ ...form, withdrawalCollected: e.target.checked })}/> Confirmo que el retiro electrónico ya fue cobrado/recibido</label>}
       <label>Fecha de pago<input type="datetime-local" value={form.paidAt} onChange={(e) => setForm({ ...form, paidAt: e.target.value })}/></label>
       <label className="wide">Observaciones<input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}/></label>
       <button type="submit" disabled={saving || pendingBalance === 0}><Banknote size={18}/>{saving ? 'Registrando…' : pendingBalance === 0 ? 'Cotización cancelada' : 'Registrar pago'}</button>
