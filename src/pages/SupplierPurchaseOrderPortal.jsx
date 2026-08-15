@@ -9,6 +9,7 @@ export default function SupplierPurchaseOrderPortal() {
   const [data, setData] = useState(null);
   const [form, setForm] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [downloadBusy, setDownloadBusy] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
@@ -40,6 +41,26 @@ export default function SupplierPurchaseOrderPortal() {
 
   function patchItem(index, patch) {
     setForm((current) => ({ ...current, items: current.items.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item) }));
+  }
+
+  async function downloadPdf() {
+    setDownloadBusy(true); setError('');
+    try {
+      const response = await fetch(`${CONNECT_BASE}/purchase-orders/supplier/${encodeURIComponent(token)}/document`, { headers: { Accept: 'application/json' } });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload?.error?.message || payload?.error || 'No fue posible descargar la orden de compra.');
+      const document = payload?.data ?? payload;
+      const binary = atob(document.dataBase64 || '');
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+      const blob = new Blob([bytes], { type: document.mimeType || 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = url;
+      link.download = document.fileName || `${data?.purchaseOrderNumber || 'orden-compra'}.pdf`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (cause) { setError(cause.message); } finally { setDownloadBusy(false); }
   }
 
   async function save(event) {
@@ -80,6 +101,8 @@ export default function SupplierPurchaseOrderPortal() {
         <div><span>Estado</span><strong>{String(data.status || '').toUpperCase()}</strong></div>
         <div><span>Pago</span><strong>{data.paymentStatus ? String(data.paymentStatus).toUpperCase() : 'Pendiente de recepción'}</strong></div>
       </div>
+
+      <button className="supplier-po-submit" type="button" disabled={downloadBusy} onClick={downloadPdf}>{downloadBusy ? 'Preparando PDF…' : 'Descargar orden de compra PDF'}</button>
 
       <form onSubmit={save}>
         <section className="supplier-po-section">
