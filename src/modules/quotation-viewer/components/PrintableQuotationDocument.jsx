@@ -212,10 +212,12 @@ export default function PrintableQuotationDocument({ quotation }) {
     <article className="qprint-document print-only">
       <header className="qprint-header">
         <div className="qprint-brand">
-          <img
-            src="/assets/branding/elanvisual.svg"
-            alt="ELANVISUAL"
-          />
+          <div className="qprint-brand-mark">
+            <img
+              src="/assets/branding/elanvisual.svg"
+              alt="ELANVISUAL"
+            />
+          </div>
           <p>Ingeniería, rotulación e imagen corporativa</p>
         </div>
 

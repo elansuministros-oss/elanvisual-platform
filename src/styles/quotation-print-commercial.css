@@ -53,16 +53,32 @@
     margin-bottom: 15px;
   }
 
+  .qprint-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .qprint-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 44px;
+    padding: 7px 12px;
+    background: #0f172a !important;
+    border-radius: 6px;
+  }
+
   .qprint-brand img {
     display: block;
     width: 185px;
-    max-height: 48px;
+    max-height: 30px;
     object-fit: contain;
     object-position: left center;
   }
 
   .qprint-brand p {
-    margin: 3px 0 0;
+    margin: 4px 0 0;
     color: #6b7280;
     font-size: 7pt;
   }
