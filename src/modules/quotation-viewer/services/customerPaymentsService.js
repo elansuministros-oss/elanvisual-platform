@@ -32,6 +32,9 @@ function normalizePayment(payment) {
     ...payment,
     status: payment.status === 'applied' ? 'confirmed' : payment.status,
     amount: Number(payment.amountUsd ?? payment.amount ?? 0),
+    original_amount: Number(payment.amount ?? 0),
+    original_currency: payment.currency || 'USD',
+    exchange_rate: payment.exchangeRate ?? payment.exchange_rate ?? null,
     currency: 'USD',
     paid_at: payment.paidAt ?? payment.paid_at,
     created_at: payment.createdAt ?? payment.created_at,
@@ -53,12 +56,19 @@ export async function createCustomerPayment(projectId, payment) {
   const metadata = payment?.metadata || {};
   const banking = metadata?.banking || {};
   const cheque = metadata?.cheque || {};
-  const originalCurrency = cheque.currency || banking?.customerPayment?.currency || payment.currency || 'USD';
-  const originalAmount = Number(cheque.amount || banking?.customerPayment?.amount || payment.amount || 0);
+  const electronicWithdrawal = metadata?.electronicWithdrawal || {};
+  const originalCurrency = cheque.currency || electronicWithdrawal.currency || banking?.customerPayment?.currency || payment.currency || 'USD';
+  const originalAmount = Number(cheque.amount || electronicWithdrawal.amount || banking?.customerPayment?.amount || payment.amount || 0);
   const exchangeRate = originalCurrency === 'NIO'
-    ? Number(cheque.effectiveExchangeRate || banking.effectiveExchangeRate || 0)
+    ? Number(cheque.effectiveExchangeRate || electronicWithdrawal.effectiveExchangeRate || banking.effectiveExchangeRate || 0)
     : undefined;
-  const method = payment.paymentMethod === 'transfer' ? 'bank_transfer' : payment.paymentMethod || 'cash';
+  const method = payment.paymentMethod === 'transfer'
+    ? 'bank_transfer'
+    : payment.paymentMethod === 'electronic_withdrawal'
+      ? 'electronic_withdrawal'
+      : payment.paymentMethod === 'cheque'
+        ? 'cheque'
+        : payment.paymentMethod || 'cash';
   const result = await request(projectPath(projectId), {
     method: 'POST',
     body: {
@@ -67,8 +77,8 @@ export async function createCustomerPayment(projectId, payment) {
       currency: originalCurrency,
       ...(exchangeRate ? { exchangeRate } : {}),
       method,
-      bank: cheque.bankName || banking.bankName || null,
-      reference: payment.paymentReference || cheque.number || null,
+      bank: cheque.bankName || electronicWithdrawal.bankName || banking.bankName || null,
+      reference: payment.paymentReference || cheque.number || electronicWithdrawal.reference || null,
       paidAt: payment.paidAt,
       notes: payment.notes,
       receipt: metadata
