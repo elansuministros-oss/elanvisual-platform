@@ -918,3 +918,24 @@
     page-break-inside: avoid !important;
   }
 }
+
+/* PRINT-COMMERCIAL-V2 */
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}
+
+@media print {
+  .screen-only,
+  .qv-document-actions,
+  .desktop-header,
+  .mobile-header,
+  .no-print,
+  .ai-floating-button,
+  .ai-assistant-panel,
+  [class*="floating"],
+  [class*="assistant"] {
+    display: none !important;
+  }
+}

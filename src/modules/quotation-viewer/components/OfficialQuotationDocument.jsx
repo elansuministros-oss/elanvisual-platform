@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, MessageCircle, Printer } from 'lucide-react';
 import '../../../styles/quotation-item-layout.css';
+import PrintableQuotationDocument from './PrintableQuotationDocument';
 
 const BRAND = Object.freeze({
   name: 'ELANVISUAL',
@@ -224,7 +225,7 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
         )}
       </div>
 
-      <article className="qv-official-document">
+      <article className="qv-official-document screen-only">
         <header className="qv-document-header">
           <a className="qv-document-brand" href={brand.website || BRAND.website} target="_blank" rel="noreferrer">
             <img src={logoUrl} alt={brand.name || BRAND.name} />
@@ -377,6 +378,8 @@ export default function OfficialQuotationDocument({ quotation, onBack }) {
           <span>WhatsApp {brand.whatsapp || BRAND.whatsapp}</span>
         </footer>
       </article>
+
+      <PrintableQuotationDocument quotation={quotation} />
     </main>
   );
 }

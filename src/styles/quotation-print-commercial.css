@@ -1,0 +1,359 @@
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 7mm 8mm;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .qprint-document,
+  .qprint-document * {
+    visibility: visible !important;
+  }
+
+  .qprint-document {
+    display: block !important;
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    color: #1f2937;
+    background: #fff;
+    font-family:
+      Arial,
+      Helvetica,
+      sans-serif;
+    font-size: 8.2pt;
+    line-height: 1.25;
+  }
+
+  .qprint-document * {
+    box-sizing: border-box;
+  }
+
+  .qprint-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 20px;
+    margin-bottom: 15px;
+  }
+
+  .qprint-brand img {
+    display: block;
+    width: 185px;
+    max-height: 48px;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  .qprint-brand p {
+    margin: 3px 0 0;
+    color: #6b7280;
+    font-size: 7pt;
+  }
+
+  .qprint-title {
+    text-align: right;
+  }
+
+  .qprint-title span {
+    display: block;
+    color: #176799;
+    font-size: 12pt;
+    font-weight: 900;
+  }
+
+  .qprint-title strong {
+    display: block;
+    margin-top: 8px;
+    color: #252b34;
+    font-size: 10pt;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .qprint-title small {
+    display: block;
+    margin-top: 3px;
+    color: #6b7280;
+    font-size: 6.5pt;
+  }
+
+  .qprint-meta {
+    display: grid;
+    grid-template-columns: 1.05fr 1.65fr 0.9fr;
+    border-top: 1px solid #cbd5e1;
+    border-left: 1px solid #cbd5e1;
+    margin-bottom: 18px;
+  }
+
+  .qprint-meta > div {
+    min-height: 46px;
+    border-right: 1px solid #cbd5e1;
+    border-bottom: 1px solid #cbd5e1;
+    padding: 6px 9px;
+    background: #eef3f7;
+  }
+
+  .qprint-meta span,
+  .qprint-notes span {
+    display: block;
+    margin-bottom: 5px;
+    color: #66727e;
+    font-size: 6pt;
+    font-weight: 900;
+  }
+
+  .qprint-meta strong {
+    display: block;
+    color: #202832;
+    font-size: 8.2pt;
+    line-height: 1.15;
+  }
+
+  .qprint-detail {
+    margin-bottom: 7px;
+  }
+
+  .qprint-detail h2 {
+    margin: 0 0 7px 8px;
+    color: #303640;
+    font-size: 10.5pt;
+  }
+
+  .qprint-detail table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  .qprint-detail thead {
+    display: table-header-group;
+  }
+
+  .qprint-detail th {
+    padding: 5px 6px;
+    border: 1px solid #21466d;
+    background: #10365d !important;
+    color: #fff !important;
+    font-size: 6pt;
+    text-align: left;
+  }
+
+  .qprint-detail td {
+    padding: 7px 6px;
+    border: 1px solid #cbd5e1;
+    vertical-align: top;
+    color: #26313b;
+    font-size: 7pt;
+  }
+
+  .qprint-detail tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .qprint-detail td strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 7.4pt;
+    line-height: 1.2;
+  }
+
+  .qprint-detail td p {
+    margin: 0;
+    line-height: 1.28;
+  }
+
+  .qprint-detail td small {
+    display: block;
+    margin-top: 3px;
+    color: #66727e;
+    font-size: 6pt;
+  }
+
+  .qprint-col-item {
+    width: 7%;
+  }
+
+  .qprint-col-qty {
+    width: 8%;
+  }
+
+  .qprint-col-price {
+    width: 12%;
+  }
+
+  .qprint-col-total {
+    width: 13%;
+  }
+
+  .qprint-total {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    min-height: 38px;
+    margin-top: 7px;
+    padding: 0 14px;
+    background: #10365d !important;
+    color: #fff !important;
+    break-inside: avoid;
+  }
+
+  .qprint-total span {
+    justify-self: end;
+    margin-right: 40px;
+    font-size: 10pt;
+    font-weight: 900;
+  }
+
+  .qprint-total strong {
+    font-size: 14pt;
+  }
+
+  .qprint-notes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 14px;
+    border-top: 1px solid #cbd5e1;
+    border-left: 1px solid #cbd5e1;
+    break-inside: avoid;
+  }
+
+  .qprint-notes > div {
+    min-height: 46px;
+    border-right: 1px solid #cbd5e1;
+    border-bottom: 1px solid #cbd5e1;
+    padding: 7px 9px;
+    background: #f4f7f9;
+  }
+
+  .qprint-notes p {
+    margin: 0;
+    color: #4b5563;
+    font-size: 6.7pt;
+    line-height: 1.25;
+  }
+
+  .qprint-payments {
+    display: grid;
+    grid-template-columns:
+      minmax(105px, 0.8fr)
+      repeat(3, minmax(0, 1fr));
+    margin-top: 12px;
+    border-top: 1px solid #cbd5e1;
+    border-left: 1px solid #cbd5e1;
+    break-inside: avoid;
+  }
+
+  .qprint-payments > div {
+    min-height: 45px;
+    border-right: 1px solid #cbd5e1;
+    border-bottom: 1px solid #cbd5e1;
+    padding: 6px 8px;
+    background: #eef3f7;
+  }
+
+  .qprint-payment-label {
+    color: #66727e;
+    font-size: 6.5pt;
+    font-weight: 900;
+  }
+
+  .qprint-payments strong {
+    display: block;
+    font-size: 7.5pt;
+  }
+
+  .qprint-payments b {
+    display: block;
+    margin-top: 5px;
+    font-size: 8pt;
+  }
+
+  .qprint-payments small {
+    display: block;
+    margin-top: 2px;
+    color: #66727e;
+    font-size: 5.6pt;
+  }
+
+  .qprint-accounts {
+    margin-top: 12px;
+    break-inside: avoid;
+  }
+
+  .qprint-accounts h3 {
+    margin: 0 0 5px;
+    color: #8a6600;
+    font-size: 7pt;
+  }
+
+  .qprint-account-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid #cbd5e1;
+    border-left: 1px solid #cbd5e1;
+  }
+
+  .qprint-account {
+    min-height: 48px;
+    border-right: 1px solid #cbd5e1;
+    border-bottom: 1px solid #cbd5e1;
+    padding: 5px 7px;
+    background: #f6f8fa;
+  }
+
+  .qprint-account strong {
+    display: block;
+    color: #27313c;
+    font-size: 6.7pt;
+  }
+
+  .qprint-account span {
+    display: block;
+    margin-top: 2px;
+    color: #66727e;
+    font-size: 5.8pt;
+  }
+
+  .qprint-account b {
+    display: block;
+    margin-top: 3px;
+    color: #111827;
+    font-size: 7.3pt;
+  }
+
+  .qprint-account small {
+    display: block;
+    margin-top: 2px;
+    color: #66727e;
+    font-size: 5.4pt;
+  }
+
+  .qprint-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+    border-top: 1px solid #d1d5db;
+    padding-top: 5px;
+    color: #59636e;
+    font-size: 5.8pt;
+  }
+}
