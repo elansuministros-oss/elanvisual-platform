@@ -37,15 +37,15 @@ const emptyForm = () => ({
 
 function publicReceiptUrl(payment) {
   const receiptNumber = officialReceiptNumber(payment);
-  if (!/^ELK-REC-\d{4}-\d{6}$/.test(receiptNumber)) return '';
-  return `https://elankav.com/${encodeURIComponent(receiptNumber)}`;
+  if (!/^ELV-REC-\d{4}-\d{6}$/.test(receiptNumber)) return '';
+  return `https://visual.elankav.com/${encodeURIComponent(receiptNumber)}`;
 }
 
 function whatsappReceiptUrl(payment) {
   const receiptNumber = officialReceiptNumber(payment);
   const receiptUrl = publicReceiptUrl(payment);
   if (!receiptUrl) return '';
-  const message = `Hola, le compartimos su recibo ${receiptNumber}. Puede verlo o descargarlo en PDF aquí: ${receiptUrl}`;
+  const message = `Hola, le compartimos su recibo ELANVISUAL ${receiptNumber}. Puede verlo o descargarlo en PDF aquí: ${receiptUrl}`;
   return `https://wa.me/?text=${encodeURIComponent(message)}`;
 }
 
