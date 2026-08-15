@@ -100,11 +100,11 @@ export default function PublicReceipt() {
             <Row label={isNio ? 'Monto aplicado' : 'Monto recibido'} value={money(receipt.amountUsd, 'USD')} strong />
           </div>
 
-          <h2 className="receipt-section-title">Resumen financiero</h2>
+          <h2 className="receipt-section-title">Resumen al emitir este recibo</h2>
           <div className="receipt-grid receipt-financial">
             <Row label="Total de la cotización" value={money(receipt.quotationTotalUsd)} />
-            <Row label="Total pagado" value={money(receipt.totalPaidUsd)} />
-            <Row label="Saldo pendiente" value={money(receipt.pendingBalanceUsd)} strong />
+            <Row label="Pagado acumulado" value={money(receipt.totalPaidUsd)} />
+            <Row label="Saldo después de este pago" value={money(receipt.pendingBalanceUsd)} strong />
           </div>
 
           {receipt.notes ? <div className="receipt-notes"><small>OBSERVACIONES</small><p>{receipt.notes}</p></div> : null}
