@@ -19,6 +19,8 @@ import {
   getPublicQuotation,
   getPublicCustomerDossier
 } from '../modules/quotation-viewer/services/publicQuotationService';
+import { downloadQuotationPdf }
+  from '../modules/quotation-viewer/services/quotationPdfGenerator';
 
 import '../styles/quotation-viewer.css';
 import '../styles/public-quotation.css';
@@ -100,6 +102,9 @@ export default function PublicQuotation() {
   const [loading, setLoading] =
     useState(true);
 
+  const [downloading, setDownloading] =
+    useState(false);
+
   const [error, setError] =
     useState(null);
 
@@ -126,9 +131,6 @@ export default function PublicQuotation() {
             setQuotation(result.quotation);
             setPdfUrl('');
           } else {
-            /*
-             * Compatibilidad con enlaces históricos UUID.
-             */
             const result =
               await getPublicQuotation(
                 publicKey
@@ -247,18 +249,32 @@ export default function PublicQuotation() {
     );
   }
 
-  /*
-   * iPhone / Safari:
-   * si existe PDF real navegamos directamente;
-   * no usamos window.open().
-   */
-  const downloadQuotation = () => {
-    if (pdfUrl) {
-      window.location.assign(pdfUrl);
-      return;
-    }
+  const downloadQuotation = async () => {
+    if (downloading) return;
 
-    window.print();
+    setDownloading(true);
+
+    try {
+      await downloadQuotationPdf({
+        quotation,
+        dossier
+      });
+    } catch (downloadError) {
+      console.error(
+        'No fue posible generar el PDF directo:',
+        downloadError
+      );
+
+      if (pdfUrl) {
+        window.location.assign(pdfUrl);
+      } else {
+        window.alert(
+          'No fue posible generar el PDF. Intente nuevamente.'
+        );
+      }
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const documents =
@@ -291,10 +307,13 @@ export default function PublicQuotation() {
         <button
           type="button"
           onClick={downloadQuotation}
+          disabled={downloading}
         >
           <Download size={19} />
 
-          Descargar cotización PDF
+          {downloading
+            ? 'Generando PDF…'
+            : 'Descargar cotización PDF'}
         </button>
       </div>
 
