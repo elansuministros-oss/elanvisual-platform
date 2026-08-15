@@ -202,6 +202,33 @@ export default function PrintableQuotationDocument({ quotation, dossier = null }
       ? `visual.elankav.com/q/${dossierAccessCode}`
       : '';
 
+  const workOrder =
+    dossierWorkOrder;
+
+  const receipts =
+    dossierReceipts;
+
+  const portalUrl =
+    dossierAccessCode
+      ? `https://visual.elankav.com/q/${dossierAccessCode}`
+      : '';
+
+  const absolutePublicUrl = (value) => {
+    const url = display(value);
+
+    if (!url) return '';
+
+    if (/^https?:\/\//i.test(url)) {
+      return url;
+    }
+
+    return `https://visual.elankav.com${
+      url.startsWith('/')
+        ? url
+        : `/${url}`
+    }`;
+  };
+
   const totalUsd =
     numberValue(totals.totalUsd) ??
     numberValue(quotation?.totalUsd) ??
@@ -414,51 +441,6 @@ export default function PrintableQuotationDocument({ quotation, dossier = null }
               </div>
             ))}
           </div>
-        </section>
-      )}
-
-      {(dossierWorkOrder || dossierReceipts.length > 0) && (
-        <section className="qprint-dossier">
-          <div className="qprint-dossier-title">
-            <span>EXPEDIENTE DEL PROYECTO</span>
-            <strong>Documentos vinculados</strong>
-          </div>
-
-          <div className="qprint-dossier-grid">
-            {dossierWorkOrder && (
-              <div className="qprint-dossier-record">
-                <span>ORDEN DE TRABAJO</span>
-                <strong>
-                  {display(dossierWorkOrder.workOrderNumber)}
-                </strong>
-                <small>
-                  {display(dossierWorkOrder.statusLabel)}
-                </small>
-              </div>
-            )}
-
-            {dossierReceipts.map((receipt) => (
-              <div
-                className="qprint-dossier-record"
-                key={receipt.receiptNumber}
-              >
-                <span>RECIBO</span>
-                <strong>
-                  {display(receipt.receiptNumber)}
-                </strong>
-                <small>
-                  USD {money(receipt.amountUsd, 'USD')}
-                </small>
-              </div>
-            ))}
-          </div>
-
-          {dossierUrl && (
-            <div className="qprint-dossier-url">
-              <span>EXPEDIENTE EN LÍNEA</span>
-              <strong>{dossierUrl}</strong>
-            </div>
-          )}
         </section>
       )}
 
