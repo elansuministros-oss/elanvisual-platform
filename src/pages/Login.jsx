@@ -41,6 +41,25 @@ function mapPerfil(row) {
   };
 }
 
+async function buscarPerfilOperativo(authUserId) {
+  const porAuth = await supabase
+    .from('usuarios')
+    .select('*')
+    .eq('auth_user_id', authUserId)
+    .maybeSingle();
+
+  if (porAuth.data) return { data: porAuth.data, error: null };
+  if (porAuth.error && porAuth.error.code !== 'PGRST116') return porAuth;
+
+  // Compatibilidad con el administrador histórico, cuyo id de perfil coincide
+  // con auth.users.id. Los vendedores nuevos/migrados usan auth_user_id.
+  return supabase
+    .from('usuarios')
+    .select('*')
+    .eq('id', authUserId)
+    .maybeSingle();
+}
+
 export default function Login({ destino }) {
   const { usuariosCRM = [], cambiarUsuarioActivoCRM } = useCore();
 
@@ -111,11 +130,7 @@ export default function Login({ destino }) {
         return;
       }
 
-      const { data: perfilData, error: perfilError } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('id', authData.user.id)
-        .single();
+      const { data: perfilData, error: perfilError } = await buscarPerfilOperativo(authData.user.id);
 
       if (perfilError || !perfilData) {
         await supabase.auth.signOut();
