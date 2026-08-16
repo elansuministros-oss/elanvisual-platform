@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { LockKeyhole, ShieldCheck, Building2 } from 'lucide-react';
 import { useCore } from '../core/context/CoreContext';
 import { supabase } from '../lib/supabase';
@@ -60,6 +60,35 @@ async function buscarPerfilOperativo(authUserId) {
     .maybeSingle();
 }
 
+function rutaRetornoActual() {
+  const actual = `${window.location.pathname || '/'}${window.location.search || ''}${window.location.hash || ''}`;
+
+  if (!window.location.pathname.startsWith('/login')) {
+    return actual;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const returnTo = String(params.get('returnTo') || '').trim();
+
+  if (returnTo.startsWith('/') && !returnTo.startsWith('//')) {
+    return returnTo;
+  }
+
+  return '';
+}
+
+function destinoPermitido(perfil, destino) {
+  if (!destino) return true;
+  if (destino === 'admin') return perfil.rol === 'admin';
+  if (destino === 'produccion') return ['admin', 'produccion'].includes(perfil.rol);
+  if (destino === 'ventas') return ['admin', 'ventas'].includes(perfil.rol);
+  if (destino === 'clientes') return ['admin', 'ventas'].includes(perfil.rol);
+  if (destino === 'pedidos') return ['admin', 'ventas', 'produccion'].includes(perfil.rol);
+  if (destino === 'materiales') return perfil.rol === 'admin';
+  if (destino === 'crm') return perfil.rol === 'admin';
+  return true;
+}
+
 export default function Login({ destino }) {
   const { usuariosCRM = [], cambiarUsuarioActivoCRM } = useCore();
 
@@ -68,9 +97,10 @@ export default function Login({ destino }) {
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [error, setError] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [restaurandoSesion, setRestaurandoSesion] = useState(true);
 
   const sincronizarUsuarioCRM = (res) => {
-    const entrada = normalizar(email);
+    const entrada = normalizar(email || res?.email || res?.usuario || res?.nombre);
     const rolLogin = normalizar(res?.rol);
 
     const usuarioEncontrado =
@@ -101,6 +131,60 @@ export default function Login({ destino }) {
       cambiarUsuarioActivoCRM('usuario-admin-general');
     }
   };
+
+  const completarAcceso = (perfil) => {
+    sincronizarUsuarioCRM(perfil);
+    localStorage.setItem('elanvisual_usuario_actual', JSON.stringify(perfil));
+
+    const retorno = rutaRetornoActual();
+    const destinoFinal = destino || destinoPorRol(perfil.rol);
+    window.location.replace(retorno || rutaPorDestino(destinoFinal));
+  };
+
+  useEffect(() => {
+    let activo = true;
+
+    const restaurar = async () => {
+      if (!supabase) {
+        if (activo) setRestaurandoSesion(false);
+        return;
+      }
+
+      try {
+        const { data, error: sessionError } = await supabase.auth.getSession();
+        const authUserId = data?.session?.user?.id;
+
+        if (sessionError || !authUserId) {
+          if (activo) setRestaurandoSesion(false);
+          return;
+        }
+
+        const { data: perfilData, error: perfilError } = await buscarPerfilOperativo(authUserId);
+        if (perfilError || !perfilData) {
+          await supabase.auth.signOut();
+          if (activo) setRestaurandoSesion(false);
+          return;
+        }
+
+        const perfil = mapPerfil(perfilData);
+        if (!perfil.activo || !destinoPermitido(perfil, destino)) {
+          if (activo) setRestaurandoSesion(false);
+          return;
+        }
+
+        completarAcceso(perfil);
+      } catch (sessionRestoreError) {
+        console.error('Error restaurando sesión ELANVISUAL:', sessionRestoreError);
+        if (activo) setRestaurandoSesion(false);
+      }
+    };
+
+    restaurar();
+
+    return () => {
+      activo = false;
+    };
+  }, [destino]);
 
   const entrar = async (e) => {
     e.preventDefault();
@@ -146,23 +230,13 @@ export default function Login({ destino }) {
         return;
       }
 
-      if (destino === 'admin' && perfil.rol !== 'admin') {
+      if (!destinoPermitido(perfil, destino)) {
         await supabase.auth.signOut();
-        setError('Este usuario no tiene permisos de administrador.');
+        setError('Este usuario no tiene permisos para este módulo.');
         return;
       }
 
-      if (destino === 'produccion' && !['admin', 'produccion'].includes(perfil.rol)) {
-        await supabase.auth.signOut();
-        setError('Este usuario no tiene permisos de producción.');
-        return;
-      }
-
-      sincronizarUsuarioCRM(perfil);
-      localStorage.setItem('elanvisual_usuario_actual', JSON.stringify(perfil));
-
-      const destinoFinal = destino || destinoPorRol(perfil.rol);
-      window.location.assign(rutaPorDestino(destinoFinal));
+      completarAcceso(perfil);
     } catch (loginError) {
       console.error('Error iniciando sesión con Supabase Auth:', loginError);
       setError('No se pudo iniciar sesión. Intentá nuevamente.');
@@ -182,50 +256,54 @@ export default function Login({ destino }) {
         <h1>Portal ELANVISUAL</h1>
 
         <p>
-          Acceso para administración, CRM, producción y operaciones internas de ELANVISUAL.
+          {restaurandoSesion
+            ? 'Restaurando tu sesión segura…'
+            : 'Acceso para administración, CRM, producción y operaciones internas de ELANVISUAL.'}
         </p>
 
-        <form onSubmit={entrar}>
-          <label>Correo autorizado</label>
+        {!restaurandoSesion && (
+          <form onSubmit={entrar}>
+            <label>Correo autorizado</label>
 
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Correo autorizado"
-            autoComplete="username"
-            disabled={enviando}
-          />
-
-          <label>Contraseña</label>
-
-          <div className="password-field">
             <input
-              type={mostrarPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Contraseña"
-              autoComplete="current-password"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Correo autorizado"
+              autoComplete="username"
               disabled={enviando}
             />
 
-            <button
-              type="button"
-              className="password-toggle"
-              onClick={() => setMostrarPassword((prev) => !prev)}
-              disabled={enviando}
-            >
-              {mostrarPassword ? 'OCULTAR' : 'VER'}
+            <label>Contraseña</label>
+
+            <div className="password-field">
+              <input
+                type={mostrarPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Contraseña"
+                autoComplete="current-password"
+                disabled={enviando}
+              />
+
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setMostrarPassword((prev) => !prev)}
+                disabled={enviando}
+              >
+                {mostrarPassword ? 'OCULTAR' : 'VER'}
+              </button>
+            </div>
+
+            {error && <small className="error-text">{error}</small>}
+
+            <button type="submit" disabled={enviando}>
+              <LockKeyhole size={18} />
+              {enviando ? 'Validando…' : 'Entrar'}
             </button>
-          </div>
-
-          {error && <small className="error-text">{error}</small>}
-
-          <button type="submit" disabled={enviando}>
-            <LockKeyhole size={18} />
-            {enviando ? 'Validando…' : 'Entrar'}
-          </button>
-        </form>
+          </form>
+        )}
 
         <div className="login-footnote">
           <Building2 size={20} />
