@@ -1,15 +1,21 @@
-﻿import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useAIAssistant } from "./AIAssistantProvider";
+import { useApp } from "../context/AppContext";
 import {
   prepararArchivosTemporalesAI,
   construirResumenArchivosTemporales,
 } from "../services/aiTemporalService";
+import {
+  buildAIRuntimeContext,
+  getAICapabilitiesForRole,
+} from "./aiCapabilities";
 import "./AIAssistant.css";
 
 const CORE_URL = import.meta.env.VITE_ELANKAV_CORE_URL || "";
 
 export default function AIAssistantPanel() {
   const { abierto, cerrarAI, contextoAI } = useAIAssistant();
+  const { usuario } = useApp();
 
   const [mensaje, setMensaje] = useState("");
   const [archivos, setArchivos] = useState([]);
@@ -17,14 +23,37 @@ export default function AIAssistantPanel() {
     {
       rol: "assistant",
       texto:
-        "Hola. Soy ELAN AI. Puedo ayudarte con señalización, impresión, materiales, proveedores, cotización preliminar y análisis de imágenes.",
+        "Hola. Soy ELAN. Puedo ayudarte con clientes, cotizaciones, señalización, impresión, materiales, análisis de imágenes y solicitudes creativas según tus permisos.",
     },
   ]);
   const [estado, setEstado] = useState("");
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
+  const [escuchando, setEscuchando] = useState(false);
+  const [vozSalida, setVozSalida] = useState(false);
+  const recognitionRef = useRef(null);
 
-  if (!abierto) return null;
+  const capabilities = useMemo(
+    () => getAICapabilitiesForRole(usuario?.rol),
+    [usuario?.rol]
+  );
+
+  const runtimeContext = useMemo(
+    () => buildAIRuntimeContext({ usuario, contextoAI }),
+    [usuario, contextoAI, abierto]
+  );
+
+  useEffect(() => {
+    return () => {
+      try {
+        recognitionRef.current?.stop?.();
+      } catch {
+        // El navegador puede haber cerrado ya la sesión de reconocimiento.
+      }
+    };
+  }, []);
+
+  if (!abierto || !capabilities.canUseAssistant) return null;
 
   async function manejarArchivos(e) {
     const lista = Array.from(e.target.files || []);
@@ -46,6 +75,72 @@ export default function AIAssistantPanel() {
 
   function quitarArchivo(index) {
     setArchivos((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function hablar(texto) {
+    if (!vozSalida || typeof window === "undefined" || !window.speechSynthesis) return;
+    const limpio = String(texto || "").trim();
+    if (!limpio) return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(limpio);
+    utterance.lang = "es-NI";
+    utterance.rate = 1;
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function alternarEscucha() {
+    if (!capabilities.canUseVoice) return;
+
+    if (escuchando) {
+      recognitionRef.current?.stop?.();
+      setEscuchando(false);
+      setEstado("");
+      return;
+    }
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setError("Este navegador no ofrece reconocimiento de voz compatible. Podés seguir usando texto.");
+      return;
+    }
+
+    setError("");
+    const recognition = new SpeechRecognition();
+    recognition.lang = "es-NI";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+      setEscuchando(true);
+      setEstado("Escuchando...");
+    };
+
+    recognition.onresult = (event) => {
+      let transcripcion = "";
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        transcripcion += event.results[i][0]?.transcript || "";
+      }
+      if (transcripcion.trim()) setMensaje(transcripcion.trim());
+    };
+
+    recognition.onerror = (event) => {
+      setEscuchando(false);
+      setEstado("");
+      if (event.error !== "aborted") {
+        setError(`No se pudo usar el micrófono (${event.error || "error"}).`);
+      }
+    };
+
+    recognition.onend = () => {
+      setEscuchando(false);
+      setEstado("");
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
   }
 
   async function enviarMensaje() {
@@ -78,16 +173,20 @@ export default function AIAssistantPanel() {
 
     setCargando(true);
     setError("");
-    setEstado("Consultando...");
+    setEstado("Consultando ELAN...");
 
     try {
+      const contextoEnVivo = buildAIRuntimeContext({ usuario, contextoAI });
       const res = await fetch(`${CORE_URL.replace(/\/$/, "")}/api/elan-ai`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          modo: "flotante",
+          modo: "copilot",
           unidad: "ELANVISUAL",
+          canal: "web",
           contexto: contextoAI,
+          runtime_context: contextoEnVivo,
+          capabilities: capabilities,
           messages: [
             {
               role: "user",
@@ -129,6 +228,7 @@ export default function AIAssistantPanel() {
         },
       ]);
 
+      hablar(texto);
       setMensaje("");
       setArchivos([]);
       setEstado("");
@@ -159,8 +259,25 @@ export default function AIAssistantPanel() {
   return (
     <div className="elan-ai-panel">
       <div className="elan-ai-header">
-        <h3>ELAN AI</h3>
-        <button className="elan-ai-close" onClick={cerrarAI}>×</button>
+        <div>
+          <h3>ELAN</h3>
+          <div className="elan-ai-context-line">
+            {runtimeContext.capabilities.role === "owner" ? "OWNER" : "VENTAS"}
+            <span>·</span>
+            {runtimeContext.pathname}
+          </div>
+        </div>
+        <div className="elan-ai-header-actions">
+          <button
+            type="button"
+            className={`elan-ai-voice-toggle ${vozSalida ? "active" : ""}`}
+            onClick={() => setVozSalida((v) => !v)}
+            title={vozSalida ? "Desactivar respuesta hablada" : "Activar respuesta hablada"}
+          >
+            {vozSalida ? "🔊" : "🔈"}
+          </button>
+          <button className="elan-ai-close" onClick={cerrarAI}>×</button>
+        </div>
       </div>
 
       <div className="elan-ai-chat">
@@ -197,7 +314,7 @@ export default function AIAssistantPanel() {
         {estado && <div className="elan-ai-status">{estado}</div>}
 
         <div className="elan-ai-inputbar">
-          <label className="elan-ai-attach">
+          <label className="elan-ai-attach" title="Adjuntar imagen o PDF">
             📎
             <input
               type="file"
@@ -207,11 +324,21 @@ export default function AIAssistantPanel() {
             />
           </label>
 
+          <button
+            type="button"
+            className={`elan-ai-mic ${escuchando ? "listening" : ""}`}
+            onClick={alternarEscucha}
+            disabled={!capabilities.canUseVoice || cargando}
+            title={escuchando ? "Detener escucha" : "Hablar con ELAN"}
+          >
+            {escuchando ? "●" : "🎙"}
+          </button>
+
           <textarea
             value={mensaje}
             onChange={(e) => setMensaje(e.target.value)}
             onKeyDown={enviarConEnter}
-            placeholder="Escriba una consulta..."
+            placeholder="Pedile algo a ELAN..."
             rows={1}
           />
 
