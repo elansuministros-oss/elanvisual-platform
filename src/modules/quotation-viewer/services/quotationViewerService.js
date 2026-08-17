@@ -10,6 +10,7 @@ import { applyQuotationListAliasesToPayload } from '../adapters/quotationListAli
 
 const PLATFORM = 'ELANVISUAL';
 const DEFAULT_LIMIT = 200;
+const SELLER_BASE_URL = '/api/vqs-seller';
 
 const REQUIRED_HEADERS = Object.freeze({
   Accept: 'application/json',
@@ -20,28 +21,53 @@ const REQUIRED_HEADERS = Object.freeze({
 const hasValue = (value) => value !== undefined && value !== null && value !== '';
 const text = (value) => String(value ?? '').trim();
 
-function buildUrl(path, params = {}) {
-  const url = new URL(`${resolveBaseUrl()}${path}`);
+function localActor(role, userId) {
+  let usuario = {};
+  try {
+    usuario = JSON.parse(localStorage.getItem('elanvisual_usuario_actual') || '{}') || {};
+  } catch {
+    usuario = {};
+  }
+  const actorRole = text(role || usuario.rol).toLowerCase();
+  const actorId = text(
+    userId ||
+    (actorRole === 'ventas'
+      ? (usuario.vendedor_id || usuario.vendedorId || usuario.id)
+      : usuario.id)
+  );
+  return { role: actorRole, userId: actorId };
+}
+
+function buildUrl(baseUrl, path, params = {}) {
+  const url = new URL(`${baseUrl}${path}`, window.location.origin);
   Object.entries(params).forEach(([key, value]) => {
     if (hasValue(value)) url.searchParams.set(key, String(value));
   });
   return url.toString();
 }
 
-async function authenticatedHeaders(role, userId) {
+async function authenticatedHeaders(actor) {
   const session = supabase ? await supabase.auth.getSession() : { data: {} };
   const accessToken = session?.data?.session?.access_token || '';
   return {
     ...REQUIRED_HEADERS,
     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    ...(role ? { 'X-Elankav-Role': role } : {}),
-    ...(userId ? { 'X-Elankav-User-Id': userId } : {})
+    ...(actor.role ? { 'X-Elankav-Role': actor.role } : {}),
+    ...(actor.userId ? { 'X-Elankav-User-Id': actor.userId } : {})
   };
 }
 
 async function request(path, { method = 'GET', params = {}, body, role, userId } = {}) {
-  const headers = await authenticatedHeaders(role, userId);
-  const response = await fetch(buildUrl(path, params), {
+  const actor = localActor(role, userId);
+  if (actor.role === 'ventas' && !actor.userId) {
+    const error = new Error('Tu cuenta de ventas no tiene un vendedor oficial vinculado.');
+    error.status = 409;
+    error.code = 'SELLER_IDENTITY_MISSING';
+    throw error;
+  }
+  const headers = await authenticatedHeaders(actor);
+  const baseUrl = actor.role === 'ventas' ? SELLER_BASE_URL : resolveBaseUrl();
+  const response = await fetch(buildUrl(baseUrl, path, params), {
     method,
     headers: {
       ...headers,
@@ -121,7 +147,7 @@ function assertOfficialDocument(record) {
 }
 
 export async function listQuotations({ limit = DEFAULT_LIMIT, role, userId } = {}) {
-  const payload = await request('/api/vqs/projects', {
+  const payload = await request('/projects', {
     params: { platform: PLATFORM, limit },
     role,
     userId
@@ -142,7 +168,7 @@ export async function getQuotationDetail(id, { role, userId } = {}) {
   const requestedId = text(id);
   if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
 
-  const payload = await request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
+  const payload = await request(`/projects/${encodeURIComponent(requestedId)}`, {
     params: { platform: PLATFORM },
     role,
     userId
@@ -155,7 +181,7 @@ export async function getQuotationEditData(id, { role, userId } = {}) {
   const requestedId = text(id);
   if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
 
-  const payload = await request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
+  const payload = await request(`/projects/${encodeURIComponent(requestedId)}`, {
     params: { platform: PLATFORM },
     role,
     userId
@@ -164,11 +190,19 @@ export async function getQuotationEditData(id, { role, userId } = {}) {
 }
 
 export async function updateQuotation(id, contract, { role, userId } = {}) {
+  const actor = localActor(role, userId);
+  if (actor.role === 'ventas') {
+    const error = new Error('Los vendedores no pueden definir ni modificar precios manualmente. Usá el flujo de cotización con precios autorizados.');
+    error.status = 403;
+    error.code = 'SELLER_MANUAL_QUOTATION_WRITE_FORBIDDEN';
+    throw error;
+  }
+
   const requestedId = text(id);
   if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
   const preparedContract = await prepareQuotationContractAssets(contract);
 
-  return request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
+  return request(`/projects/${encodeURIComponent(requestedId)}`, {
     method: 'PATCH',
     body: preparedContract,
     role,
@@ -177,12 +211,19 @@ export async function updateQuotation(id, contract, { role, userId } = {}) {
 }
 
 export async function deleteQuotation(id, { confirmation, role = 'admin', userId = '' } = {}) {
+  const actor = localActor(role, userId);
+  if (actor.role === 'ventas') {
+    const error = new Error('Los vendedores no pueden eliminar cotizaciones desde este visor.');
+    error.status = 403;
+    error.code = 'SELLER_QUOTATION_DELETE_FORBIDDEN';
+    throw error;
+  }
   const requestedId = text(id);
   const confirmedNumber = text(confirmation);
   if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
   if (!confirmedNumber) throw new Error('Debes confirmar el numero exacto de la cotizacion.');
 
-  return request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
+  return request(`/projects/${encodeURIComponent(requestedId)}`, {
     method: 'DELETE',
     body: { confirmation: confirmedNumber },
     role,
