@@ -8,7 +8,7 @@ export default function CotizadorVendedorSeguro({ setPage }) {
         <div>
           <span>ELANVISUAL · VENTAS</span>
           <h1>Cotizar con precios autorizados</h1>
-          <p>Como ejecutiva de ventas no necesitás escribir ni inventar precios manualmente.</p>
+          <p>Como ejecutiva de ventas no podés escribir ni inventar precios manualmente.</p>
         </div>
       </header>
 
@@ -27,10 +27,11 @@ export default function CotizadorVendedorSeguro({ setPage }) {
       <section className="qv-list" style={{ marginTop: 18 }}>
         <article className="qv-state" style={{ textAlign: 'left', alignItems: 'stretch' }}>
           <MessageCircle size={24} />
-          <strong>La forma más fácil: hablá con ELAN</strong>
+          <strong>Cotizá hablando con ELAN por WhatsApp</strong>
           <p>
-            Usá el botón de ELAN y escribí como hablás normalmente. No necesitás memorizar comandos.
-            Por ejemplo: “cotizale a María un roll up de 85 x 200” o “cuánto vale un rótulo botón de 60 x 60”.
+            Escribile a ELAN como hablás normalmente. No necesitás memorizar comandos. Por ejemplo:
+            “cotizale a María un roll up de 85 x 200” o “cuánto vale un rótulo botón de 60 x 60”.
+            ELAN resolverá internamente cliente, producto y precio autorizado.
           </p>
         </article>
 
