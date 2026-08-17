@@ -81,7 +81,7 @@ async function getUnifiedRuntimeManifest(session) {
       'X-Elankav-Platform': 'ELANVISUAL',
       'X-Elankav-Source': 'ELAN_LIVE_REALTIME_TOKEN',
     },
-    body: JSON.stringify({ actor: unifiedActor(session), channel: 'copilot' }),
+    body: JSON.stringify({ actor: unifiedActor(session), channel: 'copilot', platform: 'ELANVISUAL', memoryLimit: 20 }),
     signal: AbortSignal.timeout(10000),
   });
   const data = await response.json().catch(() => ({}));
@@ -125,6 +125,7 @@ export default async function handler(req, res) {
         runtime: runtime.runtime || 'ELAN_UNIFIED_RUNTIME',
         runtimeVersion: runtime.version || null,
         runtimeTools: runtime.tools,
+        runtimeMemory: runtime.memory || { history: [] },
       }),
       signal: AbortSignal.timeout(15000),
     });
@@ -147,6 +148,7 @@ export default async function handler(req, res) {
       runtime: runtime.runtime || 'ELAN_UNIFIED_RUNTIME',
       runtimeVersion: runtime.version || null,
       tools: Array.isArray(data.tools) ? data.tools : runtime.tools.map((tool) => tool.name),
+      memoryMessages: Array.isArray(runtime.memory?.history) ? runtime.memory.history.length : 0,
     });
   } catch (error) {
     console.error('ERROR ELAN REALTIME TOKEN:', error);
