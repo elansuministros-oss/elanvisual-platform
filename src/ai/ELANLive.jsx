@@ -28,13 +28,30 @@ function persistSessionToken(token) {
   } catch {}
 }
 
-function phaseLabel(phase, cameraOn) {
+function phaseLabel(phase, cameraOn, handsFree) {
   if (phase === 'listening') return 'ESCUCHANDO';
   if (phase === 'thinking') return 'PENSANDO';
   if (phase === 'speaking') return 'RESPONDIENDO';
   if (phase === 'auth') return 'CONECTANDO';
   if (cameraOn || phase === 'seeing') return 'VIENDO';
-  return 'TOCÁ PARA HABLAR';
+  if (handsFree) return 'CONVERSACIÓN ACTIVA';
+  return 'TOCÁ PARA CONVERSAR';
+}
+
+function extractAssistantText(data) {
+  return String(
+    data?.texto ||
+    data?.respuesta ||
+    data?.message ||
+    data?.content ||
+    data?.data?.texto ||
+    data?.data?.respuesta ||
+    data?.data?.message ||
+    data?.data?.content ||
+    data?.result?.texto ||
+    data?.result?.respuesta ||
+    ''
+  ).trim();
 }
 
 export default function ELANLive() {
@@ -45,12 +62,21 @@ export default function ELANLive() {
   const [sessionToken, setSessionToken] = useState('');
   const [session, setSession] = useState(null);
   const [capabilities, setCapabilities] = useState(null);
+  const [handsFree, setHandsFree] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const recognitionRef = useRef(null);
+  const handsFreeRef = useRef(false);
+  const mountedRef = useRef(true);
+  const listeningLockRef = useRef(false);
+
+  useEffect(() => {
+    handsFreeRef.current = handsFree;
+  }, [handsFree]);
 
   useEffect(() => {
     let active = true;
+    mountedRef.current = true;
     const directToken = sessionTokenFromHash();
     const shortCode = shortCodeFromPath();
     const storedToken = storedSessionToken();
@@ -70,7 +96,8 @@ export default function ELANLive() {
         const response = await fetch(ELAN_API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(15000)
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data?.session) {
@@ -91,18 +118,30 @@ export default function ELANLive() {
       } catch (err) {
         if (!active) return;
         persistSessionToken('');
-        setError(err.message || 'La sesión ELAN Live no es válida o ya venció.');
+        setError(err.name === 'TimeoutError' ? 'CONNECT tardó demasiado en abrir ELAN Live.' : (err.message || 'La sesión ELAN Live no es válida o ya venció.'));
         setPhase('locked');
       }
     })();
 
     return () => {
       active = false;
-      try { recognitionRef.current?.stop?.(); } catch {}
+      mountedRef.current = false;
+      handsFreeRef.current = false;
+      try { recognitionRef.current?.abort?.(); } catch {}
       streamRef.current?.getTracks?.().forEach((track) => track.stop());
       window.speechSynthesis?.cancel?.();
     };
   }, []);
+
+  function returnToListening(delay = 260) {
+    if (!handsFreeRef.current || !mountedRef.current) {
+      setPhase(cameraOn ? 'seeing' : 'idle');
+      return;
+    }
+    setTimeout(() => {
+      if (handsFreeRef.current && mountedRef.current) listen();
+    }, delay);
+  }
 
   async function setCamera(enabled, nextFacing = facingMode) {
     if (!capabilities?.canUseCamera && enabled) {
@@ -148,17 +187,50 @@ export default function ELANLive() {
 
   function speak(text) {
     const clean = String(text || '').trim();
-    if (!clean || !window.speechSynthesis) return;
+    if (!clean) {
+      returnToListening();
+      return;
+    }
+    if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
+      setError('El navegador no pudo reproducir la respuesta por voz.');
+      returnToListening();
+      return;
+    }
+
+    try { recognitionRef.current?.abort?.(); } catch {}
+    listeningLockRef.current = false;
     window.speechSynthesis.cancel();
+
     const utterance = new SpeechSynthesisUtterance(clean);
     utterance.lang = 'es-NI';
+    utterance.rate = 1.04;
+
+    // No dependemos de onstart: Android puede omitirlo y dejar la UI en PENSANDO.
+    setPhase('speaking');
     utterance.onstart = () => setPhase('speaking');
-    utterance.onend = () => setPhase(cameraOn ? 'seeing' : 'idle');
+    utterance.onend = () => returnToListening(220);
+    utterance.onerror = () => {
+      setError('No pude reproducir la voz. Continúo escuchando.');
+      returnToListening(220);
+    };
+
     window.speechSynthesis.speak(utterance);
+
+    // Watchdog para motores TTS móviles que quedan en estado pending sin eventos.
+    setTimeout(() => {
+      if (!mountedRef.current) return;
+      if (window.speechSynthesis.pending && !window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        setError('La voz se demoró. Volví a escuchar.');
+        returnToListening(120);
+      }
+    }, 3000);
   }
 
   async function exitLive() {
-    try { recognitionRef.current?.stop?.(); } catch {}
+    handsFreeRef.current = false;
+    setHandsFree(false);
+    try { recognitionRef.current?.abort?.(); } catch {}
     await setCamera(false);
     window.speechSynthesis?.cancel?.();
     persistSessionToken('');
@@ -167,10 +239,15 @@ export default function ELANLive() {
 
   async function askELAN(text) {
     const command = String(text || '').trim();
-    if (!command || !session) return;
+    if (!command || !session) {
+      returnToListening();
+      return;
+    }
     const normalized = command.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
     if (/^(elan[, ]*)?(salir|cerrar|terminar|finalizar)( sesion| modo copiloto| copiloto)?$/.test(normalized)) {
+      handsFreeRef.current = false;
+      setHandsFree(false);
       speak('Cerrando sesión.');
       setTimeout(() => exitLive(), 650);
       return;
@@ -219,43 +296,87 @@ export default function ELANLive() {
       const response = await fetch(ELAN_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(25000)
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data?.error || `CONNECT respondió ${response.status}`);
-      speak(data?.texto || data?.respuesta || data?.message || data?.content || 'Listo.');
+      const answer = extractAssistantText(data) || 'Listo.';
       setError('');
+      speak(answer);
     } catch (err) {
-      setPhase(cameraOn ? 'seeing' : 'idle');
-      setError(err.message || 'No pude comunicarme con CONNECT.');
-      speak('No pude completar esa operación.');
+      setError(err.name === 'TimeoutError' ? 'ELAN tardó demasiado en responder. Volví a escuchar.' : (err.message || 'No pude comunicarme con CONNECT.'));
+      speak('No pude completar esa operación. Intentemos otra vez.');
     }
   }
 
   function listen() {
-    if (!session || !capabilities?.canUseAssistant) return;
+    if (!session || !capabilities?.canUseAssistant || listeningLockRef.current) return;
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) {
       setError('Este navegador no ofrece reconocimiento de voz compatible.');
+      handsFreeRef.current = false;
+      setHandsFree(false);
       return;
     }
-    try { recognitionRef.current?.stop?.(); } catch {}
+
+    try { recognitionRef.current?.abort?.(); } catch {}
+    window.speechSynthesis?.cancel?.();
+
     const recognition = new SR();
     recognition.lang = 'es-NI';
     recognition.interimResults = false;
     recognition.continuous = false;
-    recognition.onstart = () => { setPhase('listening'); setError(''); };
+    recognition.maxAlternatives = 1;
+    listeningLockRef.current = true;
+
+    recognition.onstart = () => {
+      setPhase('listening');
+      setError('');
+    };
     recognition.onresult = (event) => {
+      listeningLockRef.current = false;
       const text = event.results?.[0]?.[0]?.transcript || '';
       if (text) askELAN(text);
+      else returnToListening();
     };
     recognition.onerror = (event) => {
-      if (event.error !== 'aborted') setError('No pude escuchar. Tocá ELAN e intentá nuevamente.');
-      setPhase(cameraOn ? 'seeing' : 'idle');
+      listeningLockRef.current = false;
+      if (event.error === 'no-speech') {
+        returnToListening(180);
+        return;
+      }
+      if (event.error !== 'aborted') setError('No pude escuchar. Intentando nuevamente.');
+      if (event.error !== 'aborted') returnToListening(350);
     };
-    recognition.onend = () => setPhase((current) => current === 'listening' ? (cameraOn ? 'seeing' : 'idle') : current);
+    recognition.onend = () => {
+      listeningLockRef.current = false;
+      setPhase((current) => current === 'listening' ? (cameraOn ? 'seeing' : 'idle') : current);
+    };
     recognitionRef.current = recognition;
-    recognition.start();
+
+    try {
+      recognition.start();
+    } catch {
+      listeningLockRef.current = false;
+      returnToListening(350);
+    }
+  }
+
+  function toggleConversation() {
+    if (handsFreeRef.current) {
+      handsFreeRef.current = false;
+      setHandsFree(false);
+      listeningLockRef.current = false;
+      try { recognitionRef.current?.abort?.(); } catch {}
+      window.speechSynthesis?.cancel?.();
+      setPhase(cameraOn ? 'seeing' : 'idle');
+      return;
+    }
+    handsFreeRef.current = true;
+    setHandsFree(true);
+    setError('');
+    listen();
   }
 
   if (phase === 'auth' || phase === 'locked') {
@@ -268,17 +389,17 @@ export default function ELANLive() {
     </main>;
   }
 
-  return <main className={`elan-live phase-${phase}`}>
+  return <main className={`elan-live phase-${phase} ${handsFree ? 'hands-free' : ''}`}>
     <video ref={videoRef} className={`elan-live-camera ${cameraOn ? 'active' : ''}`} autoPlay muted playsInline />
     <div className="elan-live-shade" />
     <div className="elan-live-stage">
-      <button type="button" className="elan-live-presence" onClick={listen} aria-label="Hablar con ELAN">
+      <button type="button" className="elan-live-presence" onClick={toggleConversation} aria-label={handsFree ? 'Detener conversación con ELAN' : 'Iniciar conversación con ELAN'}>
         <span className="elan-live-orb">
           <span className="elan-live-core" />
           <span className="elan-live-glow" />
         </span>
       </button>
-      <span className="elan-live-status">{phaseLabel(phase, cameraOn)}</span>
+      <span className="elan-live-status">{phaseLabel(phase, cameraOn, handsFree)}</span>
     </div>
     {cameraOn && <button type="button" className="elan-live-camera-switch" onClick={() => setCamera(true, facingMode === 'environment' ? 'user' : 'environment')} aria-label="Cambiar cámara">↻</button>}
     {error && <div className="elan-live-error" onClick={() => setError('')}>{error}</div>}
