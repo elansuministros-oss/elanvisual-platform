@@ -30,13 +30,22 @@ const normalizar = (valor = '') =>
   String(valor || '').trim().toLowerCase();
 
 function mapPerfil(row) {
+  const vendedorId = row.vendedor_id || '';
   return {
     id: row.id,
     nombre: row.nombre || row.usuario || row.email || '',
     usuario: row.usuario || '',
     email: row.email || '',
+    whatsapp: row.whatsapp || row.telefono || '',
+    telefono: row.telefono || row.whatsapp || '',
     rol: normalizar(row.rol),
-    clienteId: row.cliente_id || row.vendedor_id || row.veterinaria_id || '',
+    clienteId: row.cliente_id || vendedorId || row.veterinaria_id || '',
+    vendedorId,
+    vendedor_id: vendedorId,
+    codigoVendedor: row.codigo_vendedor || '',
+    codigo_vendedor: row.codigo_vendedor || '',
+    cargo: row.cargo || '',
+    comisionPorcentaje: row.comision_porcentaje ?? null,
     activo: row.activo !== false,
   };
 }
@@ -51,8 +60,6 @@ async function buscarPerfilOperativo(authUserId) {
   if (porAuth.data) return { data: porAuth.data, error: null };
   if (porAuth.error && porAuth.error.code !== 'PGRST116') return porAuth;
 
-  // Compatibilidad con el administrador histórico, cuyo id de perfil coincide
-  // con auth.users.id. Los vendedores nuevos/migrados usan auth_user_id.
   return supabase
     .from('usuarios')
     .select('*')
@@ -263,51 +270,49 @@ export default function Login({ destino }) {
 
         {!restaurandoSesion && (
           <form onSubmit={entrar}>
-            <label>Correo autorizado</label>
-
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Correo autorizado"
-              autoComplete="username"
-              disabled={enviando}
-            />
-
-            <label>Contraseña</label>
-
-            <div className="password-field">
+            <label>
+              Correo autorizado
               <input
-                type={mostrarPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Contraseña"
-                autoComplete="current-password"
-                disabled={enviando}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="username"
+                placeholder="correo@empresa.com"
               />
+            </label>
 
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setMostrarPassword((prev) => !prev)}
-                disabled={enviando}
-              >
-                {mostrarPassword ? 'OCULTAR' : 'VER'}
-              </button>
-            </div>
+            <label>
+              Contraseña
+              <div className="password-wrap">
+                <input
+                  type={mostrarPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setMostrarPassword((actual) => !actual)}
+                  aria-label={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {mostrarPassword ? 'OCULTAR' : 'VER'}
+                </button>
+              </div>
+            </label>
 
-            {error && <small className="error-text">{error}</small>}
+            {error && <p className="login-error">{error}</p>}
 
-            <button type="submit" disabled={enviando}>
+            <button type="submit" className="primary-btn" disabled={enviando}>
               <LockKeyhole size={18} />
-              {enviando ? 'Validando…' : 'Entrar'}
+              {enviando ? 'Entrando…' : 'Entrar'}
             </button>
           </form>
         )}
 
-        <div className="login-footnote">
-          <Building2 size={20} />
-          <p>ELANVISUAL · CRM · Producción · Seguimiento</p>
+        <div className="login-footer">
+          <Building2 size={18} />
+          <span>ELANVISUAL · CRM · Producción · Seguimiento</span>
         </div>
       </section>
     </main>
