@@ -170,6 +170,42 @@
   color: #be123c;
 }
 
+.elan-ai-generated-image,
+.elan-ai-generated-video {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 12px;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  background: #0f172a;
+}
+
+.elan-ai-video-card {
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.elan-ai-video-meta {
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.elan-ai-video-check {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: #0f172a;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 800;
+}
+
 .elan-ai-composer {
   padding: 14px 16px 18px;
   border-top: 1px solid #e2e8f0;
