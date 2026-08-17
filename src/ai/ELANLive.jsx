@@ -68,6 +68,19 @@ function waitForIceGatheringComplete(peer, timeoutMs = 5000) {
   });
 }
 
+function buildRealtimeMultipartSdp(offerSdp) {
+  const boundary = `----elanrealtime${Date.now().toString(16)}${Math.random().toString(16).slice(2)}`;
+  const body = [
+    `--${boundary}\r\n`,
+    'Content-Disposition: form-data; name="sdp"\r\n',
+    'Content-Type: application/sdp\r\n\r\n',
+    offerSdp,
+    '\r\n',
+    `--${boundary}--\r\n`,
+  ].join('');
+  return { boundary, body };
+}
+
 export default function ELANLive() {
   const [phase, setPhase] = useState('auth');
   const [error, setError] = useState('');
@@ -289,12 +302,13 @@ export default function ELANLive() {
       const offerSdp = String(peer.localDescription?.sdp || '');
       if (!offerSdp.startsWith('v=0')) throw new Error('Chrome no generó una oferta WebRTC válida.');
 
+      const { boundary, body: multipartBody } = buildRealtimeMultipartSdp(offerSdp);
       const sdpResponse = await fetch(OPENAI_REALTIME_CALLS, {
         method: 'POST',
-        body: offerSdp,
+        body: multipartBody,
         headers: {
           Authorization: `Bearer ${ephemeralKey}`,
-          'Content-Type': 'application/sdp',
+          'Content-Type': `multipart/form-data; boundary=${boundary}`,
         },
         signal: AbortSignal.timeout(25000),
       });
