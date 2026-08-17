@@ -49,6 +49,25 @@ function realtimeErrorMessage(text, status) {
   }
 }
 
+function waitForIceGatheringComplete(peer, timeoutMs = 5000) {
+  if (!peer || peer.iceGatheringState === 'complete') return Promise.resolve();
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      peer.removeEventListener('icegatheringstatechange', check);
+      resolve();
+    };
+    const check = () => {
+      if (peer.iceGatheringState === 'complete') finish();
+    };
+    const timer = setTimeout(finish, timeoutMs);
+    peer.addEventListener('icegatheringstatechange', check);
+  });
+}
+
 export default function ELANLive() {
   const [phase, setPhase] = useState('auth');
   const [error, setError] = useState('');
@@ -266,8 +285,9 @@ export default function ELANLive() {
 
       const offer = await peer.createOffer({ offerToReceiveAudio: true });
       await peer.setLocalDescription(offer);
-      const offerSdp = String(offer.sdp || '').trim();
-      if (!offerSdp.startsWith('v=')) throw new Error('Chrome no generó una oferta WebRTC válida.');
+      await waitForIceGatheringComplete(peer);
+      const offerSdp = String(peer.localDescription?.sdp || '');
+      if (!offerSdp.startsWith('v=0')) throw new Error('Chrome no generó una oferta WebRTC válida.');
 
       const sdpResponse = await fetch(OPENAI_REALTIME_CALLS, {
         method: 'POST',
@@ -308,13 +328,16 @@ export default function ELANLive() {
       setError('Tu perfil no tiene permiso para usar cámara.');
       return;
     }
+
     if (!enabled) {
       cameraStreamRef.current?.getTracks?.().forEach((track) => track.stop());
       cameraStreamRef.current = null;
       if (videoRef.current) videoRef.current.srcObject = null;
       setCameraOn(false);
+      setPhase(realtimeActiveRef.current ? 'listening' : 'idle');
       return;
     }
+
     try {
       cameraStreamRef.current?.getTracks?.().forEach((track) => track.stop());
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -322,44 +345,51 @@ export default function ELANLive() {
         audio: false,
       });
       cameraStreamRef.current = stream;
-      if (videoRef.current) videoRef.current.srcObject = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play?.().catch(() => {});
+      }
       setFacingMode(nextFacing);
       setCameraOn(true);
       setError('');
-    } catch {
-      setError('No pude acceder a la cámara. Revisá el permiso del navegador.');
+      if (!realtimeActiveRef.current) setPhase('seeing');
+    } catch (err) {
+      setError(err.name === 'NotAllowedError' ? 'Necesito permiso de cámara para ver.' : 'No pude activar la cámara.');
     }
   }
 
-  if (phase === 'auth' || phase === 'locked') {
-    return <main className="elan-live elan-live-locked">
-      <div className="elan-live-stage">
-        <span className="elan-live-orb"><span className="elan-live-core" /></span>
-        <span className="elan-live-status">{phase === 'auth' ? 'CONECTANDO' : 'SESIÓN CERRADA'}</span>
-      </div>
-      {error && <div className="elan-live-error">{error}</div>}
-    </main>;
-  }
+  const locked = phase === 'locked';
+  const active = realtimeActive;
 
-  return <main className={`elan-live phase-${phase} ${realtimeActive ? 'hands-free realtime-active' : ''}`}>
-    <audio ref={audioRef} autoPlay playsInline />
-    <video ref={videoRef} className={`elan-live-camera ${cameraOn ? 'active' : ''}`} autoPlay muted playsInline />
-    <div className="elan-live-shade" />
-    <div className="elan-live-stage">
-      <button
-        type="button"
-        className="elan-live-presence"
-        onClick={toggleConversation}
-        aria-label={realtimeActive ? 'Detener conversación Realtime con ELAN' : 'Iniciar conversación Realtime con ELAN'}
-      >
-        <span className="elan-live-orb">
-          <span className="elan-live-core" />
-          <span className="elan-live-glow" />
-        </span>
-      </button>
-      <span className="elan-live-status">{phaseLabel(phase, realtimeActive)}</span>
-    </div>
-    {cameraOn && <button type="button" className="elan-live-camera-switch" onClick={() => setCamera(true, facingMode === 'environment' ? 'user' : 'environment')} aria-label="Cambiar cámara">↻</button>}
-    {error && <div className="elan-live-error" onClick={() => setError('')}>{error}</div>}
-  </main>;
+  return (
+    <main className={`elan-live elan-live--${phase}`}>
+      <audio ref={audioRef} playsInline />
+      {cameraOn && <video ref={videoRef} className="elan-live__camera" playsInline muted />}
+      <div className="elan-live__veil" />
+
+      <section className="elan-live__center">
+        <button
+          type="button"
+          className={`elan-live__orb ${active ? 'elan-live__orb--active' : ''}`}
+          onClick={toggleConversation}
+          disabled={locked || phase === 'auth'}
+          aria-label={active ? 'Cerrar conversación con ELAN' : 'Conversar con ELAN'}
+        >
+          <span className="elan-live__orb-core" />
+        </button>
+        <div className="elan-live__phase">{phaseLabel(phase, active)}</div>
+      </section>
+
+      {capabilities?.canUseCamera && !locked && (
+        <div className="elan-live__camera-controls">
+          <button type="button" onClick={() => setCamera(!cameraOn)}>{cameraOn ? 'Apagar cámara' : 'Cámara'}</button>
+          {cameraOn && (
+            <button type="button" onClick={() => setCamera(true, facingMode === 'environment' ? 'user' : 'environment')}>Cambiar</button>
+          )}
+        </div>
+      )}
+
+      {error && <div className="elan-live__error">{error}</div>}
+    </main>
+  );
 }
