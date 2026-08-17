@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import './ELANLive.css';
 
 const ELAN_API = '/api/elan-ai';
-const REALTIME_API = '/api/elan-realtime';
+const REALTIME_TOKEN_API = '/api/elan-realtime-token';
+const OPENAI_REALTIME_CALLS = 'https://api.openai.com/v1/realtime/calls';
 const LIVE_TOKEN_KEY = 'elan-live-token';
 
 function sessionTokenFromHash() {
@@ -39,23 +40,13 @@ function phaseLabel(phase, active) {
   return 'TOCÁ PARA CONVERSAR';
 }
 
-function waitForIceGathering(peer, timeoutMs = 2500) {
-  if (peer.iceGatheringState === 'complete') return Promise.resolve();
-  return new Promise((resolve) => {
-    let done = false;
-    const finish = () => {
-      if (done) return;
-      done = true;
-      peer.removeEventListener('icegatheringstatechange', check);
-      clearTimeout(timer);
-      resolve();
-    };
-    const check = () => {
-      if (peer.iceGatheringState === 'complete') finish();
-    };
-    const timer = setTimeout(finish, timeoutMs);
-    peer.addEventListener('icegatheringstatechange', check);
-  });
+function realtimeErrorMessage(text, status) {
+  try {
+    const data = JSON.parse(text);
+    return data?.error?.message || data?.error || data?.message || `OpenAI Realtime respondió ${status}`;
+  } catch {
+    return text || `OpenAI Realtime respondió ${status}`;
+  }
 }
 
 export default function ELANLive() {
@@ -215,6 +206,18 @@ export default function ELANLive() {
     setPhase('connecting');
 
     try {
+      const tokenResponse = await fetch(REALTIME_TOKEN_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ live_session_token: sessionToken }),
+        signal: AbortSignal.timeout(18000),
+      });
+      const tokenData = await tokenResponse.json().catch(() => ({}));
+      const ephemeralKey = String(tokenData?.value || '').trim();
+      if (!tokenResponse.ok || !ephemeralKey) {
+        throw new Error(tokenData?.error || `No pude autorizar ELAN Realtime (${tokenResponse.status}).`);
+      }
+
       const mic = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -263,23 +266,24 @@ export default function ELANLive() {
 
       const offer = await peer.createOffer({ offerToReceiveAudio: true });
       await peer.setLocalDescription(offer);
-      await waitForIceGathering(peer);
+      const offerSdp = String(offer.sdp || '').trim();
+      if (!offerSdp.startsWith('v=')) throw new Error('Chrome no generó una oferta WebRTC válida.');
 
-      const response = await fetch(REALTIME_API, {
+      const sdpResponse = await fetch(OPENAI_REALTIME_CALLS, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          live_session_token: sessionToken,
-          sdp: peer.localDescription?.sdp || offer.sdp,
-        }),
+        body: offerSdp,
+        headers: {
+          Authorization: `Bearer ${ephemeralKey}`,
+          'Content-Type': 'application/sdp',
+        },
         signal: AbortSignal.timeout(25000),
       });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data?.answerSdp) {
-        throw new Error(data?.error || `ELAN Realtime respondió ${response.status}`);
+      const answerSdp = await sdpResponse.text();
+      if (!sdpResponse.ok || !answerSdp.trim().startsWith('v=')) {
+        throw new Error(realtimeErrorMessage(answerSdp, sdpResponse.status));
       }
 
-      await peer.setRemoteDescription({ type: 'answer', sdp: data.answerSdp });
+      await peer.setRemoteDescription({ type: 'answer', sdp: answerSdp });
       if (mountedRef.current) setPhase('listening');
     } catch (err) {
       stopRealtime(true);
