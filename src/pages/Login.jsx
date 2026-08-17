@@ -46,6 +46,7 @@ function mapPerfil(row) {
     codigo_vendedor: row.codigo_vendedor || '',
     cargo: row.cargo || '',
     comisionPorcentaje: row.comision_porcentaje ?? null,
+    debeCambiarPassword: row.debe_cambiar_password === true,
     activo: row.activo !== false,
   };
 }
@@ -142,6 +143,11 @@ export default function Login({ destino }) {
   const completarAcceso = (perfil) => {
     sincronizarUsuarioCRM(perfil);
     localStorage.setItem('elanvisual_usuario_actual', JSON.stringify(perfil));
+
+    if (perfil.debeCambiarPassword) {
+      window.location.replace('/mi-cuenta');
+      return;
+    }
 
     const retorno = rutaRetornoActual();
     const destinoFinal = destino || destinoPorRol(perfil.rol);
