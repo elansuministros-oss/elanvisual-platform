@@ -17,6 +17,7 @@ import Contacto from './pages/Contacto';
 import Seguimiento from './pages/Seguimiento';
 import MaterialesCostos from './pages/MaterialesCostos';
 import PedidosProduccion from './pages/PedidosProduccion';
+import PedidosVendedorSeguro from './pages/PedidosVendedorSeguro';
 import OrdenTrabajo from './pages/OrdenTrabajo';
 import DashboardERP from './pages/DashboardERP';
 import MiCuenta from './pages/MiCuenta';
@@ -192,7 +193,7 @@ export default function App() {
       {page === 'quotationDetail' && (accesoVentas ? <QuotationDetail onBack={volverACotizaciones} /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'cotizacionesInteligentes' && (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'ordenTrabajo' && (accesoPedidos ? <OrdenTrabajo /> : <Login setPage={ir} destino="pedidos" />)}
-      {page === 'pedidos' && (accesoPedidos ? <PedidosProduccion /> : <Login setPage={ir} destino="pedidos" />)}
+      {page === 'pedidos' && (rol === 'ventas' ? <PedidosVendedorSeguro /> : accesoPedidos ? <PedidosProduccion /> : <Login setPage={ir} destino="pedidos" />)}
       {page === 'solicitudesAI' && (accesoAdmin ? <SolicitudesDisenoAI /> : <Login setPage={ir} destino="admin" />)}
     </AIAssistantProvider>
   );
