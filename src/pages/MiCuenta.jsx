@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Eye, EyeOff, KeyRound, QrCode, Save, UserRound } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { supabase } from '../lib/supabase';
 
 const limpiar = (v = '') =>
   String(v)
@@ -55,16 +56,41 @@ function PasswordField({ label, value, onChange, visible, onToggle, autoComplete
 }
 
 export default function MiCuenta({ setPage }) {
-  const { usuario, usuarios = [], actualizarUsuario } = useApp();
+  const { usuario } = useApp();
   const [actual, setActual] = useState('');
   const [nueva, setNueva] = useState('');
   const [confirmar, setConfirmar] = useState('');
   const [mensaje, setMensaje] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const [cambioObligatorio, setCambioObligatorio] = useState(usuario?.debeCambiarPassword === true);
   const [verActual, setVerActual] = useState(false);
   const [verNueva, setVerNueva] = useState(false);
   const [verConfirmar, setVerConfirmar] = useState(false);
 
   const codigo = useMemo(() => codigoVendedor(usuario || {}), [usuario]);
+
+  useEffect(() => {
+    let activo = true;
+
+    const cargarEstadoPassword = async () => {
+      if (!supabase || !usuario?.id) return;
+
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('debe_cambiar_password')
+        .eq('id', usuario.id)
+        .maybeSingle();
+
+      if (!error && activo && data) {
+        setCambioObligatorio(data.debe_cambiar_password === true);
+      }
+    };
+
+    cargarEstadoPassword();
+    return () => {
+      activo = false;
+    };
+  }, [usuario?.id]);
 
   const linkQR = useMemo(() => {
     const base = window.location.origin || 'https://visual.elankav.com';
@@ -73,7 +99,7 @@ export default function MiCuenta({ setPage }) {
 
   const qrImg = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(linkQR)}`;
 
-  const guardarPassword = () => {
+  const guardarPassword = async () => {
     setMensaje('');
 
     if (!usuario) {
@@ -81,8 +107,13 @@ export default function MiCuenta({ setPage }) {
       return;
     }
 
-    if (String(usuario.password || '') !== actual) {
-      setMensaje('La contraseña actual no coincide.');
+    if (!supabase) {
+      setMensaje('El servicio de autenticación no está disponible.');
+      return;
+    }
+
+    if (!cambioObligatorio && !actual) {
+      setMensaje('Ingresá tu contraseña actual.');
       return;
     }
 
@@ -96,22 +127,82 @@ export default function MiCuenta({ setPage }) {
       return;
     }
 
-    actualizarUsuario({
-      ...usuario,
-      password: nueva,
-      debeCambiarPassword: false,
-      codigoVendedor: codigo,
-      linkQR,
-      actualizadoEn: new Date().toISOString(),
-    });
+    if (!cambioObligatorio && nueva === actual) {
+      setMensaje('La nueva contraseña debe ser diferente a la actual.');
+      return;
+    }
 
-    setActual('');
-    setNueva('');
-    setConfirmar('');
-    setVerActual(false);
-    setVerNueva(false);
-    setVerConfirmar(false);
-    setMensaje('Contraseña actualizada correctamente.');
+    setGuardando(true);
+
+    try {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData?.session?.user?.id) {
+        setMensaje('Tu sesión venció. Iniciá sesión nuevamente.');
+        return;
+      }
+
+      if (!cambioObligatorio) {
+        const correo = String(usuario.email || sessionData.session.user.email || '').trim().toLowerCase();
+        const { error: reauthError } = await supabase.auth.signInWithPassword({
+          email: correo,
+          password: actual,
+        });
+
+        if (reauthError) {
+          setMensaje('La contraseña actual no coincide.');
+          return;
+        }
+      }
+
+      const { error: authUpdateError } = await supabase.auth.updateUser({ password: nueva });
+      if (authUpdateError) {
+        console.error('Error actualizando contraseña en Supabase Auth:', authUpdateError);
+        setMensaje('No se pudo actualizar la contraseña. Intentá nuevamente.');
+        return;
+      }
+
+      const { error: profileUpdateError } = await supabase
+        .from('usuarios')
+        .update({
+          debe_cambiar_password: false,
+          actualizado_en: new Date().toISOString(),
+        })
+        .eq('id', usuario.id);
+
+      if (profileUpdateError) {
+        console.error('Contraseña Auth actualizada pero falló perfil operativo:', profileUpdateError);
+        setMensaje('La contraseña cambió, pero falta actualizar el estado del perfil. Volvé a iniciar sesión.');
+        return;
+      }
+
+      const { password: _legacyPassword, ...perfilSeguro } = usuario;
+      const perfilActualizado = {
+        ...perfilSeguro,
+        debeCambiarPassword: false,
+        codigoVendedor: codigo,
+        linkQR,
+        actualizadoEn: new Date().toISOString(),
+      };
+
+      localStorage.setItem('elanvisual_usuario_actual', JSON.stringify(perfilActualizado));
+      setCambioObligatorio(false);
+      setActual('');
+      setNueva('');
+      setConfirmar('');
+      setVerActual(false);
+      setVerNueva(false);
+      setVerConfirmar(false);
+      setMensaje('Contraseña actualizada correctamente.');
+
+      window.setTimeout(() => {
+        window.location.replace(usuario.rol === 'ventas' ? '/ventas' : '/mi-cuenta');
+      }, 700);
+    } catch (error) {
+      console.error('Error cambiando contraseña:', error);
+      setMensaje('No se pudo completar el cambio de contraseña. Intentá nuevamente.');
+    } finally {
+      setGuardando(false);
+    }
   };
 
   const copiar = async () => {
@@ -164,17 +255,25 @@ export default function MiCuenta({ setPage }) {
         <article className="mi-cuenta-card">
           <div className="mi-cuenta-title">
             <KeyRound size={22} />
-            <h2>Cambiar contraseña</h2>
+            <h2>{cambioObligatorio ? 'Crear contraseña personal' : 'Cambiar contraseña'}</h2>
           </div>
 
-          <PasswordField
-            label="Contraseña actual"
-            value={actual}
-            onChange={(e) => setActual(e.target.value)}
-            visible={verActual}
-            onToggle={() => setVerActual((value) => !value)}
-            autoComplete="current-password"
-          />
+          {cambioObligatorio && (
+            <p style={{ marginTop: 0 }}>
+              Tu acceso temporal ya fue validado. Creá ahora una contraseña personal que solo vos conozcás.
+            </p>
+          )}
+
+          {!cambioObligatorio && (
+            <PasswordField
+              label="Contraseña actual"
+              value={actual}
+              onChange={(e) => setActual(e.target.value)}
+              visible={verActual}
+              onToggle={() => setVerActual((value) => !value)}
+              autoComplete="current-password"
+            />
+          )}
 
           <PasswordField
             label="Nueva contraseña"
@@ -198,9 +297,9 @@ export default function MiCuenta({ setPage }) {
             Podés tocar el ojo para verificar cada contraseña antes de guardarla.
           </small>
 
-          <button type="button" className="primary-btn" onClick={guardarPassword}>
+          <button type="button" className="primary-btn" onClick={guardarPassword} disabled={guardando}>
             <Save size={18} />
-            Guardar contraseña
+            {guardando ? 'Guardando…' : 'Guardar contraseña'}
           </button>
 
           {mensaje && <p className="mi-msg">{mensaje}</p>}
