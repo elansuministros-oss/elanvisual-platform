@@ -9,6 +9,12 @@ function sessionTokenFromHash() {
   return String(params.get('session') || '').trim();
 }
 
+function shortCodeFromPath() {
+  const parts = String(window.location.pathname || '').split('/').filter(Boolean);
+  const index = parts.findIndex((part) => part === 'elan-live' || part === 'live');
+  return index >= 0 ? String(parts[index + 1] || '').trim() : '';
+}
+
 export default function ELANLive() {
   const [phase, setPhase] = useState('auth');
   const [cameraOn, setCameraOn] = useState(false);
@@ -23,17 +29,24 @@ export default function ELANLive() {
 
   useEffect(() => {
     let active = true;
-    const token = sessionTokenFromHash();
-    setSessionToken(token);
-    if (!token) { setPhase('locked'); return undefined; }
+    const directToken = sessionTokenFromHash();
+    const shortCode = shortCodeFromPath();
+    if (!directToken && !shortCode) { setPhase('locked'); return undefined; }
     (async () => {
       try {
-        const response = await fetch(ELAN_API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ tipo:'live-session-verify', token }) });
+        const body = directToken
+          ? { tipo:'live-session-verify', token:directToken }
+          : { tipo:'live-code-exchange', code:shortCode };
+        const response = await fetch(ELAN_API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
         const data = await response.json();
         if (!response.ok || !data?.session) throw new Error(data?.error || 'Sesión inválida.');
         if (!active) return;
-        setSession(data.session); setCapabilities(data.capabilities || {}); setPhase('idle');
-        window.history.replaceState({}, '', `${window.location.pathname}${window.location.search}`);
+        const token = directToken || String(data.token || '');
+        setSessionToken(token);
+        setSession(data.session);
+        setCapabilities(data.capabilities || {});
+        setPhase('idle');
+        window.history.replaceState({}, '', '/elan-live');
       } catch (err) {
         if (!active) return;
         setError(err.message || 'La sesión no es válida o ya venció.'); setPhase('locked');
@@ -51,7 +64,7 @@ export default function ELANLive() {
 
   function captureFrame(){const video=videoRef.current;if(!cameraOn||!video?.videoWidth)return null;const canvas=document.createElement('canvas');const scale=Math.min(1,1280/video.videoWidth);canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);return canvas.toDataURL('image/jpeg',0.82)}
   function speak(text){const clean=String(text||'').trim();if(!clean||!window.speechSynthesis)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(clean);u.lang='es-NI';u.onstart=()=>setPhase('speaking');u.onend=()=>setPhase(cameraOn?'seeing':'idle');window.speechSynthesis.speak(u)}
-  async function exitLive(){try{recognitionRef.current?.stop?.()}catch{}await setCamera(false);window.speechSynthesis?.cancel?.();window.location.replace('https://www.elankav.com')}
+  async function exitLive(){try{recognitionRef.current?.stop?.()}catch{}await setCamera(false);window.speechSynthesis?.cancel?.();sessionStorage.removeItem('elan-live-token');window.location.replace('https://www.elankav.com')}
 
   async function askELAN(text){
     const command=String(text||'').trim();if(!command||!session)return;const normalized=command.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
