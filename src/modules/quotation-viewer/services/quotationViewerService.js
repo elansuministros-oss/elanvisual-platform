@@ -66,7 +66,9 @@ async function request(path, { method = 'GET', params = {}, body, role, userId }
     throw error;
   }
   const headers = await authenticatedHeaders(actor);
-  const baseUrl = actor.role === 'ventas' ? SELLER_BASE_URL : resolveBaseUrl();
+  const baseUrl = actor.role === 'ventas'
+    ? SELLER_BASE_URL
+    : `${resolveBaseUrl()}/api/vqs`;
   const response = await fetch(buildUrl(baseUrl, path, params), {
     method,
     headers: {
