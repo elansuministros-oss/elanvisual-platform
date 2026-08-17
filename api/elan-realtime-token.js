@@ -23,6 +23,28 @@ function getCopilotToken() {
   return clean(process.env.CONNECT_DESIGN_TOKEN || process.env.CONNECT_COPILOT_TOKEN || '');
 }
 
+function getOrchestratorConfig() {
+  const baseUrl = clean(process.env.ORCHESTRATOR_BASE_URL || process.env.ELANKAV_ORCHESTRATOR_URL || 'https://orchestrator.elankav.com').replace(/\/+$/, '');
+  const token = clean(process.env.ORCHESTRATOR_INTERNAL_TOKEN || process.env.ELANKAV_ORCHESTRATOR_INTERNAL_TOKEN || '');
+  return { baseUrl, token };
+}
+
+function unifiedActor(session = {}) {
+  const role = clean(session.role || 'unknown').toLowerCase();
+  const owner = role === 'owner' || clean(session.authority).toLowerCase() === 'owner_identity';
+  return {
+    role: owner ? 'owner' : role,
+    actorId: owner ? 'owner' : (session.sub || session.actorId || null),
+    registered: true,
+    platformAllowed: true,
+    platforms: owner ? ['*'] : ['ELANVISUAL'],
+    scopes: Array.isArray(session.scopes) ? session.scopes : [],
+    authority: owner ? 'owner_identity' : (session.authority || null),
+    phone: session.phone || null,
+    canonicalPhone: session.phone || null,
+  };
+}
+
 async function verifyLiveSession(baseUrl, internalToken, token) {
   const response = await fetch(`${baseUrl}/api/v1/live-access/verify`, {
     method: 'POST',
@@ -46,6 +68,32 @@ async function verifyLiveSession(baseUrl, internalToken, token) {
   return data.data.session;
 }
 
+async function getUnifiedRuntimeManifest(session) {
+  const { baseUrl, token } = getOrchestratorConfig();
+  if (!token) throw Object.assign(new Error('ORCHESTRATOR_INTERNAL_TOKEN no configurado para ELAN Runtime.'), { code: 'ELAN_RUNTIME_NOT_CONFIGURED', status: 503 });
+  const response = await fetch(`${baseUrl}/api/v1/elan-runtime/tools`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      'X-Elankav-Internal-Token': token,
+      'X-Elankav-Platform': 'ELANVISUAL',
+      'X-Elankav-Source': 'ELAN_LIVE_REALTIME_TOKEN',
+    },
+    body: JSON.stringify({ actor: unifiedActor(session), channel: 'copilot' }),
+    signal: AbortSignal.timeout(10000),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data?.ok === false || !Array.isArray(data?.tools)) {
+    const error = new Error(data?.error || 'ELAN Unified Runtime no devolvió un manifiesto válido.');
+    error.status = response.status || 502;
+    error.code = data?.code || 'ELAN_RUNTIME_MANIFEST_FAILED';
+    throw error;
+  }
+  return data;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Método no permitido.' });
 
@@ -60,6 +108,7 @@ export default async function handler(req, res) {
     if (!liveSessionToken) return res.status(401).json({ ok: false, error: 'Sesión ELAN Live requerida.' });
 
     const session = await verifyLiveSession(baseUrl, internalToken, liveSessionToken);
+    const runtime = await getUnifiedRuntimeManifest(session);
 
     const upstream = await fetch(`${baseUrl}/api/v1/copilot/realtime-token`, {
       method: 'POST',
@@ -72,14 +121,10 @@ export default async function handler(req, res) {
         'X-Elankav-Source': 'elan-live-realtime-token',
       },
       body: JSON.stringify({
-        liveSession: {
-          role: session.role,
-          actorId: session.sub,
-          sellerId: session.sellerId || null,
-          phone: session.phone,
-          scopes: session.scopes,
-          authority: session.authority,
-        },
+        liveSession: unifiedActor(session),
+        runtime: runtime.runtime || 'ELAN_UNIFIED_RUNTIME',
+        runtimeVersion: runtime.version || null,
+        runtimeTools: runtime.tools,
       }),
       signal: AbortSignal.timeout(15000),
     });
@@ -99,10 +144,13 @@ export default async function handler(req, res) {
       expires_at: data.expires_at || null,
       model: data.model || null,
       voice: data.voice || null,
+      runtime: runtime.runtime || 'ELAN_UNIFIED_RUNTIME',
+      runtimeVersion: runtime.version || null,
+      tools: Array.isArray(data.tools) ? data.tools : runtime.tools.map((tool) => tool.name),
     });
   } catch (error) {
     console.error('ERROR ELAN REALTIME TOKEN:', error);
-    const status = error?.status === 401 || error?.status === 403 ? error.status : error?.name === 'TimeoutError' ? 504 : 502;
+    const status = [401, 403, 503].includes(error?.status) ? error.status : error?.name === 'TimeoutError' ? 504 : 502;
     return res.status(status).json({
       ok: false,
       error: error?.name === 'TimeoutError' ? 'ELAN Realtime tardó demasiado en autorizar.' : (error?.message || 'No fue posible autorizar ELAN Realtime.'),
