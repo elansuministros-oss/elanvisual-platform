@@ -3,6 +3,7 @@ import { RefreshCw } from 'lucide-react';
 import QuotationCard from '../modules/quotation-viewer/components/QuotationCard';
 import QuotationFilters from '../modules/quotation-viewer/components/QuotationFilters';
 import { listQuotations } from '../modules/quotation-viewer/services/quotationViewerService';
+import { useApp } from '../context/AppContext';
 import '../styles/quotation-viewer.css';
 
 const asSearchText = (quotation) => [
@@ -12,19 +13,31 @@ const asSearchText = (quotation) => [
   quotation.customer?.phone
 ].filter(Boolean).join(' ').toLowerCase();
 
+const sellerIdentity = (usuario = {}) =>
+  usuario?.vendedor_id || usuario?.vendedorId || usuario?.id || '';
+
 export default function QuotationsViewer({ onOpenQuotation, onEditQuotation }) {
+  const { usuario } = useApp();
+  const role = String(usuario?.rol || '').trim().toLowerCase();
+  const userId = role === 'ventas' ? sellerIdentity(usuario) : usuario?.id || '';
   const [quotations, setQuotations] = useState([]);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const keepOwnForSeller = (rows) => {
+    if (role !== 'ventas') return rows;
+    if (!userId) return [];
+    return rows.filter((quotation) => String(quotation.executiveId || '') === String(userId));
+  };
+
   async function loadQuotations() {
     setLoading(true);
     setError('');
     try {
-      const result = await listQuotations({ limit: 200 });
-      setQuotations(result.quotations);
+      const result = await listQuotations({ limit: 200, role, userId });
+      setQuotations(keepOwnForSeller(result.quotations));
     } catch (loadError) {
       setQuotations([]);
       setError(loadError.message || 'No fue posible cargar las cotizaciones.');
@@ -40,8 +53,8 @@ export default function QuotationsViewer({ onOpenQuotation, onEditQuotation }) {
       setLoading(true);
       setError('');
       try {
-        const result = await listQuotations({ limit: 200 });
-        if (mounted) setQuotations(result.quotations);
+        const result = await listQuotations({ limit: 200, role, userId });
+        if (mounted) setQuotations(keepOwnForSeller(result.quotations));
       } catch (loadError) {
         if (mounted) {
           setQuotations([]);
@@ -56,7 +69,7 @@ export default function QuotationsViewer({ onOpenQuotation, onEditQuotation }) {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [role, userId]);
 
   const statusOptions = useMemo(() => {
     const values = new Set(quotations.map((quotation) => quotation.status).filter(Boolean));
@@ -77,8 +90,8 @@ export default function QuotationsViewer({ onOpenQuotation, onEditQuotation }) {
       <header className="qv-page-header">
         <div>
           <span>ELANVISUAL</span>
-          <h1>Cotizaciones realizadas</h1>
-          <p>Visor comercial conectado al Orchestrator.</p>
+          <h1>{role === 'ventas' ? 'Mis cotizaciones' : 'Cotizaciones realizadas'}</h1>
+          <p>{role === 'ventas' ? 'Solo se muestran las cotizaciones vinculadas a tu cuenta de ventas.' : 'Visor comercial conectado a CONNECT.'}</p>
         </div>
         <button type="button" onClick={loadQuotations} disabled={loading}>
           <RefreshCw size={18} /> Actualizar
@@ -101,7 +114,7 @@ export default function QuotationsViewer({ onOpenQuotation, onEditQuotation }) {
       {loading && (
         <section className="qv-state">
           <strong>Cargando cotizaciones...</strong>
-          <p>Consultando el Orchestrator.</p>
+          <p>Consultando CONNECT.</p>
         </section>
       )}
 
@@ -115,8 +128,8 @@ export default function QuotationsViewer({ onOpenQuotation, onEditQuotation }) {
 
       {!loading && !error && quotations.length === 0 && (
         <section className="qv-state">
-          <strong>No hay cotizaciones realizadas.</strong>
-          <p>El Orchestrator no envio registros para ELANVISUAL.</p>
+          <strong>{role === 'ventas' ? 'No tenés cotizaciones asignadas.' : 'No hay cotizaciones realizadas.'}</strong>
+          <p>{role === 'ventas' ? 'Cuando generes una cotización con tu cuenta aparecerá aquí.' : 'CONNECT no entregó registros para ELANVISUAL.'}</p>
         </section>
       )}
 
