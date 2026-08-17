@@ -1,9 +1,9 @@
-﻿.elan-ai-fab {
+.elan-ai-fab {
   position: fixed;
   right: 20px;
   bottom: 20px;
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   border-radius: 999px;
   border: none;
   cursor: pointer;
@@ -11,6 +11,22 @@
   background: #0f172a;
   color: #ffffff;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.28);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.elan-ai-fab-core {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.elan-ai-fab-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
 }
 
 .elan-ai-panel {
@@ -45,7 +61,28 @@
   font-weight: 900;
 }
 
-.elan-ai-close {
+.elan-ai-context-line {
+  margin-top: 4px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  max-width: 280px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.elan-ai-header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.elan-ai-close,
+.elan-ai-voice-toggle {
   width: 54px;
   height: 54px;
   border-radius: 18px;
@@ -55,6 +92,20 @@
   font-size: 24px;
   font-weight: 900;
   cursor: pointer;
+}
+
+.elan-ai-voice-toggle {
+  width: 46px;
+  height: 46px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 18px;
+}
+
+.elan-ai-voice-toggle.active {
+  border-color: #0f172a;
+  background: #f1f5f9;
 }
 
 .elan-ai-chat {
@@ -174,21 +225,36 @@
   border-radius: 24px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 10px;
   background: #ffffff;
 }
 
-.elan-ai-attach {
-  width: 46px;
-  height: 46px;
-  border-radius: 16px;
+.elan-ai-attach,
+.elan-ai-mic {
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
   border: 1px solid #cbd5e1;
   display: grid;
   place-items: center;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
   flex: 0 0 auto;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.elan-ai-mic.listening {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  animation: elan-ai-pulse 1.15s ease-in-out infinite;
+}
+
+.elan-ai-mic:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .elan-ai-attach input {
@@ -228,6 +294,11 @@
   cursor: not-allowed;
 }
 
+@keyframes elan-ai-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.22); }
+  50% { transform: scale(1.06); box-shadow: 0 0 0 8px rgba(15, 23, 42, 0); }
+}
+
 @media (max-width: 520px) {
   .elan-ai-panel {
     width: 100vw;
@@ -242,8 +313,19 @@
     font-size: 24px;
   }
 
+  .elan-ai-context-line {
+    max-width: 180px;
+  }
+
   .elan-ai-bubble {
     max-width: 82%;
     font-size: 14px;
+  }
+
+  .elan-ai-fab {
+    right: 14px;
+    bottom: 14px;
+    width: 66px;
+    height: 66px;
   }
 }
