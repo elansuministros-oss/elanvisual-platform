@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { KeyRound, QrCode, Save, UserRound } from 'lucide-react';
+import { Eye, EyeOff, KeyRound, QrCode, Save, UserRound } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const limpiar = (v = '') =>
@@ -16,12 +16,53 @@ const codigoVendedor = (usuario = {}) => {
   return String(usuario.id || 'USR-001').toUpperCase();
 };
 
+function PasswordField({ label, value, onChange, visible, onToggle, autoComplete }) {
+  return (
+    <label>
+      {label}
+      <div style={{ position: 'relative' }}>
+        <input
+          type={visible ? 'text' : 'password'}
+          value={value}
+          onChange={onChange}
+          autoComplete={autoComplete}
+          style={{ paddingRight: '3.5rem', width: '100%' }}
+        />
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-label={visible ? `Ocultar ${label.toLowerCase()}` : `Mostrar ${label.toLowerCase()}`}
+          title={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          style={{
+            position: 'absolute',
+            right: '0.75rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            border: 0,
+            background: 'transparent',
+            padding: '0.45rem',
+            display: 'grid',
+            placeItems: 'center',
+            cursor: 'pointer',
+            color: 'inherit'
+          }}
+        >
+          {visible ? <EyeOff size={22} /> : <Eye size={22} />}
+        </button>
+      </div>
+    </label>
+  );
+}
+
 export default function MiCuenta({ setPage }) {
   const { usuario, usuarios = [], actualizarUsuario } = useApp();
   const [actual, setActual] = useState('');
   const [nueva, setNueva] = useState('');
   const [confirmar, setConfirmar] = useState('');
   const [mensaje, setMensaje] = useState('');
+  const [verActual, setVerActual] = useState(false);
+  const [verNueva, setVerNueva] = useState(false);
+  const [verConfirmar, setVerConfirmar] = useState(false);
 
   const codigo = useMemo(() => codigoVendedor(usuario || {}), [usuario]);
 
@@ -67,6 +108,9 @@ export default function MiCuenta({ setPage }) {
     setActual('');
     setNueva('');
     setConfirmar('');
+    setVerActual(false);
+    setVerNueva(false);
+    setVerConfirmar(false);
     setMensaje('Contraseña actualizada correctamente.');
   };
 
@@ -123,20 +167,36 @@ export default function MiCuenta({ setPage }) {
             <h2>Cambiar contraseña</h2>
           </div>
 
-          <label>
-            Contraseña actual
-            <input type="password" value={actual} onChange={(e) => setActual(e.target.value)} />
-          </label>
+          <PasswordField
+            label="Contraseña actual"
+            value={actual}
+            onChange={(e) => setActual(e.target.value)}
+            visible={verActual}
+            onToggle={() => setVerActual((value) => !value)}
+            autoComplete="current-password"
+          />
 
-          <label>
-            Nueva contraseña
-            <input type="password" value={nueva} onChange={(e) => setNueva(e.target.value)} />
-          </label>
+          <PasswordField
+            label="Nueva contraseña"
+            value={nueva}
+            onChange={(e) => setNueva(e.target.value)}
+            visible={verNueva}
+            onToggle={() => setVerNueva((value) => !value)}
+            autoComplete="new-password"
+          />
 
-          <label>
-            Confirmar nueva contraseña
-            <input type="password" value={confirmar} onChange={(e) => setConfirmar(e.target.value)} />
-          </label>
+          <PasswordField
+            label="Confirmar nueva contraseña"
+            value={confirmar}
+            onChange={(e) => setConfirmar(e.target.value)}
+            visible={verConfirmar}
+            onToggle={() => setVerConfirmar((value) => !value)}
+            autoComplete="new-password"
+          />
+
+          <small>
+            Podés tocar el ojo para verificar cada contraseña antes de guardarla.
+          </small>
 
           <button type="button" className="primary-btn" onClick={guardarPassword}>
             <Save size={18} />
