@@ -1,5 +1,6 @@
 ﻿import React, { useMemo, useState } from 'react';
 import { useCore } from '../core/context/CoreContext';
+import { useApp } from '../context/AppContext';
 import {
   esAdminCRM,
   esVendedorCRM,
@@ -19,13 +20,23 @@ const formInicial = {
   estado: 'Activo',
 };
 
-const obtenerFirmaVendedorLocal = (usuario) => ({
-  vendedor_id: usuario?.id || '',
-  vendedorId: usuario?.id || '',
-  vendedor_nombre: usuario?.nombre || usuario?.usuario || usuario?.email || '',
-  codigo_vendedor: usuario?.codigo_vendedor || usuario?.codigo || codigoVendedorCRM(usuario),
-  created_by: usuario?.id || '',
-});
+const identidadVendedor = (usuario = {}) =>
+  usuario?.vendedor_id || usuario?.vendedorId || usuario?.id || '';
+
+const obtenerFirmaVendedorLocal = (usuario) => {
+  const vendedorId = identidadVendedor(usuario);
+  return {
+    vendedor_id: vendedorId,
+    vendedorId,
+    vendedor_nombre: usuario?.nombre || usuario?.usuario || usuario?.email || '',
+    codigo_vendedor:
+      usuario?.codigo_vendedor ||
+      usuario?.codigoVendedor ||
+      usuario?.codigo ||
+      codigoVendedorCRM({ ...usuario, id: vendedorId }),
+    created_by: vendedorId,
+  };
+};
 
 export default function Clientes() {
   const {
@@ -34,19 +45,20 @@ export default function Clientes() {
     crearContacto,
     actualizarContacto,
     eliminarContacto,
-    usuarioActivoCRM,
-    rolUsuarioActivoCRM,
   } = useCore();
+  const { usuario } = useApp();
 
+  // La identidad autenticada de ELANVISUAL es la única autoridad de permisos.
+  // Nunca usamos el selector/local user del Core CRM para decidir qué clientes
+  // puede ver un vendedor.
+  const vendedorId = identidadVendedor(usuario);
   const usuarioCRM = {
-    ...(usuarioActivoCRM || {}),
-    rol:
-      usuarioActivoCRM?.rol ||
-      usuarioActivoCRM?.tipo ||
-      rolUsuarioActivoCRM?.slug ||
-      rolUsuarioActivoCRM?.nombre ||
-      '',
-    rolNombre: rolUsuarioActivoCRM?.nombre || usuarioActivoCRM?.rol || '',
+    ...(usuario || {}),
+    id: esVendedorCRM(usuario) ? vendedorId : usuario?.id || '',
+    vendedor_id: vendedorId,
+    vendedorId,
+    rol: usuario?.rol || '',
+    rolNombre: usuario?.rol || '',
   };
 
   const [form, setForm] = useState(formInicial);
@@ -61,7 +73,7 @@ export default function Clientes() {
 
   const clientes = useMemo(() => {
     return filtrarRegistrosCRM(usuarioCRM, clientesBase);
-  }, [clientesBase, usuarioCRM.id, usuarioCRM.rol, usuarioCRM.rolNombre]);
+  }, [clientesBase, usuarioCRM.id, usuarioCRM.rol, usuarioCRM.rolNombre, usuarioCRM.codigo_vendedor]);
 
   const clientesFiltrados = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
@@ -107,6 +119,11 @@ export default function Clientes() {
 
     if (!puedeCrearCRM(usuarioCRM)) {
       alert('No tenés permiso para crear clientes.');
+      return;
+    }
+
+    if (esVendedorCRM(usuarioCRM) && !vendedorId) {
+      alert('Tu cuenta de ventas no tiene una identidad de vendedor vinculada.');
       return;
     }
 
