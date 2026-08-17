@@ -27,6 +27,7 @@ import BibliotecaTecnica from './pages/BibliotecaTecnica';
 import CapturaInteligente from './pages/CapturaInteligente';
 import CotizacionesInteligentes from './pages/CotizacionesInteligentes';
 import CotizadorUniversal from './pages/CotizadorUniversal';
+import CotizadorVendedorSeguro from './pages/CotizadorVendedorSeguro';
 import QuotationDetail from './pages/QuotationDetail';
 import PublicQuotation from './pages/PublicQuotation';
 import PublicQuotationV2 from './pages/PublicQuotationV2';
@@ -186,7 +187,7 @@ export default function App() {
       {page === 'recomendadorTecnico' && (accesoVentas ? <RecomendadorTecnico /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'aiStudio' && (accesoVentas ? <AIStudio setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'capturaInteligente' && (accesoVentas ? <CapturaInteligente /> : <Login setPage={ir} destino="crm" />)}
-      {page === 'cotizador' && (accesoVentas ? <CotizadorUniversal /> : <Login setPage={ir} destino="ventas" />)}
+      {page === 'cotizador' && (rol === 'admin' ? <CotizadorUniversal /> : rol === 'ventas' ? <CotizadorVendedorSeguro setPage={ir} /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'cotizaciones' && (accesoVentas ? <QuotationsViewer onOpenQuotation={abrirCotizacion} onEditQuotation={editarCotizacion} /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'quotationDetail' && (accesoVentas ? <QuotationDetail onBack={volverACotizaciones} /> : <Login setPage={ir} destino="ventas" />)}
       {page === 'cotizacionesInteligentes' && (accesoVentas ? <CotizacionesInteligentes /> : <Login setPage={ir} destino="ventas" />)}
