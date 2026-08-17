@@ -161,6 +161,55 @@ export default function ELANLive() {
     };
   }, []);
 
+  async function executeRealtimeTool(event) {
+    const tool = String(event?.name || '').trim();
+    let args = {};
+    try { args = JSON.parse(String(event?.arguments || '{}')); }
+    catch { args = {}; }
+
+    const response = await fetch(ELAN_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tipo: 'live-tool',
+        live_session_token: sessionToken,
+        tool,
+        arguments: args,
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data?.ok) {
+      throw new Error(data?.error?.message || data?.error || 'CONNECT no pudo ejecutar la herramienta solicitada.');
+    }
+    return data.result ?? data;
+  }
+
+  async function handleRealtimeToolCall(event) {
+    const channel = dataChannelRef.current;
+    if (!channel || channel.readyState !== 'open') return;
+    setPhase('thinking');
+
+    let output;
+    try {
+      output = await executeRealtimeTool(event);
+    } catch (toolError) {
+      output = { ok: false, error: toolError?.message || 'No fue posible consultar CONNECT.' };
+    }
+
+    const liveChannel = dataChannelRef.current;
+    if (!liveChannel || liveChannel.readyState !== 'open') return;
+    liveChannel.send(JSON.stringify({
+      type: 'conversation.item.create',
+      item: {
+        type: 'function_call_output',
+        call_id: event.call_id,
+        output: JSON.stringify(output),
+      },
+    }));
+    liveChannel.send(JSON.stringify({ type: 'response.create' }));
+  }
+
   function handleRealtimeEvent(raw) {
     let event;
     try { event = typeof raw === 'string' ? JSON.parse(raw) : raw; }
@@ -187,6 +236,9 @@ export default function ELANLive() {
       case 'output_audio_buffer.stopped':
       case 'output_audio_buffer.cleared':
         setPhase('listening');
+        break;
+      case 'response.function_call_arguments.done':
+        void handleRealtimeToolCall(event);
         break;
       case 'response.done':
         setTimeout(() => {
