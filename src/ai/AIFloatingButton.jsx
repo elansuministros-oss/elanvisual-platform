@@ -1,23 +1,26 @@
 import React from "react";
 import { useAIAssistant } from "./AIAssistantProvider";
 import { useApp } from "../context/AppContext";
+import { getAICapabilitiesForRole } from "./aiCapabilities";
 import "./AIAssistant.css";
 
 export default function AIFloatingButton() {
   const { alternarAI } = useAIAssistant();
   const { usuario } = useApp();
+  const capabilities = getAICapabilitiesForRole(usuario?.rol);
 
-  // El asistente flotante heredado usa ELANKAV CORE y permite análisis/cotización
-  // preliminar. No es la autoridad comercial oficial y por eso no se expone a
-  // vendedores. El rol ventas cotiza mediante ELAN/CONNECT con precios autorizados.
-  if (String(usuario?.rol || '').toLowerCase() === 'ventas') return null;
+  if (!capabilities.canUseAssistant) return null;
 
   return (
     <button
+      type="button"
       className="elan-ai-fab"
       onClick={alternarAI}
+      aria-label="Abrir ELAN Copilot"
+      title="ELAN Copilot"
     >
-      AI
+      <span className="elan-ai-fab-core">✦</span>
+      <span className="elan-ai-fab-label">ELAN</span>
     </button>
   );
 }
