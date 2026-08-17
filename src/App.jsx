@@ -49,7 +49,7 @@ import './styles/global.css';
 export default function App() {
   const pathInicial = window.location.pathname || '/';
   const paginaInicial = (() => {
-    if (pathInicial.startsWith('/elan-live') || pathInicial.startsWith('/copilot-live')) return 'elanLive';
+    if (pathInicial.startsWith('/elan-live') || pathInicial.startsWith('/copilot-live') || pathInicial.startsWith('/live/')) return 'elanLive';
     if (pathInicial.startsWith('/oc/proveedor/')) return 'supplierPurchaseOrder';
     if (pathInicial.startsWith('/r/')) return 'publicReceipt';
     if (pathInicial.startsWith('/ot/')) return 'publicWorkOrder';
