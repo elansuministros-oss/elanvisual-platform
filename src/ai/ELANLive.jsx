@@ -161,6 +161,28 @@ export default function ELANLive() {
     };
   }, []);
 
+  async function persistRealtimeMemory(direction, text, externalMessageId) {
+    const content = String(text || '').trim();
+    if (!content || !sessionToken) return;
+    try {
+      await fetch(ELAN_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo: 'live-memory-event',
+          live_session_token: sessionToken,
+          direction,
+          text: content,
+          message_type: 'audio',
+          external_message_id: externalMessageId || undefined,
+        }),
+        signal: AbortSignal.timeout(10000),
+      });
+    } catch (memoryError) {
+      console.warn('[ELAN_LIVE_MEMORY_EVENT_FAILED]', memoryError?.message || memoryError);
+    }
+  }
+
   async function executeRealtimeTool(event) {
     const tool = String(event?.name || '').trim();
     let args = {};
@@ -229,6 +251,12 @@ export default function ELANLive() {
       case 'input_audio_buffer.speech_stopped':
       case 'response.created':
         setPhase('thinking');
+        break;
+      case 'conversation.item.input_audio_transcription.completed':
+        void persistRealtimeMemory('inbound', event?.transcript, event?.item_id ? `live-in:${event.item_id}` : undefined);
+        break;
+      case 'response.output_audio_transcript.done':
+        void persistRealtimeMemory('outbound', event?.transcript, event?.item_id ? `live-out:${event.item_id}` : (event?.response_id ? `live-out:${event.response_id}` : undefined));
         break;
       case 'output_audio_buffer.started':
         setPhase('speaking');
@@ -391,7 +419,7 @@ export default function ELANLive() {
 
   async function setCamera(enabled, nextFacing = facingMode) {
     if (!capabilities?.canUseCamera && enabled) {
-      setError('Tu perfil no tiene permiso para usar cámara.');
+      setError('La visión por cámara todavía no está habilitada porque ELAN no recibe frames reales.');
       return;
     }
 
