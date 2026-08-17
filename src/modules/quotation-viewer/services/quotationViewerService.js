@@ -1,5 +1,6 @@
 import { resolveBaseUrl } from '../../vqs/services/projectCoreClient';
 import { prepareQuotationContractAssets } from '../../vqs/services/quotationAssetUploadRegistry';
+import { supabase } from '../../../lib/supabase';
 import {
   normalizeQuotationCollection,
   normalizeQuotationRecord
@@ -27,13 +28,23 @@ function buildUrl(path, params = {}) {
   return url.toString();
 }
 
+async function authenticatedHeaders(role, userId) {
+  const session = supabase ? await supabase.auth.getSession() : { data: {} };
+  const accessToken = session?.data?.session?.access_token || '';
+  return {
+    ...REQUIRED_HEADERS,
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    ...(role ? { 'X-Elankav-Role': role } : {}),
+    ...(userId ? { 'X-Elankav-User-Id': userId } : {})
+  };
+}
+
 async function request(path, { method = 'GET', params = {}, body, role, userId } = {}) {
+  const headers = await authenticatedHeaders(role, userId);
   const response = await fetch(buildUrl(path, params), {
     method,
     headers: {
-      ...REQUIRED_HEADERS,
-      ...(role ? { 'X-Elankav-Role': role } : {}),
-      ...(userId ? { 'X-Elankav-User-Id': userId } : {}),
+      ...headers,
       ...(body ? { 'Content-Type': 'application/json' } : {})
     },
     ...(body ? { body: JSON.stringify(body) } : {})
@@ -78,6 +89,7 @@ function preserveLineage(normalized = {}, record = {}, requestedProjectId = '') 
     id: projectId || normalized.id,
     projectId: projectId || normalized.projectId || normalized.id,
     quotationId: quotationId || normalized.quotationId || '',
+    executiveId: text(record.executiveId || record.executive_id || normalized.executiveId),
     publicUrl: text(
       record.publicUrl ||
       record.public_url ||
@@ -108,11 +120,17 @@ function assertOfficialDocument(record) {
   return record;
 }
 
-export async function listQuotations({ limit = DEFAULT_LIMIT } = {}) {
+export async function listQuotations({ limit = DEFAULT_LIMIT, role, userId } = {}) {
   const payload = await request('/api/vqs/projects', {
-    params: { platform: PLATFORM, limit }
+    params: { platform: PLATFORM, limit },
+    role,
+    userId
   });
-  const quotations = normalizeQuotationCollection(applyQuotationListAliasesToPayload(payload));
+  const raw = applyQuotationListAliasesToPayload(payload);
+  const quotations = normalizeQuotationCollection(raw).map((quotation, index) => {
+    const records = Array.isArray(raw?.data) ? raw.data : Array.isArray(raw) ? raw : [];
+    return preserveLineage(quotation, records[index] || {});
+  });
 
   return {
     quotations,
@@ -120,35 +138,41 @@ export async function listQuotations({ limit = DEFAULT_LIMIT } = {}) {
   };
 }
 
-export async function getQuotationDetail(id) {
+export async function getQuotationDetail(id, { role, userId } = {}) {
   const requestedId = text(id);
   if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
 
   const payload = await request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
-    params: { platform: PLATFORM }
+    params: { platform: PLATFORM },
+    role,
+    userId
   });
   const record = applyQuotationImageFallback(assertOfficialDocument(assertRecord(extractRecord(payload))));
   return preserveLineage(normalizeQuotationRecord(record), record, requestedId);
 }
 
-export async function getQuotationEditData(id) {
+export async function getQuotationEditData(id, { role, userId } = {}) {
   const requestedId = text(id);
   if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
 
   const payload = await request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
-    params: { platform: PLATFORM }
+    params: { platform: PLATFORM },
+    role,
+    userId
   });
   return assertOfficialDocument(assertRecord(extractRecord(payload)));
 }
 
-export async function updateQuotation(id, contract) {
+export async function updateQuotation(id, contract, { role, userId } = {}) {
   const requestedId = text(id);
   if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
   const preparedContract = await prepareQuotationContractAssets(contract);
 
   return request(`/api/vqs/projects/${encodeURIComponent(requestedId)}`, {
     method: 'PATCH',
-    body: preparedContract
+    body: preparedContract,
+    role,
+    userId
   });
 }
 
