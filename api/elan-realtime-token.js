@@ -25,7 +25,15 @@ function getCopilotToken() {
 
 function getOrchestratorConfig() {
   const baseUrl = clean(process.env.ORCHESTRATOR_BASE_URL || process.env.ELANKAV_ORCHESTRATOR_URL || 'https://orchestrator.elankav.com').replace(/\/+$/, '');
-  const token = clean(process.env.ORCHESTRATOR_INTERNAL_TOKEN || process.env.ELANKAV_ORCHESTRATOR_INTERNAL_TOKEN || '');
+  const token = clean(
+    process.env.ORCHESTRATOR_INTERNAL_TOKEN ||
+    process.env.ELANKAV_ORCHESTRATOR_INTERNAL_TOKEN ||
+    process.env.CONNECT_INTERNAL_TOKEN ||
+    process.env.CONNECT_INTERNAL_API_TOKEN ||
+    process.env.ELANKAV_CONNECT_INTERNAL_TOKEN ||
+    process.env.VQS_API_TOKEN ||
+    ''
+  );
   return { baseUrl, token };
 }
 
@@ -70,7 +78,7 @@ async function verifyLiveSession(baseUrl, internalToken, token) {
 
 async function getUnifiedRuntimeManifest(session) {
   const { baseUrl, token } = getOrchestratorConfig();
-  if (!token) throw Object.assign(new Error('ORCHESTRATOR_INTERNAL_TOKEN no configurado para ELAN Runtime.'), { code: 'ELAN_RUNTIME_NOT_CONFIGURED', status: 503 });
+  if (!token) throw Object.assign(new Error('Token interno no configurado para ELAN Runtime.'), { code: 'ELAN_RUNTIME_NOT_CONFIGURED', status: 503 });
   const response = await fetch(`${baseUrl}/api/v1/elan-runtime/tools`, {
     method: 'POST',
     headers: {
