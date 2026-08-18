@@ -7,13 +7,38 @@ function isAllowedOrigin(origin=''){if(ALLOWED_ORIGINS.has(origin))return true;t
 function cors(req,res){const origin=req.headers.origin||'';if(isAllowedOrigin(origin))res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');res.setHeader('Access-Control-Allow-Credentials','true');res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization, X-Requested-With, Accept, Origin')}
 function getConnectConfig(){const baseUrl=String(process.env.CONNECT_BASE_URL||process.env.ELANKAV_CONNECT_URL||'https://connect.elankav.com').trim().replace(/\/+$/,'');const token=String(process.env.CONNECT_DESIGN_TOKEN||'').trim();if(!token){const error=new Error('CONNECT_DESIGN_TOKEN no configurado en ELANVISUAL');error.code='CONNECT_COPILOT_NOT_CONFIGURED';throw error}return{baseUrl,token}}
 function getInternalToken(){return String(process.env.CONNECT_INTERNAL_TOKEN||process.env.CONNECT_INTERNAL_API_TOKEN||process.env.ELANKAV_CONNECT_INTERNAL_TOKEN||process.env.ORCHESTRATOR_INTERNAL_TOKEN||process.env.VQS_API_TOKEN||'').trim()}
-function getOrchestratorConfig(){const baseUrl=String(process.env.ORCHESTRATOR_BASE_URL||process.env.ELANKAV_ORCHESTRATOR_URL||'https://orchestrator.elankav.com').trim().replace(/\/+$/,'');const token=String(process.env.ORCHESTRATOR_INTERNAL_TOKEN||process.env.ELANKAV_ORCHESTRATOR_INTERNAL_TOKEN||process.env.VQS_API_TOKEN||process.env.CONNECT_INTERNAL_TOKEN||process.env.CONNECT_INTERNAL_API_TOKEN||process.env.ELANKAV_CONNECT_INTERNAL_TOKEN||'').trim();if(!token){const error=new Error('Token interno no configurado para ELAN Runtime');error.code='ELAN_RUNTIME_NOT_CONFIGURED';throw error}return{baseUrl,token}}
+function getOrchestratorConfig(){
+  const baseUrl=String(process.env.ORCHESTRATOR_BASE_URL||process.env.ELANKAV_ORCHESTRATOR_URL||'https://orchestrator.elankav.com').trim().replace(/\/+$/,'');
+  const tokens=[
+    process.env.VQS_API_TOKEN,
+    process.env.ORCHESTRATOR_INTERNAL_TOKEN,
+    process.env.ELANKAV_ORCHESTRATOR_INTERNAL_TOKEN,
+    process.env.CONNECT_INTERNAL_TOKEN,
+    process.env.CONNECT_INTERNAL_API_TOKEN,
+    process.env.ELANKAV_CONNECT_INTERNAL_TOKEN,
+  ].map(value=>String(value||'').trim()).filter(Boolean);
+  const uniqueTokens=[...new Set(tokens)];
+  if(!uniqueTokens.length){const error=new Error('Token interno no configurado para ELAN Runtime');error.code='ELAN_RUNTIME_NOT_CONFIGURED';throw error}
+  return{baseUrl,tokens:uniqueTokens};
+}
 async function callLiveInternal(path,body){const internal=getInternalToken();if(!internal){const error=new Error('Token interno no configurado para ELAN Live');error.code='LIVE_VERIFY_NOT_CONFIGURED';throw error}const{baseUrl}=getConnectConfig();const response=await fetch(`${baseUrl}${path}`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json',Authorization:`Bearer ${internal}`,'X-Elankav-Internal-Token':internal,'X-Elankav-Platform':'ELANVISUAL'},body:JSON.stringify(body)});const data=await response.json().catch(()=>null);if(!response.ok){const error=new Error(data?.error?.message||'Sesión ELAN Live inválida.');error.code=data?.error?.code||'LIVE_SESSION_INVALID';error.status=response.status;throw error}return data?.data||{}}
 async function verifyLiveSession(token){const data=await callLiveInternal('/api/v1/live-access/verify',{token});if(!data?.valid)throw Object.assign(new Error('Sesión ELAN Live inválida.'),{code:'LIVE_SESSION_INVALID',status:401});return data.session}
 async function exchangeLiveCode(code){const data=await callLiveInternal('/api/v1/live-access/exchange',{code});if(!data?.token||!data?.session)throw Object.assign(new Error('Enlace ELAN Live inválido.'),{code:'LIVE_CODE_INVALID',status:401});return data}
 function capabilityManifest(session){const scopes=Array.isArray(session?.scopes)?session.scopes:[];const all=scopes.includes('*');const has=(scope)=>all||scopes.includes(scope);return{role:session?.role||'unknown',scopes,canUseAssistant:true,canUseVoice:true,canUseCamera:false,canCreateDesign:has('design.create'),canGenerateImage:has('image.create'),canGenerateVideo:has('video.create'),canResearchWeb:has('web.research'),canReadAuthorizedPrices:has('price.authorized.read'),canManageMasterPrices:all,canViewMargins:all}}
 function unifiedActor(session={}){const role=String(session.role||'unknown').toLowerCase();const owner=role==='owner'||String(session.authority||'').toLowerCase()==='owner_identity';return{role:owner?'owner':role,actorId:owner?'owner':(session.sub||session.actorId||null),registered:true,platformAllowed:true,platforms:owner?['*']:['ELANVISUAL'],scopes:Array.isArray(session.scopes)?session.scopes:[],authority:owner?'owner_identity':(session.authority||null),phone:session.phone||null,canonicalPhone:session.phone||null}}
-async function callElanRuntime(path,body){const{baseUrl,token}=getOrchestratorConfig();const response=await fetch(`${baseUrl}${path}`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json',Authorization:`Bearer ${token}`,'X-Elankav-Internal-Token':token,'X-Elankav-Platform':'ELANVISUAL','X-Elankav-Source':'ELAN_LIVE'},body:JSON.stringify(body)});const data=await response.json().catch(()=>({ok:false,error:`ELAN Runtime HTTP ${response.status}`}));if(!response.ok||data?.ok===false){const error=new Error(data?.error||data?.message||'ELAN Runtime no pudo ejecutar la herramienta.');error.code=data?.code||'ELAN_RUNTIME_EXECUTION_FAILED';error.status=response.status;throw error}return data}
+async function callElanRuntime(path,body){
+  const{baseUrl,tokens}=getOrchestratorConfig();
+  let lastError=null;
+  for(const token of tokens){
+    const response=await fetch(`${baseUrl}${path}`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json',Authorization:`Bearer ${token}`,'X-Elankav-Internal-Token':token,'X-Elankav-Platform':'ELANVISUAL','X-Elankav-Source':'ELAN_LIVE'},body:JSON.stringify(body)});
+    const data=await response.json().catch(()=>({ok:false,error:`ELAN Runtime HTTP ${response.status}`}));
+    if(response.ok&&data?.ok!==false)return data;
+    const error=new Error(data?.error||data?.message||'ELAN Runtime no pudo ejecutar la herramienta.');
+    error.code=data?.code||'ELAN_RUNTIME_EXECUTION_FAILED';error.status=response.status;lastError=error;
+    if(response.status!==401)throw error;
+  }
+  throw lastError||Object.assign(new Error('No autorizado para ELAN Runtime.'),{code:'ELAN_RUNTIME_UNAUTHORIZED',status:401});
+}
 async function getUnifiedTools(session){return callElanRuntime('/api/v1/elan-runtime/tools',{actor:unifiedActor(session),channel:'copilot',platform:'ELANVISUAL',memoryLimit:20})}
 async function executeLiveTool(session,tool,args={}){const execution=await callElanRuntime('/api/v1/elan-runtime/execute',{actor:unifiedActor(session),channel:'copilot',platform:'ELANVISUAL',tool,arguments:args});return execution.result}
 async function persistLiveMemory(session,payload={}){return callElanRuntime('/api/v1/elan-runtime/memory/event',{actor:unifiedActor(session),channel:'copilot',platform:'ELANVISUAL',direction:payload.direction,text:payload.text,messageType:payload.messageType||'audio',externalMessageId:payload.externalMessageId||null,occurredAt:payload.occurredAt||null})}
