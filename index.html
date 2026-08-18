@@ -7,6 +7,26 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (() => {
+        let wakeLock = null;
+        const isElanLive = () => /^\/(?:elan-live|live)(?:\/|$)/.test(window.location.pathname || '');
+        const requestWakeLock = async () => {
+          if (!isElanLive() || document.visibilityState !== 'visible' || !('wakeLock' in navigator)) return;
+          try {
+            if (wakeLock && !wakeLock.released) return;
+            wakeLock = await navigator.wakeLock.request('screen');
+            wakeLock.addEventListener('release', () => { wakeLock = null; });
+          } catch (error) {
+            console.warn('[ELAN_LIVE_WAKE_LOCK_FAILED]', error?.message || error);
+          }
+        };
+        document.addEventListener('pointerdown', requestWakeLock, { passive: true });
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') requestWakeLock();
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
