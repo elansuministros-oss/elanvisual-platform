@@ -1,0 +1,3 @@
+Force production redeploy for ELAN Unified Runtime manifest fix.
+Source branch: elanvisual-desde-elanpet
+Expected runtime: ELAN_UNIFIED_RUNTIME
