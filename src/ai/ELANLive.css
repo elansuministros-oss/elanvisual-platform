@@ -1,1 +1,89 @@
-.elan-live{position:fixed;inset:0;z-index:99999;overflow:hidden;background:#000;display:grid;place-items:center;color:#fff}.elan-live-camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .35s ease}.elan-live-camera.active{opacity:1}.elan-live-shade{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.18),rgba(0,0,0,.42))}.elan-live-stage{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:16px}.elan-live-presence{position:relative;width:112px;height:112px;border:0;background:transparent;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}.elan-live-orb{position:relative;display:block;width:112px;height:112px;border-radius:42% 58% 54% 46%/48% 42% 58% 52%;background:radial-gradient(circle at 38% 34%,#d8fbff 0 4%,#6cecff 10%,#0f97c8 27%,#07547b 48%,#041a2d 68%,#010408 100%);box-shadow:0 0 18px rgba(44,211,255,.35),0 0 42px rgba(0,125,190,.22),inset -9px -12px 22px rgba(0,0,0,.42);animation:elanIdle 5s ease-in-out infinite;transform-origin:center}.elan-live-core{position:absolute;left:28%;top:24%;width:43%;height:43%;border-radius:50%;background:radial-gradient(circle at 36% 34%,rgba(255,255,255,.96) 0 3%,rgba(125,237,255,.95) 14%,rgba(19,148,201,.72) 44%,rgba(0,18,31,.16) 72%,transparent 100%);filter:blur(.3px);opacity:.9}.elan-live-glow{position:absolute;inset:14%;border-radius:44% 56% 50% 50%/56% 42% 58% 44%;background:radial-gradient(circle at center,rgba(97,229,255,.22),transparent 68%);mix-blend-mode:screen;animation:elanGlow 3.8s ease-in-out infinite}.elan-live-status{font:600 10px/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.18em;color:rgba(255,255,255,.62);user-select:none}.phase-listening .elan-live-orb{animation:elanListen .8s ease-in-out infinite;box-shadow:0 0 22px rgba(82,235,255,.5),0 0 54px rgba(0,157,220,.3),inset -9px -12px 22px rgba(0,0,0,.42)}.phase-thinking .elan-live-orb{animation:elanThink 1.35s ease-in-out infinite}.phase-speaking .elan-live-orb{animation:elanSpeak .46s ease-in-out infinite alternate}.phase-seeing .elan-live-orb{box-shadow:0 0 22px rgba(72,235,220,.48),0 0 52px rgba(0,170,190,.26),inset -9px -12px 22px rgba(0,0,0,.42)}.elan-live-camera-switch{position:absolute;z-index:3;right:18px;bottom:18px;width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(7,11,16,.72);backdrop-filter:blur(14px);color:white;font-size:21px}.elan-live-error{position:absolute;z-index:4;bottom:26px;left:50%;transform:translateX(-50%);max-width:min(82vw,360px);padding:10px 14px;border-radius:16px;background:rgba(12,12,12,.8);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(16px);color:#fff;font:500 12px/1.4 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-align:center}.elan-live-locked{background:#000}.elan-live-locked .elan-live-orb{width:88px;height:88px;opacity:.42;filter:saturate(.7)}.elan-live-locked .elan-live-stage{gap:14px}@keyframes elanIdle{0%,100%{transform:translateY(0) rotate(-2deg) scale(1);border-radius:42% 58% 54% 46%/48% 42% 58% 52%}33%{transform:translateY(-3px) rotate(2deg) scale(1.015);border-radius:48% 52% 46% 54%/42% 56% 44% 58%}66%{transform:translateY(2px) rotate(-1deg) scale(.995);border-radius:56% 44% 53% 47%/54% 45% 55% 46%}}@keyframes elanGlow{0%,100%{opacity:.55;transform:scale(.94)}50%{opacity:1;transform:scale(1.04)}}@keyframes elanListen{0%,100%{transform:scale(.97);border-radius:44% 56% 51% 49%/53% 44% 56% 47%}50%{transform:scale(1.055);border-radius:56% 44% 47% 53%/44% 57% 43% 56%}}@keyframes elanThink{0%,100%{transform:rotate(-7deg) scale(.98);border-radius:58% 42% 54% 46%/45% 58% 42% 55%}50%{transform:rotate(7deg) scale(1.035);border-radius:43% 57% 47% 53%/58% 43% 57% 42%}}@keyframes elanSpeak{from{transform:scale(.98) skewX(-1deg);border-radius:46% 54% 58% 42%/52% 43% 57% 48%}to{transform:scale(1.06) skewX(1deg);border-radius:57% 43% 45% 55%/44% 59% 41% 56%}}@media(max-width:600px){.elan-live-presence,.elan-live-orb{width:96px;height:96px}.elan-live-locked .elan-live-orb{width:76px;height:76px}.elan-live-stage{gap:14px}.elan-live-error{bottom:18px}}@media(prefers-reduced-motion:reduce){.elan-live-orb,.elan-live-glow{animation:none!important}}
+.elan-live{
+  position:fixed;inset:0;z-index:99999;overflow:hidden;background:#000;
+  display:grid;place-items:center;color:#fff;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.elan-live__camera{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+.elan-live__veil{position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 50% 46%,rgba(10,28,50,.18),rgba(0,0,0,.04) 32%,rgba(0,0,0,.72) 100%);pointer-events:none}
+.elan-live__center{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+
+.elan-live__orb{
+  position:relative;width:92px;height:92px;padding:0;border:0;border-radius:50%;cursor:pointer;
+  background:
+    radial-gradient(circle at 36% 31%,rgba(255,255,255,.98) 0 3%,rgba(185,247,255,.95) 6%,rgba(71,220,255,.78) 14%,transparent 26%),
+    radial-gradient(circle at 50% 54%,#33e7ff 0 4%,#167fd2 22%,#49339d 43%,#111a38 65%,#02050d 86%);
+  box-shadow:
+    0 0 7px rgba(147,244,255,.9),
+    0 0 20px rgba(45,201,255,.48),
+    0 0 42px rgba(89,66,255,.28),
+    inset 0 0 16px rgba(255,255,255,.19),
+    inset -11px -13px 22px rgba(0,0,0,.48);
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  animation:elanOrbIdle 4.8s ease-in-out infinite;
+  isolation:isolate;
+}
+.elan-live__orb::before{
+  content:"";position:absolute;inset:-9px;border-radius:50%;z-index:-1;
+  border:1px solid rgba(96,229,255,.42);
+  background:conic-gradient(from 0deg,transparent 0 18%,rgba(98,232,255,.55) 24%,transparent 32% 58%,rgba(156,89,255,.42) 66%,transparent 74% 100%);
+  box-shadow:0 0 16px rgba(62,210,255,.17);
+  animation:elanRingSpin 7s linear infinite;
+}
+.elan-live__orb::after{
+  content:"";position:absolute;inset:10px;border-radius:50%;pointer-events:none;
+  border:1px solid rgba(195,250,255,.25);
+  background:
+    radial-gradient(circle at 28% 70%,rgba(108,255,238,.42) 0 1.5px,transparent 2px),
+    radial-gradient(circle at 72% 30%,rgba(211,145,255,.48) 0 1.5px,transparent 2px),
+    radial-gradient(circle at 64% 74%,rgba(111,218,255,.48) 0 1px,transparent 1.8px);
+  animation:elanInnerDrift 5s ease-in-out infinite;
+}
+.elan-live__orb-core{
+  position:absolute;left:50%;top:50%;width:34%;height:34%;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle,#fff 0 9%,#bdfbff 15%,#57e7ff 31%,rgba(65,111,255,.72) 55%,rgba(110,43,208,.28) 72%,transparent 82%);
+  filter:drop-shadow(0 0 7px rgba(181,248,255,.95));
+  animation:elanCorePulse 2.7s ease-in-out infinite;
+}
+.elan-live__phase{
+  font-size:14px;line-height:1.2;font-weight:500;letter-spacing:.14em;
+  color:rgba(255,255,255,.84);text-transform:uppercase;text-align:center;user-select:none;
+  text-shadow:0 0 12px rgba(82,212,255,.18);
+}
+
+.elan-live--listening .elan-live__orb{
+  animation:elanListen .9s ease-in-out infinite;
+  box-shadow:0 0 9px rgba(164,251,255,.95),0 0 26px rgba(53,222,255,.62),0 0 54px rgba(29,127,255,.30),inset 0 0 17px rgba(255,255,255,.22),inset -11px -13px 22px rgba(0,0,0,.46)
+}
+.elan-live--thinking .elan-live__orb::before{animation-duration:1.8s}
+.elan-live--thinking .elan-live__orb{animation:elanThink 1.25s ease-in-out infinite}
+.elan-live--speaking .elan-live__orb{animation:elanSpeak .44s ease-in-out infinite alternate}
+.elan-live--speaking .elan-live__orb-core{animation:elanCoreSpeak .44s ease-in-out infinite alternate}
+.elan-live--connecting .elan-live__orb::before,.elan-live--auth .elan-live__orb::before{animation-duration:1.2s}
+.elan-live__orb:disabled{cursor:default;opacity:.5;filter:saturate(.65)}
+
+.elan-live__camera-controls{position:absolute;z-index:3;left:50%;bottom:82px;transform:translateX(-50%);display:flex;gap:10px}
+.elan-live__camera-controls button{border:1px solid rgba(255,255,255,.14);background:rgba(10,16,28,.72);backdrop-filter:blur(14px);color:#fff;border-radius:16px;padding:11px 18px;font-weight:600}
+.elan-live__error{position:absolute;z-index:4;left:50%;bottom:26px;transform:translateX(-50%);width:min(84vw,420px);padding:10px 14px;border-radius:15px;background:rgba(12,12,16,.76);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(16px);color:#fff;font-size:12px;line-height:1.45;text-align:center}
+
+@keyframes elanOrbIdle{
+  0%,100%{transform:translateY(0) scale(1)}
+  35%{transform:translateY(-2px) scale(1.015)}
+  70%{transform:translateY(1px) scale(.99)}
+}
+@keyframes elanRingSpin{to{transform:rotate(360deg)}}
+@keyframes elanInnerDrift{0%,100%{transform:rotate(-4deg) scale(.97);opacity:.72}50%{transform:rotate(6deg) scale(1.04);opacity:1}}
+@keyframes elanCorePulse{0%,100%{transform:translate(-50%,-50%) scale(.9);opacity:.78}50%{transform:translate(-50%,-50%) scale(1.13);opacity:1}}
+@keyframes elanListen{0%,100%{transform:scale(.97)}50%{transform:scale(1.055)}}
+@keyframes elanThink{0%,100%{transform:rotate(-3deg) scale(.985)}50%{transform:rotate(3deg) scale(1.035)}}
+@keyframes elanSpeak{from{transform:scale(.96)}to{transform:scale(1.07)}}
+@keyframes elanCoreSpeak{from{transform:translate(-50%,-50%) scale(.82);opacity:.72}to{transform:translate(-50%,-50%) scale(1.22);opacity:1}}
+
+@media(max-width:600px){
+  .elan-live__orb{width:82px;height:82px}
+  .elan-live__orb::before{inset:-8px}
+  .elan-live__center{gap:16px}
+  .elan-live__phase{font-size:13px;letter-spacing:.12em}
+  .elan-live__error{bottom:18px}
+  .elan-live__camera-controls{bottom:70px}
+}
+@media(prefers-reduced-motion:reduce){.elan-live__orb,.elan-live__orb::before,.elan-live__orb::after,.elan-live__orb-core{animation:none!important}}
