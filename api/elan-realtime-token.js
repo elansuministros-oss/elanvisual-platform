@@ -28,10 +28,10 @@ function getOrchestratorConfig() {
   const token = clean(
     process.env.ORCHESTRATOR_INTERNAL_TOKEN ||
     process.env.ELANKAV_ORCHESTRATOR_INTERNAL_TOKEN ||
+    process.env.VQS_API_TOKEN ||
     process.env.CONNECT_INTERNAL_TOKEN ||
     process.env.CONNECT_INTERNAL_API_TOKEN ||
     process.env.ELANKAV_CONNECT_INTERNAL_TOKEN ||
-    process.env.VQS_API_TOKEN ||
     ''
   );
   return { baseUrl, token };
