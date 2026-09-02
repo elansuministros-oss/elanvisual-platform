@@ -15,7 +15,7 @@ import {
 import '../styles/quotation-viewer.css';
 import '../styles/operational-flow.css';
 
-const PUBLIC_QUOTATION_BASE_URL = 'https://visual.elankav.com/q';
+const PUBLIC_QUOTATION_BASE_URL = 'https://visual.elankav.com/cotizaciones/v2';
 
 function extractPublicAccessCode(value) {
   const match = String(value || '').match(
@@ -42,6 +42,24 @@ function buildPublicQuotationUrl(projectId) {
   return id ? `${PUBLIC_QUOTATION_BASE_URL}/${encodeURIComponent(id)}` : '';
 }
 
+function isUsablePublicQuotationUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return false;
+
+  try {
+    const url = new URL(raw, 'https://visual.elankav.com');
+    if (url.hostname !== 'visual.elankav.com') return false;
+
+    return (
+      /^\/q\/[A-Za-z0-9_-]{22}\/?$/.test(url.pathname) ||
+      /^\/cotizaciones\/publicas\/[^/?#]+\/?$/.test(url.pathname) ||
+      /^\/cotizaciones\/v2\/[^/?#]+\/?$/.test(url.pathname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 function openWhatsappChat(phone, quotationNumber, publicUrl, projectId) {
   const target = normalizeWhatsappPhone(phone);
   if (!target) {
@@ -49,9 +67,10 @@ function openWhatsappChat(phone, quotationNumber, publicUrl, projectId) {
     return;
   }
 
-  const resolvedPublicUrl =
-    String(publicUrl || '').trim() ||
-    buildPublicQuotationUrl(projectId);
+  const candidatePublicUrl = String(publicUrl || '').trim();
+  const resolvedPublicUrl = isUsablePublicQuotationUrl(candidatePublicUrl)
+    ? candidatePublicUrl
+    : buildPublicQuotationUrl(projectId);
 
   if (!resolvedPublicUrl) {
     window.alert('No fue posible obtener el enlace publico de esta cotizacion.');
