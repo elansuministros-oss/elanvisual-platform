@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test:vqs": "node scripts/vqs-contract-check.mjs && node scripts/vqs-bulk-import-check.mjs && node scripts/vqs-connect-proxy-check.mjs && node scripts/vqs-project-create-retry-check.mjs && node scripts/vqs-save-validation-check.mjs && node scripts/vqs-source-type-regression-check.mjs",
-    "test:otoc": "node scripts/erp-otoc-contract-check.mjs"
+    "test:otoc": "node scripts/erp-otoc-contract-check.mjs",
+    "test:copilot": "node scripts/elan-copilot-unified-context-check.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.107.0",
@@ -16,7 +17,11 @@
     "openai": "^6.44.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "@assistant-ui/react": "^0.15.17",
+    "react-webcam-pro": "^1.2.0",
+    "react-record-webcam": "^2.0.1",
+    "styled-components": "^6.5.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.0",
