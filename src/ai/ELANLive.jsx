@@ -765,6 +765,12 @@ export default function ELANLive() {
   const memoryHistory = Array.isArray(runtimeInfo?.memory?.history) ? runtimeInfo.memory.history : [];
   const actorLabel = session?.displayName || session?.name || session?.role || 'Usuario';
   const platformLabel = String(publishedRuntime?.platform?.platformId || session?.platform || 'ELANVISUAL').toUpperCase();
+  const fieldNotes = memoryHistory
+    .filter((item) => item?.role === 'user' && String(item?.content || '').trim())
+    .slice(-3)
+    .reverse();
+  const memoryCount = memoryHistory.length;
+  const channelLabel = session?.phone ? 'WHATSAPP VINCULADO' : 'SESIÓN SEGURA';
 
   return (
     <main className={`elan-field elan-field--${phase}`}>
@@ -775,15 +781,25 @@ export default function ELANLive() {
           <button type="button" className="elan-field__icon-button elan-field__back" onClick={() => window.history.back()} aria-label="Volver">
             <ChevronLeft size={20} />
           </button>
-          <div className="elan-field__mark">E</div>
+          <div className="elan-field__brand-orb"><span>E</span></div>
           <div>
-            <div className="elan-field__title">ELAN</div>
+            <div className="elan-field__eyebrow">ELANKAV INTELLIGENCE</div>
+            <div className="elan-field__title">ELAN <span>COPILOTO</span></div>
             <div className="elan-field__subtitle">{platformLabel} · {actorLabel}</div>
           </div>
         </div>
-        <div className={`elan-field__status elan-field__status--${phase}`}>
-          <span className="elan-field__status-dot" />
-          {phaseLabel(phase, active)}
+        <div className="elan-field__topbar-right">
+          <div className="elan-field__sync">
+            <span className="elan-field__sync-dot" />
+            <div>
+              <strong>{channelLabel}</strong>
+              <small>{memoryCount} eventos en memoria</small>
+            </div>
+          </div>
+          <div className={`elan-field__status elan-field__status--${phase}`}>
+            <span className="elan-field__status-dot" />
+            {phaseLabel(phase, active)}
+          </div>
         </div>
       </header>
 
@@ -815,12 +831,66 @@ export default function ELANLive() {
           )}
 
           {!cameraOn && !recordingActive && (
-            <div className="elan-field__idle">
-              <div className={`elan-field__signal elan-field__signal--${phase}`}>
-                <span /><span /><span /><span /><span />
-              </div>
-              <h1>ELAN COPILOTO</h1>
-              <p>Voz, cámara, memoria y operación en un solo contexto.</p>
+            <div className="elan-field__command-center">
+              <div className="elan-field__ambient elan-field__ambient--one" />
+              <div className="elan-field__ambient elan-field__ambient--two" />
+
+              <section className="elan-field__core-panel">
+                <div className="elan-field__core-kicker">SISTEMA OPERATIVO ACTIVO</div>
+                <div className={`elan-tech-orb elan-tech-orb--${phase}`} aria-label={phaseLabel(phase, active)}>
+                  <div className="elan-tech-orb__halo elan-tech-orb__halo--1" />
+                  <div className="elan-tech-orb__halo elan-tech-orb__halo--2" />
+                  <div className="elan-tech-orb__halo elan-tech-orb__halo--3" />
+                  <div className="elan-tech-orb__scan" />
+                  <div className="elan-tech-orb__sphere">
+                    <div className="elan-tech-orb__mesh" />
+                    <div className="elan-tech-orb__flare" />
+                    <div className="elan-tech-orb__core">E</div>
+                  </div>
+                  <div className="elan-tech-orb__particle elan-tech-orb__particle--1" />
+                  <div className="elan-tech-orb__particle elan-tech-orb__particle--2" />
+                  <div className="elan-tech-orb__particle elan-tech-orb__particle--3" />
+                  <div className="elan-tech-orb__particle elan-tech-orb__particle--4" />
+                </div>
+                <div className="elan-field__core-state">{phaseLabel(phase, active)}</div>
+                <h1>ELAN COPILOTO</h1>
+                <p>Voz, visión, memoria y operación conectadas a un solo contexto.</p>
+                <div className="elan-field__core-tags">
+                  <span>MEMORIA UNIFICADA</span>
+                  <span>OPENAI REALTIME</span>
+                  <span>CONNECT</span>
+                </div>
+              </section>
+
+              <aside className="elan-field__telemetry elan-field__telemetry--left">
+                <div className="elan-field__telemetry-label">IDENTIDAD</div>
+                <strong>{actorLabel}</strong>
+                <span>{platformLabel}</span>
+                <div className="elan-field__telemetry-line" />
+                <div className="elan-field__telemetry-row">
+                  <span>Canal</span>
+                  <b>{channelLabel}</b>
+                </div>
+                <div className="elan-field__telemetry-row">
+                  <span>Memoria</span>
+                  <b>{memoryCount} eventos</b>
+                </div>
+              </aside>
+
+              <aside className="elan-field__telemetry elan-field__telemetry--right">
+                <div className="elan-field__telemetry-label">BITÁCORA ACTIVA</div>
+                {fieldNotes.length ? fieldNotes.map((item, index) => (
+                  <div className="elan-field__field-note" key={item?.id || `note-${index}`}>
+                    <span>0{index + 1}</span>
+                    <p>{String(item?.content || '').trim()}</p>
+                  </div>
+                )) : (
+                  <div className="elan-field__field-note elan-field__field-note--empty">
+                    <span>01</span>
+                    <p>Las medidas, observaciones y capturas aparecerán aquí durante la visita.</p>
+                  </div>
+                )}
+              </aside>
             </div>
           )}
 
