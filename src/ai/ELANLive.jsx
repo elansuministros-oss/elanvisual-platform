@@ -783,7 +783,7 @@ export default function ELANLive() {
           </button>
           <div className="elan-field__brand-orb"><span>E</span></div>
           <div>
-            <div className="elan-field__eyebrow">ELANKAV INTELLIGENCE</div>
+            <div className="elan-field__eyebrow">ELANKAV</div>
             <div className="elan-field__title">ELAN <span>COPILOTO</span></div>
             <div className="elan-field__subtitle">{platformLabel} · {actorLabel}</div>
           </div>
@@ -803,7 +803,7 @@ export default function ELANLive() {
         </div>
       </header>
 
-      <section className={`elan-field__workspace ${chatOpen ? 'elan-field__workspace--chat' : ''}`}>
+      <section className={`elan-field__workspace ${chatOpen && sessionToken && !locked ? 'elan-field__workspace--chat' : ''}`}>
         <div className="elan-field__stage">
           {cameraOn && !recordingActive && (
             <FieldCamera
@@ -836,7 +836,7 @@ export default function ELANLive() {
               <div className="elan-field__ambient elan-field__ambient--two" />
 
               <section className="elan-field__core-panel">
-                <div className="elan-field__core-kicker">SISTEMA OPERATIVO ACTIVO</div>
+                <div className="elan-field__core-kicker">ELAN · CAMPO</div>
                 <div className={`elan-tech-orb elan-tech-orb--${phase}`} aria-label={phaseLabel(phase, active)}>
                   <div className="elan-tech-orb__halo elan-tech-orb__halo--1" />
                   <div className="elan-tech-orb__halo elan-tech-orb__halo--2" />
@@ -853,8 +853,8 @@ export default function ELANLive() {
                   <div className="elan-tech-orb__particle elan-tech-orb__particle--4" />
                 </div>
                 <div className="elan-field__core-state">{phaseLabel(phase, active)}</div>
-                <h1>ELAN COPILOTO</h1>
-                <p>Voz, visión, memoria y operación conectadas a un solo contexto.</p>
+                <h1>ELAN</h1>
+                <p>Copiloto de campo · voz, visión y memoria en una sola sesión.</p>
                 <div className="elan-field__core-tags">
                   <span>MEMORIA UNIFICADA</span>
                   <span>OPENAI REALTIME</span>
