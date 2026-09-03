@@ -70,7 +70,7 @@ async function callElanRuntime(path,body){
 async function getUnifiedTools(session,platform){const active=requestedPlatform(session,platform);return callElanRuntime('/api/v1/elan-runtime/tools',{actor:unifiedActor(session),channel:'copilot',platform:active,memoryLimit:20})}
 async function executeLiveTool(session,tool,args={},platform){const active=requestedPlatform(session,platform);const execution=await callElanRuntime('/api/v1/elan-runtime/execute',{actor:unifiedActor(session),channel:'copilot',platform:active,tool,arguments:args});return execution.result}
 async function persistLiveMemory(session,payload={},platform){const active=requestedPlatform(session,platform);return callElanRuntime('/api/v1/elan-runtime/memory/event',{actor:unifiedActor(session),channel:'copilot',platform:active,direction:payload.direction,text:payload.text,messageType:payload.messageType||'audio',externalMessageId:payload.externalMessageId||null,occurredAt:payload.occurredAt||null})}
-async function callConnectJson({method='POST',path='',body,source='elan-copilot'}={}){const{baseUrl,token}=getConnectConfig();const response=await fetch(`${baseUrl}${path}`,{method,headers:{'Content-Type':'application/json','X-Elankav-Design-Token':token,'X-Elankav-Copilot-Token':token,'X-Elankav-Platform':'ELANVISUAL','X-Elankav-Source':source},...(body===undefined?{}:{body:JSON.stringify(body)})});const data=await response.json().catch(()=>({ok:false,error:`CONNECT HTTP ${response.status}`}));return{status:response.status,data}}
+async function callConnectJson({method='POST',path='',body,source='elan-copilot',platform='ELANVISUAL'}={}){const{baseUrl,token}=getConnectConfig();const active=normalizePlatform(platform);const response=await fetch(`${baseUrl}${path}`,{method,headers:{'Content-Type':'application/json','X-Elankav-Design-Token':token,'X-Elankav-Copilot-Token':token,'X-Elankav-Platform':active,'X-Elankav-Source':source},...(body===undefined?{}:{body:JSON.stringify(body)})});const data=await response.json().catch(()=>({ok:false,error:`CONNECT HTTP ${response.status}`}));return{status:response.status,data}}
 
 export default async function handler(req,res){cors(req,res);if(req.method==='OPTIONS')return res.status(204).end();try{
   if(req.method==='GET'){
@@ -88,21 +88,21 @@ export default async function handler(req,res){cors(req,res);if(req.method==='OP
   let forwarded=payload;let verifiedLiveSession=null;let liveInboundText='';
   if(String(payload.canal||'').toLowerCase()==='web-live'){
     verifiedLiveSession=await verifyLiveSession(String(payload.live_session_token||''));
+    const activePlatform=requestedPlatform(verifiedLiveSession,payload.platform||payload.unidad);
     liveInboundText=extractUserMessage(payload);
     if(liveInboundText){
-      await persistLiveMemory(verifiedLiveSession,{direction:'inbound',text:liveInboundText,messageType:'text',externalMessageId:String(payload.client_message_id||'').trim()||null});
+      await persistLiveMemory(verifiedLiveSession,{direction:'inbound',text:liveInboundText,messageType:'text',externalMessageId:String(payload.client_message_id||'').trim()||null},activePlatform);
     }
-    const activePlatform=requestedPlatform(verifiedLiveSession,payload.platform||payload.unidad);
     const [runtime,publishedRuntime]=await Promise.all([getUnifiedTools(verifiedLiveSession,activePlatform),getPublishedAiRuntime(activePlatform)]);
     forwarded={...payload,platform:activePlatform,unidad:activePlatform,live_session_token:undefined,capabilities:capabilityManifest(verifiedLiveSession),runtime_context:{...(payload.runtime_context||{}),runtime:runtime.runtime,runtimeVersion:runtime.version,runtimeTools:runtime.tools||[],runtimeMemory:runtime.memory||null,publishedRuntime,activePlatform,liveSession:unifiedActor(verifiedLiveSession)}};
   }else if(!['design-request','design-request-status','design-request-action'].includes(tipo)){
     const publishedRuntime=await getPublishedAiRuntime(payload.unidad||payload.platform||'elanvisual');
     forwarded={...payload,runtime_context:{...(payload.runtime_context||{}),publishedRuntime}};
   }
-  const designTypes=['design-request','design-request-status','design-request-action'];const path=designTypes.includes(tipo)?'/api/v1/design':'/api/v1/copilot';const result=await callConnectJson({method:'POST',path,body:forwarded,source:designTypes.includes(tipo)?'design-portal':'elan-copilot'});
+  const designTypes=['design-request','design-request-status','design-request-action'];const path=designTypes.includes(tipo)?'/api/v1/design':'/api/v1/copilot';const result=await callConnectJson({method:'POST',path,body:forwarded,source:designTypes.includes(tipo)?'design-portal':'elan-copilot',platform:forwarded.platform||forwarded.unidad||'ELANVISUAL'});
   if(verifiedLiveSession&&result.status>=200&&result.status<300){
     const outbound=extractAssistantText(result.data);
-    if(outbound){await persistLiveMemory(verifiedLiveSession,{direction:'outbound',text:outbound,messageType:'text',externalMessageId:String(result.data?.responseId||result.data?.id||'').trim()||null})}
+    if(outbound){await persistLiveMemory(verifiedLiveSession,{direction:'outbound',text:outbound,messageType:'text',externalMessageId:String(result.data?.responseId||result.data?.id||'').trim()||null},forwarded.platform||forwarded.unidad)}
   }
   return res.status(result.status).json(result.data)
 }catch(error){console.error('ERROR ELANVISUAL runtime proxy:',error);const status=[400,401,403,404,409].includes(error?.status)?error.status:['CONNECT_COPILOT_NOT_CONFIGURED','LIVE_VERIFY_NOT_CONFIGURED','ELAN_RUNTIME_NOT_CONFIGURED','AI_RUNTIME_NOT_CONFIGURED','AI_RUNTIME_AUTHORITY_INVALID'].includes(error?.code)?503:502;return res.status(status).json({ok:false,error:error?.message||'No fue posible comunicar ELANVISUAL con ELAN Runtime.',code:error?.code||'ELAN_RUNTIME_PROXY_FAILED'})}}
