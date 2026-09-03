@@ -1471,3 +1471,598 @@
     font-size: 8px;
   }
 }
+
+
+/* =========================================================
+   ELAN COPILOTO / AURA UI 2026
+   Modern restrained voice/vision interface.
+   Removes the retro sci-fi HUD treatment without changing runtime.
+   ========================================================= */
+
+.elan-field {
+  --elan-aura-blue: #6f8cff;
+  --elan-aura-cyan: #74e7ff;
+  --elan-aura-violet: #9b7cff;
+  --elan-aura-mint: #83f7d4;
+  --elan-surface: rgba(13, 17, 27, .72);
+  --elan-surface-strong: rgba(12, 16, 25, .9);
+  --elan-hairline: rgba(255,255,255,.075);
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(76, 93, 190, .13) 0%, rgba(21, 29, 58, .05) 35%, transparent 68%),
+    linear-gradient(180deg, #05070b 0%, #070a10 58%, #05070a 100%);
+}
+
+.elan-field::before {
+  display: none;
+}
+
+.elan-field__topbar {
+  height: 68px;
+  padding: 0 20px;
+  border: 0;
+  background: rgba(6, 8, 13, .72);
+  box-shadow: none;
+  backdrop-filter: blur(24px) saturate(1.25);
+  -webkit-backdrop-filter: blur(24px) saturate(1.25);
+}
+
+.elan-field__topbar::after {
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+  height: 1px;
+  opacity: 1;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.07) 20%, rgba(255,255,255,.07) 80%, transparent);
+}
+
+.elan-field__brand {
+  gap: 10px;
+}
+
+.elan-field__brand-orb {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255,255,255,.95) 0 4%, transparent 5%),
+    radial-gradient(circle at 46% 42%, #93f2ff 0 9%, #768cff 30%, #7559c8 58%, #161a32 100%);
+  box-shadow:
+    0 0 24px rgba(111,140,255,.22),
+    inset 0 0 18px rgba(255,255,255,.08);
+}
+
+.elan-field__brand-orb::before,
+.elan-field__brand-orb::after {
+  display: none;
+}
+
+.elan-field__brand-orb span {
+  color: rgba(255,255,255,.94);
+  font-size: 12px;
+  font-weight: 750;
+  text-shadow: none;
+}
+
+.elan-field__eyebrow {
+  display: none;
+}
+
+.elan-field__title {
+  font-size: 13px;
+  line-height: 1.05;
+  letter-spacing: -.01em;
+  font-weight: 650;
+  color: #f5f7fb;
+}
+
+.elan-field__title span {
+  color: rgba(214,220,234,.58);
+  font-weight: 500;
+}
+
+.elan-field__subtitle {
+  margin-top: 3px;
+  color: rgba(190,198,214,.42);
+  font-size: 9px;
+  letter-spacing: 0;
+}
+
+.elan-field__topbar-right {
+  gap: 8px;
+}
+
+.elan-field__sync {
+  min-height: 32px;
+  padding: 0 10px;
+  gap: 7px;
+  border-radius: 999px;
+  border: 1px solid var(--elan-hairline);
+  background: rgba(255,255,255,.025);
+}
+
+.elan-field__sync-dot {
+  width: 6px;
+  height: 6px;
+  background: #70e7bd;
+  box-shadow: 0 0 10px rgba(112,231,189,.42);
+}
+
+.elan-field__sync strong {
+  font-size: 8px;
+  letter-spacing: .04em;
+  color: rgba(235,240,247,.78);
+  font-weight: 650;
+}
+
+.elan-field__sync small {
+  display: none;
+}
+
+.elan-field__status {
+  min-height: 32px;
+  padding: 0 11px;
+  border-radius: 999px;
+  border-color: var(--elan-hairline);
+  background: rgba(255,255,255,.025);
+  font-size: 8px;
+  letter-spacing: .08em;
+  color: rgba(235,240,247,.72);
+}
+
+.elan-field__workspace,
+.elan-field__workspace--chat {
+  height: calc(100dvh - 68px);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.elan-field__stage {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(110, 126, 255, .06), transparent 30%),
+    linear-gradient(180deg, #070a10, #05070b);
+}
+
+.elan-field__command-center {
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 24px 108px;
+  overflow: hidden;
+}
+
+.elan-field__command-center::before {
+  content: "";
+  position: absolute;
+  width: min(78vw, 820px);
+  aspect-ratio: 1;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(106,124,255,.09), rgba(93,81,173,.03) 42%, transparent 70%);
+  filter: blur(22px);
+  opacity: .9;
+  pointer-events: none;
+}
+
+.elan-field__ambient {
+  width: 520px;
+  height: 520px;
+  filter: blur(130px);
+  opacity: .08;
+}
+
+.elan-field__ambient--one {
+  left: 20%;
+  top: 5%;
+  background: #496cff;
+}
+
+.elan-field__ambient--two {
+  right: 18%;
+  bottom: 2%;
+  background: #7959ff;
+}
+
+.elan-field__core-panel {
+  grid-column: auto;
+  width: min(100%, 560px);
+  position: relative;
+  z-index: 2;
+}
+
+.elan-field__core-kicker,
+.elan-field__core-tags,
+.elan-field__telemetry {
+  display: none !important;
+}
+
+.elan-tech-orb {
+  width: clamp(250px, 28vw, 360px);
+  margin: 0 auto 16px;
+  filter: none;
+}
+
+.elan-tech-orb::before {
+  inset: 8%;
+  background:
+    radial-gradient(circle, rgba(120,151,255,.2), rgba(113,94,217,.08) 45%, transparent 72%);
+  filter: blur(28px);
+  animation: elan-aura-breathe 4.4s ease-in-out infinite;
+}
+
+.elan-tech-orb__halo,
+.elan-tech-orb__scan,
+.elan-tech-orb__particle,
+.elan-tech-orb__mesh,
+.elan-tech-orb__flare {
+  display: none;
+}
+
+.elan-tech-orb__sphere {
+  inset: 14%;
+  border-radius: 50%;
+  overflow: visible;
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255,255,255,.96) 0 2%, rgba(173,246,255,.88) 3%, transparent 9%),
+    radial-gradient(circle at 42% 38%, rgba(124,232,255,.86) 0 12%, rgba(106,143,255,.9) 30%, rgba(122,82,215,.9) 55%, rgba(34,28,74,.96) 78%, #0b0d18 100%);
+  box-shadow:
+    0 0 55px rgba(105,139,255,.32),
+    0 0 130px rgba(119,87,229,.22),
+    inset -34px -30px 54px rgba(8,8,24,.42),
+    inset 18px 14px 42px rgba(255,255,255,.09);
+  animation: elan-aura-float 5.5s ease-in-out infinite;
+}
+
+.elan-tech-orb__sphere::before,
+.elan-tech-orb__sphere::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.elan-tech-orb__sphere::before {
+  inset: -8%;
+  background:
+    conic-gradient(from 140deg,
+      rgba(117,232,255,.0),
+      rgba(117,232,255,.16),
+      rgba(147,105,255,.2),
+      rgba(102,241,214,.08),
+      rgba(117,232,255,.0));
+  filter: blur(18px);
+  opacity: .8;
+  animation: elan-aura-turn 11s linear infinite;
+}
+
+.elan-tech-orb__sphere::after {
+  inset: 8%;
+  background:
+    radial-gradient(ellipse at 31% 22%, rgba(255,255,255,.26), transparent 23%),
+    radial-gradient(circle at 72% 72%, rgba(75,58,173,.23), transparent 42%);
+  mix-blend-mode: screen;
+}
+
+.elan-tech-orb__core {
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(255,255,255,.13);
+  background: rgba(8,10,20,.12);
+  color: rgba(255,255,255,.82);
+  font-size: 18px;
+  font-weight: 600;
+  box-shadow: none;
+  backdrop-filter: blur(10px);
+}
+
+.elan-tech-orb--listening .elan-tech-orb__sphere {
+  box-shadow:
+    0 0 62px rgba(88,221,216,.32),
+    0 0 145px rgba(100,130,255,.24),
+    inset -34px -30px 54px rgba(8,8,24,.38),
+    inset 18px 14px 42px rgba(255,255,255,.1);
+}
+
+.elan-tech-orb--thinking .elan-tech-orb__sphere {
+  filter: hue-rotate(18deg) saturate(1.08);
+}
+
+.elan-tech-orb--speaking .elan-tech-orb__sphere {
+  filter: hue-rotate(-12deg) saturate(1.08);
+  animation-duration: 3.4s;
+}
+
+.elan-field__core-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 27px;
+  padding: 0 10px;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 999px;
+  background: rgba(255,255,255,.025);
+  color: rgba(225,231,241,.72);
+  font-size: 8px;
+  letter-spacing: .08em;
+  font-weight: 600;
+  text-shadow: none;
+}
+
+.elan-field__core-state::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7de7c5;
+  box-shadow: 0 0 10px rgba(125,231,197,.32);
+}
+
+.elan-field__core-panel h1 {
+  margin: 15px 0 4px;
+  font-size: clamp(28px, 3vw, 38px);
+  letter-spacing: -.035em;
+  font-weight: 590;
+  color: rgba(248,250,253,.96);
+}
+
+.elan-field__core-panel p {
+  margin: 0 auto;
+  max-width: 430px;
+  color: rgba(182,191,209,.48);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.elan-field__controls {
+  bottom: max(18px, env(safe-area-inset-bottom));
+  gap: 4px;
+  max-width: calc(100% - 24px);
+  padding: 6px;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 22px;
+  background: rgba(15,18,27,.68);
+  box-shadow:
+    0 24px 70px rgba(0,0,0,.38),
+    inset 0 1px rgba(255,255,255,.04);
+  backdrop-filter: blur(26px) saturate(1.25);
+  -webkit-backdrop-filter: blur(26px) saturate(1.25);
+}
+
+.elan-field__control {
+  min-width: 62px;
+  height: 54px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 17px;
+  background: transparent;
+  color: rgba(229,234,243,.72);
+}
+
+.elan-field__control span {
+  font-size: 8px;
+  font-weight: 550;
+  letter-spacing: 0;
+}
+
+.elan-field__control:hover {
+  transform: none;
+  background: rgba(255,255,255,.055);
+  border-color: transparent;
+}
+
+.elan-field__control--active {
+  color: #c9fff0;
+  background: rgba(98,219,184,.105);
+}
+
+.elan-field__control--primary {
+  color: white;
+  background: linear-gradient(145deg, rgba(105,135,255,.36), rgba(135,93,235,.28));
+  box-shadow: inset 0 1px rgba(255,255,255,.08);
+}
+
+.elan-field__control--danger {
+  color: #ffd4d4;
+  background: rgba(210,76,91,.12);
+}
+
+.elan-field__control--icon {
+  min-width: 50px;
+  width: 50px;
+}
+
+.elan-field__shutter {
+  width: 18px !important;
+  height: 18px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.09);
+}
+
+.elan-field__error,
+.elan-field__note {
+  top: 16px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  max-width: min(520px, calc(100% - 28px));
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 10px;
+  box-shadow: 0 14px 44px rgba(0,0,0,.3);
+}
+
+.elan-field__error {
+  color: rgba(255,231,231,.92);
+  border: 1px solid rgba(255,120,130,.16);
+  background: rgba(93,30,39,.72);
+}
+
+.elan-field__note {
+  color: rgba(224,255,244,.92);
+  border: 1px solid rgba(104,229,184,.14);
+  background: rgba(23,74,57,.7);
+}
+
+.elan-field__chat-panel {
+  position: absolute;
+  z-index: 30;
+  top: 14px;
+  right: 14px;
+  bottom: 14px;
+  width: min(410px, calc(100% - 28px));
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 24px;
+  background: rgba(11,14,21,.84);
+  box-shadow: 0 28px 90px rgba(0,0,0,.5);
+  backdrop-filter: blur(30px) saturate(1.2);
+  -webkit-backdrop-filter: blur(30px) saturate(1.2);
+  overflow: hidden;
+}
+
+.elan-field__chat-head {
+  height: 58px;
+  flex-basis: 58px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.elan-field__chat-head strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.elan-field__chat-head span {
+  color: rgba(185,194,211,.42);
+  font-size: 8px;
+}
+
+.elan-field-chat__bubble {
+  font-size: 11px;
+  border: 0;
+}
+
+.elan-field-chat__bubble--assistant {
+  background: rgba(255,255,255,.05);
+  border: 0;
+}
+
+.elan-field-chat__bubble--user {
+  background: rgba(103,126,255,.18);
+  border: 0;
+}
+
+.elan-field-chat__composer {
+  border-color: rgba(255,255,255,.07);
+  background: rgba(255,255,255,.035);
+}
+
+.elan-field-chat__send {
+  background: linear-gradient(145deg, #86e5ff, #8d78ff);
+  color: #080a11;
+}
+
+@keyframes elan-aura-breathe {
+  0%, 100% { transform: scale(.94); opacity: .58; }
+  50% { transform: scale(1.06); opacity: .92; }
+}
+
+@keyframes elan-aura-float {
+  0%, 100% { transform: translateY(-4px) scale(.99); }
+  50% { transform: translateY(5px) scale(1.015); }
+}
+
+@keyframes elan-aura-turn {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 760px) {
+  .elan-field__topbar {
+    height: 60px;
+    padding: 0 10px;
+  }
+
+  .elan-field__workspace,
+  .elan-field__workspace--chat {
+    height: calc(100dvh - 60px);
+  }
+
+  .elan-field__sync {
+    display: none;
+  }
+
+  .elan-field__subtitle {
+    max-width: 48vw;
+  }
+
+  .elan-field__status {
+    min-height: 29px;
+    padding: 0 9px;
+  }
+
+  .elan-field__command-center {
+    padding: 20px 12px 88px;
+  }
+
+  .elan-tech-orb {
+    width: min(68vw, 290px);
+    margin-bottom: 12px;
+  }
+
+  .elan-field__core-panel h1 {
+    margin-top: 12px;
+    font-size: 29px;
+  }
+
+  .elan-field__core-panel p {
+    max-width: 300px;
+    padding: 0 14px;
+    font-size: 10px;
+  }
+
+  .elan-field__controls {
+    width: calc(100% - 14px);
+    bottom: max(7px, env(safe-area-inset-bottom));
+    justify-content: center;
+    border-radius: 19px;
+    padding: 5px;
+  }
+
+  .elan-field__control {
+    min-width: 56px;
+    height: 50px;
+    border-radius: 15px;
+  }
+
+  .elan-field__control--icon {
+    min-width: 46px;
+    width: 46px;
+  }
+
+  .elan-field__chat-panel {
+    top: 8px;
+    right: 8px;
+    bottom: 8px;
+    width: calc(100% - 16px);
+    border-radius: 20px;
+  }
+
+  .elan-field__error,
+  .elan-field__note {
+    top: 10px;
+  }
+}
+
+@media (max-height: 680px) {
+  .elan-tech-orb {
+    width: min(44vh, 238px);
+  }
+
+  .elan-field__core-panel h1 {
+    font-size: 25px;
+    margin-top: 9px;
+  }
+
+  .elan-field__core-panel p {
+    display: none;
+  }
+}
