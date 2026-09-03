@@ -321,28 +321,53 @@ export default function ELANLive() {
     }
   }
 
-  async function executeRealtimeTool(event) {
-    const tool = String(event?.name || '').trim();
-    let args = {};
-    try { args = JSON.parse(String(event?.arguments || '{}')); }
-    catch { args = {}; }
-
+  async function callLiveTool(tool, args = {}, platform = activePlatform) {
+    if (!sessionToken) throw new Error('La sesión segura no está activa.');
     const response = await fetch(ELAN_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         tipo: 'live-tool',
         live_session_token: sessionToken,
+        platform,
         tool,
         arguments: args,
       }),
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(20000),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data?.ok) {
       throw new Error(data?.error?.message || data?.error || 'CONNECT no pudo ejecutar la herramienta solicitada.');
     }
     return data.result ?? data;
+  }
+
+  function applyToolResult(tool, output) {
+    if (tool === 'buscar_cotizacion') setModuleData((current) => ({ ...current, quotations: payloadRows(output) }));
+    if (tool === 'buscar_cliente') setModuleData((current) => ({ ...current, customers: payloadRows(output) }));
+    if (tool === 'resumen_comercial') setModuleData((current) => ({ ...current, report: output?.data || output }));
+    if (tool === 'buscar_orden_trabajo') setModuleData((current) => ({ ...current, workOrders: payloadRows(output) }));
+    if (tool === 'buscar_vendedor') setModuleData((current) => ({ ...current, sellers: payloadRows(output) }));
+    if (tool === 'buscar_familiar') setModuleData((current) => ({ ...current, family: payloadRows(output) }));
+    if (tool === 'buscar_contacto') setModuleData((current) => ({ ...current, contacts: payloadRows(output) }));
+    if (tool === 'marketplace_listar_necesidades') setModuleData((current) => ({ ...current, demands: payloadRows(output) }));
+    if (tool === 'marketplace_listar_descubrimientos') setModuleData((current) => ({ ...current, discoveries: payloadRows(output) }));
+    if (tool === 'abrir_cotizacion') {
+      const candidate = output?.data || output;
+      if (candidate && typeof candidate === 'object') setSelectedQuote(candidate);
+    }
+    if (tool === 'enviar_cotizacion_cliente') setActionNotice('Cotización enviada por WhatsApp y confirmada por CONNECT.');
+    if (tool === 'enviar_cotizacion_email') setActionNotice('Cotización enviada por correo y confirmada por CONNECT.');
+  }
+
+  async function executeRealtimeTool(event) {
+    const tool = String(event?.name || '').trim();
+    let args = {};
+    try { args = JSON.parse(String(event?.arguments || '{}')); }
+    catch { args = {}; }
+    const output = await callLiveTool(tool, args);
+    applyToolResult(tool, output);
+    return output;
   }
 
   async function handleRealtimeToolCall(event) {
