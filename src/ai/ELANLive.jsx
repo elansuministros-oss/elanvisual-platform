@@ -835,34 +835,55 @@ export default function ELANLive() {
               <div className="elan-field__ambient elan-field__ambient--one" />
               <div className="elan-field__ambient elan-field__ambient--two" />
 
-              <section className="elan-spatial">
-                <div className="elan-spatial__copy">
-                  <span className="elan-spatial__eyebrow">COPILOTO DE CAMPO</span>
-                  <h1>ELAN</h1>
-                  <p>Voz, visión y memoria operativa en una sola superficie.</p>
-                  <div className="elan-spatial__meta">
-                    <span><i /> {phaseLabel(phase, active)}</span>
-                    <span>{platformLabel}</span>
-                    <span>{memoryCount} eventos</span>
-                  </div>
+              <section className="elan-neural">
+                <div className="elan-neural__intro">
+                  <span className="elan-neural__eyebrow">ELAN · COPILOTO DE CAMPO</span>
+                  <div className="elan-neural__status"><i />{phaseLabel(phase, active)}</div>
                 </div>
 
-                <div className={`elan-spatial__signal elan-spatial__signal--${phase}`} aria-label={phaseLabel(phase, active)}>
-                  <div className="elan-spatial__signal-glow" />
-                  <div className="elan-spatial__signal-line" />
-                  <div className="elan-spatial__wave">
-                    {Array.from({ length: 17 }).map((_, index) => (
+                <div className={`elan-neural__canvas elan-neural__canvas--${phase}`} aria-label={phaseLabel(phase, active)}>
+                  <div className="elan-neural__ambient" />
+                  <svg className="elan-neural__ribbon" viewBox="0 0 900 300" role="presentation" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="elanRibbonA" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#5ee7ff" stopOpacity="0" />
+                        <stop offset="24%" stopColor="#68d7ff" stopOpacity=".82" />
+                        <stop offset="52%" stopColor="#8a7dff" stopOpacity=".98" />
+                        <stop offset="78%" stopColor="#d075ff" stopOpacity=".72" />
+                        <stop offset="100%" stopColor="#d075ff" stopOpacity="0" />
+                      </linearGradient>
+                      <linearGradient id="elanRibbonB" x1="0" y1="1" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#72f4d0" stopOpacity="0" />
+                        <stop offset="35%" stopColor="#72f4d0" stopOpacity=".5" />
+                        <stop offset="70%" stopColor="#6f8cff" stopOpacity=".72" />
+                        <stop offset="100%" stopColor="#6f8cff" stopOpacity="0" />
+                      </linearGradient>
+                      <filter id="elanGlow">
+                        <feGaussianBlur stdDeviation="12" result="blur" />
+                        <feMerge>
+                          <feMergeNode in="blur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <path className="elan-neural__path elan-neural__path--a" d="M20 160 C150 55 265 255 390 145 C520 30 640 250 880 120" fill="none" stroke="url(#elanRibbonA)" strokeWidth="10" strokeLinecap="round" filter="url(#elanGlow)" />
+                    <path className="elan-neural__path elan-neural__path--b" d="M20 135 C175 230 275 40 420 165 C565 290 690 75 880 175" fill="none" stroke="url(#elanRibbonB)" strokeWidth="6" strokeLinecap="round" filter="url(#elanGlow)" />
+                    <path className="elan-neural__path elan-neural__path--c" d="M55 150 C210 105 315 205 455 138 C610 65 725 205 845 142" fill="none" stroke="url(#elanRibbonA)" strokeWidth="2.5" strokeLinecap="round" />
+                  </svg>
+                  <div className="elan-neural__pulse">
+                    {Array.from({ length: 31 }).map((_, index) => (
                       <span key={index} style={{ '--i': index }} />
                     ))}
                   </div>
-                  <div className="elan-spatial__state">{phaseLabel(phase, active)}</div>
+                  <div className="elan-neural__center-mark"><span>E</span></div>
                 </div>
 
-                <div className="elan-spatial__capabilities" aria-hidden="true">
-                  <span>VOZ</span>
-                  <span>VISIÓN</span>
-                  <span>MEMORIA</span>
-                  <span>CONNECT</span>
+                <div className="elan-neural__footer">
+                  <strong>{locked ? 'SESIÓN SEGURA REQUERIDA' : 'LISTO PARA TRABAJAR'}</strong>
+                  <p>{locked ? 'Abrí el enlace privado enviado por WhatsApp para activar voz, cámara y memoria.' : 'Voz, cámara, captura y memoria unificada disponibles en esta sesión.'}</p>
+                  <div className="elan-neural__capabilities">
+                    <span>VOICE</span><span>VISION</span><span>MEMORY</span><span>FIELD OPS</span>
+                  </div>
                 </div>
               </section>
 
