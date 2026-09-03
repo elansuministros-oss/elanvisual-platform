@@ -1,16 +1,35 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Camera as FieldCamera } from 'react-webcam-pro';
 import {
+  BarChart3,
+  Bell,
+  Boxes,
   Camera,
+  ChevronDown,
   ChevronLeft,
+  Eye,
+  Factory,
+  FileText,
   Flashlight,
+  FolderKanban,
+  Home,
+  Mail,
+  Menu,
   MessageSquare,
   Mic,
   MicOff,
+  PackageOpen,
   Pause,
+  Pencil,
   Play,
+  Plus,
+  RefreshCw,
   RotateCcw,
+  Send,
+  Settings,
   Square,
+  Truck,
+  Users,
   Video,
   X,
 } from 'lucide-react';
@@ -21,6 +40,38 @@ const ELAN_API = '/api/elan-ai';
 const REALTIME_TOKEN_API = '/api/elan-realtime-token';
 const OPENAI_REALTIME_CALLS = 'https://api.openai.com/v1/realtime/calls';
 const LIVE_TOKEN_KEY = 'elan-live-token';
+const OWNER_PLATFORMS = ['ELANVISUAL', 'ELAN_GO', 'CONNECT'];
+function normalizePlatformId(value) { return String(value || 'ELANVISUAL').trim().toUpperCase().replace(/[ -]+/g, '_'); }
+function platformTitle(value) { const id = normalizePlatformId(value); return id === 'ELAN_GO' ? 'ELAN GO' : id; }
+function payloadRows(payload) {
+  const data = payload && typeof payload === 'object' && Object.prototype.hasOwnProperty.call(payload, 'data') ? payload.data : payload;
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === 'object' && Array.isArray(data.results)) return data.results;
+  return [];
+}
+function quotationProjectId(row = {}) { return String(row.projectId || row.project_id || row.id || '').trim(); }
+function quotationNumber(row = {}) { return String(row.quotationNumber || row.quotation_number || row.projectNumber || row.project_number || 'Cotización').trim(); }
+function quotationCustomer(row = {}) {
+  const doc = row.quotation_document && typeof row.quotation_document === 'object' ? row.quotation_document : {};
+  const pub = doc.publicDocument && typeof doc.publicDocument === 'object' ? doc.publicDocument : {};
+  const customer = pub.customer && typeof pub.customer === 'object' ? pub.customer : {};
+  return String(row.customerName || row.customer_name || customer.name || customer.companyName || 'Cliente').trim();
+}
+function quotationTotal(row = {}) {
+  const direct = Number(row.totalUsd ?? row.total_usd);
+  if (Number.isFinite(direct)) return direct;
+  const doc = row.quotation_document && typeof row.quotation_document === 'object' ? row.quotation_document : {};
+  const pub = doc.publicDocument && typeof doc.publicDocument === 'object' ? doc.publicDocument : {};
+  const totals = pub.totals && typeof pub.totals === 'object' ? pub.totals : {};
+  const value = Number(totals.totalUsd ?? totals.total_usd ?? totals.total);
+  return Number.isFinite(value) ? value : 0;
+}
+function quotationItems(row = {}) {
+  const doc = row.quotation_document && typeof row.quotation_document === 'object' ? row.quotation_document : {};
+  const pub = doc.publicDocument && typeof doc.publicDocument === 'object' ? doc.publicDocument : {};
+  return Array.isArray(pub.items) ? pub.items : Array.isArray(doc.items) ? doc.items : [];
+}
+
 
 function sessionTokenFromHash() {
   const raw = String(window.location.hash || '').replace(/^#/, '');
@@ -139,7 +190,14 @@ export default function ELANLive() {
   const [cameraOn, setCameraOn] = useState(false);
   const [cameraCount, setCameraCount] = useState(0);
   const [torchOn, setTorchOn] = useState(false);
-  const [chatOpen, setChatOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [activePlatform, setActivePlatform] = useState('ELANVISUAL');
+  const [activeView, setActiveView] = useState('inicio');
+  const [moduleData, setModuleData] = useState({});
+  const [moduleBusy, setModuleBusy] = useState(false);
+  const [selectedQuote, setSelectedQuote] = useState(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [actionNotice, setActionNotice] = useState('');
   const [lastCapture, setLastCapture] = useState('');
   const [captureAnalysis, setCaptureAnalysis] = useState('');
   const [captureBusy, setCaptureBusy] = useState(false);
@@ -214,6 +272,7 @@ export default function ELANLive() {
         persistSessionToken(token);
         setSessionToken(token);
         setSession(data.session);
+        setActivePlatform(normalizePlatformId(data.platform || data.session?.activePlatform || data.session?.platform || 'ELANVISUAL'));
         setCapabilities(data.capabilities || {});
         setRuntimeInfo(data.runtime || null);
         setPublishedRuntime(data.publishedRuntime || null);
@@ -252,6 +311,7 @@ export default function ELANLive() {
         text: content,
         message_type: messageType,
         external_message_id: externalMessageId || undefined,
+        platform: activePlatform,
       }),
       signal: AbortSignal.timeout(10000),
     });
@@ -404,7 +464,7 @@ export default function ELANLive() {
       const tokenResponse = await fetch(REALTIME_TOKEN_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ live_session_token: sessionToken }),
+        body: JSON.stringify({ live_session_token: sessionToken, platform: activePlatform }),
         signal: AbortSignal.timeout(18000),
       });
       const tokenData = await tokenResponse.json().catch(() => ({}));
@@ -547,7 +607,8 @@ export default function ELANLive() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           modo: 'copilot',
-          unidad: 'ELANVISUAL',
+          unidad: activePlatform,
+          platform: activePlatform,
           canal: 'web-live',
           live_session_token: sessionToken,
           client_message_id: `field-capture:${Date.now()}`,
