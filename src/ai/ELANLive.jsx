@@ -835,29 +835,33 @@ export default function ELANLive() {
               <div className="elan-field__ambient elan-field__ambient--one" />
               <div className="elan-field__ambient elan-field__ambient--two" />
 
-              <section className="elan-field__core-panel">
-                <div className="elan-field__core-kicker">ELAN · CAMPO</div>
-                <div className={`elan-tech-orb elan-tech-orb--${phase}`} aria-label={phaseLabel(phase, active)}>
-                  <div className="elan-tech-orb__halo elan-tech-orb__halo--1" />
-                  <div className="elan-tech-orb__halo elan-tech-orb__halo--2" />
-                  <div className="elan-tech-orb__halo elan-tech-orb__halo--3" />
-                  <div className="elan-tech-orb__scan" />
-                  <div className="elan-tech-orb__sphere">
-                    <div className="elan-tech-orb__mesh" />
-                    <div className="elan-tech-orb__flare" />
-                    <div className="elan-tech-orb__core">E</div>
+              <section className="elan-spatial">
+                <div className="elan-spatial__copy">
+                  <span className="elan-spatial__eyebrow">COPILOTO DE CAMPO</span>
+                  <h1>ELAN</h1>
+                  <p>Voz, visión y memoria operativa en una sola superficie.</p>
+                  <div className="elan-spatial__meta">
+                    <span><i /> {phaseLabel(phase, active)}</span>
+                    <span>{platformLabel}</span>
+                    <span>{memoryCount} eventos</span>
                   </div>
-                  <div className="elan-tech-orb__particle elan-tech-orb__particle--1" />
-                  <div className="elan-tech-orb__particle elan-tech-orb__particle--2" />
-                  <div className="elan-tech-orb__particle elan-tech-orb__particle--3" />
-                  <div className="elan-tech-orb__particle elan-tech-orb__particle--4" />
                 </div>
-                <div className="elan-field__core-state">{phaseLabel(phase, active)}</div>
-                <h1>ELAN</h1>
-                <p>Copiloto de campo · voz, visión y memoria en una sola sesión.</p>
-                <div className="elan-field__core-tags">
-                  <span>MEMORIA UNIFICADA</span>
-                  <span>OPENAI REALTIME</span>
+
+                <div className={`elan-spatial__signal elan-spatial__signal--${phase}`} aria-label={phaseLabel(phase, active)}>
+                  <div className="elan-spatial__signal-glow" />
+                  <div className="elan-spatial__signal-line" />
+                  <div className="elan-spatial__wave">
+                    {Array.from({ length: 17 }).map((_, index) => (
+                      <span key={index} style={{ '--i': index }} />
+                    ))}
+                  </div>
+                  <div className="elan-spatial__state">{phaseLabel(phase, active)}</div>
+                </div>
+
+                <div className="elan-spatial__capabilities" aria-hidden="true">
+                  <span>VOZ</span>
+                  <span>VISIÓN</span>
+                  <span>MEMORIA</span>
                   <span>CONNECT</span>
                 </div>
               </section>
