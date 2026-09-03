@@ -2416,3 +2416,349 @@
     bottom: max(7px, env(safe-area-inset-bottom));
   }
 }
+
+
+/* ELAN NEURAL RIBBON V4
+   Modern voice-first visual surface: no giant orb, no empty split layout. */
+
+.elan-field {
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(90, 98, 220, .105), transparent 34%),
+    radial-gradient(ellipse at 50% 95%, rgba(58, 168, 151, .035), transparent 30%),
+    #05070b;
+}
+
+.elan-field__stage {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.008), transparent 22%),
+    #05070b;
+}
+
+.elan-field__command-center {
+  display: block;
+  padding: 0;
+}
+
+.elan-spatial,
+.elan-field__telemetry,
+.elan-tech-orb,
+.elan-field__ambient {
+  display: none !important;
+}
+
+.elan-neural {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto minmax(330px, 1fr) auto;
+  align-items: center;
+  justify-items: center;
+  padding: clamp(34px, 6vh, 62px) clamp(24px, 5vw, 72px) 118px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.elan-neural::before {
+  content: "";
+  position: absolute;
+  inset: 8% 5% 12%;
+  z-index: -2;
+  border-radius: 36px;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(97, 116, 255, .075), transparent 53%);
+  border: 1px solid rgba(255,255,255,.025);
+  box-shadow: inset 0 1px rgba(255,255,255,.018);
+}
+
+.elan-neural__intro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.elan-neural__eyebrow {
+  color: rgba(200,207,220,.42);
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: .16em;
+}
+
+.elan-neural__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.065);
+  background: rgba(255,255,255,.018);
+  color: rgba(224,230,240,.68);
+  font-size: 8px;
+  letter-spacing: .05em;
+}
+
+.elan-neural__status i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #79e6c1;
+  box-shadow: 0 0 11px rgba(121,230,193,.42);
+}
+
+.elan-neural__canvas {
+  width: min(92vw, 1040px);
+  min-height: 360px;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.elan-neural__ambient {
+  display: block !important;
+  position: absolute;
+  width: 72%;
+  height: 68%;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at center, rgba(102,118,255,.12), rgba(119,75,210,.045) 42%, transparent 72%);
+  filter: blur(34px);
+  opacity: .95;
+  animation: elan-neural-breathe 5.8s ease-in-out infinite;
+}
+
+.elan-neural__ribbon {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  filter: saturate(.96);
+}
+
+.elan-neural__path {
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.elan-neural__path--a {
+  animation: elan-neural-drift-a 7s ease-in-out infinite;
+}
+
+.elan-neural__path--b {
+  animation: elan-neural-drift-b 8.5s ease-in-out infinite;
+}
+
+.elan-neural__path--c {
+  opacity: .48;
+  animation: elan-neural-drift-c 6.5s ease-in-out infinite;
+}
+
+.elan-neural__pulse {
+  position: absolute;
+  width: min(72%, 720px);
+  height: 116px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, .42vw, 7px);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.elan-neural__pulse span {
+  width: clamp(2px, .22vw, 4px);
+  height: calc(18px + (var(--i) % 9) * 4px);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(180,246,255,.74), rgba(115,136,255,.52), rgba(205,113,255,.34));
+  opacity: .22;
+  transform-origin: center;
+  animation: elan-neural-bars 2.8s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.055s);
+}
+
+.elan-neural__canvas--listening .elan-neural__pulse span,
+.elan-neural__canvas--speaking .elan-neural__pulse span {
+  opacity: .72;
+  animation-duration: .78s;
+}
+
+.elan-neural__canvas--thinking .elan-neural__pulse span {
+  opacity: .5;
+  animation-duration: 1.3s;
+}
+
+.elan-neural__center-mark {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(8,11,18,.48);
+  box-shadow:
+    0 14px 50px rgba(0,0,0,.32),
+    inset 0 1px rgba(255,255,255,.06);
+  backdrop-filter: blur(18px);
+}
+
+.elan-neural__center-mark span {
+  color: rgba(245,247,252,.82);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.elan-neural__footer {
+  max-width: 620px;
+  text-align: center;
+}
+
+.elan-neural__footer strong {
+  display: block;
+  color: rgba(240,243,249,.86);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+.elan-neural__footer p {
+  margin: 7px auto 0;
+  color: rgba(178,188,207,.42);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.elan-neural__capabilities {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.elan-neural__capabilities span {
+  padding: 5px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.05);
+  color: rgba(188,198,216,.28);
+  font-size: 7px;
+  letter-spacing: .1em;
+}
+
+.elan-field__controls {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.elan-field__error {
+  top: 18px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  max-width: min(560px, calc(100% - 28px));
+  color: rgba(255,229,232,.9);
+  border: 1px solid rgba(255,112,128,.14);
+  background: rgba(81,28,38,.66);
+  box-shadow: 0 18px 60px rgba(0,0,0,.34);
+  backdrop-filter: blur(22px);
+}
+
+.elan-field--locked .elan-neural__status i {
+  background: #8c94a5;
+  box-shadow: none;
+}
+
+.elan-field--locked .elan-neural__canvas {
+  opacity: .82;
+}
+
+@keyframes elan-neural-breathe {
+  0%,100% { transform: scale(.94); opacity: .68; }
+  50% { transform: scale(1.035); opacity: 1; }
+}
+
+@keyframes elan-neural-drift-a {
+  0%,100% { transform: translateY(-7px) scaleX(.99); opacity: .72; }
+  50% { transform: translateY(8px) scaleX(1.015); opacity: 1; }
+}
+
+@keyframes elan-neural-drift-b {
+  0%,100% { transform: translateY(9px) scaleX(1.012); opacity: .56; }
+  50% { transform: translateY(-8px) scaleX(.99); opacity: .82; }
+}
+
+@keyframes elan-neural-drift-c {
+  0%,100% { transform: translateX(-5px) scaleX(.99); }
+  50% { transform: translateX(6px) scaleX(1.01); }
+}
+
+@keyframes elan-neural-bars {
+  0%,100% { transform: scaleY(.34); }
+  50% { transform: scaleY(1.15); }
+}
+
+@media (max-width: 760px) {
+  .elan-neural {
+    grid-template-rows: auto minmax(260px, 1fr) auto;
+    padding: 24px 10px 84px;
+  }
+
+  .elan-neural::before {
+    inset: 5% 2% 10%;
+    border-radius: 26px;
+  }
+
+  .elan-neural__intro {
+    gap: 8px;
+  }
+
+  .elan-neural__eyebrow {
+    font-size: 7px;
+  }
+
+  .elan-neural__status {
+    min-height: 25px;
+    font-size: 7px;
+  }
+
+  .elan-neural__canvas {
+    width: 100%;
+    min-height: 270px;
+  }
+
+  .elan-neural__pulse {
+    width: 86%;
+    gap: 3px;
+  }
+
+  .elan-neural__pulse span {
+    width: 2px;
+  }
+
+  .elan-neural__center-mark {
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+  }
+
+  .elan-neural__footer p {
+    padding: 0 18px;
+    font-size: 9px;
+  }
+
+  .elan-neural__capabilities span:last-child {
+    display: none;
+  }
+
+  .elan-field__controls {
+    left: 7px;
+    right: 7px;
+    width: auto;
+    transform: none;
+    bottom: max(7px, env(safe-area-inset-bottom));
+    justify-content: center;
+  }
+}
