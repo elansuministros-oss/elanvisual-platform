@@ -159,7 +159,7 @@ export default function ELANLive() {
   const mountedRef = useRef(true);
   const realtimeActiveRef = useRef(false);
 
-  const recordingActive = recordingState === 'recording' || recordingState === 'paused';
+  const recordingActive = recordingState === 'opening' || recordingState === 'recording' || recordingState === 'paused';
   const recordingRunning = recordingState === 'recording';
   const recordingPaused = recordingState === 'paused';
 
@@ -630,6 +630,8 @@ export default function ELANLive() {
       setCameraOn(false);
       setTorchOn(false);
       setRecordingNote('');
+      setRecordingState('opening');
+      await new Promise((resolve) => requestAnimationFrame(() => resolve()));
       if (recordedVideoUrl) {
         URL.revokeObjectURL(recordedVideoUrl);
         setRecordedVideoUrl('');
