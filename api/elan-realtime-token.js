@@ -23,6 +23,26 @@ function getCopilotToken() {
   return clean(process.env.CONNECT_DESIGN_TOKEN || process.env.CONNECT_COPILOT_TOKEN || '');
 }
 
+async function getPublishedAiRuntime(baseUrl, internalToken, platform = 'elanvisual') {
+  const response = await fetch(`${baseUrl}/console/api/ai-platforms/runtime/${encodeURIComponent(String(platform || 'elanvisual').toLowerCase())}`, {
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${internalToken}`,
+      'X-Elankav-Internal-Token': internalToken,
+      'X-Elankav-Platform': String(platform || 'elanvisual').toUpperCase(),
+    },
+    signal: AbortSignal.timeout(10000),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data?.authority !== 'CONNECT_AI_PLATFORMS' || data?.authorityLocked !== true) {
+    const error = new Error(data?.error?.message || 'Plataformas IA no devolvió una configuración publicada válida.');
+    error.status = response.status || 503;
+    error.code = data?.error?.code || 'AI_RUNTIME_AUTHORITY_INVALID';
+    throw error;
+  }
+  return data;
+}
+
 function getOrchestratorConfig() {
   const baseUrl = clean(process.env.ORCHESTRATOR_BASE_URL || process.env.ELANKAV_ORCHESTRATOR_URL || 'https://orchestrator.elankav.com').replace(/\/+$/, '');
   const token = clean(
@@ -116,7 +136,10 @@ export default async function handler(req, res) {
     if (!liveSessionToken) return res.status(401).json({ ok: false, error: 'Sesión ELAN Live requerida.' });
 
     const session = await verifyLiveSession(baseUrl, internalToken, liveSessionToken);
-    const runtime = await getUnifiedRuntimeManifest(session);
+    const [runtime, publishedRuntime] = await Promise.all([
+      getUnifiedRuntimeManifest(session),
+      getPublishedAiRuntime(baseUrl, internalToken, session.platform || 'elanvisual'),
+    ]);
 
     const upstream = await fetch(`${baseUrl}/api/v1/copilot/realtime-token`, {
       method: 'POST',
@@ -134,6 +157,7 @@ export default async function handler(req, res) {
         runtimeVersion: runtime.version || null,
         runtimeTools: runtime.tools,
         runtimeMemory: runtime.memory || { history: [] },
+        publishedRuntime,
       }),
       signal: AbortSignal.timeout(15000),
     });
@@ -155,6 +179,7 @@ export default async function handler(req, res) {
       voice: data.voice || null,
       runtime: runtime.runtime || 'ELAN_UNIFIED_RUNTIME',
       runtimeVersion: runtime.version || null,
+      publishedRuntimeVersion: publishedRuntime.version || null,
       tools: Array.isArray(data.tools) ? data.tools : runtime.tools.map((tool) => tool.name),
       memoryMessages: Array.isArray(runtime.memory?.history) ? runtime.memory.history.length : 0,
     });

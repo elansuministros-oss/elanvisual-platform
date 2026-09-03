@@ -22,6 +22,58 @@ function getCopilotToken() {
   return clean(process.env.CONNECT_DESIGN_TOKEN || process.env.CONNECT_COPILOT_TOKEN || '');
 }
 
+function getOrchestratorConfig() {
+  return {
+    baseUrl: clean(process.env.ORCHESTRATOR_BASE_URL || process.env.ELANKAV_ORCHESTRATOR_URL || 'https://orchestrator.elankav.com').replace(/\/+$/, ''),
+    token: clean(process.env.ORCHESTRATOR_INTERNAL_TOKEN || process.env.ELANKAV_ORCHESTRATOR_INTERNAL_TOKEN || process.env.VQS_API_TOKEN || process.env.CONNECT_INTERNAL_TOKEN || process.env.CONNECT_INTERNAL_API_TOKEN || process.env.ELANKAV_CONNECT_INTERNAL_TOKEN || ''),
+  };
+}
+
+function unifiedActor(session = {}) {
+  const role = clean(session.role || 'unknown').toLowerCase();
+  const owner = role === 'owner' || clean(session.authority).toLowerCase() === 'owner_identity';
+  return {
+    role: owner ? 'owner' : role,
+    actorId: owner ? 'owner' : (session.sub || session.actorId || null),
+    ...(role === 'seller' && session.sellerId ? { sellerId: session.sellerId } : {}),
+    registered: true,
+    platformAllowed: true,
+    platforms: owner ? ['*'] : ['ELANVISUAL'],
+    scopes: Array.isArray(session.scopes) ? session.scopes : [],
+    authority: owner ? 'owner_identity' : (session.authority || null),
+    phone: session.phone || null,
+    canonicalPhone: session.phone || null,
+  };
+}
+
+async function getUnifiedRuntimeManifest(session) {
+  const { baseUrl, token } = getOrchestratorConfig();
+  if (!token) throw Object.assign(new Error('Token interno no configurado para ELAN Runtime.'), { code: 'ELAN_RUNTIME_NOT_CONFIGURED', status: 503 });
+  const response = await fetch(`${baseUrl}/api/v1/elan-runtime/tools`, {
+    method: 'POST',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, 'X-Elankav-Internal-Token': token, 'X-Elankav-Platform': 'ELANVISUAL', 'X-Elankav-Source': 'ELAN_LIVE_REALTIME' },
+    body: JSON.stringify({ actor: unifiedActor(session), channel: 'copilot', platform: 'ELANVISUAL', memoryLimit: 20 }),
+    signal: AbortSignal.timeout(10000),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data?.ok === false || !Array.isArray(data?.tools)) {
+    throw Object.assign(new Error(data?.error || 'ELAN Unified Runtime no devolvió un manifiesto válido.'), { code: data?.code || 'ELAN_RUNTIME_MANIFEST_FAILED', status: response.status || 502 });
+  }
+  return data;
+}
+
+async function getPublishedAiRuntime(baseUrl, internalToken, platform = 'elanvisual') {
+  const response = await fetch(`${baseUrl}/console/api/ai-platforms/runtime/${encodeURIComponent(String(platform || 'elanvisual').toLowerCase())}`, {
+    headers: { Accept: 'application/json', Authorization: `Bearer ${internalToken}`, 'X-Elankav-Internal-Token': internalToken, 'X-Elankav-Platform': String(platform || 'elanvisual').toUpperCase() },
+    signal: AbortSignal.timeout(10000),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data?.authority !== 'CONNECT_AI_PLATFORMS' || data?.authorityLocked !== true) {
+    throw Object.assign(new Error(data?.error?.message || 'Plataformas IA no devolvió una configuración publicada válida.'), { code: data?.error?.code || 'AI_RUNTIME_AUTHORITY_INVALID', status: response.status || 503 });
+  }
+  return data;
+}
+
 async function verifyLiveSession(baseUrl, internalToken, token) {
   const response = await fetch(`${baseUrl}/api/v1/live-access/verify`, {
     method: 'POST',
@@ -61,6 +113,10 @@ export default async function handler(req, res) {
     if (!sdp || !sdp.startsWith('v=')) return res.status(400).json({ ok: false, error: 'Oferta WebRTC inválida.' });
 
     const session = await verifyLiveSession(baseUrl, internalToken, liveSessionToken);
+    const [runtime, publishedRuntime] = await Promise.all([
+      getUnifiedRuntimeManifest(session),
+      getPublishedAiRuntime(baseUrl, internalToken, session.platform || 'elanvisual'),
+    ]);
 
     const upstream = await fetch(`${baseUrl}/api/v1/copilot/realtime`, {
       method: 'POST',
@@ -74,14 +130,12 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         sdp,
-        liveSession: {
-          role: session.role,
-          actorId: session.sub,
-          sellerId: session.sellerId || null,
-          phone: session.phone,
-          scopes: session.scopes,
-          authority: session.authority,
-        },
+        liveSession: unifiedActor(session),
+        runtime: runtime.runtime || 'ELAN_UNIFIED_RUNTIME',
+        runtimeVersion: runtime.version || null,
+        runtimeTools: runtime.tools,
+        runtimeMemory: runtime.memory || { history: [] },
+        publishedRuntime,
       }),
       signal: AbortSignal.timeout(20000),
     });
