@@ -7,6 +7,25 @@ function isAllowedOrigin(origin=''){if(ALLOWED_ORIGINS.has(origin))return true;t
 function cors(req,res){const origin=req.headers.origin||'';if(isAllowedOrigin(origin))res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');res.setHeader('Access-Control-Allow-Credentials','true');res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization, X-Requested-With, Accept, Origin')}
 function getConnectConfig(){const baseUrl=String(process.env.CONNECT_BASE_URL||process.env.ELANKAV_CONNECT_URL||'https://connect.elankav.com').trim().replace(/\/+$/,'');const token=String(process.env.CONNECT_DESIGN_TOKEN||'').trim();if(!token){const error=new Error('CONNECT_DESIGN_TOKEN no configurado en ELANVISUAL');error.code='CONNECT_COPILOT_NOT_CONFIGURED';throw error}return{baseUrl,token}}
 function getInternalToken(){return String(process.env.CONNECT_INTERNAL_TOKEN||process.env.CONNECT_INTERNAL_API_TOKEN||process.env.ELANKAV_CONNECT_INTERNAL_TOKEN||process.env.ORCHESTRATOR_INTERNAL_TOKEN||process.env.VQS_API_TOKEN||'').trim()}
+async function getPublishedAiRuntime(platform='elanvisual'){
+  const internal=getInternalToken();
+  if(!internal){const error=new Error('Token interno no configurado para consultar Plataformas IA.');error.code='AI_RUNTIME_NOT_CONFIGURED';throw error}
+  const{baseUrl}=getConnectConfig();
+  const id=String(platform||'elanvisual').trim().toLowerCase();
+  const response=await fetch(`${baseUrl}/console/api/ai-platforms/runtime/${encodeURIComponent(id)}`,{headers:{Accept:'application/json',Authorization:`Bearer ${internal}`,'X-Elankav-Internal-Token':internal,'X-Elankav-Platform':id.toUpperCase()},signal:AbortSignal.timeout(10000)});
+  const data=await response.json().catch(()=>null);
+  if(!response.ok||data?.authority!=='CONNECT_AI_PLATFORMS'||data?.authorityLocked!==true){const error=new Error(data?.error?.message||'Plataformas IA no devolvió una configuración publicada válida.');error.code=data?.error?.code||'AI_RUNTIME_AUTHORITY_INVALID';error.status=response.status;throw error}
+  return data;
+}
+function extractUserMessage(payload={}){
+  const direct=String(payload.mensaje||payload.message||payload.prompt||'').trim();if(direct)return direct;
+  const messages=Array.isArray(payload.messages)?payload.messages:[];
+  for(let i=messages.length-1;i>=0;i-=1){const item=messages[i];if(String(item?.role||'').toLowerCase()!=='user')continue;if(typeof item?.content==='string'&&item.content.trim())return item.content.trim();if(Array.isArray(item?.content)){const value=item.content.map(part=>part&&typeof part==='object'&&'text'in part?String(part.text||''):'').join('\n').trim();if(value)return value}}
+  return '';
+}
+function extractAssistantText(data={}){
+  return String(data?.texto||data?.respuesta||data?.message||data?.content||data?.output_text||'').trim();
+}
 function getOrchestratorConfig(){
   const baseUrl=String(process.env.ORCHESTRATOR_BASE_URL||process.env.ELANKAV_ORCHESTRATOR_URL||'https://orchestrator.elankav.com').trim().replace(/\/+$/,'');
   const tokens=[
@@ -24,7 +43,7 @@ function getOrchestratorConfig(){
 async function callLiveInternal(path,body){const internal=getInternalToken();if(!internal){const error=new Error('Token interno no configurado para ELAN Live');error.code='LIVE_VERIFY_NOT_CONFIGURED';throw error}const{baseUrl}=getConnectConfig();const response=await fetch(`${baseUrl}${path}`,{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json',Authorization:`Bearer ${internal}`,'X-Elankav-Internal-Token':internal,'X-Elankav-Platform':'ELANVISUAL'},body:JSON.stringify(body)});const data=await response.json().catch(()=>null);if(!response.ok){const error=new Error(data?.error?.message||'Sesión ELAN Live inválida.');error.code=data?.error?.code||'LIVE_SESSION_INVALID';error.status=response.status;throw error}return data?.data||{}}
 async function verifyLiveSession(token){const data=await callLiveInternal('/api/v1/live-access/verify',{token});if(!data?.valid)throw Object.assign(new Error('Sesión ELAN Live inválida.'),{code:'LIVE_SESSION_INVALID',status:401});return data.session}
 async function exchangeLiveCode(code){const data=await callLiveInternal('/api/v1/live-access/exchange',{code});if(!data?.token||!data?.session)throw Object.assign(new Error('Enlace ELAN Live inválido.'),{code:'LIVE_CODE_INVALID',status:401});return data}
-function capabilityManifest(session){const scopes=Array.isArray(session?.scopes)?session.scopes:[];const role=String(session?.role||'unknown').toLowerCase();const all=scopes.includes('*');const has=(scope)=>all||scopes.includes(scope);return{role,scopes,canUseAssistant:true,canUseVoice:true,canUseCamera:false,canCreateDesign:has('design.create'),canGenerateImage:has('image.create'),canGenerateVideo:has('video.create'),canResearchWeb:has('web.research'),canReadAuthorizedPrices:role==='seller'||has('price.authorized.read'),canManageMasterPrices:all,canViewMargins:all}}
+function capabilityManifest(session){const scopes=Array.isArray(session?.scopes)?session.scopes:[];const role=String(session?.role||'unknown').toLowerCase();const all=scopes.includes('*');const has=(scope)=>all||scopes.includes(scope);return{role,scopes,canUseAssistant:true,canUseVoice:true,canUseCamera:has('camera.vision'),canCreateDesign:has('design.create'),canGenerateImage:has('image.create'),canGenerateVideo:has('video.create'),canResearchWeb:has('web.research'),canReadAuthorizedPrices:role==='seller'||has('price.authorized.read')||has('price.read'),canManageMasterPrices:all,canViewMargins:all}}
 function unifiedActor(session={}){const role=String(session.role||'unknown').toLowerCase();const owner=role==='owner'||String(session.authority||'').toLowerCase()==='owner_identity';const actorId=owner?'owner':(session.sub||session.actorId||session.sellerId||null);return{role:owner?'owner':role,actorId,...(role==='seller'&&session.sellerId?{sellerId:session.sellerId}:{}),...(role==='seller'&&(session.sellerName||session.displayName||session.name)?{sellerName:session.sellerName||session.displayName||session.name}:{}),registered:true,platformAllowed:true,platforms:owner?['*']:['ELANVISUAL'],scopes:Array.isArray(session.scopes)?session.scopes:[],authority:owner?'owner_identity':(session.authority||null),phone:session.phone||null,canonicalPhone:session.phone||null}}
 async function callElanRuntime(path,body){
   const{baseUrl,tokens}=getOrchestratorConfig();
@@ -54,14 +73,26 @@ export default async function handler(req,res){cors(req,res);if(req.method==='OP
   if(req.method!=='POST')return res.status(405).json({ok:false,error:'Método no permitido.'});
   const payload=req.body||{};const tipo=String(payload.tipo||payload.type||'').trim();
   if(tipo==='live-code-exchange'){const exchanged=await exchangeLiveCode(String(payload.code||''));return res.status(200).json({ok:true,token:exchanged.token,session:exchanged.session,capabilities:capabilityManifest(exchanged.session)})}
-  if(tipo==='live-session-verify'){const session=await verifyLiveSession(String(payload.token||''));const runtime=await getUnifiedTools(session);return res.status(200).json({ok:true,session,capabilities:capabilityManifest(session),runtime:{name:runtime.runtime,version:runtime.version,tools:(runtime.tools||[]).map((tool)=>tool.name),memory:runtime.memory||null}})}
+  if(tipo==='live-session-verify'){const session=await verifyLiveSession(String(payload.token||''));const [runtime,publishedRuntime]=await Promise.all([getUnifiedTools(session),getPublishedAiRuntime(session.platform||'elanvisual')]);return res.status(200).json({ok:true,session,capabilities:capabilityManifest(session),publishedRuntime,runtime:{name:runtime.runtime,version:runtime.version,tools:(runtime.tools||[]).map((tool)=>tool.name),memory:runtime.memory||null}})}
   if(tipo==='live-tool'){const session=await verifyLiveSession(String(payload.live_session_token||''));const tool=String(payload.tool||payload.name||'').trim();const args=payload.arguments&&typeof payload.arguments==='object'?payload.arguments:{};const result=await executeLiveTool(session,tool,args);return res.status(200).json({ok:true,tool,result,runtime:'ELAN_UNIFIED_RUNTIME',authority:'CONNECT'})}
   if(tipo==='live-memory-event'){const session=await verifyLiveSession(String(payload.live_session_token||''));const direction=String(payload.direction||'').toLowerCase();if(!['inbound','outbound'].includes(direction))return res.status(400).json({ok:false,error:'direction inválido.',code:'LIVE_MEMORY_DIRECTION_INVALID'});const text=String(payload.text||'').trim();if(!text)return res.status(200).json({ok:true,skipped:true});const memory=await persistLiveMemory(session,{direction,text,messageType:payload.message_type||'audio',externalMessageId:payload.external_message_id||null,occurredAt:payload.occurred_at||null});return res.status(200).json({ok:true,memory:memory.memory||memory,runtime:'ELAN_UNIFIED_RUNTIME',authority:'CONNECT'})}
-  let forwarded=payload;
+  let forwarded=payload;let verifiedLiveSession=null;let liveInboundText='';
   if(String(payload.canal||'').toLowerCase()==='web-live'){
-    const session=await verifyLiveSession(String(payload.live_session_token||''));
-    const runtime=await getUnifiedTools(session);
-    forwarded={...payload,live_session_token:undefined,capabilities:capabilityManifest(session),runtime_context:{...(payload.runtime_context||{}),runtime:runtime.runtime,runtimeVersion:runtime.version,runtimeTools:runtime.tools||[],runtimeMemory:runtime.memory||null,liveSession:unifiedActor(session)}};
+    verifiedLiveSession=await verifyLiveSession(String(payload.live_session_token||''));
+    liveInboundText=extractUserMessage(payload);
+    if(liveInboundText){
+      await persistLiveMemory(verifiedLiveSession,{direction:'inbound',text:liveInboundText,messageType:'text',externalMessageId:String(payload.client_message_id||'').trim()||null});
+    }
+    const [runtime,publishedRuntime]=await Promise.all([getUnifiedTools(verifiedLiveSession),getPublishedAiRuntime(verifiedLiveSession.platform||'elanvisual')]);
+    forwarded={...payload,live_session_token:undefined,capabilities:capabilityManifest(verifiedLiveSession),runtime_context:{...(payload.runtime_context||{}),runtime:runtime.runtime,runtimeVersion:runtime.version,runtimeTools:runtime.tools||[],runtimeMemory:runtime.memory||null,publishedRuntime,liveSession:unifiedActor(verifiedLiveSession)}};
+  }else if(!['design-request','design-request-status','design-request-action'].includes(tipo)){
+    const publishedRuntime=await getPublishedAiRuntime(payload.unidad||payload.platform||'elanvisual');
+    forwarded={...payload,runtime_context:{...(payload.runtime_context||{}),publishedRuntime}};
   }
-  const designTypes=['design-request','design-request-status','design-request-action'];const path=designTypes.includes(tipo)?'/api/v1/design':'/api/v1/copilot';const result=await callConnectJson({method:'POST',path,body:forwarded,source:designTypes.includes(tipo)?'design-portal':'elan-copilot'});return res.status(result.status).json(result.data)
-}catch(error){console.error('ERROR ELANVISUAL runtime proxy:',error);const status=[400,401,403,404].includes(error?.status)?error.status:error?.code==='CONNECT_COPILOT_NOT_CONFIGURED'||error?.code==='LIVE_VERIFY_NOT_CONFIGURED'||error?.code==='ELAN_RUNTIME_NOT_CONFIGURED'?503:502;return res.status(status).json({ok:false,error:error?.message||'No fue posible comunicar ELANVISUAL con ELAN Runtime.',code:error?.code||'ELAN_RUNTIME_PROXY_FAILED'})}}
+  const designTypes=['design-request','design-request-status','design-request-action'];const path=designTypes.includes(tipo)?'/api/v1/design':'/api/v1/copilot';const result=await callConnectJson({method:'POST',path,body:forwarded,source:designTypes.includes(tipo)?'design-portal':'elan-copilot'});
+  if(verifiedLiveSession&&result.status>=200&&result.status<300){
+    const outbound=extractAssistantText(result.data);
+    if(outbound){await persistLiveMemory(verifiedLiveSession,{direction:'outbound',text:outbound,messageType:'text',externalMessageId:String(result.data?.responseId||result.data?.id||'').trim()||null})}
+  }
+  return res.status(result.status).json(result.data)
+}catch(error){console.error('ERROR ELANVISUAL runtime proxy:',error);const status=[400,401,403,404,409].includes(error?.status)?error.status:['CONNECT_COPILOT_NOT_CONFIGURED','LIVE_VERIFY_NOT_CONFIGURED','ELAN_RUNTIME_NOT_CONFIGURED','AI_RUNTIME_NOT_CONFIGURED','AI_RUNTIME_AUTHORITY_INVALID'].includes(error?.code)?503:502;return res.status(status).json({ok:false,error:error?.message||'No fue posible comunicar ELANVISUAL con ELAN Runtime.',code:error?.code||'ELAN_RUNTIME_PROXY_FAILED'})}}
