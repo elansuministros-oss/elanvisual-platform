@@ -216,6 +216,7 @@ export default function ELANLive() {
   const videoChunksRef = useRef([]);
   const mountedRef = useRef(true);
   const realtimeActiveRef = useRef(false);
+  const pendingVoiceContextRef = useRef('');
 
   const recordingActive = recordingState === 'opening' || recordingState === 'recording' || recordingState === 'paused';
   const recordingRunning = recordingState === 'recording';
@@ -224,6 +225,11 @@ export default function ELANLive() {
   useEffect(() => {
     realtimeActiveRef.current = realtimeActive;
   }, [realtimeActive]);
+
+  useEffect(() => {
+    if (!sessionToken || phase === 'locked') return;
+    void loadModule(activeView, activePlatform);
+  }, [sessionToken, activePlatform, activeView]);
 
   useEffect(() => {
     let active = true;
@@ -539,6 +545,11 @@ export default function ELANLive() {
         if (mountedRef.current) {
           setError('');
           setPhase('listening');
+          const pendingContext = String(pendingVoiceContextRef.current || '').trim();
+          if (pendingContext) {
+            injectRealtimeText(dataChannel, 'user', pendingContext);
+            pendingVoiceContextRef.current = '';
+          }
         }
       };
       dataChannel.onmessage = (event) => handleRealtimeEvent(event.data);
@@ -837,6 +848,187 @@ export default function ELANLive() {
     setRecordedVideoUrl('');
     setRecordingState('idle');
     setRecordingNote('');
+  }
+
+  function hasRuntimeTool(name) {
+    return Array.isArray(runtimeInfo?.tools) && runtimeInfo.tools.includes(name);
+  }
+
+  async function switchPlatform(nextPlatform) {
+    const next = normalizePlatformId(nextPlatform);
+    if (!sessionToken || next === activePlatform) return;
+    setModuleBusy(true);
+    setError('');
+    setActionNotice('');
+    try {
+      stopRealtime(true);
+      const response = await fetch(ELAN_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: 'live-session-verify', token: sessionToken, platform: next }),
+        signal: AbortSignal.timeout(15000),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data?.session) throw new Error(data?.error?.message || data?.error || 'La plataforma no está disponible para este usuario.');
+      setSession(data.session);
+      setCapabilities(data.capabilities || {});
+      setRuntimeInfo(data.runtime || null);
+      setPublishedRuntime(data.publishedRuntime || null);
+      setActivePlatform(normalizePlatformId(data.platform || next));
+      setActiveView('inicio');
+      setModuleData({});
+      setSelectedQuote(null);
+      setMobileNavOpen(false);
+    } catch (platformError) {
+      setError(platformError.message || 'No pude cambiar de plataforma.');
+    } finally {
+      setModuleBusy(false);
+    }
+  }
+
+  async function loadModule(view = activeView, platform = activePlatform) {
+    if (!sessionToken || phase === 'locked') return;
+    const currentPlatform = normalizePlatformId(platform);
+    setModuleBusy(true);
+    setError('');
+    try {
+      if (currentPlatform === 'ELANVISUAL') {
+        if (view === 'inicio') {
+          const [quotations, report] = await Promise.all([
+            callLiveTool('buscar_cotizacion', {}, currentPlatform),
+            callLiveTool('resumen_comercial', {}, currentPlatform),
+          ]);
+          setModuleData((current) => ({ ...current, quotations: payloadRows(quotations), report: report?.data || report }));
+        } else if (view === 'proyectos' || view === 'cotizaciones' || view === 'produccion') {
+          const quotations = await callLiveTool('buscar_cotizacion', {}, currentPlatform);
+          setModuleData((current) => ({ ...current, quotations: payloadRows(quotations), workOrders: [] }));
+        } else if (view === 'clientes') {
+          const customers = await callLiveTool('buscar_cliente', {}, currentPlatform);
+          setModuleData((current) => ({ ...current, customers: payloadRows(customers) }));
+        } else if (view === 'reportes') {
+          const report = await callLiveTool('resumen_comercial', {}, currentPlatform);
+          setModuleData((current) => ({ ...current, report: report?.data || report }));
+        } else if (view === 'proveedores' && hasRuntimeTool('buscar_proveedor')) {
+          const providers = await callLiveTool('buscar_proveedor', {}, currentPlatform);
+          setModuleData((current) => ({ ...current, providers: payloadRows(providers) }));
+        } else if (view === 'inventario' && hasRuntimeTool('listar_precios_autorizados')) {
+          const prices = await callLiveTool('listar_precios_autorizados', {}, currentPlatform);
+          setModuleData((current) => ({ ...current, prices: payloadRows(prices) }));
+        }
+      } else if (currentPlatform === 'CONNECT') {
+        if (view === 'vendedores' || view === 'inicio') {
+          const sellers = await callLiveTool('buscar_vendedor', {}, currentPlatform);
+          setModuleData((current) => ({ ...current, sellers: payloadRows(sellers) }));
+        } else if (view === 'familia') {
+          const family = await callLiveTool('buscar_familiar', {}, currentPlatform);
+          setModuleData((current) => ({ ...current, family: payloadRows(family) }));
+        } else if (view === 'contactos') {
+          const contacts = await callLiveTool('buscar_contacto', {}, currentPlatform);
+          setModuleData((current) => ({ ...current, contacts: payloadRows(contacts) }));
+        }
+      } else if (currentPlatform === 'ELAN_GO') {
+        if (view === 'descubrimientos') {
+          const discoveries = await callLiveTool('marketplace_listar_descubrimientos', {}, currentPlatform);
+          setModuleData((current) => ({ ...current, discoveries: payloadRows(discoveries) }));
+        } else {
+          const demands = await callLiveTool('marketplace_listar_necesidades', {}, currentPlatform);
+          setModuleData((current) => ({ ...current, demands: payloadRows(demands) }));
+        }
+      }
+    } catch (loadError) {
+      setError(loadError.message || 'No pude cargar la información de CONNECT.');
+    } finally {
+      setModuleBusy(false);
+    }
+  }
+
+  async function changeView(view) {
+    setActiveView(view);
+    setMobileNavOpen(false);
+    setActionNotice('');
+  }
+
+  function beginVoiceTask(context, notice) {
+    pendingVoiceContextRef.current = String(context || '').trim();
+    setActionNotice(notice || 'Hablá con ELAN para continuar.');
+    const channel = dataChannelRef.current;
+    if (realtimeActiveRef.current && channel?.readyState === 'open') {
+      injectRealtimeText(channel, 'user', pendingVoiceContextRef.current);
+      pendingVoiceContextRef.current = '';
+      return;
+    }
+    void startRealtime();
+  }
+
+  function newQuotationByVoice() {
+    beginVoiceTask(
+      `Contexto de interfaz: el usuario quiere crear una nueva cotización en ${activePlatform}. Esperá su siguiente instrucción de voz y usá solamente datos, clientes y precios autorizados por CONNECT.`,
+      'Voz activada: decime el cliente y qué necesitás cotizar.'
+    );
+  }
+
+  function newCustomerByVoice() {
+    beginVoiceTask(
+      `Contexto de interfaz: el usuario quiere registrar un nuevo cliente en ${activePlatform}. Esperá su siguiente instrucción de voz y solicitá únicamente los datos indispensables que falten.`,
+      'Voz activada: decime los datos del nuevo cliente.'
+    );
+  }
+
+  function editQuotationByVoice(row) {
+    const projectId = quotationProjectId(row);
+    if (!projectId) return;
+    setSelectedQuote(row);
+    beginVoiceTask(
+      `Contexto de interfaz: está seleccionada la cotización ${quotationNumber(row)} con projectId ${projectId}. La siguiente instrucción de voz se refiere a esa cotización. Antes de editar, recuperala con abrir_cotizacion y conservá los datos que el usuario no pida cambiar.`,
+      `Voz activada para ${quotationNumber(row)}: decime qué querés modificar.`
+    );
+  }
+
+  async function openQuotation(row) {
+    const projectId = quotationProjectId(row);
+    if (!projectId) return;
+    setModuleBusy(true);
+    try {
+      const quote = await callLiveTool('abrir_cotizacion', { projectId });
+      const candidate = quote?.data || quote;
+      setSelectedQuote(candidate && typeof candidate === 'object' ? candidate : row);
+      setActionNotice('');
+    } catch (openError) {
+      setError(openError.message || 'No pude abrir la cotización.');
+    } finally {
+      setModuleBusy(false);
+    }
+  }
+
+  async function sendQuotation(row, channel) {
+    const projectId = quotationProjectId(row);
+    if (!projectId) return;
+    setModuleBusy(true);
+    setError('');
+    setActionNotice('');
+    try {
+      const tool = channel === 'email' ? 'enviar_cotizacion_email' : 'enviar_cotizacion_cliente';
+      const result = await callLiveTool(tool, { projectId });
+      applyToolResult(tool, result);
+    } catch (sendError) {
+      setError(sendError.message || `No pude enviar la cotización por ${channel === 'email' ? 'correo' : 'WhatsApp'}.`);
+    } finally {
+      setModuleBusy(false);
+    }
+  }
+
+  async function loadWorkOrders(row) {
+    const projectId = quotationProjectId(row);
+    if (!projectId) return;
+    setModuleBusy(true);
+    try {
+      const result = await callLiveTool('buscar_orden_trabajo', { projectId });
+      setModuleData((current) => ({ ...current, workOrders: payloadRows(result), workOrderProjectId: projectId }));
+    } catch (workError) {
+      setError(workError.message || 'No pude consultar producción.');
+    } finally {
+      setModuleBusy(false);
+    }
   }
 
   function syncTextTurnWithRealtime(responseText, _data, userText) {
