@@ -44,9 +44,13 @@ async function callLiveInternal(path,body){const internal=getInternalToken();if(
 async function verifyLiveSession(token){const data=await callLiveInternal('/api/v1/live-access/verify',{token});if(!data?.valid)throw Object.assign(new Error('Sesión ELAN Live inválida.'),{code:'LIVE_SESSION_INVALID',status:401});return data.session}
 async function exchangeLiveCode(code){const data=await callLiveInternal('/api/v1/live-access/exchange',{code});if(!data?.token||!data?.session)throw Object.assign(new Error('Enlace ELAN Live inválido.'),{code:'LIVE_CODE_INVALID',status:401});return data}
 function capabilityManifest(session){const scopes=Array.isArray(session?.scopes)?session.scopes:[];const role=String(session?.role||'unknown').toLowerCase();const all=scopes.includes('*');const has=(scope)=>all||scopes.includes(scope);return{role,scopes,canUseAssistant:has('assistant.general'),canUseVoice:has('assistant.general'),canUseCamera:has('camera.vision'),canCreateDesign:has('design.create'),canGenerateImage:has('image.create'),canGenerateVideo:has('video.create'),canResearchWeb:has('web.research'),canReadAuthorizedPrices:role==='seller'||has('price.authorized.read')||has('price.read'),canManageMasterPrices:all,canViewMargins:all}}
+const PUBLIC_RUNTIME_PLATFORMS=new Set(['ELANVISUAL','ELANHOME','ELANPET']);
 function normalizePlatform(value){return String(value||'ELANVISUAL').trim().toUpperCase().replace(/[ -]+/g,'_')}
 function requestedPlatform(session={},requested=''){
   const platform=normalizePlatform(requested||session.platform||'ELANVISUAL');
+  if(!PUBLIC_RUNTIME_PLATFORMS.has(platform)){
+    const error=new Error('La plataforma solicitada no pertenece al runtime público de ELAN.');error.code='LIVE_PLATFORM_NOT_PUBLIC';error.status=403;throw error;
+  }
   const role=String(session.role||'unknown').toLowerCase();
   const owner=role==='owner'||String(session.authority||'').toLowerCase()==='owner_identity';
   const allowed=Array.isArray(session.platforms)?session.platforms.map(normalizePlatform):[normalizePlatform(session.platform||'ELANVISUAL')];
