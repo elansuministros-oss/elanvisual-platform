@@ -1042,292 +1042,407 @@ export default function ELANLive() {
   const active = realtimeActive;
   const memoryHistory = Array.isArray(runtimeInfo?.memory?.history) ? runtimeInfo.memory.history : [];
   const actorLabel = session?.displayName || session?.name || session?.role || 'Usuario';
-  const platformLabel = String(publishedRuntime?.platform?.platformId || session?.platform || 'ELANVISUAL').toUpperCase();
-  const fieldNotes = memoryHistory
-    .filter((item) => item?.role === 'user' && String(item?.content || '').trim())
-    .slice(-3)
-    .reverse();
+  const isOwner = String(session?.role || '').toLowerCase() === 'owner' || String(session?.authority || '').toLowerCase() === 'owner_identity';
+  const platformLabel = platformTitle(activePlatform);
   const memoryCount = memoryHistory.length;
   const channelLabel = session?.phone ? 'WHATSAPP VINCULADO' : 'SESIÓN SEGURA';
+  const availablePlatforms = isOwner
+    ? OWNER_PLATFORMS
+    : Array.from(new Set((Array.isArray(session?.platforms) ? session.platforms : [session?.platform || 'ELANVISUAL']).map(normalizePlatformId)));
+  const runtimeTools = new Set(Array.isArray(runtimeInfo?.tools) ? runtimeInfo.tools : []);
+  const navItems = activePlatform === 'CONNECT'
+    ? [
+        { id: 'inicio', label: 'Inicio', icon: Home },
+        { id: 'vendedores', label: 'Vendedores', icon: Users },
+        { id: 'familia', label: 'Miembros', icon: Users },
+        { id: 'contactos', label: 'Contactos', icon: MessageSquare },
+        { id: 'ajustes', label: 'Ajustes', icon: Settings },
+      ]
+    : activePlatform === 'ELAN_GO'
+      ? [
+          { id: 'inicio', label: 'Inicio', icon: Home },
+          { id: 'necesidades', label: 'Necesidades', icon: FolderKanban },
+          { id: 'descubrimientos', label: 'Descubrimientos', icon: PackageOpen },
+          { id: 'ajustes', label: 'Ajustes', icon: Settings },
+        ]
+      : [
+          { id: 'inicio', label: 'Inicio', icon: Home },
+          { id: 'proyectos', label: 'Proyectos', icon: FolderKanban },
+          { id: 'cotizaciones', label: 'Cotizaciones', icon: FileText },
+          { id: 'clientes', label: 'Clientes', icon: Users },
+          ...(runtimeTools.has('buscar_orden_trabajo') ? [{ id: 'produccion', label: 'Producción', icon: Factory }] : []),
+          ...(runtimeTools.has('listar_precios_autorizados') ? [{ id: 'inventario', label: 'Inventario', icon: Boxes }] : []),
+          ...(runtimeTools.has('buscar_proveedor') ? [{ id: 'proveedores', label: 'Proveedores', icon: Truck }] : []),
+          ...(runtimeTools.has('resumen_comercial') ? [{ id: 'reportes', label: 'Reportes', icon: BarChart3 }] : []),
+          { id: 'ajustes', label: 'Ajustes', icon: Settings },
+        ];
+  const quotations = Array.isArray(moduleData.quotations) ? moduleData.quotations : [];
+  const customers = Array.isArray(moduleData.customers) ? moduleData.customers : [];
+  const workOrders = Array.isArray(moduleData.workOrders) ? moduleData.workOrders : [];
+  const providers = Array.isArray(moduleData.providers) ? moduleData.providers : [];
+  const prices = Array.isArray(moduleData.prices) ? moduleData.prices : [];
+  const sellers = Array.isArray(moduleData.sellers) ? moduleData.sellers : [];
+  const family = Array.isArray(moduleData.family) ? moduleData.family : [];
+  const contacts = Array.isArray(moduleData.contacts) ? moduleData.contacts : [];
+  const demands = Array.isArray(moduleData.demands) ? moduleData.demands : [];
+  const discoveries = Array.isArray(moduleData.discoveries) ? moduleData.discoveries : [];
+  const report = moduleData.report && typeof moduleData.report === 'object' ? moduleData.report : {};
+
 
   return (
-    <main className={`elan-field elan-field--${phase}`}>
+    <main className={`elan-copilot elan-copilot--${phase} ${cameraOn || recordingActive ? 'elan-copilot--camera' : ''}`}>
       <audio ref={audioRef} playsInline />
 
-      <header className="elan-field__topbar">
-        <div className="elan-field__brand">
-          <button type="button" className="elan-field__icon-button elan-field__back" onClick={() => window.history.back()} aria-label="Volver">
-            <ChevronLeft size={20} />
+      <header className="elan-copilot__topbar">
+        <div className="elan-copilot__brand">
+          <button type="button" className="elan-copilot__menu-button" onClick={() => setMobileNavOpen((value) => !value)} aria-label="Menú">
+            <Menu size={20} />
           </button>
-          <div className="elan-field__brand-orb"><span>E</span></div>
-          <div>
-            <div className="elan-field__eyebrow">ELANKAV</div>
-            <div className="elan-field__title">ELAN <span>COPILOTO</span></div>
-            <div className="elan-field__subtitle">{platformLabel} · {actorLabel}</div>
-          </div>
+          <div className="elan-copilot__brand-bot" aria-hidden="true"><span /></div>
+          <div className="elan-copilot__brand-name">ELAN <strong>AI</strong></div>
+          {!locked && (
+            <label className="elan-copilot__platform-select">
+              <span>{platformLabel}</span>
+              <ChevronDown size={14} />
+              <select value={activePlatform} onChange={(event) => void switchPlatform(event.target.value)} disabled={moduleBusy}>
+                {availablePlatforms.map((platform) => <option key={platform} value={platform}>{platformTitle(platform)}</option>)}
+              </select>
+            </label>
+          )}
         </div>
-        <div className="elan-field__topbar-right">
-          <div className="elan-field__sync">
-            <span className="elan-field__sync-dot" />
-            <div>
-              <strong>{channelLabel}</strong>
-              <small>{memoryCount} eventos en memoria</small>
-            </div>
-          </div>
-          <div className={`elan-field__status elan-field__status--${phase}`}>
-            <span className="elan-field__status-dot" />
-            {phaseLabel(phase, active)}
+
+        <div className="elan-copilot__top-actions">
+          {!locked && (
+            <>
+              <button type="button" className={`elan-copilot__top-icon ${active ? 'is-active' : ''}`} onClick={toggleConversation} title="Voz">
+                {active ? <MicOff size={19} /> : <Mic size={19} />}
+              </button>
+              <button type="button" className={`elan-copilot__top-icon ${cameraOn ? 'is-active' : ''}`} onClick={toggleCamera} disabled={!capabilities?.canUseCamera || recordingActive} title="Cámara">
+                <Camera size={19} />
+              </button>
+              <button type="button" className={`elan-copilot__top-icon ${chatOpen ? 'is-active' : ''}`} onClick={() => setChatOpen((value) => !value)} title="Chat">
+                <MessageSquare size={19} />
+              </button>
+              <button type="button" className="elan-copilot__top-icon" title="Notificaciones">
+                <Bell size={18} />
+              </button>
+            </>
+          )}
+          <div className="elan-copilot__user">
+            <div className="elan-copilot__avatar">{String(actorLabel || 'E').slice(0, 2).toUpperCase()}</div>
+            <div><strong>{actorLabel}</strong><span>{isOwner ? 'Jefe / Owner' : session?.role || 'Miembro'}</span></div>
           </div>
         </div>
       </header>
 
-      <section className={`elan-field__workspace ${chatOpen && sessionToken && !locked ? 'elan-field__workspace--chat' : ''}`}>
-        <div className="elan-field__stage">
-          {cameraOn && !recordingActive && (
-            <FieldCamera
-              ref={cameraRef}
-              className="elan-field__camera"
-              facingMode="environment"
-              aspectRatio="cover"
-              numberOfCamerasCallback={setCameraCount}
-              videoConstraints={{
-                width: { ideal: 1920 },
-                height: { ideal: 1080 },
-                frameRate: { ideal: 30 },
-              }}
-            />
-          )}
-
-          {recordingActive && (
-            <video
-              ref={videoPreviewRef}
-              className="elan-field__camera"
-              autoPlay
-              muted
-              playsInline
-            />
-          )}
-
-          {!cameraOn && !recordingActive && (
-            <div className="elan-field__command-center">
-              <div className="elan-field__ambient elan-field__ambient--one" />
-              <div className="elan-field__ambient elan-field__ambient--two" />
-
-              <section className="elan-neural">
-                <div className="elan-neural__intro">
-                  <span className="elan-neural__eyebrow">ELAN · COPILOTO DE CAMPO</span>
-                  <div className="elan-neural__status"><i />{phaseLabel(phase, active)}</div>
-                </div>
-
-                <div className={`elan-neural__canvas elan-neural__canvas--${phase}`} aria-label={phaseLabel(phase, active)}>
-                  <div className="elan-neural__ambient" />
-                  <svg className="elan-neural__ribbon" viewBox="0 0 900 300" role="presentation" aria-hidden="true">
-                    <defs>
-                      <linearGradient id="elanRibbonA" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#5ee7ff" stopOpacity="0" />
-                        <stop offset="24%" stopColor="#68d7ff" stopOpacity=".82" />
-                        <stop offset="52%" stopColor="#8a7dff" stopOpacity=".98" />
-                        <stop offset="78%" stopColor="#d075ff" stopOpacity=".72" />
-                        <stop offset="100%" stopColor="#d075ff" stopOpacity="0" />
-                      </linearGradient>
-                      <linearGradient id="elanRibbonB" x1="0" y1="1" x2="1" y2="0">
-                        <stop offset="0%" stopColor="#72f4d0" stopOpacity="0" />
-                        <stop offset="35%" stopColor="#72f4d0" stopOpacity=".5" />
-                        <stop offset="70%" stopColor="#6f8cff" stopOpacity=".72" />
-                        <stop offset="100%" stopColor="#6f8cff" stopOpacity="0" />
-                      </linearGradient>
-                      <filter id="elanGlow">
-                        <feGaussianBlur stdDeviation="12" result="blur" />
-                        <feMerge>
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
-                    </defs>
-                    <path className="elan-neural__path elan-neural__path--a" d="M20 160 C150 55 265 255 390 145 C520 30 640 250 880 120" fill="none" stroke="url(#elanRibbonA)" strokeWidth="10" strokeLinecap="round" filter="url(#elanGlow)" />
-                    <path className="elan-neural__path elan-neural__path--b" d="M20 135 C175 230 275 40 420 165 C565 290 690 75 880 175" fill="none" stroke="url(#elanRibbonB)" strokeWidth="6" strokeLinecap="round" filter="url(#elanGlow)" />
-                    <path className="elan-neural__path elan-neural__path--c" d="M55 150 C210 105 315 205 455 138 C610 65 725 205 845 142" fill="none" stroke="url(#elanRibbonA)" strokeWidth="2.5" strokeLinecap="round" />
-                  </svg>
-                  <div className="elan-neural__pulse">
-                    {Array.from({ length: 31 }).map((_, index) => (
-                      <span key={index} style={{ '--i': index }} />
-                    ))}
-                  </div>
-                  <div className="elan-neural__center-mark"><span>E</span></div>
-                </div>
-
-                <div className="elan-neural__footer">
-                  <strong>{locked ? 'SESIÓN SEGURA REQUERIDA' : 'LISTO PARA TRABAJAR'}</strong>
-                  <p>{locked ? 'Abrí el enlace privado enviado por WhatsApp para activar voz, cámara y memoria.' : 'Voz, cámara, captura y memoria unificada disponibles en esta sesión.'}</p>
-                  <div className="elan-neural__capabilities">
-                    <span>VOICE</span><span>VISION</span><span>MEMORY</span><span>FIELD OPS</span>
-                  </div>
-                </div>
-              </section>
-
-              <aside className="elan-field__telemetry elan-field__telemetry--left">
-                <div className="elan-field__telemetry-label">IDENTIDAD</div>
-                <strong>{actorLabel}</strong>
-                <span>{platformLabel}</span>
-                <div className="elan-field__telemetry-line" />
-                <div className="elan-field__telemetry-row">
-                  <span>Canal</span>
-                  <b>{channelLabel}</b>
-                </div>
-                <div className="elan-field__telemetry-row">
-                  <span>Memoria</span>
-                  <b>{memoryCount} eventos</b>
-                </div>
-              </aside>
-
-              <aside className="elan-field__telemetry elan-field__telemetry--right">
-                <div className="elan-field__telemetry-label">BITÁCORA ACTIVA</div>
-                {fieldNotes.length ? fieldNotes.map((item, index) => (
-                  <div className="elan-field__field-note" key={item?.id || `note-${index}`}>
-                    <span>0{index + 1}</span>
-                    <p>{String(item?.content || '').trim()}</p>
-                  </div>
-                )) : (
-                  <div className="elan-field__field-note elan-field__field-note--empty">
-                    <span>01</span>
-                    <p>Las medidas, observaciones y capturas aparecerán aquí durante la visita.</p>
-                  </div>
-                )}
-              </aside>
-            </div>
-          )}
-
-          <div className="elan-field__hud">
-            {recordingRunning && <div className="elan-field__rec"><span /> REC</div>}
-            {recordingPaused && <div className="elan-field__rec elan-field__rec--paused">PAUSA</div>}
-            {cameraOn && <div className="elan-field__vision">VISIÓN DE CAMPO</div>}
+      {locked ? (
+        <section className="elan-copilot__locked">
+          <div className="elan-copilot__locked-card">
+            <div className="elan-copilot__brand-bot elan-copilot__brand-bot--large"><span /></div>
+            <h1>ELAN AI</h1>
+            <p>Acceso privado para miembros.</p>
+            <strong>Abrí el enlace de un solo uso enviado por WhatsApp.</strong>
+            {error && <div className="elan-copilot__locked-error">{error}</div>}
           </div>
-
-          {lastCapture && (
-            <div className="elan-field__capture-card">
-              <img src={lastCapture} alt="Última captura de campo" />
-              <div>
-                <strong>{captureBusy ? 'Analizando captura…' : 'Última captura'}</strong>
-                {captureAnalysis && <p>{captureAnalysis}</p>}
-              </div>
-              <button type="button" onClick={() => { setLastCapture(''); setCaptureAnalysis(''); }} aria-label="Cerrar captura">
-                <X size={16} />
-              </button>
-            </div>
-          )}
-
-          {recordedVideoUrl && (
-            <div className="elan-field__recording-preview">
-              <video src={recordedVideoUrl} controls playsInline />
-              <div className="elan-field__recording-actions">
-                <button type="button" onClick={saveRecordedVideo}>Guardar video</button>
-                <button type="button" onClick={closeRecordedVideo}>Cerrar video</button>
-              </div>
-            </div>
-          )}
-
-          {recordingNote && <div className="elan-field__note">{recordingNote}</div>}
-          {error && <div className="elan-field__error">{error}</div>}
-
-          {!locked && (
-            <div className="elan-field__controls">
-              <button
-                type="button"
-                className={`elan-field__control ${active ? 'elan-field__control--active' : ''}`}
-                onClick={toggleConversation}
-                title={active ? 'Detener conversación' : 'Hablar con ELAN'}
-              >
-                {active ? <MicOff size={21} /> : <Mic size={21} />}
-                <span>{active ? 'Voz ON' : 'Hablar'}</span>
-              </button>
-
-              <button
-                type="button"
-                className={`elan-field__control ${cameraOn ? 'elan-field__control--active' : ''}`}
-                onClick={toggleCamera}
-                disabled={!capabilities?.canUseCamera || recordingActive}
-                title="Cámara"
-              >
-                <Camera size={21} />
-                <span>Cámara</span>
-              </button>
-
-              <button
-                type="button"
-                className="elan-field__control elan-field__control--primary"
-                onClick={() => void captureFieldFrame('button')}
-                disabled={!capabilities?.canUseCamera || captureBusy || (!cameraOn && !recordingActive)}
-                title="Capturar este momento"
-              >
-                <span className="elan-field__shutter" />
-                <span>Capturar</span>
-              </button>
-
-              {!recordingActive ? (
-                <button
-                  type="button"
-                  className="elan-field__control"
-                  onClick={() => void startVisitRecording()}
-                  disabled={!capabilities?.canUseCamera}
-                  title="Grabar visita"
-                >
-                  <Video size={21} />
-                  <span>Grabar</span>
+        </section>
+      ) : (
+        <section className="elan-copilot__shell">
+          <aside className={`elan-copilot__sidebar ${mobileNavOpen ? 'is-open' : ''}`}>
+            <nav>
+              {navItems.map(({ id, label, icon: Icon }) => (
+                <button key={id} type="button" className={activeView === id ? 'active' : ''} onClick={() => void changeView(id)}>
+                  <Icon size={21} />
+                  <span>{label}</span>
                 </button>
-              ) : (
-                <>
-                  <button type="button" className="elan-field__control" onClick={() => void toggleRecordingPause()}>
-                    {recordingPaused ? <Play size={20} /> : <Pause size={20} />}
-                    <span>{recordingPaused ? 'Seguir' : 'Pausa'}</span>
-                  </button>
-                  <button type="button" className="elan-field__control elan-field__control--danger" onClick={() => void stopVisitRecording()}>
-                    <Square size={18} />
-                    <span>Detener</span>
-                  </button>
-                </>
-              )}
-
-              {cameraOn && cameraCount > 1 && (
-                <button type="button" className="elan-field__control elan-field__control--icon" onClick={switchCamera} title="Cambiar cámara">
-                  <RotateCcw size={20} />
-                </button>
-              )}
-
-              {cameraOn && cameraRef.current?.torchSupported && (
-                <button type="button" className={`elan-field__control elan-field__control--icon ${torchOn ? 'elan-field__control--active' : ''}`} onClick={toggleTorch} title="Linterna">
-                  <Flashlight size={20} />
-                </button>
-              )}
-
-              <button
-                type="button"
-                className={`elan-field__control elan-field__control--icon ${chatOpen ? 'elan-field__control--active' : ''}`}
-                onClick={() => setChatOpen((value) => !value)}
-                title="Texto e historial"
-              >
-                <MessageSquare size={20} />
-              </button>
+              ))}
+            </nav>
+            <div className="elan-copilot__assistant-card">
+              <div className="elan-copilot__brand-bot"><span /></div>
+              <div><strong>ELAN AI</strong><small>{phaseLabel(phase, active)}</small></div>
             </div>
-          )}
-        </div>
-
-        {chatOpen && sessionToken && !locked && (
-          <aside className="elan-field__chat-panel">
-            <div className="elan-field__chat-head">
-              <div>
-                <strong>Conversación unificada</strong>
-                <span>{memoryHistory.length} mensajes recuperados · mismos permisos y memoria</span>
-              </div>
-              <button type="button" onClick={() => setChatOpen(false)} aria-label="Cerrar chat"><X size={18} /></button>
-            </div>
-            <ELANFieldThread
-              sessionToken={sessionToken}
-              memoryHistory={memoryHistory}
-              onResponse={syncTextTurnWithRealtime}
-            />
           </aside>
-        )}
-      </section>
+
+          <section className="elan-copilot__workspace">
+            {(cameraOn || recordingActive) ? (
+              <div className="elan-copilot__camera-stage">
+                {cameraOn && !recordingActive && (
+                  <FieldCamera
+                    ref={cameraRef}
+                    className="elan-field__camera"
+                    facingMode="environment"
+                    aspectRatio="cover"
+                    numberOfCamerasCallback={setCameraCount}
+                    videoConstraints={{ width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } }}
+                  />
+                )}
+                {recordingActive && <video ref={videoPreviewRef} className="elan-field__camera" autoPlay muted playsInline />}
+                <div className="elan-copilot__camera-head">
+                  <button type="button" onClick={toggleCamera}><ChevronLeft size={18} /> Volver</button>
+                  <span>{recordingRunning ? '● REC' : recordingPaused ? 'PAUSA' : 'VISIÓN DE CAMPO'}</span>
+                </div>
+                <div className="elan-copilot__camera-actions">
+                  <button type="button" onClick={() => void captureFieldFrame('button')} disabled={captureBusy}><span className="elan-field__shutter" /><small>Capturar</small></button>
+                  {!recordingActive ? (
+                    <button type="button" onClick={() => void startVisitRecording()}><Video size={22} /><small>Grabar</small></button>
+                  ) : (
+                    <>
+                      <button type="button" onClick={() => void toggleRecordingPause()}>{recordingPaused ? <Play size={22} /> : <Pause size={22} />}<small>{recordingPaused ? 'Seguir' : 'Pausa'}</small></button>
+                      <button type="button" onClick={() => void stopVisitRecording()}><Square size={20} /><small>Detener</small></button>
+                    </>
+                  )}
+                  {cameraOn && cameraCount > 1 && <button type="button" onClick={switchCamera}><RotateCcw size={22} /><small>Cambiar</small></button>}
+                  {cameraOn && cameraRef.current?.torchSupported && <button type="button" onClick={toggleTorch}><Flashlight size={22} /><small>Linterna</small></button>}
+                  <button type="button" onClick={() => setChatOpen(true)}><MessageSquare size={22} /><small>Notas</small></button>
+                </div>
+              </div>
+            ) : (
+              <div className="elan-copilot__dashboard">
+                <section className="elan-copilot__assistant-zone">
+                  <div className="elan-copilot__assistant-glow" />
+                  <div className="elan-copilot__assistant-identity">
+                    <div className="elan-copilot__assistant-emblem">
+                      <div className="elan-copilot__brand-bot elan-copilot__brand-bot--hero"><span /></div>
+                    </div>
+                    <strong>ELAN AI</strong>
+                    <span>{platformLabel}</span>
+                  </div>
+                  <button type="button" className={`elan-copilot__voice-core ${active ? 'is-active' : ''}`} onClick={toggleConversation} aria-label="Hablar con ELAN">
+                    <div className="elan-copilot__wave">{Array.from({ length: 7 }).map((_, index) => <i key={index} />)}</div>
+                  </button>
+                  <div className="elan-copilot__assistant-state"><i /> {phaseLabel(phase, active)}</div>
+                  <p>{actionNotice || 'Hablá con ELAN para trabajar sin escribir.'}</p>
+                  <div className="elan-copilot__assistant-meta"><span>{channelLabel}</span><span>{memoryCount} eventos</span></div>
+                </section>
+
+                <main className="elan-copilot__content">
+                  <div className="elan-copilot__content-head">
+                    <div>
+                      <small>{platformLabel}</small>
+                      <h1>{activeView === 'inicio' ? `¡Hola ${actorLabel}!` : navItems.find((item) => item.id === activeView)?.label || 'ELAN AI'}</h1>
+                      <p>{activePlatform === 'ELANVISUAL' ? 'Proyectos, cotizaciones, clientes, producción y reportes con tus permisos reales.' : activePlatform === 'CONNECT' ? 'Administración interna autorizada de miembros y contactos.' : 'Operación comercial de ELAN GO desde el mismo Copiloto.'}</p>
+                    </div>
+                    <button type="button" className="elan-copilot__refresh" onClick={() => void loadModule(activeView, activePlatform)} disabled={moduleBusy}>
+                      <RefreshCw size={17} className={moduleBusy ? 'spin' : ''} /> Actualizar
+                    </button>
+                  </div>
+
+                  {activePlatform === 'ELANVISUAL' && activeView === 'inicio' && (
+                    <>
+                      <section className="elan-copilot__hero-card">
+                        <div>
+                          <h2>Soy <span>ELAN AI</span>, tu asistente virtual.</h2>
+                          <p>Podés hablarme para crear o editar cotizaciones, registrar clientes, consultar información y ejecutar las funciones autorizadas.</p>
+                        </div>
+                        <button type="button" className="elan-copilot__hero-voice" onClick={toggleConversation}><Mic size={27} /></button>
+                      </section>
+
+                      <section>
+                        <h3 className="elan-copilot__section-title">Acciones rápidas</h3>
+                        <div className="elan-copilot__quick-grid">
+                          <button type="button" onClick={() => beginVoiceTask('Contexto de interfaz: el usuario quiere iniciar un proyecto nuevo en ELANVISUAL. Esperá su instrucción de voz y usá las herramientas autorizadas.', 'Voz activada: contame el proyecto nuevo.')}><FolderKanban /><span>Nuevo<br />Proyecto</span></button>
+                          <button type="button" onClick={newQuotationByVoice}><FileText /><span>Nueva<br />Cotización</span></button>
+                          <button type="button" onClick={newCustomerByVoice}><Plus /><span>Nuevo<br />Cliente</span></button>
+                          <button type="button" onClick={() => void changeView('reportes')}><BarChart3 /><span>Ver<br />Reportes</span></button>
+                        </div>
+                      </section>
+
+                      <section>
+                        <h3 className="elan-copilot__section-title">Actividad reciente</h3>
+                        <div className="elan-copilot__activity-list">
+                          {quotations.slice(0, 4).map((row) => (
+                            <button type="button" key={quotationProjectId(row) || quotationNumber(row)} onClick={() => void openQuotation(row)}>
+                              <div className="elan-copilot__activity-icon"><FileText size={19} /></div>
+                              <div><strong>{quotationNumber(row)}</strong><span>{quotationCustomer(row)}</span></div>
+                              <em>{String(row.status || 'activo').toUpperCase()}</em>
+                            </button>
+                          ))}
+                          {!quotations.length && <div className="elan-copilot__empty">{moduleBusy ? 'Cargando actividad…' : 'No hay cotizaciones visibles para este usuario.'}</div>}
+                        </div>
+                      </section>
+                    </>
+                  )}
+
+                  {activePlatform === 'ELANVISUAL' && (activeView === 'cotizaciones' || activeView === 'proyectos') && (
+                    <section>
+                      <div className="elan-copilot__module-toolbar">
+                        <h3>{activeView === 'cotizaciones' ? 'Cotizaciones' : 'Proyectos'}</h3>
+                        <button type="button" onClick={newQuotationByVoice}><Plus size={16} /> Nueva por voz</button>
+                      </div>
+                      <div className="elan-copilot__cards-grid">
+                        {quotations.map((row) => (
+                          <article className="elan-copilot__record-card" key={quotationProjectId(row) || quotationNumber(row)}>
+                            <div className="elan-copilot__record-head"><span>{quotationNumber(row)}</span><em>{String(row.status || 'activo')}</em></div>
+                            <h4>{quotationCustomer(row)}</h4>
+                            <p>{String(row.projectTitle || row.project_title || row.title || row.projectNumber || 'Proyecto ELANVISUAL')}</p>
+                            <strong className="elan-copilot__money">US$ {quotationTotal(row).toFixed(2)}</strong>
+                            <div className="elan-copilot__record-actions">
+                              <button type="button" onClick={() => void openQuotation(row)} title="Abrir"><Eye size={16} /></button>
+                              <button type="button" onClick={() => editQuotationByVoice(row)} title="Editar por voz"><Pencil size={16} /></button>
+                              <button type="button" onClick={() => void sendQuotation(row, 'whatsapp')} title="Enviar WhatsApp"><Send size={16} /></button>
+                              <button type="button" onClick={() => void sendQuotation(row, 'email')} title="Enviar correo"><Mail size={16} /></button>
+                            </div>
+                          </article>
+                        ))}
+                        {!quotations.length && <div className="elan-copilot__empty">No hay registros visibles en tu alcance.</div>}
+                      </div>
+                    </section>
+                  )}
+
+                  {activePlatform === 'ELANVISUAL' && activeView === 'clientes' && (
+                    <section>
+                      <div className="elan-copilot__module-toolbar"><h3>Clientes</h3><button type="button" onClick={newCustomerByVoice}><Plus size={16} /> Agregar por voz</button></div>
+                      <div className="elan-copilot__table-list">
+                        {customers.map((row, index) => (
+                          <div key={row.customerId || row.id || index}><div className="elan-copilot__table-icon"><Users size={18} /></div><div><strong>{row.name || row.companyName || row.display_name || 'Cliente'}</strong><span>{row.phone || row.whatsapp || row.email || 'Sin contacto visible'}</span></div><em>{row.status || 'activo'}</em></div>
+                        ))}
+                        {!customers.length && <div className="elan-copilot__empty">No hay clientes visibles para este usuario.</div>}
+                      </div>
+                    </section>
+                  )}
+
+                  {activePlatform === 'ELANVISUAL' && activeView === 'produccion' && (
+                    <section>
+                      <h3 className="elan-copilot__section-title">Producción</h3>
+                      <div className="elan-copilot__table-list">
+                        {quotations.map((row) => (
+                          <div key={quotationProjectId(row) || quotationNumber(row)}>
+                            <div className="elan-copilot__table-icon"><Factory size={18} /></div>
+                            <div><strong>{quotationNumber(row)}</strong><span>{quotationCustomer(row)}</span></div>
+                            <button type="button" onClick={() => void loadWorkOrders(row)}>Ver OT</button>
+                          </div>
+                        ))}
+                      </div>
+                      {!!workOrders.length && (
+                        <div className="elan-copilot__subpanel">
+                          <h4>Órdenes de trabajo</h4>
+                          {workOrders.map((row, index) => <div key={row.id || index}><strong>{row.work_order_number || row.workOrderNumber || 'OT'}</strong><span>{row.status || 'sin estado'}</span></div>)}
+                        </div>
+                      )}
+                    </section>
+                  )}
+
+                  {activePlatform === 'ELANVISUAL' && activeView === 'reportes' && (
+                    <section>
+                      <h3 className="elan-copilot__section-title">Reporte autorizado</h3>
+                      <div className="elan-copilot__metric-grid">
+                        <article><span>Clientes</span><strong>{Number(report.customers || 0)}</strong></article>
+                        <article><span>Cotizaciones</span><strong>{Number(report.quotations || 0)}</strong></article>
+                        <article><span>Total cotizado</span><strong>US$ {Number(report.quotedUsd || 0).toFixed(2)}</strong></article>
+                        <article><span>Alcance</span><strong>{report.dataScope === 'ALL' ? 'GLOBAL' : 'PROPIO'}</strong></article>
+                      </div>
+                      <div className="elan-copilot__subpanel">
+                        <h4>Por estado</h4>
+                        {Object.entries(report.quotationsByStatus || {}).map(([status, count]) => <div key={status}><strong>{status}</strong><span>{count}</span></div>)}
+                      </div>
+                    </section>
+                  )}
+
+                  {activePlatform === 'ELANVISUAL' && activeView === 'inventario' && (
+                    <section><h3 className="elan-copilot__section-title">Inventario / precios autorizados</h3><div className="elan-copilot__table-list">{prices.map((row,index)=><div key={row.id||row.code||index}><div className="elan-copilot__table-icon"><Boxes size={18}/></div><div><strong>{row.name||row.product_name||row.code||'Ítem'}</strong><span>{row.description||row.unit||''}</span></div><em>{row.unitPrice||row.price||''}</em></div>)}</div></section>
+                  )}
+
+                  {activePlatform === 'ELANVISUAL' && activeView === 'proveedores' && (
+                    <section><h3 className="elan-copilot__section-title">Proveedores</h3><div className="elan-copilot__table-list">{providers.map((row,index)=><div key={row.id||index}><div className="elan-copilot__table-icon"><Truck size={18}/></div><div><strong>{row.trade_name||row.legal_name||row.name||'Proveedor'}</strong><span>{row.phone||row.whatsapp||row.email||''}</span></div><em>{row.status||'activo'}</em></div>)}</div></section>
+                  )}
+
+                  {activePlatform === 'CONNECT' && (activeView === 'inicio' || activeView === 'vendedores') && (
+                    <section><div className="elan-copilot__module-toolbar"><h3>Vendedores / Ejecutivos</h3><span>{sellers.length} visibles</span></div><div className="elan-copilot__table-list">{sellers.map((row,index)=><div key={row.id||index}><div className="elan-copilot__table-icon"><Users size={18}/></div><div><strong>{row.display_name||row.name||row.legal_name||'Ejecutivo'}</strong><span>{row.whatsapp||row.phone||''}</span></div><em>{row.status||'activo'}</em></div>)}</div></section>
+                  )}
+
+                  {activePlatform === 'CONNECT' && activeView === 'familia' && (
+                    <section><h3 className="elan-copilot__section-title">Miembros autorizados</h3><div className="elan-copilot__table-list">{family.map((row,index)=><div key={row.id||index}><div className="elan-copilot__table-icon"><Users size={18}/></div><div><strong>{row.display_name||row.name||'Miembro'}</strong><span>{row.role||''}</span></div><em>{row.status||'activo'}</em></div>)}</div></section>
+                  )}
+
+                  {activePlatform === 'CONNECT' && activeView === 'contactos' && (
+                    <section><h3 className="elan-copilot__section-title">Contactos</h3><div className="elan-copilot__table-list">{contacts.map((row,index)=><div key={row.id||index}><div className="elan-copilot__table-icon"><MessageSquare size={18}/></div><div><strong>{row.name||row.display_name||row.companyName||'Contacto'}</strong><span>{row.phone||row.whatsapp||row.email||''}</span></div><em>{row.type||row.role||''}</em></div>)}</div></section>
+                  )}
+
+                  {activePlatform === 'ELAN_GO' && (activeView === 'inicio' || activeView === 'necesidades') && (
+                    <section><div className="elan-copilot__module-toolbar"><h3>Necesidades</h3><button type="button" onClick={() => beginVoiceTask('Contexto de interfaz: el usuario quiere registrar una nueva necesidad en ELAN GO. Esperá su instrucción de voz y usá marketplace_gestionar_necesidad.', 'Voz activada: decime qué necesitás buscar o conseguir.')}><Plus size={16}/> Nueva por voz</button></div><div className="elan-copilot__cards-grid">{demands.map((row,index)=><article className="elan-copilot__record-card" key={row.id||row.code||index}><div className="elan-copilot__record-head"><span>{row.code||row.demandCode||'Necesidad'}</span><em>{row.status||'activa'}</em></div><h4>{row.title||'Necesidad'}</h4><p>{row.description||row.category||''}</p></article>)}</div></section>
+                  )}
+
+                  {activePlatform === 'ELAN_GO' && activeView === 'descubrimientos' && (
+                    <section><h3 className="elan-copilot__section-title">Descubrimientos</h3><div className="elan-copilot__cards-grid">{discoveries.map((row,index)=><article className="elan-copilot__record-card" key={row.id||row.code||index}><div className="elan-copilot__record-head"><span>{row.source||'Fuente'}</span><em>{row.status||'activo'}</em></div><h4>{row.title||row.name||'Opción encontrada'}</h4><p>{row.description||row.url||''}</p></article>)}</div></section>
+                  )}
+
+                  {activeView === 'ajustes' && (
+                    <section>
+                      <h3 className="elan-copilot__section-title">Sesión y permisos</h3>
+                      <div className="elan-copilot__settings-card">
+                        <div><span>Usuario</span><strong>{actorLabel}</strong></div>
+                        <div><span>Rol</span><strong>{session?.role || 'miembro'}</strong></div>
+                        <div><span>Plataforma</span><strong>{platformLabel}</strong></div>
+                        <div><span>Entrada</span><strong>WhatsApp · enlace de un solo uso</strong></div>
+                        <div><span>Herramientas</span><strong>{runtimeTools.size}</strong></div>
+                      </div>
+                    </section>
+                  )}
+                </main>
+              </div>
+            )}
+
+            {lastCapture && (
+              <div className="elan-field__capture-card">
+                <img src={lastCapture} alt="Última captura de campo" />
+                <div><strong>{captureBusy ? 'Analizando captura…' : 'Última captura'}</strong>{captureAnalysis && <p>{captureAnalysis}</p>}</div>
+                <button type="button" onClick={() => { setLastCapture(''); setCaptureAnalysis(''); }}><X size={16} /></button>
+              </div>
+            )}
+
+            {recordedVideoUrl && (
+              <div className="elan-field__recording-preview">
+                <video src={recordedVideoUrl} controls playsInline />
+                <div className="elan-field__recording-actions"><button type="button" onClick={saveRecordedVideo}>Guardar video</button><button type="button" onClick={closeRecordedVideo}>Cerrar video</button></div>
+              </div>
+            )}
+
+            {recordingNote && <div className="elan-field__note">{recordingNote}</div>}
+            {error && <div className="elan-field__error">{error}</div>}
+            {actionNotice && !error && <div className="elan-copilot__notice">{actionNotice}</div>}
+          </section>
+        </section>
+      )}
+
+      {chatOpen && sessionToken && !locked && (
+        <aside className="elan-field__chat-panel elan-copilot__chat-panel">
+          <div className="elan-field__chat-head">
+            <div><strong>Chat con ELAN AI</strong><span>{platformLabel} · misma memoria y permisos</span></div>
+            <button type="button" onClick={() => setChatOpen(false)}><X size={18} /></button>
+          </div>
+          <ELANFieldThread sessionToken={sessionToken} platform={activePlatform} memoryHistory={memoryHistory} onResponse={syncTextTurnWithRealtime} />
+        </aside>
+      )}
+
+      {selectedQuote && (
+        <aside className="elan-copilot__document">
+          <div className="elan-copilot__document-head">
+            <div><small>DOCUMENTO OFICIAL</small><strong>{quotationNumber(selectedQuote)}</strong><span>{quotationCustomer(selectedQuote)}</span></div>
+            <button type="button" onClick={() => setSelectedQuote(null)}><X size={19} /></button>
+          </div>
+          <div className="elan-copilot__document-body">
+            <div className="elan-copilot__document-total"><span>Total</span><strong>US$ {quotationTotal(selectedQuote).toFixed(2)}</strong></div>
+            <div className="elan-copilot__document-items">
+              {quotationItems(selectedQuote).map((item, index) => (
+                <div key={item.id || index}><div><strong>{item.name || item.title || item.description || `Ítem ${index + 1}`}</strong><span>{item.description || item.specification || ''}</span></div><em>{Number(item.total || item.subtotal || 0) ? `US$ ${Number(item.total || item.subtotal).toFixed(2)}` : ''}</em></div>
+              ))}
+              {!quotationItems(selectedQuote).length && <div className="elan-copilot__empty">El documento está abierto. Los detalles completos permanecen en CONNECT.</div>}
+            </div>
+          </div>
+          <div className="elan-copilot__document-actions">
+            <button type="button" onClick={() => editQuotationByVoice(selectedQuote)}><Pencil size={16} /> Editar por voz</button>
+            <button type="button" onClick={() => void sendQuotation(selectedQuote, 'whatsapp')}><Send size={16} /> WhatsApp</button>
+            <button type="button" onClick={() => void sendQuotation(selectedQuote, 'email')}><Mail size={16} /> Correo</button>
+            {selectedQuote.publicUrl && <a href={selectedQuote.publicUrl} target="_blank" rel="noreferrer"><Eye size={16} /> Abrir oficial</a>}
+          </div>
+        </aside>
+      )}
+
+      {!locked && (
+        <button type="button" className={`elan-copilot__mic-fab ${active ? 'is-active' : ''}`} onClick={toggleConversation} title="Hablar con ELAN">
+          {active ? <MicOff size={29} /> : <Mic size={29} />}
+        </button>
+      )}
     </main>
   );
+
 }
