@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Camera as FieldCamera } from 'react-webcam-pro';
-import { useRecordWebcam } from 'react-record-webcam';
 import {
   Camera,
   ChevronLeft,
@@ -144,34 +143,25 @@ export default function ELANLive() {
   const [lastCapture, setLastCapture] = useState('');
   const [captureAnalysis, setCaptureAnalysis] = useState('');
   const [captureBusy, setCaptureBusy] = useState(false);
-  const [recordingId, setRecordingId] = useState('');
+  const [recordingState, setRecordingState] = useState('idle');
   const [recordingNote, setRecordingNote] = useState('');
+  const [recordedVideoUrl, setRecordedVideoUrl] = useState('');
 
   const audioRef = useRef(null);
   const peerRef = useRef(null);
   const dataChannelRef = useRef(null);
   const micStreamRef = useRef(null);
   const cameraRef = useRef(null);
+  const videoPreviewRef = useRef(null);
+  const videoStreamRef = useRef(null);
+  const videoRecorderRef = useRef(null);
+  const videoChunksRef = useRef([]);
   const mountedRef = useRef(true);
   const realtimeActiveRef = useRef(false);
 
-  const recorder = useRecordWebcam({
-    quality: 'high',
-    mediaTrackConstraints: {
-      facingMode: { ideal: 'environment' },
-      width: { ideal: 1920 },
-      height: { ideal: 1080 },
-      frameRate: { ideal: 30 },
-    },
-  });
-
-  const activeRecording = useMemo(
-    () => recorder.activeRecordings.find((item) => item.id === recordingId) || null,
-    [recorder.activeRecordings, recordingId],
-  );
-  const recordingActive = ['OPEN', 'RECORDING', 'PAUSED'].includes(String(activeRecording?.status || ''));
-  const recordingRunning = activeRecording?.status === 'RECORDING';
-  const recordingPaused = activeRecording?.status === 'PAUSED';
+  const recordingActive = recordingState === 'recording' || recordingState === 'paused';
+  const recordingRunning = recordingState === 'recording';
+  const recordingPaused = recordingState === 'paused';
 
   useEffect(() => {
     realtimeActiveRef.current = realtimeActive;
@@ -242,7 +232,10 @@ export default function ELANLive() {
       active = false;
       mountedRef.current = false;
       stopRealtime(false);
-      void recorder.clearAllRecordings?.();
+      try { videoRecorderRef.current?.stop?.(); } catch {}
+      videoStreamRef.current?.getTracks?.().forEach((track) => track.stop());
+      videoStreamRef.current = null;
+      if (recordedVideoUrl) URL.revokeObjectURL(recordedVideoUrl);
     };
   }, []);
 
@@ -596,9 +589,18 @@ export default function ELANLive() {
     }
     try {
       let dataUrl = '';
-      if (recordingActive && recordingId) {
-        const blob = await recorder.captureScreenshot(recordingId);
-        if (blob) dataUrl = await blobToDataUrl(blob);
+      if (recordingActive && videoPreviewRef.current) {
+        const video = videoPreviewRef.current;
+        const width = Number(video.videoWidth || 0);
+        const height = Number(video.videoHeight || 0);
+        if (width > 0 && height > 0) {
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const context = canvas.getContext('2d');
+          context?.drawImage(video, 0, 0, width, height);
+          dataUrl = canvas.toDataURL('image/jpeg', 0.86);
+        }
       } else if (cameraOn && cameraRef.current) {
         dataUrl = String(cameraRef.current.takePhoto('base64url') || '');
       }
@@ -619,42 +621,134 @@ export default function ELANLive() {
       setError('Tu usuario no tiene permiso para grabar cámara.');
       return;
     }
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      setError('Este navegador no soporta grabación de video.');
+      return;
+    }
+
     try {
       setCameraOn(false);
       setTorchOn(false);
       setRecordingNote('');
-      const recording = await recorder.createRecording();
-      if (!recording) throw new Error('No pude crear la sesión de grabación.');
-      setRecordingId(recording.id);
-      await recorder.openCamera(recording.id);
-      await recorder.startRecording(recording.id);
+      if (recordedVideoUrl) {
+        URL.revokeObjectURL(recordedVideoUrl);
+        setRecordedVideoUrl('');
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 30 },
+        },
+        audio: false,
+      });
+      videoStreamRef.current = stream;
+
+      if (videoPreviewRef.current) {
+        videoPreviewRef.current.srcObject = stream;
+        await videoPreviewRef.current.play?.().catch(() => {});
+      }
+
+      const mimeType = [
+        'video/webm;codecs=vp8',
+        'video/webm',
+      ].find((value) => MediaRecorder.isTypeSupported(value)) || '';
+      const mediaRecorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
+
+      videoChunksRef.current = [];
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data?.size) videoChunksRef.current.push(event.data);
+      };
+      mediaRecorder.onerror = (event) => {
+        const message = event?.error?.message || 'La grabación de video tuvo un error.';
+        setError(message);
+      };
+      mediaRecorder.onstop = () => {
+        const type = mediaRecorder.mimeType || 'video/webm';
+        const blob = new Blob(videoChunksRef.current, { type });
+        videoChunksRef.current = [];
+        videoStreamRef.current?.getTracks?.().forEach((track) => track.stop());
+        videoStreamRef.current = null;
+        if (videoPreviewRef.current) videoPreviewRef.current.srcObject = null;
+        if (blob.size > 0) {
+          const url = URL.createObjectURL(blob);
+          setRecordedVideoUrl(url);
+          setRecordingNote('Grabación terminada y disponible para revisar o guardar.');
+          setRecordingState('stopped');
+        } else {
+          setRecordingState('idle');
+          setError('La grabación terminó sin generar un archivo de video.');
+        }
+      };
+
+      videoRecorderRef.current = mediaRecorder;
+      mediaRecorder.start(1000);
+      setRecordingState('recording');
       setPhase(realtimeActiveRef.current ? 'listening' : 'seeing');
       setError('');
     } catch (recordError) {
-      setError(recordError.message || recorder.errorMessage || 'No pude iniciar la grabación.');
+      videoStreamRef.current?.getTracks?.().forEach((track) => track.stop());
+      videoStreamRef.current = null;
+      setRecordingState('idle');
+      setError(recordError.name === 'NotAllowedError'
+        ? 'Necesito permiso de cámara para grabar.'
+        : (recordError.message || 'No pude iniciar la grabación.'));
     }
   }
 
   async function toggleRecordingPause() {
-    if (!recordingId) return;
+    const mediaRecorder = videoRecorderRef.current;
+    if (!mediaRecorder) return;
     try {
-      if (recordingPaused) await recorder.resumeRecording(recordingId);
-      else if (recordingRunning) await recorder.pauseRecording(recordingId);
+      if (recordingPaused && mediaRecorder.state === 'paused') {
+        mediaRecorder.resume();
+        setRecordingState('recording');
+      } else if (recordingRunning && mediaRecorder.state === 'recording') {
+        mediaRecorder.pause();
+        setRecordingState('paused');
+      }
     } catch (recordError) {
       setError(recordError.message || 'No pude pausar/reanudar la grabación.');
     }
   }
 
   async function stopVisitRecording() {
-    if (!recordingId) return;
+    const mediaRecorder = videoRecorderRef.current;
+    if (!mediaRecorder) return;
     try {
-      await recorder.stopRecording(recordingId);
-      setRecordingNote('Grabación terminada. Podés revisar el video y seguir capturando fotos del proyecto.');
-      await persistRealtimeMemory('inbound', 'Grabación de visita técnica terminada en ELAN Copiloto.', `field-recording:${recordingId}`, 'video');
+      if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+      videoRecorderRef.current = null;
+      await persistRealtimeMemory(
+        'inbound',
+        'Grabación de visita técnica terminada en ELAN Copiloto.',
+        `field-recording:${Date.now()}`,
+        'video',
+      );
       setPhase(realtimeActiveRef.current ? 'listening' : 'idle');
     } catch (recordError) {
       setError(recordError.message || 'No pude detener la grabación.');
     }
+  }
+
+  function saveRecordedVideo() {
+    if (!recordedVideoUrl) return;
+    const link = document.createElement('a');
+    link.href = recordedVideoUrl;
+    link.download = `ELAN-visita-${new Date().toISOString().replace(/[:.]/g, '-')}.webm`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  function closeRecordedVideo() {
+    if (recordedVideoUrl) URL.revokeObjectURL(recordedVideoUrl);
+    setRecordedVideoUrl('');
+    setRecordingState('idle');
+    setRecordingNote('');
   }
 
   function syncTextTurnWithRealtime(responseText, _data, userText) {
@@ -708,9 +802,9 @@ export default function ELANLive() {
             />
           )}
 
-          {recordingActive && activeRecording && (
+          {recordingActive && (
             <video
-              ref={activeRecording.webcamRef}
+              ref={videoPreviewRef}
               className="elan-field__camera"
               autoPlay
               muted
@@ -747,12 +841,13 @@ export default function ELANLive() {
             </div>
           )}
 
-          {activeRecording?.status === 'STOPPED' && activeRecording?.previewRef && (
+          {recordedVideoUrl && (
             <div className="elan-field__recording-preview">
-              <video ref={activeRecording.previewRef} controls playsInline />
-              <button type="button" onClick={() => { void recorder.clearPreview(recordingId); setRecordingId(''); setRecordingNote(''); }}>
-                Cerrar video
-              </button>
+              <video src={recordedVideoUrl} controls playsInline />
+              <div className="elan-field__recording-actions">
+                <button type="button" onClick={saveRecordedVideo}>Guardar video</button>
+                <button type="button" onClick={closeRecordedVideo}>Cerrar video</button>
+              </div>
             </div>
           )}
 
