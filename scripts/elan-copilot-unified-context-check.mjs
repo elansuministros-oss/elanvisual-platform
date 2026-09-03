@@ -20,6 +20,10 @@ requireText(pkg.dependencies?.['react-record-webcam'] || '', '2.0.1', 'RECORD_WE
 
 requireText(thread, 'useLocalRuntime', 'ASSISTANT_RUNTIME');
 requireText(thread, "canal: 'web-live'", 'TEXT_UNIFIED_CHANNEL');
+requireText(live, 'elan-tech-orb', 'TECH_ORB');
+requireText(live, 'BITÁCORA ACTIVA', 'FIELD_JOURNAL_UI');
+requireText(css, '.elan-tech-orb__sphere', 'TECH_ORB_CSS');
+requireText(css, '.elan-field__telemetry', 'HUD_TELEMETRY');
 requireText(live, 'FieldCamera', 'FIELD_CAMERA');
 requireText(live, 'MediaRecorder', 'FIELD_RECORDING');
 requireText(live, "audio: false", 'VIDEO_ONLY_RECORDING');
