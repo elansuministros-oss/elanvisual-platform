@@ -4253,3 +4253,91 @@
     margin-top: 10px;
   }
 }
+
+
+/* ELAN AI OFFICIAL ROBOT ASSET — DO NOT REPLACE WITH GENERATED CSS CHARACTER */
+.elan-copilot__brand-bot,
+.elan-copilot__brand-bot--large,
+.elan-copilot__brand-bot--hero {
+  background: transparent url('/assets/branding/elan-ai-robot-official.webp') center / contain no-repeat !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  flex: 0 0 auto;
+}
+
+.elan-copilot__brand-bot {
+  width: 46px !important;
+  height: 64px !important;
+}
+
+.elan-copilot__brand-bot--large {
+  width: 104px !important;
+  height: 146px !important;
+}
+
+.elan-copilot__brand-bot--hero {
+  width: 110px !important;
+  height: 154px !important;
+}
+
+.elan-copilot__brand-bot::before,
+.elan-copilot__brand-bot::after,
+.elan-copilot__brand-bot span,
+.elan-copilot__brand-bot span::before,
+.elan-copilot__brand-bot span::after,
+.elan-copilot__brand-bot--large::before,
+.elan-copilot__brand-bot--large::after,
+.elan-copilot__brand-bot--hero::before,
+.elan-copilot__brand-bot--hero::after {
+  content: none !important;
+  display: none !important;
+}
+
+.elan-copilot__assistant-emblem {
+  width: 126px !important;
+  height: 162px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.elan-copilot__assistant-emblem::before,
+.elan-copilot__assistant-emblem::after {
+  content: none !important;
+  display: none !important;
+}
+
+.elan-copilot__assistant-card .elan-copilot__brand-bot {
+  width: 34px !important;
+  height: 48px !important;
+  background: transparent url('/assets/branding/elan-ai-robot-official.webp') center / contain no-repeat !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 760px) {
+  .elan-copilot__brand-bot {
+    width: 38px !important;
+    height: 54px !important;
+  }
+
+  .elan-copilot__brand-bot--hero {
+    width: 92px !important;
+    height: 129px !important;
+  }
+
+  .elan-copilot__assistant-emblem {
+    width: 104px !important;
+    height: 136px !important;
+  }
+
+  .elan-copilot__assistant-card .elan-copilot__brand-bot {
+    width: 30px !important;
+    height: 42px !important;
+  }
+}
