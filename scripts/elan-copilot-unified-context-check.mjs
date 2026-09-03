@@ -21,7 +21,9 @@ requireText(pkg.dependencies?.['react-record-webcam'] || '', '2.0.1', 'RECORD_WE
 requireText(thread, 'useLocalRuntime', 'ASSISTANT_RUNTIME');
 requireText(thread, "canal: 'web-live'", 'TEXT_UNIFIED_CHANNEL');
 requireText(live, 'FieldCamera', 'FIELD_CAMERA');
-requireText(live, 'useRecordWebcam', 'FIELD_RECORDING');
+requireText(live, 'MediaRecorder', 'FIELD_RECORDING');
+requireText(live, "audio: false", 'VIDEO_ONLY_RECORDING');
+requireText(live, 'recordedVideoUrl', 'VIDEO_PREVIEW');
 requireText(live, "persistRealtimeMemory('inbound'", 'AUDIO_INBOUND_MEMORY');
 requireText(live, "persistRealtimeMemory('outbound'", 'AUDIO_OUTBOUND_MEMORY');
 requireText(live, 'captureFieldFrame', 'CAPTURE_FRAME');

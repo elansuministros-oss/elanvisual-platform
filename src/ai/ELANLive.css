@@ -414,6 +414,17 @@
   cursor: pointer;
 }
 
+.elan-field__recording-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.elan-field__recording-actions button {
+  align-self: auto;
+}
+
 .elan-field__note,
 .elan-field__error {
   position: absolute;
