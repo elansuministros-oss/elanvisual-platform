@@ -2066,3 +2066,353 @@
     display: none;
   }
 }
+
+
+/* ELAN SPATIAL SURFACE V3
+   Deliberately removes the generic AI orb and retro HUD language.
+   Runtime/camera/voice behavior is unchanged. */
+
+.elan-field {
+  background:
+    radial-gradient(ellipse at 72% 42%, rgba(74, 100, 255, .08), transparent 34%),
+    radial-gradient(ellipse at 28% 70%, rgba(98, 220, 190, .035), transparent 30%),
+    #06080d;
+}
+
+.elan-field__stage {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.006), transparent 30%),
+    #06080d;
+}
+
+.elan-field__command-center {
+  display: block;
+  padding: 0;
+}
+
+.elan-field__command-center::before,
+.elan-field__ambient,
+.elan-field__core-panel,
+.elan-tech-orb,
+.elan-field__telemetry {
+  display: none !important;
+}
+
+.elan-spatial {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(250px, .72fr) minmax(520px, 1.55fr);
+  grid-template-rows: 1fr auto;
+  align-items: center;
+  gap: 34px 54px;
+  padding: clamp(42px, 7vh, 78px) clamp(34px, 5vw, 84px) 118px;
+  overflow: hidden;
+}
+
+.elan-spatial::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 49.94%, rgba(255,255,255,.024) 50%, transparent 50.06%),
+    linear-gradient(0deg, transparent 49.94%, rgba(255,255,255,.016) 50%, transparent 50.06%);
+  opacity: .8;
+}
+
+.elan-spatial__copy {
+  position: relative;
+  z-index: 2;
+  align-self: center;
+  max-width: 420px;
+}
+
+.elan-spatial__eyebrow {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: rgba(172,184,207,.48);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: .15em;
+}
+
+.elan-spatial__copy h1 {
+  margin: 0;
+  color: #f7f8fb;
+  font-size: clamp(54px, 7vw, 98px);
+  line-height: .92;
+  letter-spacing: -.07em;
+  font-weight: 560;
+}
+
+.elan-spatial__copy p {
+  width: min(100%, 350px);
+  margin: 20px 0 0;
+  color: rgba(184,194,211,.48);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.elan-spatial__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 26px;
+}
+
+.elan-spatial__meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(255,255,255,.065);
+  border-radius: 999px;
+  color: rgba(205,213,226,.58);
+  background: rgba(255,255,255,.018);
+  font-size: 8px;
+}
+
+.elan-spatial__meta i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #7be4c0;
+  box-shadow: 0 0 10px rgba(123,228,192,.35);
+}
+
+.elan-spatial__signal {
+  position: relative;
+  z-index: 2;
+  min-height: 390px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.elan-spatial__signal::before {
+  content: "";
+  position: absolute;
+  width: min(58vw, 690px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(99,124,255,.105) 0%, rgba(107,82,220,.045) 37%, transparent 69%);
+  filter: blur(10px);
+  animation: elan-spatial-pulse 5.6s ease-in-out infinite;
+}
+
+.elan-spatial__signal-glow {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  top: 50%;
+  height: 150px;
+  transform: translateY(-50%);
+  background:
+    radial-gradient(ellipse at center, rgba(91,143,255,.13), rgba(101,77,210,.05) 48%, transparent 72%);
+  filter: blur(24px);
+}
+
+.elan-spatial__signal-line {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 50%;
+  height: 1px;
+  background:
+    linear-gradient(90deg, transparent, rgba(105,137,255,.18) 18%, rgba(136,227,255,.42) 50%, rgba(137,103,255,.17) 82%, transparent);
+  box-shadow: 0 0 26px rgba(106,145,255,.12);
+}
+
+.elan-spatial__wave {
+  width: min(90%, 720px);
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, .9vw, 11px);
+  position: relative;
+}
+
+.elan-spatial__wave span {
+  width: clamp(3px, .34vw, 5px);
+  height: calc(22px + (var(--i) % 5) * 8px);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(164,236,255,.9), rgba(108,132,255,.72) 48%, rgba(139,93,231,.52));
+  opacity: .42;
+  box-shadow: 0 0 16px rgba(109,144,255,.12);
+  transform-origin: center;
+  animation: elan-spatial-wave 2.8s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.08s);
+}
+
+.elan-spatial__signal--listening .elan-spatial__wave span,
+.elan-spatial__signal--speaking .elan-spatial__wave span {
+  opacity: .86;
+  animation-duration: .9s;
+}
+
+.elan-spatial__signal--thinking .elan-spatial__wave span {
+  opacity: .68;
+  animation-duration: 1.35s;
+}
+
+.elan-spatial__state {
+  position: absolute;
+  bottom: 42px;
+  color: rgba(209,216,230,.48);
+  font-size: 9px;
+  letter-spacing: .08em;
+  font-weight: 550;
+}
+
+.elan-spatial__capabilities {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 0 0;
+  border-top: 1px solid rgba(255,255,255,.055);
+  color: rgba(177,188,207,.26);
+  font-size: 8px;
+  letter-spacing: .14em;
+}
+
+.elan-field__controls {
+  left: auto;
+  right: 22px;
+  transform: none;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  border-radius: 18px;
+  background: rgba(15,18,27,.74);
+}
+
+.elan-field__control {
+  min-width: 58px;
+  height: 50px;
+  border-radius: 14px;
+}
+
+.elan-field__error,
+.elan-field__note {
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+@keyframes elan-spatial-pulse {
+  0%, 100% { transform: scale(.92); opacity: .62; }
+  50% { transform: scale(1.045); opacity: .95; }
+}
+
+@keyframes elan-spatial-wave {
+  0%, 100% { transform: scaleY(.38); }
+  50% { transform: scaleY(1.35); }
+}
+
+@media (max-width: 980px) {
+  .elan-spatial {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 14px;
+    padding: 34px 20px 98px;
+  }
+
+  .elan-spatial__copy {
+    max-width: none;
+    text-align: center;
+  }
+
+  .elan-spatial__eyebrow {
+    margin-bottom: 8px;
+  }
+
+  .elan-spatial__copy h1 {
+    font-size: clamp(46px, 12vw, 72px);
+  }
+
+  .elan-spatial__copy p {
+    margin: 10px auto 0;
+    max-width: 340px;
+  }
+
+  .elan-spatial__meta {
+    justify-content: center;
+    margin-top: 15px;
+  }
+
+  .elan-spatial__signal {
+    min-height: 250px;
+  }
+
+  .elan-spatial__signal::before {
+    width: min(88vw, 520px);
+  }
+
+  .elan-spatial__wave {
+    height: 130px;
+  }
+
+  .elan-spatial__state {
+    bottom: 18px;
+  }
+
+  .elan-spatial__capabilities {
+    padding-top: 12px;
+  }
+}
+
+@media (max-width: 760px) {
+  .elan-spatial {
+    padding: 26px 12px 82px;
+  }
+
+  .elan-spatial__eyebrow {
+    font-size: 7px;
+  }
+
+  .elan-spatial__copy h1 {
+    font-size: 50px;
+  }
+
+  .elan-spatial__copy p {
+    display: none;
+  }
+
+  .elan-spatial__meta span:nth-child(n+2) {
+    display: none;
+  }
+
+  .elan-spatial__signal {
+    min-height: 230px;
+  }
+
+  .elan-spatial__wave {
+    width: 94%;
+    gap: 6px;
+  }
+
+  .elan-spatial__wave span {
+    width: 3px;
+  }
+
+  .elan-spatial__capabilities {
+    justify-content: center;
+    gap: 22px;
+  }
+
+  .elan-spatial__capabilities span:nth-child(4) {
+    display: none;
+  }
+
+  .elan-field__controls {
+    left: 7px;
+    right: 7px;
+    width: auto;
+    justify-content: center;
+    bottom: max(7px, env(safe-area-inset-bottom));
+  }
+}
