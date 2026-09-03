@@ -671,3 +671,803 @@
 
   .elan-field__recording-preview { inset: 10px 10px 76px; }
 }
+
+
+/* =========================================================
+   ELAN COPILOTO / TECHNOLOGICAL HUD TEMPLATE
+   Pure HTML/CSS presentation layer. Runtime behavior remains
+   in ELANLive.jsx and CONNECT.
+   ========================================================= */
+
+.elan-field {
+  --elan-cyan: #56e8ff;
+  --elan-cyan-soft: rgba(86, 232, 255, .22);
+  --elan-emerald: #59f1b0;
+  --elan-violet: #8a7cff;
+  --elan-hud: rgba(7, 14, 23, .72);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(27, 117, 147, .16), transparent 31%),
+    radial-gradient(circle at 18% 14%, rgba(79, 68, 180, .12), transparent 24%),
+    radial-gradient(circle at 82% 88%, rgba(39, 153, 112, .11), transparent 28%),
+    #02060b;
+}
+
+.elan-field::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: .34;
+  background-image:
+    linear-gradient(rgba(87, 220, 255, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(87, 220, 255, .035) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at center, #000 20%, transparent 86%);
+}
+
+.elan-field__topbar {
+  height: 82px;
+  padding: 0 24px;
+  border-bottom: 1px solid rgba(108, 224, 255, .11);
+  background:
+    linear-gradient(180deg, rgba(5, 11, 18, .96), rgba(5, 10, 17, .76));
+  box-shadow: 0 14px 40px rgba(0, 0, 0, .28);
+}
+
+.elan-field__topbar::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(86, 232, 255, .65), rgba(89, 241, 176, .45), transparent);
+  opacity: .42;
+}
+
+.elan-field__brand-orb {
+  width: 42px;
+  height: 42px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  flex: 0 0 auto;
+  background:
+    radial-gradient(circle at 34% 26%, #c4fff1 0 6%, transparent 7%),
+    radial-gradient(circle at 50% 50%, rgba(89, 241, 176, .96), rgba(58, 197, 185, .88) 36%, rgba(52, 120, 208, .68) 72%, rgba(15, 29, 48, .2));
+  box-shadow:
+    0 0 0 1px rgba(143, 250, 221, .24),
+    0 0 26px rgba(89, 241, 176, .26),
+    inset 0 0 18px rgba(255, 255, 255, .14);
+}
+
+.elan-field__brand-orb::before,
+.elan-field__brand-orb::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(86, 232, 255, .24);
+}
+
+.elan-field__brand-orb::before {
+  inset: -5px;
+  border-left-color: transparent;
+  animation: elan-brand-spin 5.5s linear infinite;
+}
+
+.elan-field__brand-orb::after {
+  inset: -10px;
+  border-top-color: transparent;
+  border-bottom-color: rgba(89, 241, 176, .2);
+  animation: elan-brand-spin 8s linear infinite reverse;
+}
+
+.elan-field__brand-orb span {
+  position: relative;
+  z-index: 1;
+  font-size: 16px;
+  font-weight: 900;
+  color: #03110c;
+  text-shadow: 0 1px 0 rgba(255,255,255,.26);
+}
+
+@keyframes elan-brand-spin {
+  to { transform: rotate(360deg); }
+}
+
+.elan-field__eyebrow {
+  color: rgba(140, 224, 255, .56);
+  font-size: 8px;
+  letter-spacing: .22em;
+  font-weight: 750;
+  margin-bottom: 2px;
+}
+
+.elan-field__title {
+  font-size: 14px;
+  letter-spacing: .15em;
+  line-height: 1;
+}
+
+.elan-field__title span {
+  color: #a5f7d0;
+  font-weight: 650;
+}
+
+.elan-field__subtitle {
+  color: rgba(184, 204, 221, .62);
+  font-size: 9px;
+  letter-spacing: .05em;
+  margin-top: 5px;
+}
+
+.elan-field__topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.elan-field__sync {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 13px;
+  border: 1px solid rgba(117, 209, 255, .1);
+  background: rgba(255,255,255,.025);
+}
+
+.elan-field__sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--elan-emerald);
+  box-shadow: 0 0 14px rgba(89, 241, 176, .68);
+}
+
+.elan-field__sync strong,
+.elan-field__sync small {
+  display: block;
+}
+
+.elan-field__sync strong {
+  font-size: 8px;
+  letter-spacing: .1em;
+  color: #d4fff0;
+}
+
+.elan-field__sync small {
+  margin-top: 2px;
+  color: rgba(185, 205, 220, .52);
+  font-size: 8px;
+}
+
+.elan-field__workspace {
+  height: calc(100dvh - 82px);
+}
+
+.elan-field__stage {
+  background:
+    radial-gradient(circle at 50% 48%, rgba(61, 185, 224, .055), transparent 30%),
+    linear-gradient(rgba(63, 139, 174, .025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(63, 139, 174, .025) 1px, transparent 1px),
+    #03070d;
+  background-size: auto, 52px 52px, 52px 52px, auto;
+}
+
+.elan-field__command-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(185px, 1fr) minmax(300px, 520px) minmax(210px, 1fr);
+  align-items: center;
+  gap: clamp(18px, 4vw, 58px);
+  padding: 50px clamp(26px, 5vw, 80px) 118px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.elan-field__command-center::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(64vw, 760px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -52%);
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle, rgba(86,232,255,.055) 0 1px, transparent 1px 34px);
+  opacity: .52;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.elan-field__ambient {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: .12;
+  pointer-events: none;
+  z-index: -2;
+}
+
+.elan-field__ambient--one {
+  left: 18%;
+  top: 20%;
+  background: #2f8fff;
+}
+
+.elan-field__ambient--two {
+  right: 14%;
+  bottom: 12%;
+  background: #37e89e;
+}
+
+.elan-field__core-panel {
+  grid-column: 2;
+  min-width: 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.elan-field__core-kicker {
+  margin-bottom: 22px;
+  padding: 6px 10px;
+  border: 1px solid rgba(86, 232, 255, .14);
+  border-radius: 999px;
+  color: rgba(141, 227, 255, .7);
+  background: rgba(55, 167, 196, .04);
+  font-size: 8px;
+  letter-spacing: .24em;
+  font-weight: 800;
+}
+
+.elan-tech-orb {
+  width: clamp(190px, 25vw, 270px);
+  aspect-ratio: 1;
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 4px auto 22px;
+  filter: drop-shadow(0 28px 52px rgba(0, 0, 0, .48));
+}
+
+.elan-tech-orb::before {
+  content: "";
+  position: absolute;
+  inset: 17%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79,225,255,.18), rgba(40,120,178,.05) 54%, transparent 72%);
+  filter: blur(16px);
+  animation: elan-orb-breathe 3.4s ease-in-out infinite;
+}
+
+.elan-tech-orb__sphere {
+  position: absolute;
+  inset: 25%;
+  border-radius: 46% 54% 48% 52% / 52% 44% 56% 48%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 36% 30%, rgba(230,255,250,.94) 0 2%, rgba(125,255,223,.75) 4%, transparent 10%),
+    radial-gradient(circle at 42% 42%, rgba(94,239,220,.95) 0 7%, rgba(51,202,207,.92) 20%, rgba(60,120,218,.88) 48%, rgba(63,42,144,.82) 72%, rgba(4,11,24,.96) 100%);
+  box-shadow:
+    0 0 26px rgba(76, 214, 255, .45),
+    0 0 70px rgba(69, 130, 240, .28),
+    inset -20px -18px 30px rgba(1, 5, 14, .58),
+    inset 12px 12px 26px rgba(255,255,255,.08);
+  animation:
+    elan-orb-morph 8s ease-in-out infinite alternate,
+    elan-orb-float 4.8s ease-in-out infinite;
+}
+
+.elan-tech-orb__mesh {
+  position: absolute;
+  inset: -36%;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle at 50% 45%, transparent 0 12px, rgba(154,244,255,.09) 12px 13px),
+    repeating-linear-gradient(32deg, transparent 0 16px, rgba(148,236,255,.055) 16px 17px);
+  mix-blend-mode: screen;
+  animation: elan-mesh-rotate 13s linear infinite;
+}
+
+.elan-tech-orb__flare {
+  position: absolute;
+  width: 72%;
+  height: 24%;
+  border-radius: 50%;
+  transform: rotate(-24deg) translateY(-56%);
+  background: linear-gradient(90deg, transparent, rgba(226,255,250,.78), rgba(86,232,255,.2), transparent);
+  filter: blur(5px);
+  opacity: .7;
+}
+
+.elan-tech-orb__core {
+  position: relative;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: rgba(223,255,247,.9);
+  border: 1px solid rgba(215,255,247,.18);
+  background: rgba(0, 9, 17, .25);
+  box-shadow:
+    inset 0 0 20px rgba(149, 255, 222, .12),
+    0 0 24px rgba(86, 232, 255, .16);
+  font-size: 20px;
+  font-weight: 850;
+  letter-spacing: .04em;
+  backdrop-filter: blur(6px);
+}
+
+.elan-tech-orb__halo {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(97, 218, 255, .22);
+  box-shadow: inset 0 0 24px rgba(56, 177, 224, .035);
+}
+
+.elan-tech-orb__halo::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #96ffdf;
+  box-shadow: 0 0 12px #65f1bf;
+}
+
+.elan-tech-orb__halo--1 {
+  inset: 13%;
+  border-left-color: transparent;
+  border-right-color: rgba(143, 121, 255, .28);
+  animation: elan-halo-spin 7s linear infinite;
+}
+
+.elan-tech-orb__halo--1::after { top: 12%; right: 14%; }
+
+.elan-tech-orb__halo--2 {
+  inset: 5%;
+  border-bottom-color: transparent;
+  border-top-color: rgba(89, 241, 176, .24);
+  transform: rotateX(64deg);
+  animation: elan-halo-spin 10s linear infinite reverse;
+}
+
+.elan-tech-orb__halo--2::after { left: 7%; bottom: 25%; }
+
+.elan-tech-orb__halo--3 {
+  inset: -2%;
+  border-top-color: transparent;
+  border-left-color: rgba(86,232,255,.12);
+  border-right-color: rgba(86,232,255,.08);
+  animation: elan-halo-spin 16s linear infinite;
+}
+
+.elan-tech-orb__scan {
+  position: absolute;
+  inset: 1%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 65%, rgba(99, 231, 255, .16) 74%, transparent 82%);
+  animation: elan-scan 4s linear infinite;
+  mask-image: radial-gradient(circle, transparent 0 58%, #000 60% 61%, transparent 63%);
+}
+
+.elan-tech-orb__particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #95ffe0;
+  box-shadow: 0 0 14px #73ffd5;
+}
+
+.elan-tech-orb__particle--1 { top: 12%; left: 24%; animation: elan-particle 3.8s ease-in-out infinite; }
+.elan-tech-orb__particle--2 { top: 28%; right: 4%; animation: elan-particle 4.7s ease-in-out infinite reverse; }
+.elan-tech-orb__particle--3 { bottom: 10%; left: 16%; animation: elan-particle 5.6s ease-in-out infinite; }
+.elan-tech-orb__particle--4 { bottom: 20%; right: 18%; animation: elan-particle 4.2s ease-in-out infinite reverse; }
+
+.elan-tech-orb--listening .elan-tech-orb__sphere {
+  animation-duration: 3.2s, 2.2s;
+  box-shadow:
+    0 0 34px rgba(89,241,176,.58),
+    0 0 92px rgba(86,232,255,.28),
+    inset -20px -18px 30px rgba(1,5,14,.55),
+    inset 12px 12px 26px rgba(255,255,255,.1);
+}
+
+.elan-tech-orb--thinking .elan-tech-orb__sphere {
+  filter: hue-rotate(32deg) saturate(1.25);
+  animation-duration: 3s, 1.6s;
+}
+
+.elan-tech-orb--speaking .elan-tech-orb__sphere {
+  filter: hue-rotate(-18deg) saturate(1.18);
+  animation-duration: 2.2s, 1.1s;
+  box-shadow:
+    0 0 42px rgba(86,232,255,.7),
+    0 0 110px rgba(103,99,255,.38),
+    inset -20px -18px 30px rgba(1,5,14,.5),
+    inset 12px 12px 26px rgba(255,255,255,.12);
+}
+
+.elan-field__core-state {
+  color: #a7ffe0;
+  font-size: 9px;
+  letter-spacing: .28em;
+  font-weight: 850;
+  text-shadow: 0 0 18px rgba(89,241,176,.36);
+}
+
+.elan-field__core-panel h1 {
+  margin: 11px 0 8px;
+  font-size: clamp(22px, 3vw, 36px);
+  letter-spacing: .2em;
+  font-weight: 760;
+  color: #f6fbff;
+}
+
+.elan-field__core-panel p {
+  max-width: 430px;
+  margin: 0;
+  color: rgba(184, 204, 222, .62);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.elan-field__core-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 17px;
+}
+
+.elan-field__core-tags span {
+  padding: 6px 8px;
+  border-radius: 7px;
+  border: 1px solid rgba(113, 216, 255, .1);
+  background: rgba(255,255,255,.018);
+  color: rgba(157, 215, 235, .52);
+  font-size: 7px;
+  letter-spacing: .1em;
+  font-weight: 750;
+}
+
+.elan-field__telemetry {
+  width: min(100%, 280px);
+  position: relative;
+  padding: 15px 15px 14px;
+  border: 1px solid rgba(104, 216, 255, .11);
+  background:
+    linear-gradient(145deg, rgba(8, 19, 30, .72), rgba(5, 11, 18, .46));
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.025),
+    0 18px 70px rgba(0,0,0,.18);
+  backdrop-filter: blur(18px);
+  clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 13px, 100% 100%, 13px 100%, 0 calc(100% - 13px));
+}
+
+.elan-field__telemetry::before,
+.elan-field__telemetry::after {
+  content: "";
+  position: absolute;
+  background: rgba(89, 241, 176, .38);
+}
+
+.elan-field__telemetry::before {
+  width: 42px;
+  height: 1px;
+  top: 0;
+  left: 12px;
+}
+
+.elan-field__telemetry::after {
+  width: 1px;
+  height: 34px;
+  right: 0;
+  bottom: 13px;
+}
+
+.elan-field__telemetry--left {
+  grid-column: 1;
+  justify-self: end;
+}
+
+.elan-field__telemetry--right {
+  grid-column: 3;
+  justify-self: start;
+}
+
+.elan-field__telemetry-label {
+  margin-bottom: 10px;
+  color: rgba(115, 221, 255, .5);
+  font-size: 7px;
+  letter-spacing: .22em;
+  font-weight: 850;
+}
+
+.elan-field__telemetry > strong {
+  display: block;
+  color: #f3f8fc;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.elan-field__telemetry > span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(180, 206, 222, .52);
+  font-size: 8px;
+  letter-spacing: .08em;
+}
+
+.elan-field__telemetry-line {
+  height: 1px;
+  margin: 12px 0;
+  background: linear-gradient(90deg, rgba(93,228,255,.2), transparent);
+}
+
+.elan-field__telemetry-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+  color: rgba(176, 198, 216, .48);
+  font-size: 8px;
+}
+
+.elan-field__telemetry-row b {
+  color: rgba(220, 246, 251, .72);
+  font-weight: 650;
+  text-align: right;
+}
+
+.elan-field__field-note {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  padding: 9px 0;
+  border-top: 1px solid rgba(102, 208, 255, .07);
+}
+
+.elan-field__field-note:first-of-type {
+  border-top: 0;
+}
+
+.elan-field__field-note > span {
+  color: rgba(89,241,176,.55);
+  font-size: 7px;
+  letter-spacing: .08em;
+  font-weight: 850;
+}
+
+.elan-field__field-note p {
+  margin: 0;
+  color: rgba(220, 232, 241, .68);
+  font-size: 9px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.elan-field__field-note--empty p {
+  color: rgba(176, 195, 211, .42);
+}
+
+.elan-field__controls {
+  border-radius: 16px;
+  padding: 7px;
+  border-color: rgba(91, 213, 255, .13);
+  background:
+    linear-gradient(180deg, rgba(8, 16, 26, .9), rgba(5, 11, 18, .84));
+  box-shadow:
+    0 28px 80px rgba(0,0,0,.42),
+    0 0 0 1px rgba(255,255,255,.02) inset;
+}
+
+.elan-field__control {
+  border-radius: 11px;
+  border-color: rgba(98, 204, 255, .08);
+  background: rgba(255,255,255,.022);
+}
+
+.elan-field__control:hover {
+  background: rgba(89, 241, 176, .055);
+  border-color: rgba(89, 241, 176, .18);
+}
+
+.elan-field__control--primary {
+  color: #b8f4ff;
+  border-color: rgba(86, 232, 255, .24);
+  background:
+    linear-gradient(145deg, rgba(63, 168, 218, .13), rgba(64, 174, 132, .09));
+}
+
+.elan-field__capture-card,
+.elan-field__recording-preview,
+.elan-field__note,
+.elan-field__error,
+.elan-field__chat-panel {
+  border-color: rgba(100, 211, 255, .12);
+  background: rgba(5, 11, 18, .91);
+  box-shadow: 0 30px 90px rgba(0,0,0,.38);
+}
+
+.elan-field__error {
+  color: #ffd4d4;
+  border-color: rgba(255, 104, 104, .28);
+  background:
+    linear-gradient(90deg, rgba(105, 20, 27, .82), rgba(47, 10, 18, .84));
+}
+
+@keyframes elan-orb-breathe {
+  0%, 100% { transform: scale(.92); opacity: .58; }
+  50% { transform: scale(1.08); opacity: .95; }
+}
+
+@keyframes elan-orb-morph {
+  0% { border-radius: 46% 54% 48% 52% / 52% 44% 56% 48%; transform: rotate(-2deg) scale(.98); }
+  35% { border-radius: 54% 46% 56% 44% / 46% 58% 42% 54%; transform: rotate(3deg) scale(1.02); }
+  70% { border-radius: 48% 52% 43% 57% / 58% 47% 53% 42%; transform: rotate(-1deg) scale(1.04); }
+  100% { border-radius: 55% 45% 50% 50% / 44% 54% 46% 56%; transform: rotate(4deg) scale(1); }
+}
+
+@keyframes elan-orb-float {
+  0%, 100% { translate: 0 -3px; }
+  50% { translate: 0 5px; }
+}
+
+@keyframes elan-mesh-rotate {
+  to { transform: rotate(360deg) scale(1.02); }
+}
+
+@keyframes elan-halo-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes elan-scan {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes elan-particle {
+  0%, 100% { transform: translate(0, 0) scale(.7); opacity: .25; }
+  50% { transform: translate(10px, -12px) scale(1.4); opacity: .95; }
+}
+
+@media (max-width: 1100px) {
+  .elan-field__command-center {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    align-content: center;
+    padding: 34px 24px 112px;
+  }
+
+  .elan-field__core-panel {
+    grid-column: 1;
+  }
+
+  .elan-field__telemetry {
+    display: none;
+  }
+
+  .elan-tech-orb {
+    width: min(48vw, 260px);
+  }
+}
+
+@media (max-width: 760px) {
+  .elan-field__topbar {
+    height: 68px;
+    padding: 0 12px;
+  }
+
+  .elan-field__workspace {
+    height: calc(100dvh - 68px);
+  }
+
+  .elan-field__topbar::after {
+    left: 12px;
+    right: 12px;
+  }
+
+  .elan-field__eyebrow,
+  .elan-field__sync {
+    display: none;
+  }
+
+  .elan-field__brand-orb {
+    width: 36px;
+    height: 36px;
+    border-radius: 13px;
+  }
+
+  .elan-field__title {
+    font-size: 12px;
+  }
+
+  .elan-field__subtitle {
+    font-size: 8px;
+  }
+
+  .elan-field__status {
+    min-height: 31px;
+    padding: 0 9px;
+    font-size: 8px;
+  }
+
+  .elan-field__command-center {
+    padding: 24px 12px 90px;
+  }
+
+  .elan-field__core-kicker {
+    margin-bottom: 11px;
+    font-size: 6px;
+    letter-spacing: .2em;
+  }
+
+  .elan-tech-orb {
+    width: min(58vw, 224px);
+    margin-bottom: 12px;
+  }
+
+  .elan-field__core-panel h1 {
+    margin-top: 8px;
+    font-size: 22px;
+  }
+
+  .elan-field__core-panel p {
+    max-width: 320px;
+    padding: 0 12px;
+    font-size: 9px;
+  }
+
+  .elan-field__core-tags {
+    margin-top: 11px;
+  }
+
+  .elan-field__core-tags span {
+    font-size: 6px;
+    padding: 5px 6px;
+  }
+
+  .elan-field__controls {
+    bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-height: 700px) and (max-width: 760px) {
+  .elan-field__core-kicker,
+  .elan-field__core-tags {
+    display: none;
+  }
+
+  .elan-tech-orb {
+    width: min(43vw, 176px);
+    margin: 0 auto 8px;
+  }
+
+  .elan-field__core-panel h1 {
+    font-size: 18px;
+    margin: 6px 0;
+  }
+
+  .elan-field__core-panel p {
+    font-size: 8px;
+  }
+}
