@@ -129,7 +129,8 @@ export default function ELANFieldThread({ sessionToken, memoryHistory = [], onRe
       }
       const text = String(data?.texto || data?.respuesta || data?.message || data?.content || '').trim();
       if (!text) throw new Error('ELAN respondió sin texto utilizable.');
-      onResponse?.(text, data);
+      const lastUser = [...serialized].reverse().find((item) => item.role === 'user')?.content || '';
+      onResponse?.(text, data, lastUser);
       return { content: [{ type: 'text', text }] };
     },
   }), [sessionToken, onResponse]);
