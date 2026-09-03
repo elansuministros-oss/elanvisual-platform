@@ -74,7 +74,7 @@ function unifiedActor(session = {}) {
     actorId: owner ? 'owner' : (session.sub || session.actorId || null),
     registered: true,
     platformAllowed: true,
-    platforms: owner ? ['*'] : ['ELANVISUAL'],
+    platforms: owner ? ['*'] : (Array.isArray(session.platforms) ? session.platforms : [session.platform || 'ELANVISUAL']).map(normalizePlatform),
     scopes: Array.isArray(session.scopes) ? session.scopes : [],
     authority: owner ? 'owner_identity' : (session.authority || null),
     phone: session.phone || null,
@@ -105,7 +105,7 @@ async function verifyLiveSession(baseUrl, internalToken, token) {
   return data.data.session;
 }
 
-async function getUnifiedRuntimeManifest(session) {
+async function getUnifiedRuntimeManifest(session, platform) {
   const { baseUrl, token } = getOrchestratorConfig();
   if (!token) throw Object.assign(new Error('Token interno no configurado para ELAN Runtime.'), { code: 'ELAN_RUNTIME_NOT_CONFIGURED', status: 503 });
   const response = await fetch(`${baseUrl}/api/v1/elan-runtime/tools`, {
@@ -115,10 +115,10 @@ async function getUnifiedRuntimeManifest(session) {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
       'X-Elankav-Internal-Token': token,
-      'X-Elankav-Platform': 'ELANVISUAL',
+      'X-Elankav-Platform': platform,
       'X-Elankav-Source': 'ELAN_LIVE_REALTIME_TOKEN',
     },
-    body: JSON.stringify({ actor: unifiedActor(session), channel: 'copilot', platform: 'ELANVISUAL', memoryLimit: 20 }),
+    body: JSON.stringify({ actor: unifiedActor(session), channel: 'copilot', platform, memoryLimit: 20 }),
     signal: AbortSignal.timeout(10000),
   });
   const data = await response.json().catch(() => ({}));
@@ -145,9 +145,10 @@ export default async function handler(req, res) {
     if (!liveSessionToken) return res.status(401).json({ ok: false, error: 'Sesión ELAN Live requerida.' });
 
     const session = await verifyLiveSession(baseUrl, internalToken, liveSessionToken);
+    const platform = requestedPlatform(session, req.body?.platform);
     const [runtime, publishedRuntime] = await Promise.all([
-      getUnifiedRuntimeManifest(session),
-      getPublishedAiRuntime(baseUrl, internalToken, session.platform || 'elanvisual'),
+      getUnifiedRuntimeManifest(session, platform),
+      getPublishedAiRuntime(baseUrl, internalToken, platform),
     ]);
 
     const upstream = await fetch(`${baseUrl}/api/v1/copilot/realtime-token`, {
@@ -157,11 +158,13 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         'X-Elankav-Copilot-Token': copilotToken,
         'X-Elankav-Design-Token': copilotToken,
-        'X-Elankav-Platform': 'ELANVISUAL',
+        'X-Elankav-Platform': platform,
         'X-Elankav-Source': 'elan-live-realtime-token',
       },
       body: JSON.stringify({
-        liveSession: unifiedActor(session),
+        liveSession: { ...unifiedActor(session), activePlatform: platform },
+        activePlatform: platform,
+        platform,
         runtime: runtime.runtime || 'ELAN_UNIFIED_RUNTIME',
         runtimeVersion: runtime.version || null,
         runtimeTools: runtime.tools,
@@ -182,6 +185,7 @@ export default async function handler(req, res) {
 
     return res.status(201).json({
       ok: true,
+      platform,
       value: data.value,
       expires_at: data.expires_at || null,
       model: data.model || null,
