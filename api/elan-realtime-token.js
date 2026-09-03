@@ -57,9 +57,13 @@ function getOrchestratorConfig() {
   return { baseUrl, token };
 }
 
+const PUBLIC_RUNTIME_PLATFORMS=new Set(['ELANVISUAL','ELANHOME','ELANPET']);
 function normalizePlatform(value){return String(value||'ELANVISUAL').trim().toUpperCase().replace(/[ -]+/g,'_')}
 function requestedPlatform(session={},requested=''){
   const platform=normalizePlatform(requested||session.platform||'ELANVISUAL');
+  if(!PUBLIC_RUNTIME_PLATFORMS.has(platform)){
+    const error=new Error('La plataforma solicitada no pertenece al runtime público de ELAN.');error.code='LIVE_PLATFORM_NOT_PUBLIC';error.status=403;throw error;
+  }
   const role=String(session.role||'unknown').toLowerCase();
   const owner=role==='owner'||String(session.authority||'').toLowerCase()==='owner_identity';
   const allowed=Array.isArray(session.platforms)?session.platforms.map(normalizePlatform):[normalizePlatform(session.platform||'ELANVISUAL')];

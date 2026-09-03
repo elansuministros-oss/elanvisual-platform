@@ -16,28 +16,39 @@ function forbidText(source, text, label) {
 
 requireText(pkg.dependencies?.['@assistant-ui/react'] || '', '0.15.17', 'ASSISTANT_UI');
 requireText(pkg.dependencies?.['react-webcam-pro'] || '', '1.2.0', 'WEBCAM_PRO');
-requireText(pkg.dependencies?.['react-record-webcam'] || '', '2.0.1', 'RECORD_WEBCAM');
 
 requireText(thread, 'useLocalRuntime', 'ASSISTANT_RUNTIME');
+requireText(thread, "platform = 'ELANVISUAL'", 'TEXT_PLATFORM_PROP');
+requireText(thread, 'unidad: platform', 'TEXT_ACTIVE_PLATFORM');
 requireText(thread, "canal: 'web-live'", 'TEXT_UNIFIED_CHANNEL');
-requireText(live, 'elan-tech-orb', 'TECH_ORB');
-requireText(live, 'BITÁCORA ACTIVA', 'FIELD_JOURNAL_UI');
-requireText(css, '.elan-tech-orb__sphere', 'TECH_ORB_CSS');
-requireText(css, '.elan-field__telemetry', 'HUD_TELEMETRY');
+
+requireText(live, "const OWNER_PLATFORMS = ['ELANVISUAL'];", 'OWNER_PUBLIC_SURFACE');
+requireText(live, 'elan-copilot__topbar', 'PLATFORM_DASHBOARD');
+requireText(live, 'callLiveTool', 'DIRECT_TOOL_RUNTIME');
+requireText(live, "callLiveTool('abrir_cotizacion'", 'OPEN_QUOTATION_TOOL');
+requireText(live, "'enviar_cotizacion_email'", 'EMAIL_QUOTATION_TOOL');
+requireText(live, "'enviar_cotizacion_cliente'", 'WHATSAPP_QUOTATION_TOOL');
+requireText(live, 'selectedQuote.pdfUrl', 'OPEN_PDF_ACTION');
 requireText(live, 'FieldCamera', 'FIELD_CAMERA');
 requireText(live, 'MediaRecorder', 'FIELD_RECORDING');
 requireText(live, "audio: false", 'VIDEO_ONLY_RECORDING');
-requireText(live, 'recordedVideoUrl', 'VIDEO_PREVIEW');
 requireText(live, "persistRealtimeMemory('inbound'", 'AUDIO_INBOUND_MEMORY');
 requireText(live, "persistRealtimeMemory('outbound'", 'AUDIO_OUTBOUND_MEMORY');
-requireText(live, 'captureFieldFrame', 'CAPTURE_FRAME');
-requireText(live, 'isCaptureCommand', 'VOICE_CAPTURE_COMMAND');
-requireText(proxy, "canUseCamera:has('camera.vision')", 'CAMERA_SCOPE');
+
+requireText(css, '.elan-copilot__topbar', 'DASHBOARD_CSS');
+requireText(css, '.elan-copilot__sidebar', 'SIDEBAR_CSS');
+requireText(css, '.elan-copilot__mic-fab', 'VOICE_FAB_CSS');
+
+requireText(proxy, "const PUBLIC_RUNTIME_PLATFORMS=new Set(['ELANVISUAL','ELANHOME','ELANPET']);", 'PUBLIC_RUNTIME_LOCK');
+requireText(proxy, "LIVE_PLATFORM_NOT_PUBLIC", 'PUBLIC_RUNTIME_FAIL_CLOSED');
 requireText(proxy, 'getPublishedAiRuntime', 'PUBLISHED_RUNTIME');
 requireText(proxy, "direction:'inbound'", 'TEXT_INBOUND_MEMORY');
 requireText(proxy, "direction:'outbound'", 'TEXT_OUTBOUND_MEMORY');
+
+requireText(realtime, "const PUBLIC_RUNTIME_PLATFORMS=new Set(['ELANVISUAL','ELANHOME','ELANPET']);", 'REALTIME_PUBLIC_RUNTIME_LOCK');
 requireText(realtime, 'publishedRuntime', 'REALTIME_PUBLISHED_RUNTIME');
 requireText(realtime, 'runtimeMemory', 'REALTIME_MEMORY');
-forbidText(css, 'elan-live__orb', 'LEGACY_ORB');
+
+forbidText(live, "const OWNER_PLATFORMS = ['ELANVISUAL', 'ELAN_GO', 'CONNECT'];", 'NON_PUBLIC_OWNER_PLATFORM_SWITCH');
 
 console.log('ELAN_COPILOT_UNIFIED_CONTEXT_OK');

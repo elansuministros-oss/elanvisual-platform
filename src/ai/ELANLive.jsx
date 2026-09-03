@@ -40,7 +40,7 @@ const ELAN_API = '/api/elan-ai';
 const REALTIME_TOKEN_API = '/api/elan-realtime-token';
 const OPENAI_REALTIME_CALLS = 'https://api.openai.com/v1/realtime/calls';
 const LIVE_TOKEN_KEY = 'elan-live-token';
-const OWNER_PLATFORMS = ['ELANVISUAL', 'ELAN_GO', 'CONNECT'];
+const OWNER_PLATFORMS = ['ELANVISUAL'];
 function normalizePlatformId(value) { return String(value || 'ELANVISUAL').trim().toUpperCase().replace(/[ -]+/g, '_'); }
 function platformTitle(value) { const id = normalizePlatformId(value); return id === 'ELAN_GO' ? 'ELAN GO' : id; }
 function payloadRows(payload) {
@@ -1432,6 +1432,7 @@ export default function ELANLive() {
             <button type="button" onClick={() => editQuotationByVoice(selectedQuote)}><Pencil size={16} /> Editar por voz</button>
             <button type="button" onClick={() => void sendQuotation(selectedQuote, 'whatsapp')}><Send size={16} /> WhatsApp</button>
             <button type="button" onClick={() => void sendQuotation(selectedQuote, 'email')}><Mail size={16} /> Correo</button>
+            {selectedQuote.pdfUrl && <a href={selectedQuote.pdfUrl} target="_blank" rel="noreferrer"><FileText size={16} /> Abrir PDF</a>}
             {selectedQuote.publicUrl && <a href={selectedQuote.publicUrl} target="_blank" rel="noreferrer"><Eye size={16} /> Abrir oficial</a>}
           </div>
         </aside>
