@@ -212,7 +212,7 @@ export default function CustomerPortal() {
           <div className="customer-portal-robot-glow" />
           <img
             className="customer-portal-robot"
-            src="/assets/branding/elan-ai-robot-portal.webp"
+            src="/assets/branding/elan-ai-customer-portal.png"
             alt="ELAN AI"
           />
         </div>

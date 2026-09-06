@@ -139,14 +139,12 @@
   position: relative;
   z-index: 2;
   display: block;
-  width: min(305px, 82%);
-  max-height: 405px;
-  object-fit: cover;
-  object-position: center top;
-  border-radius: 36px 36px 24px 24px;
-  box-shadow:
-    0 26px 70px rgba(0, 0, 0, 0.36),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  width: min(330px, 86%);
+  max-height: 420px;
+  object-fit: contain;
+  object-position: center bottom;
+  background: transparent;
+  filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.28));
 }
 
 .customer-portal-content {
@@ -496,8 +494,8 @@
   }
 
   .customer-portal-robot {
-    width: min(250px, 70vw);
-    max-height: 320px;
+    width: min(270px, 74vw);
+    max-height: 340px;
   }
 
   .customer-portal-heading {
@@ -548,9 +546,8 @@
   }
 
   .customer-portal-robot {
-    width: 205px;
-    max-height: 270px;
-    border-radius: 26px 26px 20px 20px;
+    width: 220px;
+    max-height: 290px;
   }
 
   .customer-portal-content {
