@@ -170,7 +170,7 @@ export function isElanOneQuotationReadRequest(method, pathname) {
   if (verb === 'GET' && /^\/public\/portal\/[^/]+$/.test(path)) return true;
   if (verb === 'POST' && /^\/public\/portal\/[^/]+\/quotations\/[^/]+\/approve$/.test(path)) return true;
   if (['GET', 'PATCH'].includes(verb) && /^\/projects\/[^/]+(?:\/status)?$/.test(path)) return true;
-  if (verb === 'POST' && /^\/projects\/[^/]+\/send-whatsapp$/.test(path)) return true;
+  if (verb === 'POST' && /^\/projects\/[^/]+\/(?:send|send-whatsapp)$/.test(path)) return true;
   if (['GET', 'POST', 'PATCH'].includes(verb) && /^\/projects\/[^/]+\/(work-orders|purchase-orders)(?:\/[^/]+)?$/.test(path)) return true;
 
   return false;
@@ -200,10 +200,11 @@ export function mapVqsPath(pathname, mode = 'connect') {
     return `/quotations/${id}/${resource}${itemId ? `/${itemId}` : ''}`;
   }
 
-  const project = path.match(/^\/projects\/([^/]+)(?:\/(status|send-whatsapp))?$/);
+  const project = path.match(/^\/projects\/([^/]+)(?:\/(status|send|send-whatsapp))?$/);
   if (project) {
     const [, id, operation] = project;
     if (operation === 'status') return `/quotations/${id}`;
+    if (operation === 'send') return `/quotations/${id}/send`;
     if (operation === 'send-whatsapp') return `/quotations/${id}/send-whatsapp`;
     return `/quotations/${id}`;
   }

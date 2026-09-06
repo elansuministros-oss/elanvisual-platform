@@ -18,10 +18,10 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
   const [sendResult, setSendResult] = useState(null);
   const canSend = Boolean(projectId && String(contract.customer.phone || '').trim());
 
-  async function sendByWhatsApp() {
+  async function sendQuotation() {
     if (!canSend || sending) return;
     const confirmed = window.confirm(
-      `Enviar ${data.quotation_number || 'la cotización'} directamente a ${contract.customer.name || 'Cliente'} (${contract.customer.phone})?`
+      `Enviar ${data.quotation_number || 'la cotización'} a ${contract.customer.name || 'Cliente'} por WhatsApp${contract.customer.email ? ' y correo' : ''}?`
     );
     if (!confirmed) return;
 
@@ -29,29 +29,10 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
     setSendError('');
     setSendResult(null);
     try {
-      const response = await projectCoreClient.sendQuotationWhatsApp(projectId, {
-        quotationId: data.quotation_id || '',
-        quotationNumber: data.quotation_number || '',
-        customerId: contract.customer.customerId || '',
-        customerName: contract.customer.name || '',
-        phone: contract.customer.phone || '',
-        totalUsd: contract.pricing.totalUsd,
-        items: contract.items.map((item) => ({
-          title: item.title,
-          quantity: item.quantity,
-          unit: item.unit,
-          subtotalUsd: item.subtotalUsd
-        })),
-        installments: contract.payments.installments.map((payment) => ({
-          label: payment.label,
-          percentage: payment.percentage,
-          amountUsd: payment.amountUsd
-        })),
-        documentUrl: shareUrl
-      });
+      const response = await projectCoreClient.sendQuotation(projectId);
       setSendResult(response?.data || response);
     } catch (error) {
-      setSendError(error.message || 'No fue posible enviar la cotización por WhatsApp.');
+      setSendError(error.message || 'No fue posible enviar la cotización.');
     } finally {
       setSending(false);
     }
@@ -118,12 +99,23 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
             type="button"
             className="uq-primary-wide"
             disabled={!canSend || sending}
-            onClick={sendByWhatsApp}
-            title={!projectId ? 'No se recibió el identificador del proyecto' : !contract.customer.phone ? 'Agregá el teléfono del cliente' : 'Enviar mediante Orchestrator y WAHA'}
+            onClick={sendQuotation}
+            title={!projectId ? 'No se recibió el identificador del proyecto' : !contract.customer.phone ? 'Agregá el teléfono del cliente' : 'Enviar por WhatsApp y, si existe correo registrado, también por email'}
           >
-            {sending ? 'Enviando…' : 'Enviar por WhatsApp'}
+            {sending ? 'Enviando…' : 'Enviar'}
           </button>
-          {sendResult && <small className="uq-muted">Enviado correctamente a +{sendResult.phone || contract.customer.phone}.</small>}
+          {sendResult && (
+            <small className="uq-muted">
+              WhatsApp enviado
+              {sendResult?.channels?.email?.state === 'SENT'
+                ? ' · Correo enviado'
+                : sendResult?.channels?.email?.state === 'SKIPPED'
+                  ? ' · Cliente sin correo: no se detuvo el envío'
+                  : sendResult?.channels?.email?.state === 'FAILED'
+                    ? ' · Correo no pudo enviarse'
+                    : ''}
+            </small>
+          )}
           {sendError && <small className="uq-error">{sendError}</small>}
 
           <button
