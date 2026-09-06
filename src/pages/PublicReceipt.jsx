@@ -11,7 +11,7 @@ import {
 } from '../modules/quotation-viewer/services/publicQuotationService';
 
 const CONNECT_BASE_URL =
-  'https://connect.elankav.com';
+  'https://cotizacion-lab.elankav.com';
 
 const PLATFORM_URL =
   'https://visual.elankav.com';

@@ -3,7 +3,7 @@ export const config = {
   maxDuration: 30
 };
 
-const DEFAULT_CONNECT_URL = 'https://connect.elankav.com';
+const DEFAULT_CONNECT_URL = 'https://cotizacion-lab.elankav.com';
 const CONNECT_VQS_PATH = '/api/v1/business/vqs';
 const TIMEOUT_MS = 25_000;
 
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
   }
 
   const token = text(process.env.VQS_API_TOKEN);
-  const connectUrl = text(process.env.VQS_CONNECT_BASE_URL || DEFAULT_CONNECT_URL).replace(/\/+$/, '');
+  const connectUrl = text(process.env.ELAN_ONE_OPS_BASE_URL || DEFAULT_CONNECT_URL).replace(/\/+$/, '');
   if (!token) {
     return res.status(503).json({ error: { code: 'OPS_TOKEN_NOT_CONFIGURED', message: 'El proxy operativo no está configurado.' }, requestId });
   }

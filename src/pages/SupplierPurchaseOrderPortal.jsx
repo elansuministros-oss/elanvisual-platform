@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import '../styles/supplier-purchase-order-portal.css';
 
-const CONNECT_BASE = 'https://connect.elankav.com/api/v1/business/vqs';
+const CONNECT_BASE = 'https://cotizacion-lab.elankav.com/api/v1/business/vqs';
 const money = (value, currency) => new Intl.NumberFormat('es-NI', { style: 'currency', currency: currency === 'NIO' ? 'NIO' : 'USD' }).format(Number(value || 0));
 
 export default function SupplierPurchaseOrderPortal() {
