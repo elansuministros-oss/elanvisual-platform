@@ -166,6 +166,7 @@ export function isElanOneQuotationReadRequest(method, pathname) {
   const path = `/${String(pathname || '').replace(/^\/+/, '')}`;
 
   if (verb === 'GET' && path === '/projects') return true;
+  if (verb === 'GET' && /^\/public\/customer\/[^/]+$/.test(path)) return true;
   if (['GET', 'PATCH'].includes(verb) && /^\/projects\/[^/]+(?:\/status)?$/.test(path)) return true;
   if (verb === 'POST' && /^\/projects\/[^/]+\/send-whatsapp$/.test(path)) return true;
   if (['GET', 'POST', 'PATCH'].includes(verb) && /^\/projects\/[^/]+\/(work-orders|purchase-orders)(?:\/[^/]+)?$/.test(path)) return true;
@@ -207,6 +208,9 @@ export function mapVqsPath(pathname, mode = 'connect') {
 
   const publicQuotation = path.match(/^\/public\/quotations\/([^/]+)$/);
   if (publicQuotation) return `/quotations/${publicQuotation[1]}`;
+
+  const publicCustomer = path.match(/^\/public\/customer\/([^/]+)$/);
+  if (publicCustomer) return `/public/customer/${publicCustomer[1]}`;
 
   return null;
 }

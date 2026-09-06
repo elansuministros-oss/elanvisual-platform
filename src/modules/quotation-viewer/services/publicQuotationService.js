@@ -54,7 +54,7 @@ export async function getPublicQuotation(projectId) {
 export const publicQuotationService = Object.freeze({ getPublicQuotation });
 
 
-const CONNECT_PUBLIC_BASE_URL = 'https://cotizacion-lab.elankav.com';
+const CONNECT_PUBLIC_BASE_URL = window.location.origin;
 
 function normalizeCustomerAccessCode(value) {
   const code = String(value || '').trim();
@@ -76,7 +76,7 @@ export async function getPublicCustomerDossier(accessCode) {
   }
 
   const url = new URL(
-    `${CONNECT_PUBLIC_BASE_URL}/api/v1/business/vqs/public/customer/${encodeURIComponent(code)}`
+    `${CONNECT_PUBLIC_BASE_URL}/api/vqs/public/customer/${encodeURIComponent(code)}`
   );
 
   url.searchParams.set(
