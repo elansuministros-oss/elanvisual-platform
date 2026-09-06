@@ -123,3 +123,43 @@ export async function getPublicCustomerDossier(accessCode) {
       normalizeQuotationRecord(record)
   };
 }
+
+
+export async function getPublicCustomerPortal(accessCode) {
+  const code = normalizeCustomerAccessCode(accessCode);
+
+  if (!code) {
+    const error = new Error('El enlace del cliente no es válido.');
+    error.status = 400;
+    error.code = 'PUBLIC_CUSTOMER_PORTAL_CODE_INVALID';
+    throw error;
+  }
+
+  const url = new URL(
+    `${CONNECT_PUBLIC_BASE_URL}/api/vqs/public/portal/${encodeURIComponent(code)}`
+  );
+
+  url.searchParams.set('_refresh', String(Date.now()));
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: HEADERS,
+    cache: 'no-store'
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(
+      payload?.error?.message ||
+      'No fue posible abrir el espacio del cliente.'
+    );
+    error.status = response.status;
+    error.code =
+      payload?.error?.code ||
+      'PUBLIC_CUSTOMER_PORTAL_FAILED';
+    throw error;
+  }
+
+  return payload?.data || {};
+}
