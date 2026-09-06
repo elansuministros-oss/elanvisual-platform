@@ -5,6 +5,7 @@ export const config = {
 
 const CONNECT_VQS_PATH = '/api/v1/business/vqs';
 const DEFAULT_CONNECT_URL = 'https://connect.elankav.com';
+const DEFAULT_ELAN_ONE_QUOTATION_READ_URL = 'https://cotizacion-lab.elankav.com';
 const DEFAULT_LEGACY_URL = 'https://orchestrator.elankav.com';
 const TIMEOUT_MS = 12_000;
 const MAX_ASSET_BYTES = 8 * 1024 * 1024;
@@ -157,6 +158,20 @@ export function resolveUpstream(env = process.env) {
     mode: 'connect',
     baseUrl: `${text(env.CONNECT_BASE_URL || DEFAULT_CONNECT_URL).replace(/\/+$/, '')}${CONNECT_VQS_PATH}`,
     token
+  };
+}
+
+export function isElanOneQuotationReadRequest(method, pathname) {
+  if (String(method || '').toUpperCase() !== 'GET') return false;
+  const path = `/${String(pathname || '').replace(/^\/+/, '')}`;
+  return path === '/projects' || /^\/projects\/[^/]+(?:\/status)?$/.test(path);
+}
+
+export function resolveElanOneQuotationReadUpstream(upstream, env = process.env) {
+  if (upstream?.mode !== 'connect') return upstream;
+  return {
+    ...upstream,
+    baseUrl: `${text(env.ELAN_ONE_QUOTATION_READ_BASE_URL || DEFAULT_ELAN_ONE_QUOTATION_READ_URL).replace(/\/+$/, '')}${CONNECT_VQS_PATH}`
   };
 }
 
@@ -341,7 +356,10 @@ export default async function handler(req, res) {
       return await uploadQuotationAsset(req, res, requestId);
     }
 
-    const upstream = resolveUpstream();
+    let upstream = resolveUpstream();
+    if (isElanOneQuotationReadRequest(req.method, localPath)) {
+      upstream = resolveElanOneQuotationReadUpstream(upstream);
+    }
     const isContextSearch = upstream.mode === 'connect' && localPath.replace(/^\/+/, '') === 'context/search';
     const upstreamPath = mapVqsPath(localPath, upstream.mode);
     if (!upstreamPath && !isContextSearch) {
