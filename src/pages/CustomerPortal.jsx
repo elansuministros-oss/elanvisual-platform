@@ -91,6 +91,7 @@ export default function CustomerPortal() {
   const [portal, setPortal] = useState(null);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
+  const [selectedQuotationId, setSelectedQuotationId] = useState('');
   const [phrase] = useState(() => nextPhrase());
 
   useEffect(() => {
@@ -139,6 +140,14 @@ export default function CustomerPortal() {
         )
     );
   }, [portal, query]);
+
+  const selectedProject = useMemo(
+    () =>
+      projects.find(
+        (item) => item.quotationId === selectedQuotationId
+      ) || null,
+    [projects, selectedQuotationId]
+  );
 
   if (error) {
     return (
@@ -245,83 +254,88 @@ export default function CustomerPortal() {
           </label>
         </div>
 
-        {projects.length > 1 && (
+        {projects.length > 0 && (
           <label className="customer-portal-select-wrap">
-            <span>Ir directamente a un proyecto</span>
+            <span>Seleccioná una cotización</span>
             <select
-              defaultValue=""
-              onChange={(event) => {
-                if (event.target.value) {
-                  window.location.href = event.target.value;
-                }
-              }}
+              value={selectedQuotationId}
+              onChange={(event) =>
+                setSelectedQuotationId(event.target.value)
+              }
             >
-              <option value="" disabled>
-                Seleccioná un proyecto
+              <option value="">
+                Elegí un proyecto
               </option>
               {projects.map((item) => (
                 <option
                   key={item.quotationId}
-                  value={item.viewUrl || ''}
+                  value={item.quotationId}
                 >
-                  {item.projectTitle} · {item.quotationNumber}
+                  {item.projectTitle}
                 </option>
               ))}
             </select>
           </label>
         )}
 
-        <div className="customer-portal-grid">
-          {projects.map((item) => (
-            <article
-              className="customer-portal-card"
-              key={item.quotationId}
-            >
-              <div className="customer-portal-card-icon">
-                <FolderKanban size={22} />
+        {selectedProject && (
+          <section className="customer-portal-selected">
+            <div className="customer-portal-selected-head">
+              <div>
+                <span className="customer-portal-selected-label">
+                  Proyecto seleccionado
+                </span>
+                <h3>{selectedProject.projectTitle}</h3>
               </div>
 
-              <div className="customer-portal-card-main">
-                <div className="customer-portal-card-top">
-                  <div>
-                    <p className="customer-portal-project-number">
-                      {item.projectNumber || 'Proyecto ELANVISUAL'}
-                    </p>
-                    <h3>{item.projectTitle}</h3>
-                  </div>
+              <span
+                className={
+                  'customer-portal-status ' +
+                  statusClass(selectedProject.status)
+                }
+              >
+                {statusLabel(selectedProject.status)}
+              </span>
+            </div>
 
-                  <span
-                    className={
-                      'customer-portal-status ' +
-                      statusClass(item.status)
-                    }
-                  >
-                    {statusLabel(item.status)}
-                  </span>
-                </div>
+            <div className="customer-portal-row-meta">
+              <span>
+                <FileText size={15} />
+                {selectedProject.quotationNumber}
+              </span>
+              <span>{date(selectedProject.issuedAt)}</span>
+              <strong>{money(selectedProject.totalUsd)}</strong>
+            </div>
 
-                <div className="customer-portal-card-meta">
-                  <span>
-                    <FileText size={15} />
-                    {item.quotationNumber}
-                  </span>
-                  <span>{date(item.issuedAt)}</span>
-                  <strong>{money(item.totalUsd)}</strong>
-                </div>
+            <div className="customer-portal-row-actions">
+              {selectedProject.viewUrl && (
+                <a
+                  className="customer-portal-open customer-portal-open-secondary"
+                  href={selectedProject.viewUrl}
+                >
+                  Abrir cotización
+                  <ArrowRight size={17} />
+                </a>
+              )}
 
-                {item.viewUrl && (
-                  <a
-                    className="customer-portal-open"
-                    href={item.viewUrl}
-                  >
-                    Abrir cotización
-                    <ArrowRight size={17} />
-                  </a>
-                )}
-              </div>
-            </article>
-          ))}
-        </div>
+              {String(selectedProject.status || '').toLowerCase() === 'sent' && (
+                <button
+                  className="customer-portal-approve"
+                  type="button"
+                  disabled
+                >
+                  Aprobar cotización
+                </button>
+              )}
+            </div>
+
+            {String(selectedProject.status || '').toLowerCase() === 'sent' && (
+              <p className="customer-portal-approve-note">
+                La aprobación segura se habilita en el siguiente paso.
+              </p>
+            )}
+          </section>
+        )}
 
         {!projects.length && (
           <div className="customer-portal-empty">
