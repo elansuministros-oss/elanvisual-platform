@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import {
+  approvePublicCustomerQuotation,
   getPublicCustomerPortal
 } from '../modules/quotation-viewer/services/publicQuotationService';
 
@@ -92,6 +93,9 @@ export default function CustomerPortal() {
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [selectedQuotationId, setSelectedQuotationId] = useState('');
+  const [approvalBusy, setApprovalBusy] = useState(false);
+  const [approvalResult, setApprovalResult] = useState(null);
+  const [approvalError, setApprovalError] = useState('');
   const [phrase] = useState(() => nextPhrase());
 
   useEffect(() => {
@@ -148,6 +152,45 @@ export default function CustomerPortal() {
       ) || null,
     [projects, selectedQuotationId]
   );
+
+  async function approveSelectedQuotation() {
+    if (!selectedProject || approvalBusy) return;
+
+    const confirmed = window.confirm(
+      `¿Aprobar la cotización ${selectedProject.quotationNumber} por ${money(selectedProject.totalUsd)}?`
+    );
+
+    if (!confirmed) return;
+
+    setApprovalBusy(true);
+    setApprovalError('');
+    setApprovalResult(null);
+
+    try {
+      const result = await approvePublicCustomerQuotation(
+        accessCode,
+        selectedProject.quotationId
+      );
+
+      setPortal((current) => ({
+        ...current,
+        projects: (current?.projects || []).map((item) =>
+          item.quotationId === selectedProject.quotationId
+            ? { ...item, status: 'approved' }
+            : item
+        )
+      }));
+
+      setApprovalResult(result);
+    } catch (cause) {
+      setApprovalError(
+        cause?.message ||
+        'No fue posible aprobar la cotización.'
+      );
+    } finally {
+      setApprovalBusy(false);
+    }
+  }
 
   if (error) {
     return (
@@ -322,17 +365,29 @@ export default function CustomerPortal() {
                 <button
                   className="customer-portal-approve"
                   type="button"
-                  disabled
+                  disabled={approvalBusy}
+                  onClick={approveSelectedQuotation}
                 >
-                  Aprobar cotización
+                  {approvalBusy
+                    ? 'Aprobando…'
+                    : 'Aprobar cotización'}
                 </button>
               )}
             </div>
 
-            {String(selectedProject.status || '').toLowerCase() === 'sent' && (
-              <p className="customer-portal-approve-note">
-                La aprobación segura se habilita en el siguiente paso.
+            {approvalError && (
+              <p className="customer-portal-approval-message is-error">
+                {approvalError}
               </p>
+            )}
+
+            {approvalResult && (
+              <div className="customer-portal-approval-message is-success">
+                <strong>Cotización aprobada correctamente.</strong>
+                <span>
+                  Los términos de pago de esta cotización quedan vigentes para continuar el proyecto.
+                </span>
+              </div>
             )}
           </section>
         )}

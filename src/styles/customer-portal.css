@@ -658,3 +658,25 @@
     font-size: 9.5px;
   }
 }
+
+.customer-portal-approval-message {
+  display: grid;
+  gap: 4px;
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.customer-portal-approval-message.is-success {
+  border: 1px solid #abefc6;
+  color: #067647;
+  background: #ecfdf3;
+}
+
+.customer-portal-approval-message.is-error {
+  border: 1px solid #fecdca;
+  color: #b42318;
+  background: #fef3f2;
+}

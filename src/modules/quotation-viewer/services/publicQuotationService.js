@@ -163,3 +163,44 @@ export async function getPublicCustomerPortal(accessCode) {
 
   return payload?.data || {};
 }
+
+
+export async function approvePublicCustomerQuotation(
+  accessCode,
+  quotationId
+) {
+  const code = normalizeCustomerAccessCode(accessCode);
+  const id = String(quotationId || '').trim();
+
+  if (!code || !id) {
+    const error = new Error('No fue posible identificar la cotización.');
+    error.status = 400;
+    throw error;
+  }
+
+  const url = new URL(
+    `${CONNECT_PUBLIC_BASE_URL}/api/vqs/public/portal/${encodeURIComponent(code)}/quotations/${encodeURIComponent(id)}/approve`
+  );
+
+  const response = await fetch(url.toString(), {
+    method: 'POST',
+    headers: HEADERS,
+    cache: 'no-store'
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(
+      payload?.error?.message ||
+      'No fue posible aprobar la cotización.'
+    );
+    error.status = response.status;
+    error.code =
+      payload?.error?.code ||
+      'PUBLIC_CUSTOMER_APPROVAL_FAILED';
+    throw error;
+  }
+
+  return payload?.data || {};
+}

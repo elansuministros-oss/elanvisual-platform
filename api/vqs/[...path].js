@@ -168,6 +168,7 @@ export function isElanOneQuotationReadRequest(method, pathname) {
   if (verb === 'GET' && path === '/projects') return true;
   if (verb === 'GET' && /^\/public\/customer\/[^/]+$/.test(path)) return true;
   if (verb === 'GET' && /^\/public\/portal\/[^/]+$/.test(path)) return true;
+  if (verb === 'POST' && /^\/public\/portal\/[^/]+\/quotations\/[^/]+\/approve$/.test(path)) return true;
   if (['GET', 'PATCH'].includes(verb) && /^\/projects\/[^/]+(?:\/status)?$/.test(path)) return true;
   if (verb === 'POST' && /^\/projects\/[^/]+\/send-whatsapp$/.test(path)) return true;
   if (['GET', 'POST', 'PATCH'].includes(verb) && /^\/projects\/[^/]+\/(work-orders|purchase-orders)(?:\/[^/]+)?$/.test(path)) return true;
@@ -215,6 +216,11 @@ export function mapVqsPath(pathname, mode = 'connect') {
 
   const publicPortal = path.match(/^\/public\/portal\/([^/]+)$/);
   if (publicPortal) return `/public/portal/${publicPortal[1]}`;
+
+  const publicPortalApproval = path.match(/^\/public\/portal\/([^/]+)\/quotations\/([^/]+)\/approve$/);
+  if (publicPortalApproval) {
+    return `/public/portal/${publicPortalApproval[1]}/quotations/${publicPortalApproval[2]}/approve`;
+  }
 
   return null;
 }
