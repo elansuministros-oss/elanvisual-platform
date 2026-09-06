@@ -177,7 +177,8 @@ export function resolveElanOneQuotationReadUpstream(upstream, env = process.env)
   if (upstream?.mode !== 'connect') return upstream;
   return {
     ...upstream,
-    baseUrl: `${text(env.ELAN_ONE_QUOTATION_READ_BASE_URL || DEFAULT_ELAN_ONE_QUOTATION_READ_URL).replace(/\/+$/, '')}${CONNECT_VQS_PATH}`
+    baseUrl: `${text(env.ELAN_ONE_QUOTATION_READ_BASE_URL || DEFAULT_ELAN_ONE_QUOTATION_READ_URL).replace(/\/+$/, '')}${CONNECT_VQS_PATH}`,
+    token: text(env.ELAN_ONE_VQS_TOKEN || upstream.token)
   };
 }
 
