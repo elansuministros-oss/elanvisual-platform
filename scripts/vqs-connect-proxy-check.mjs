@@ -12,6 +12,7 @@ import { localPath as mapOpsPath } from '../api/ops/[...path].js';
 assert.equal(mapVqsPath('projects'), '/quotations');
 assert.equal(mapVqsPath('assets'), '/assets');
 assert.equal(mapVqsPath('projects/project-1'), '/quotations/project-1');
+assert.equal(mapVqsPath('projects/project-1/send'), '/quotations/project-1/send');
 assert.equal(mapVqsPath('projects/project-1/send-whatsapp'), '/quotations/project-1/send-whatsapp');
 assert.equal(mapVqsPath('projects/project-1/work-orders'), '/quotations/project-1/work-orders');
 assert.equal(mapVqsPath('projects/project-1/work-orders/wo-1'), '/quotations/project-1/work-orders/wo-1');

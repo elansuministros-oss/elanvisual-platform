@@ -212,6 +212,18 @@ export async function updateQuotation(id, contract, { role, userId } = {}) {
   });
 }
 
+export async function sendQuotation(id, { role, userId } = {}) {
+  const requestedId = text(id);
+  if (!requestedId) throw new Error('No se recibio el identificador del proyecto.');
+
+  return request(`/projects/${encodeURIComponent(requestedId)}/send`, {
+    method: 'POST',
+    body: {},
+    role,
+    userId
+  });
+}
+
 export async function deleteQuotation(id, { confirmation, role = 'admin', userId = '' } = {}) {
   const actor = localActor(role, userId);
   if (actor.role === 'ventas') {
@@ -238,5 +250,6 @@ export const quotationViewerService = Object.freeze({
   getQuotationDetail,
   getQuotationEditData,
   updateQuotation,
+  sendQuotation,
   deleteQuotation
 });
