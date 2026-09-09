@@ -311,7 +311,7 @@ export default function QuotationDetail({ onBack }) {
 
     const quotationNumber = String(quotation.quotationNumber || '').trim();
     const confirmed = window.confirm(
-      `Enviar ${quotationNumber || 'esta cotización'} al cliente por los canales registrados (WhatsApp y correo)?`
+      `Preparar ${quotationNumber || 'esta cotización'} en el portal del cliente? No se enviará por WhatsApp ni correo todavía.`
     );
     if (!confirmed) return;
 
@@ -322,10 +322,14 @@ export default function QuotationDetail({ onBack }) {
         role: usuario?.rol || '',
         userId: usuario?.id || usuario?.email || ''
       });
-      const whatsapp = result?.channels?.whatsapp?.state || 'NO_ENVIADO';
-      const email = result?.channels?.email?.state || 'NO_ENVIADO';
-      setQuotation((current) => current ? { ...current, status: 'sent' } : current);
-      window.alert(`Cotización enviada. WhatsApp: ${whatsapp}. Correo: ${email}.`);
+      const portalUrl = String(result?.publicUrl || '').trim();
+      const quotationUrl = String(result?.quotationUrl || '').trim();
+      setQuotation((current) => current ? { ...current, status: 'sent', publicUrl: quotationUrl || current.publicUrl } : current);
+      window.alert([
+        'Cotización preparada en el portal. No se envió por WhatsApp ni correo.',
+        portalUrl ? `Portal del cliente: ${portalUrl}` : '',
+        quotationUrl ? `Cotización: ${quotationUrl}` : ''
+      ].filter(Boolean).join('\n\n'));
     } catch (sendError) {
       setOperationError(sendError.message || 'No fue posible enviar la cotización.');
     } finally {
