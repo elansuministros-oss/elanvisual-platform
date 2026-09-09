@@ -88,7 +88,8 @@ export default function PublicQuotation() {
     );
 
   const connectedMode =
-    isCustomerAccessCode(publicKey);
+    (window.location.pathname || '').startsWith('/cotizaciones/publicas/')
+    && isCustomerAccessCode(publicKey);
 
   const [quotation, setQuotation] =
     useState(null);
