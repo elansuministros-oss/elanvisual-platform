@@ -166,9 +166,8 @@ export function isElanOneQuotationReadRequest(method, pathname) {
   const path = `/${String(pathname || '').replace(/^\/+/, '')}`;
 
   if (verb === 'GET' && /^\/public\/customer\/[^/]+$/.test(path)) return true;
-  if (verb === 'POST' && /^\/public\/portal\/[^/]+\/quotations\/[^/]+\/approve$/.test(path)) return true;
   if (verb === 'PATCH' && /^\/projects\/[^/]+(?:\/status)?$/.test(path)) return true;
-  if (verb === 'POST' && /^\/projects\/[^/]+\/(?:send|send-whatsapp)$/.test(path)) return true;
+  if (verb === 'POST' && /^\/projects\/[^/]+\/send-whatsapp$/.test(path)) return true;
   if (['GET', 'POST', 'PATCH'].includes(verb) && /^\/projects\/[^/]+\/(work-orders|purchase-orders)(?:\/[^/]+)?$/.test(path)) return true;
 
   return false;
