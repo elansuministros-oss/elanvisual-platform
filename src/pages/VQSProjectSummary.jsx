@@ -16,12 +16,12 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
   const [sendResult, setSendResult] = useState(null);
-  const canSend = Boolean(projectId && String(contract.customer.phone || '').trim());
+  const canSend = Boolean(projectId);
 
   async function sendQuotation() {
     if (!canSend || sending) return;
     const confirmed = window.confirm(
-      `Enviar ${data.quotation_number || 'la cotización'} a ${contract.customer.name || 'Cliente'} por WhatsApp${contract.customer.email ? ' y correo' : ''}?`
+      `Preparar ${data.quotation_number || 'la cotización'} en el portal de ${contract.customer.name || 'Cliente'}? No se enviará por WhatsApp ni correo todavía.`
     );
     if (!confirmed) return;
 
@@ -100,20 +100,14 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
             className="uq-primary-wide"
             disabled={!canSend || sending}
             onClick={sendQuotation}
-            title={!projectId ? 'No se recibió el identificador del proyecto' : !contract.customer.phone ? 'Agregá el teléfono del cliente' : 'Enviar por WhatsApp y, si existe correo registrado, también por email'}
+            title={!projectId ? 'No se recibió el identificador del proyecto' : 'Preparar la cotización en el portal del cliente'}
           >
             {sending ? 'Enviando…' : 'Enviar'}
           </button>
           {sendResult && (
             <small className="uq-muted">
-              WhatsApp enviado
-              {sendResult?.channels?.email?.state === 'SENT'
-                ? ' · Correo enviado'
-                : sendResult?.channels?.email?.state === 'SKIPPED'
-                  ? ' · Cliente sin correo: no se detuvo el envío'
-                  : sendResult?.channels?.email?.state === 'FAILED'
-                    ? ' · Correo no pudo enviarse'
-                    : ''}
+              Cotización preparada en el portal · sin envío por WhatsApp ni correo.
+              {sendResult?.publicUrl ? ` Portal: ${sendResult.publicUrl}` : ''}
             </small>
           )}
           {sendError && <small className="uq-error">{sendError}</small>}
