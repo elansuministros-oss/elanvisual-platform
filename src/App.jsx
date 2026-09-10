@@ -52,7 +52,7 @@ export default function App() {
   const paginaInicial = (() => {
     if (pathInicial.startsWith('/elan-live') || pathInicial.startsWith('/copilot-live') || pathInicial.startsWith('/live/')) return 'elanLive';
     if (pathInicial.startsWith('/oc/proveedor/')) return 'supplierPurchaseOrder';
-    if (pathInicial.startsWith('/c/')) return 'customerPortal';
+    if (pathInicial.startsWith('/c/') || pathInicial.startsWith('/cliente/')) return 'customerPortal';
     if (pathInicial.startsWith('/r/')) return 'publicReceipt';
     if (pathInicial.startsWith('/ot/')) return 'publicWorkOrder';
     if (/^\/ELV-REC-\d{4}-\d{6}\/?$/i.test(pathInicial)) return 'publicReceipt';
