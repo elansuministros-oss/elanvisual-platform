@@ -30,10 +30,16 @@ const PHRASES = [
 ];
 
 function readAccessCode() {
-  const match = window.location.pathname.match(
+  const path = window.location.pathname || '';
+  const legacy = path.match(
     /^\/c\/([A-Za-z0-9_-]{22})\/?$/
   );
-  return match?.[1] || '';
+  if (legacy?.[1]) return legacy[1];
+
+  const readable = path.match(
+    /^\/cliente\/([a-z0-9][a-z0-9-]{4,94}[a-z0-9])\/?$/
+  );
+  return readable?.[1] || '';
 }
 
 function nextPhrase() {
