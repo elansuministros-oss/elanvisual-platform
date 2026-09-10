@@ -15,6 +15,7 @@ import {
 } from '../modules/quotation-viewer/services/publicQuotationService';
 
 import '../styles/customer-portal.css';
+import '../styles/customer-portal-picker.css';
 
 const PHRASES = [
   'Las grandes ideas comienzan cuando decidimos hacerlas visibles.',
