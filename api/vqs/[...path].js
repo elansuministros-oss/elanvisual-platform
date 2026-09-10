@@ -168,7 +168,7 @@ export function isElanOneQuotationReadRequest(method, pathname) {
   if (verb === 'GET' && /^\/public\/customer\/[^/]+$/.test(path)) return true;
   if (verb === 'PATCH' && /^\/projects\/[^/]+\/status$/.test(path)) return true;
   if (verb === 'POST' && /^\/projects\/[^/]+\/send-whatsapp$/.test(path)) return true;
-  if (['GET', 'POST', 'PATCH'].includes(verb) && /^\/projects\/[^/]+\/(work-orders|purchase-orders)(?:\/[^/]+)?$/.test(path)) return true;
+  if (['GET', 'POST', 'PATCH'].includes(verb) && /^\/projects\/[^/]+\/purchase-orders(?:\/[^/]+)?$/.test(path)) return true;
 
   return false;
 }
