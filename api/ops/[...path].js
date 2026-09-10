@@ -4,6 +4,7 @@ export const config = {
 };
 
 const DEFAULT_CONNECT_URL = 'https://cotizacion-lab.elankav.com';
+const DEFAULT_ELAN_ONE_CORE_URL = 'https://connect.elankav.com';
 const CONNECT_VQS_PATH = '/api/v1/business/vqs';
 const TIMEOUT_MS = 25_000;
 
@@ -41,12 +42,17 @@ export default async function handler(req, res) {
   }
 
   const token = text(process.env.VQS_API_TOKEN);
-  const connectUrl = text(process.env.ELAN_ONE_OPS_BASE_URL || DEFAULT_CONNECT_URL).replace(/\/+$/, '');
+  const path = localPath(req);
+  const isCleanPaymentPath = /^quotations\/[^/]+\/payments(?:\/[^/]+)?$/.test(path);
+  const connectUrl = text(
+    isCleanPaymentPath
+      ? (process.env.ELAN_ONE_CORE_BASE_URL || DEFAULT_ELAN_ONE_CORE_URL)
+      : (process.env.ELAN_ONE_OPS_BASE_URL || DEFAULT_CONNECT_URL)
+  ).replace(/\/+$/, '');
   if (!token) {
     return res.status(503).json({ error: { code: 'OPS_TOKEN_NOT_CONFIGURED', message: 'El proxy operativo no está configurado.' }, requestId });
   }
 
-  const path = localPath(req);
   if (!path || path.includes('..')) {
     return res.status(400).json({ error: { code: 'OPS_PATH_INVALID', message: 'Ruta operativa inválida.' }, requestId });
   }
