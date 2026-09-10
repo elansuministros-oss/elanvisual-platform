@@ -64,6 +64,17 @@ function normalizeCustomerAccessCode(value) {
     : '';
 }
 
+function normalizeCustomerPortalKey(value) {
+  const key = String(value || '').trim();
+
+  return (
+    /^[A-Za-z0-9_-]{22}$/.test(key) ||
+    /^[a-z0-9][a-z0-9-]{4,94}[a-z0-9]$/.test(key)
+  )
+    ? key
+    : '';
+}
+
 export async function getPublicCustomerDossier(accessCode) {
   const code = normalizeCustomerAccessCode(accessCode);
 
@@ -126,7 +137,7 @@ export async function getPublicCustomerDossier(accessCode) {
 
 
 export async function getPublicCustomerPortal(accessCode) {
-  const code = normalizeCustomerAccessCode(accessCode);
+  const code = normalizeCustomerPortalKey(accessCode);
 
   if (!code) {
     const error = new Error('El enlace del cliente no es válido.');
@@ -169,7 +180,7 @@ export async function approvePublicCustomerQuotation(
   accessCode,
   quotationId
 ) {
-  const code = normalizeCustomerAccessCode(accessCode);
+  const code = normalizeCustomerPortalKey(accessCode);
   const id = String(quotationId || '').trim();
 
   if (!code || !id) {
