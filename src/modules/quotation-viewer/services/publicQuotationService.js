@@ -8,9 +8,16 @@ const HEADERS = Object.freeze({
   'X-Elankav-Actor-Type': 'public-customer'
 });
 
+function buildVqsFunctionUrl(baseUrl, path) {
+  const url = new URL(`${baseUrl}/api/vqs`);
+  url.searchParams.set('path', String(path || '').replace(/^\/+/, ''));
+  return url;
+}
+
 function buildPublicQuotationUrl(projectId) {
-  const url = new URL(
-    `${resolveBaseUrl()}/api/vqs/public/quotations/${encodeURIComponent(projectId)}`
+  const url = buildVqsFunctionUrl(
+    resolveBaseUrl(),
+    `public/quotations/${encodeURIComponent(projectId)}`
   );
 
   // Cada consulta debe obtener un documento público fresco porque contiene
@@ -86,8 +93,9 @@ export async function getPublicCustomerDossier(accessCode) {
     throw error;
   }
 
-  const url = new URL(
-    `${CONNECT_PUBLIC_BASE_URL}/api/vqs/public/customer/${encodeURIComponent(code)}`
+  const url = buildVqsFunctionUrl(
+    CONNECT_PUBLIC_BASE_URL,
+    `public/customer/${encodeURIComponent(code)}`
   );
 
   url.searchParams.set(
@@ -146,8 +154,9 @@ export async function getPublicCustomerPortal(accessCode) {
     throw error;
   }
 
-  const url = new URL(
-    `${CONNECT_PUBLIC_BASE_URL}/api/vqs/public/portal/${encodeURIComponent(code)}`
+  const url = buildVqsFunctionUrl(
+    CONNECT_PUBLIC_BASE_URL,
+    `public/portal/${encodeURIComponent(code)}`
   );
 
   url.searchParams.set('_refresh', String(Date.now()));
@@ -189,8 +198,9 @@ export async function approvePublicCustomerQuotation(
     throw error;
   }
 
-  const url = new URL(
-    `${CONNECT_PUBLIC_BASE_URL}/api/vqs/public/portal/${encodeURIComponent(code)}/quotations/${encodeURIComponent(id)}/approve`
+  const url = buildVqsFunctionUrl(
+    CONNECT_PUBLIC_BASE_URL,
+    `public/portal/${encodeURIComponent(code)}/quotations/${encodeURIComponent(id)}/approve`
   );
 
   const response = await fetch(url.toString(), {
