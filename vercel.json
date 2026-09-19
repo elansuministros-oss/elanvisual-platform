@@ -17,6 +17,14 @@
       "destination": "/vqs-preview.html"
     },
     {
+      "source": "/biblioteca",
+      "destination": "/biblioteca/index.html"
+    },
+    {
+      "source": "/biblioteca/",
+      "destination": "/biblioteca/index.html"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
