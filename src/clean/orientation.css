@@ -1,0 +1,87 @@
+/* Mobile orientation support — ELANVISUAL */
+@media (max-width: 980px) and (orientation: landscape) and (max-height: 600px) {
+  html,
+  body,
+  #root {
+    min-height: 100dvh;
+  }
+
+  .site-header {
+    height: 58px;
+    padding: 0 18px;
+  }
+
+  .brand img {
+    width: min(210px, 32vw);
+  }
+
+  .site-nav {
+    top: 58px;
+    max-height: calc(100dvh - 58px);
+    overflow-y: auto;
+  }
+
+  .section-pad {
+    padding: 36px 5vw;
+  }
+
+  .html-slot--hero iframe {
+    height: clamp(390px, calc(100dvh - 58px), 520px);
+  }
+
+  .html-slot--banner iframe {
+    height: 240px;
+  }
+
+  .html-slot--product iframe {
+    height: 430px;
+  }
+
+  .intro,
+  .contact-page,
+  .seller-hero {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 28px;
+  }
+
+  .service-strip {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .service-strip button {
+    min-height: 92px;
+  }
+
+  .product-grid,
+  .info-grid,
+  .portfolio-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .seller-modules {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .process-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .process-grid div {
+    min-height: 120px;
+    border-bottom: 0;
+  }
+
+  .process-grid h3 {
+    margin-top: 24px;
+    font-size: 19px;
+  }
+
+  .portfolio-art {
+    height: 220px;
+  }
+
+  .site-footer {
+    grid-template-columns: 1.4fr 0.8fr 0.8fr;
+    padding: 34px 5vw;
+  }
+}
