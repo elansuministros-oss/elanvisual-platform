@@ -1,0 +1,4 @@
+.site-nav .seller-link,
+.site-footer div:last-child > button {
+  display: none !important;
+}
