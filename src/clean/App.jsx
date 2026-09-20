@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import HtmlSlot from './HtmlSlot.jsx';
 import { SLOT_REGISTRY } from './slotRegistry.js';
-import { heroPromoHtml, promoBannerHtml, productCardHtml, sampleProducts } from './demoHtml.js';
+import { heroPromoHtml, promoBannerHtml, productCardHtml } from './demoHtml.js';
+import { contactSeed, servicesSeed, productsSeed, portfolioSeed } from './contentSeed.js';
 
 const NAV = [
   ['Inicio', '/'],
@@ -60,7 +61,7 @@ function Footer({ go }) {
     <footer className="site-footer">
       <div><img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL" /><p>Comunicación visual, producción e instalación.</p></div>
       <div><b>Explorar</b><button onClick={() => go('/servicios')}>Servicios</button><button onClick={() => go('/catalogo')}>Catálogo</button><button onClick={() => go('/portafolio')}>Portafolio</button></div>
-      <div><b>Operación</b><button onClick={() => go('/vendedor')}>Acceso vendedores</button><span>Conectado a ELAN ONE por diseño</span></div>
+      <div><b>Contacto</b><a href={contactSeed.whatsappHref} target="_blank" rel="noreferrer">WhatsApp {contactSeed.whatsappLabel}</a><a href={`mailto:${contactSeed.email}`}>{contactSeed.email}</a><button onClick={() => go('/vendedor')}>Acceso vendedores</button></div>
     </footer>
   );
 }
@@ -74,16 +75,16 @@ function Home({ go }) {
     <>
       <HtmlSlot slotId="HOME.HERO.MAIN" html={heroPromoHtml} />
       <section className="intro section-pad">
-        <div><span className="kicker">UNA NUEVA ELANVISUAL</span><h2>Diseñada para cambiar sin volver a programar la página.</h2></div>
-        <p>Las áreas visuales principales se publican como módulos HTML completos. ELAN podrá diseñarlos, guardarlos en Biblioteca y ubicarlos en el slot correcto después de validación.</p>
+        <div><span className="kicker">ELANVISUAL</span><h2>Diseño, fabricación e instalación desde una sola operación.</h2></div>
+        <p>La nueva plataforma conserva el contenido útil de ELANVISUAL y convierte las zonas comerciales en slots HTML completos para que ELAN pueda rediseñarlas y publicarlas después desde Biblioteca.</p>
       </section>
       <section className="service-strip section-pad">
-        {['Rótulos', 'Impresión', 'Fachadas', 'Exhibidores', 'Señalización', 'Instalación'].map((item, index) => <button key={item} onClick={() => go('/catalogo')}><span>0{index + 1}</span>{item}</button>)}
+        {servicesSeed.slice(0, 6).map((item, index) => <button key={item.id} onClick={() => go('/servicios')}><span>0{index + 1}</span>{item.title}</button>)}
       </section>
       <section className="section-pad featured">
         <div className="section-heading"><span className="kicker">CATÁLOGO</span><h2>Soluciones visuales</h2><button onClick={() => go('/catalogo')}>Ver todo →</button></div>
         <div className="product-grid">
-          {sampleProducts.slice(0, 3).map((product) => <HtmlSlot key={product.title} slotId="CATALOG.PRODUCT.CARD" html={productCardHtml(product)} />)}
+          {productsSeed.slice(0, 3).map((product) => <HtmlSlot key={product.title} slotId="CATALOG.PRODUCT.CARD" html={productCardHtml(product)} />)}
         </div>
       </section>
       <HtmlSlot slotId="HOME.PROMO.PRIMARY" html={promoBannerHtml} />
@@ -97,33 +98,61 @@ function Home({ go }) {
   );
 }
 
-function Services() {
-  const services = [
-    ['Rotulación', 'Letras corpóreas, cajas de luz, rótulos bandera, tótems y soluciones especiales.'],
-    ['Impresión', 'Vinil, microperforado, lonas, gráficos y aplicaciones de gran formato.'],
-    ['Fachadas', 'ACM, volumen, iluminación, revestimientos y renovación visual.'],
-    ['Exhibición', 'Muebles, exhibidores, stands y piezas comerciales a medida.'],
-    ['Señalización', 'Sistemas informativos, direccionales y corporativos.'],
-    ['Producción especial', 'CNC, láser, acrílico, PVC, estructuras y combinaciones personalizadas.']
-  ];
-  return <section className="page section-pad"><span className="kicker">SERVICIOS</span><h1>Fabricamos comunicación visual.</h1><p className="lead">Una sola operación para diseñar, producir e instalar proyectos visuales.</p><div className="info-grid">{services.map(([t, d], i) => <article key={t}><span>0{i + 1}</span><h2>{t}</h2><p>{d}</p></article>)}</div></section>;
+function Services({ go }) {
+  return (
+    <section className="page section-pad">
+      <span className="kicker">NUESTROS SERVICIOS</span>
+      <h1>Soluciones visuales que impulsan tu marca.</h1>
+      <p className="lead">Contenido y recursos recuperados de la ELANVISUAL anterior, ya separados del ERP y del CRM.</p>
+      <div className="services-rich-grid">
+        {servicesSeed.map((service) => (
+          <article key={service.id} className="service-rich-card">
+            <img src={service.image} alt={service.title} loading="lazy" />
+            <div>
+              <span>{service.subtitle}</span>
+              <h2>{service.title}</h2>
+              <p>{service.description}</p>
+              <ul>{service.items.map((item) => <li key={item}>{item}</li>)}</ul>
+              <button onClick={() => go('/contacto')}>Solicitar cotización</button>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function Catalog() {
-  return <section className="page section-pad"><div className="section-heading"><div><span className="kicker">CATÁLOGO HTML</span><h1>Productos y soluciones</h1></div><p>Cada ficha que ves abajo es un módulo HTML completo alojado dentro de su slot.</p></div><div className="product-grid catalog-grid">{sampleProducts.map((product) => <HtmlSlot key={product.title} slotId="CATALOG.PRODUCT.CARD" html={productCardHtml(product)} />)}</div></section>;
+  return <section className="page section-pad"><div className="section-heading"><div><span className="kicker">CATÁLOGO HTML</span><h1>Productos y soluciones</h1></div><p>Cada ficha es un módulo HTML completo. Cuando Biblioteca esté activa, ELAN podrá sustituir cualquiera de estos módulos sin modificar la página.</p></div><div className="product-grid catalog-grid">{productsSeed.map((product) => <HtmlSlot key={product.title} slotId="CATALOG.PRODUCT.CARD" html={productCardHtml(product)} />)}</div></section>;
 }
 
 function Portfolio() {
-  return <section className="page section-pad"><span className="kicker">PORTAFOLIO</span><h1>Trabajo que habla por la marca.</h1><p className="lead">Este espacio quedará alimentado desde Biblioteca con proyectos reales aprobados.</p><div className="portfolio-grid">{['Fachadas', 'Retail', 'Rotulación', 'Interiores'].map((x, i) => <article key={x}><div className={`portfolio-art art-${i + 1}`}></div><span>PROYECTOS · {x.toUpperCase()}</span><h2>{x}</h2><p>Módulo preparado para recibir una presentación HTML completa del proyecto.</p></article>)}</div></section>;
+  return (
+    <section className="page section-pad">
+      <span className="kicker">PORTAFOLIO / REFERENCIAS</span>
+      <h1>Capacidades recuperadas sin enlaces rotos.</h1>
+      <p className="lead">La página anterior declaraba trabajos cuyos archivos ya no existen. Aquí conservamos la información descriptiva y usamos únicamente recursos comprobados mientras activamos Biblioteca.</p>
+      <div className="portfolio-grid">
+        {portfolioSeed.map((item) => (
+          <article key={item.title}>
+            <img className="portfolio-image" src={item.image} alt={item.title} loading="lazy" />
+            <span>REFERENCIA · {item.category}</span>
+            <h2>{item.title}</h2>
+            <p>{item.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function Contact() {
-  return <section className="page contact-page section-pad"><div><span className="kicker">HABLEMOS</span><h1>Tu próximo proyecto empieza con una conversación.</h1><p className="lead">El formulario y los canales comerciales se conectarán a ELAN ONE para crear prospecto, oportunidad y seguimiento sin duplicar CRM.</p></div><div className="contact-card"><span>FLUJO OBJETIVO</span><strong>Consulta → ELAN ONE → vendedor → cotización → seguimiento</strong><p>En LAB no estamos enviando datos todavía. La integración se habilitará después de validar Access Core.</p></div></section>;
+  return <section className="page contact-page section-pad"><div><span className="kicker">HABLEMOS</span><h1>Tu próximo proyecto empieza con una conversación.</h1><p className="lead">Mientras se conecta el CRM de ELAN ONE, mantenemos canales directos reales sin recrear un CRM dentro de ELANVISUAL.</p><div className="direct-contact"><a href={contactSeed.whatsappHref} target="_blank" rel="noreferrer">WhatsApp {contactSeed.whatsappLabel}</a><a href={`mailto:${contactSeed.email}`}>{contactSeed.email}</a><span>{contactSeed.instagram}</span></div></div><div className="contact-card"><span>FLUJO OBJETIVO</span><strong>Consulta → ELAN ONE → vendedor → cotización → seguimiento</strong><p>El envío automático al CRM se habilitará únicamente cuando Access Core quede validado. Hasta entonces, los canales directos funcionan sin duplicar datos empresariales.</p></div></section>;
 }
 
 function SellerPortal() {
   const modules = ['Mis prospectos', 'Mis clientes', 'Mis contactos', 'Mis cotizaciones', 'Mis seguimientos', 'Mis oportunidades', 'Mis pedidos', 'Mis comisiones'];
-  return <section className="seller-page section-pad"><div className="seller-hero"><div><span className="kicker">PORTAL VENDEDOR</span><h1>ELANVISUAL para vender.<br />ELAN ONE para operar.</h1><p>Esta interfaz no tendrá un CRM propio. Mostrará al vendedor los datos y acciones autorizadas que provengan de ELAN ONE.</p></div><div className="connection-status"><i></i><span>LAB</span><strong>Integración ELAN ONE pendiente de conexión</strong></div></div><div className="seller-modules">{modules.map((m) => <article key={m}><span>ELAN ONE</span><h3>{m}</h3><p>Vista preparada para datos centralizados.</p></article>)}</div><div className="seller-login"><div><b>Acceso centralizado</b><p>La autenticación final vendrá de ELAN ONE Access.</p></div><button disabled>Ingresar con ELAN ONE</button></div></section>;
+  return <section className="seller-page section-pad"><div className="seller-hero"><div><span className="kicker">PORTAL VENDEDOR</span><h1>ELANVISUAL para vender.<br />ELAN ONE para operar.</h1><p>La interfaz está reservada para los vendedores, pero no tendrá un CRM propio. Los datos y acciones finales vendrán de ELAN ONE.</p></div><div className="connection-status"><i></i><span>LAB</span><strong>Integración ELAN ONE pendiente de conexión</strong></div></div><div className="seller-modules">{modules.map((m) => <article key={m}><span>ELAN ONE</span><h3>{m}</h3><p>Vista preparada para datos centralizados.</p></article>)}</div><div className="seller-login"><div><b>Acceso centralizado</b><p>La autenticación final vendrá de ELAN ONE Access.</p></div><button disabled>Ingresar con ELAN ONE</button></div></section>;
 }
 
 function ContentAdminLab() {
@@ -134,7 +163,7 @@ export default function CleanApp() {
   const [route, go] = useRoute();
   useEffect(() => { document.title = 'ELANVISUAL · Comunicación visual'; }, []);
   let page = <Home go={go} />;
-  if (route === '/servicios') page = <Services />;
+  if (route === '/servicios') page = <Services go={go} />;
   if (route === '/catalogo') page = <Catalog />;
   if (route === '/portafolio') page = <Portfolio />;
   if (route === '/contacto') page = <Contact />;
