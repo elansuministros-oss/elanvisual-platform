@@ -60,6 +60,11 @@ export const updateProject = async (projectId, patch) => {
   });
 };
 export const getProjectStatus = (projectId) => request(`/api/vqs/projects/${encodeURIComponent(projectId)}/status`, { method: 'GET' });
+export const sendQuotation = (projectId) => request(
+  `/api/vqs/projects/${encodeURIComponent(projectId)}/send`,
+  { method: 'POST', body: JSON.stringify({}) }
+);
+
 export const sendQuotationWhatsApp = (projectId, payload) => request(
   `/api/vqs/projects/${encodeURIComponent(projectId)}/send-whatsapp`,
   { method: 'POST', body: JSON.stringify(payload) }
@@ -70,6 +75,7 @@ export const projectCoreClient = Object.freeze({
   getProject,
   updateProject,
   getProjectStatus,
+  sendQuotation,
   sendQuotationWhatsApp
 });
 export { DEFAULT_VQS_PROXY_URL, resolveBaseUrl };

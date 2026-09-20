@@ -296,7 +296,7 @@ export async function downloadQuotationPdf({ quotation, dossier = null }) {
   ctx.fillText('COTIZACIÓN', PAGE_WIDTH - margin, y + 9);
   ctx.fillStyle = TEXT;
   ctx.font = '700 8.5px Arial';
-  drawWrapped(ctx, value(project.title) || value(quotation.quotationNumber), PAGE_WIDTH - margin - 250, y + 25, 250, 10, 2);
+  drawWrapped(ctx, value(project.title) || value(quotation.quotationNumber), PAGE_WIDTH - margin, y + 25, 250, 10, 2);
   ctx.fillStyle = MUTED;
   ctx.font = '5.5px Arial';
   ctx.fillText(value(quotation.quotationNumber), PAGE_WIDTH - margin, y + 41);

@@ -40,7 +40,11 @@ function normalizePayment(payment) {
     created_at: payment.createdAt ?? payment.created_at,
     payment_method: payment.method ?? payment.payment_method,
     payment_reference: payment.reference ?? payment.payment_reference,
-    deposit_completed: payment.paymentType === 'deposit' && payment.status !== 'void'
+    deposit_completed: Boolean(
+      payment.depositCompleted
+      ?? payment.deposit_completed
+      ?? (payment.paymentType === 'deposit' && payment.status !== 'void')
+    )
   };
 }
 

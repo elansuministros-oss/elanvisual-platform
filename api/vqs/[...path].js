@@ -5,6 +5,7 @@ export const config = {
 
 const CONNECT_VQS_PATH = '/api/v1/business/vqs';
 const DEFAULT_CONNECT_URL = 'https://connect.elankav.com';
+const DEFAULT_ELAN_ONE_QUOTATION_READ_URL = 'https://cotizacion-lab.elankav.com';
 const DEFAULT_LEGACY_URL = 'https://orchestrator.elankav.com';
 const TIMEOUT_MS = 12_000;
 const MAX_ASSET_BYTES = 8 * 1024 * 1024;
@@ -160,6 +161,27 @@ export function resolveUpstream(env = process.env) {
   };
 }
 
+export function isElanOneQuotationReadRequest(method, pathname) {
+  const verb = String(method || '').toUpperCase();
+  const path = `/${String(pathname || '').replace(/^\/+/, '')}`;
+
+  if (verb === 'GET' && /^\/public\/customer\/[^/]+$/.test(path)) return true;
+  if (verb === 'PATCH' && /^\/projects\/[^/]+\/status$/.test(path)) return true;
+  if (verb === 'POST' && /^\/projects\/[^/]+\/send-whatsapp$/.test(path)) return true;
+  if (['GET', 'POST', 'PATCH'].includes(verb) && /^\/projects\/[^/]+\/purchase-orders(?:\/[^/]+)?$/.test(path)) return true;
+
+  return false;
+}
+
+export function resolveElanOneQuotationReadUpstream(upstream, env = process.env) {
+  if (upstream?.mode !== 'connect') return upstream;
+  return {
+    ...upstream,
+    baseUrl: `${text(env.ELAN_ONE_QUOTATION_READ_BASE_URL || DEFAULT_ELAN_ONE_QUOTATION_READ_URL).replace(/\/+$/, '')}${CONNECT_VQS_PATH}`,
+    token: text(env.ELAN_ONE_VQS_TOKEN || upstream.token)
+  };
+}
+
 export function mapVqsPath(pathname, mode = 'connect') {
   const path = `/${String(pathname || '').replace(/^\/+/, '')}`;
   if (mode === 'legacy') return `/api/vqs${path}`;
@@ -175,16 +197,31 @@ export function mapVqsPath(pathname, mode = 'connect') {
     return `/quotations/${id}/${resource}${itemId ? `/${itemId}` : ''}`;
   }
 
-  const project = path.match(/^\/projects\/([^/]+)(?:\/(status|send-whatsapp))?$/);
+  const project = path.match(/^\/projects\/([^/]+)(?:\/(status|send|send-whatsapp))?$/);
   if (project) {
     const [, id, operation] = project;
     if (operation === 'status') return `/quotations/${id}`;
+    if (operation === 'send') return `/quotations/${id}/send`;
     if (operation === 'send-whatsapp') return `/quotations/${id}/send-whatsapp`;
     return `/quotations/${id}`;
   }
 
   const publicQuotation = path.match(/^\/public\/quotations\/([^/]+)$/);
   if (publicQuotation) return `/quotations/${publicQuotation[1]}`;
+
+  const publicCustomer = path.match(/^\/public\/customer\/([^/]+)$/);
+  if (publicCustomer) return `/public/customer/${publicCustomer[1]}`;
+
+  const customerPortalAccess = path.match(/^\/customer-portals\/([^/]+)\/access$/);
+  if (customerPortalAccess) return `/customer-portals/${customerPortalAccess[1]}/access`;
+
+  const publicPortal = path.match(/^\/public\/portal\/([^/]+)$/);
+  if (publicPortal) return `/public/portal/${publicPortal[1]}`;
+
+  const publicPortalApproval = path.match(/^\/public\/portal\/([^/]+)\/quotations\/([^/]+)\/approve$/);
+  if (publicPortalApproval) {
+    return `/public/portal/${publicPortalApproval[1]}/quotations/${publicPortalApproval[2]}/approve`;
+  }
 
   return null;
 }
@@ -341,7 +378,10 @@ export default async function handler(req, res) {
       return await uploadQuotationAsset(req, res, requestId);
     }
 
-    const upstream = resolveUpstream();
+    let upstream = resolveUpstream();
+    if (isElanOneQuotationReadRequest(req.method, localPath)) {
+      upstream = resolveElanOneQuotationReadUpstream(upstream);
+    }
     const isContextSearch = upstream.mode === 'connect' && localPath.replace(/^\/+/, '') === 'context/search';
     const upstreamPath = mapVqsPath(localPath, upstream.mode);
     if (!upstreamPath && !isContextSearch) {

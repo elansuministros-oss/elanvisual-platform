@@ -103,7 +103,7 @@ function FieldThread() {
   );
 }
 
-export default function ELANFieldThread({ sessionToken, platform = 'ELANVISUAL', memoryHistory = [], onResponse }) {
+export default function ELANFieldThread({ sessionToken, memoryHistory = [], onResponse }) {
   const initialMessages = useMemo(() => initialMessagesFromMemory(memoryHistory), [memoryHistory]);
 
   const modelAdapter = useMemo(() => ({
@@ -114,8 +114,7 @@ export default function ELANFieldThread({ sessionToken, platform = 'ELANVISUAL',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           modo: 'copilot',
-          unidad: platform,
-          platform,
+          unidad: 'ELANVISUAL',
           canal: 'web-live',
           live_session_token: sessionToken,
           client_message_id: unstable_assistantMessageId ? `copilot-user:${unstable_assistantMessageId}` : undefined,
@@ -134,7 +133,7 @@ export default function ELANFieldThread({ sessionToken, platform = 'ELANVISUAL',
       onResponse?.(text, data, lastUser);
       return { content: [{ type: 'text', text }] };
     },
-  }), [sessionToken, platform, onResponse]);
+  }), [sessionToken, onResponse]);
 
   const runtime = useLocalRuntime(modelAdapter, {
     initialMessages,

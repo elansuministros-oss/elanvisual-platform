@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import OfficialQuotationDocument from '../modules/quotation-viewer/components/OfficialQuotationDocument';
 import CustomerPaymentsPanel from '../modules/quotation-viewer/components/CustomerPaymentsPanel';
 import ProcurementPanel from '../modules/quotation-viewer/components/ProcurementPanel';
-import { deleteQuotation, getQuotationDetail } from '../modules/quotation-viewer/services/quotationViewerService';
+import { deleteQuotation, getQuotationDetail, sendQuotation } from '../modules/quotation-viewer/services/quotationViewerService';
 import { getPublicCustomerDossier } from '../modules/quotation-viewer/services/publicQuotationService';
 import { downloadQuotationPdf } from '../modules/quotation-viewer/services/quotationPdfGenerator';
 import {
@@ -179,6 +179,7 @@ export default function QuotationDetail({ onBack }) {
   const [operationsLoading, setOperationsLoading] = useState(false);
   const [procurementOpen, setProcurementOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [operationError, setOperationError] = useState('');
 
@@ -305,6 +306,37 @@ export default function QuotationDetail({ onBack }) {
     }
   };
 
+  const handleSendQuotation = async () => {
+    if (sending) return;
+
+    const quotationNumber = String(quotation.quotationNumber || '').trim();
+    const confirmed = window.confirm(
+      `Preparar ${quotationNumber || 'esta cotización'} en el portal del cliente? No se enviará por WhatsApp ni correo todavía.`
+    );
+    if (!confirmed) return;
+
+    setSending(true);
+    setOperationError('');
+    try {
+      const result = await sendQuotation(projectId, {
+        role: usuario?.rol || '',
+        userId: usuario?.id || usuario?.email || ''
+      });
+      const portalUrl = String(result?.publicUrl || '').trim();
+      const quotationUrl = String(result?.quotationUrl || '').trim();
+      setQuotation((current) => current ? { ...current, status: 'sent', publicUrl: quotationUrl || current.publicUrl } : current);
+      window.alert([
+        'Cotización preparada en el portal. No se envió por WhatsApp ni correo.',
+        portalUrl ? `Portal del cliente: ${portalUrl}` : '',
+        quotationUrl ? `Cotización: ${quotationUrl}` : ''
+      ].filter(Boolean).join('\n\n'));
+    } catch (sendError) {
+      setOperationError(sendError.message || 'No fue posible enviar la cotización.');
+    } finally {
+      setSending(false);
+    }
+  };
+
   const handleDeleteQuotation = async () => {
     if (!isAdmin || deleting) return;
 
@@ -420,6 +452,8 @@ export default function QuotationDetail({ onBack }) {
           quotation={quotation}
           dossier={dossier}
           onBack={onBack}
+          onSend={handleSendQuotation}
+          sending={sending}
         />
       </div>
     </div>

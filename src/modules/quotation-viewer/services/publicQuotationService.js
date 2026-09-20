@@ -8,9 +8,16 @@ const HEADERS = Object.freeze({
   'X-Elankav-Actor-Type': 'public-customer'
 });
 
+function buildVqsFunctionUrl(baseUrl, path) {
+  const url = new URL(`${baseUrl}/api/vqs`);
+  url.searchParams.set('path', String(path || '').replace(/^\/+/, ''));
+  return url;
+}
+
 function buildPublicQuotationUrl(projectId) {
-  const url = new URL(
-    `${resolveBaseUrl()}/api/vqs/public/quotations/${encodeURIComponent(projectId)}`
+  const url = buildVqsFunctionUrl(
+    resolveBaseUrl(),
+    `public/quotations/${encodeURIComponent(projectId)}`
   );
 
   // Cada consulta debe obtener un documento público fresco porque contiene
@@ -54,13 +61,24 @@ export async function getPublicQuotation(projectId) {
 export const publicQuotationService = Object.freeze({ getPublicQuotation });
 
 
-const CONNECT_PUBLIC_BASE_URL = 'https://connect.elankav.com';
+const CONNECT_PUBLIC_BASE_URL = window.location.origin;
 
 function normalizeCustomerAccessCode(value) {
   const code = String(value || '').trim();
 
   return /^[A-Za-z0-9_-]{22}$/.test(code)
     ? code
+    : '';
+}
+
+function normalizeCustomerPortalKey(value) {
+  const key = String(value || '').trim();
+
+  return (
+    /^[A-Za-z0-9_-]{22}$/.test(key) ||
+    /^[a-z0-9][a-z0-9-]{4,94}[a-z0-9]$/.test(key)
+  )
+    ? key
     : '';
 }
 
@@ -75,8 +93,9 @@ export async function getPublicCustomerDossier(accessCode) {
     throw error;
   }
 
-  const url = new URL(
-    `${CONNECT_PUBLIC_BASE_URL}/api/v1/business/vqs/public/customer/${encodeURIComponent(code)}`
+  const url = buildVqsFunctionUrl(
+    CONNECT_PUBLIC_BASE_URL,
+    `public/customer/${encodeURIComponent(code)}`
   );
 
   url.searchParams.set(
@@ -122,4 +141,87 @@ export async function getPublicCustomerDossier(accessCode) {
     quotation:
       normalizeQuotationRecord(record)
   };
+}
+
+
+export async function getPublicCustomerPortal(accessCode) {
+  const code = normalizeCustomerPortalKey(accessCode);
+
+  if (!code) {
+    const error = new Error('El enlace del cliente no es válido.');
+    error.status = 400;
+    error.code = 'PUBLIC_CUSTOMER_PORTAL_CODE_INVALID';
+    throw error;
+  }
+
+  const url = buildVqsFunctionUrl(
+    CONNECT_PUBLIC_BASE_URL,
+    `public/portal/${encodeURIComponent(code)}`
+  );
+
+  url.searchParams.set('_refresh', String(Date.now()));
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: HEADERS,
+    cache: 'no-store'
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(
+      payload?.error?.message ||
+      'No fue posible abrir el espacio del cliente.'
+    );
+    error.status = response.status;
+    error.code =
+      payload?.error?.code ||
+      'PUBLIC_CUSTOMER_PORTAL_FAILED';
+    throw error;
+  }
+
+  return payload?.data || {};
+}
+
+
+export async function approvePublicCustomerQuotation(
+  accessCode,
+  quotationId
+) {
+  const code = normalizeCustomerPortalKey(accessCode);
+  const id = String(quotationId || '').trim();
+
+  if (!code || !id) {
+    const error = new Error('No fue posible identificar la cotización.');
+    error.status = 400;
+    throw error;
+  }
+
+  const url = buildVqsFunctionUrl(
+    CONNECT_PUBLIC_BASE_URL,
+    `public/portal/${encodeURIComponent(code)}/quotations/${encodeURIComponent(id)}/approve`
+  );
+
+  const response = await fetch(url.toString(), {
+    method: 'POST',
+    headers: HEADERS,
+    cache: 'no-store'
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(
+      payload?.error?.message ||
+      'No fue posible aprobar la cotización.'
+    );
+    error.status = response.status;
+    error.code =
+      payload?.error?.code ||
+      'PUBLIC_CUSTOMER_APPROVAL_FAILED';
+    throw error;
+  }
+
+  return payload?.data || {};
 }

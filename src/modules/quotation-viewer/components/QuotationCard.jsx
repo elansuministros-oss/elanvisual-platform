@@ -32,7 +32,8 @@ function display(value) {
 
 export default function QuotationCard({ quotation, onOpen, onEdit }) {
   const canOpen = Boolean(quotation?.id);
-  const canEdit = canOpen && quotation?.status === 'draft';
+  const status = String(quotation?.status || '').trim().toLowerCase();
+  const canEdit = canOpen && ['draft', 'sent'].includes(status);
 
   return (
     <article className="qv-card">

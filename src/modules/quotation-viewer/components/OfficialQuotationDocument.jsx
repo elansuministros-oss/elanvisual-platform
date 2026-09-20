@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, MessageCircle, Printer } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Printer, Send } from 'lucide-react';
 import '../../../styles/quotation-item-layout.css';
 import PrintableQuotationDocument from './PrintableQuotationDocument';
 
@@ -181,7 +181,7 @@ function ItemRow({ item }) {
   );
 }
 
-export default function OfficialQuotationDocument({ quotation, onBack, dossier = null }) {
+export default function OfficialQuotationDocument({ quotation, onBack, dossier = null, onSend = null, sending = false }) {
   const brand = resolveBrand(quotation);
   const logoUrl = resolveLogoUrl(brand);
   const whatsappUrl = buildWhatsappUrl(quotation.customer?.phone, quotation.quotationNumber);
@@ -215,6 +215,11 @@ export default function OfficialQuotationDocument({ quotation, onBack, dossier =
         <button type="button" className="qv-action-secondary" onClick={onBack}>
           <ArrowLeft size={18} /> Regresar
         </button>
+        {onSend && (
+          <button type="button" onClick={onSend} disabled={sending} aria-busy={sending}>
+            <Send size={18} /> {sending ? 'Enviando...' : 'Enviar cotización'}
+          </button>
+        )}
         <button type="button" onClick={() => window.print()}>
           <Printer size={18} /> Imprimir / PDF
         </button>

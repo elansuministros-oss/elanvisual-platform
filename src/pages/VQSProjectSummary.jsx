@@ -16,12 +16,12 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
   const [sendResult, setSendResult] = useState(null);
-  const canSend = Boolean(projectId && String(contract.customer.phone || '').trim());
+  const canSend = Boolean(projectId);
 
-  async function sendByWhatsApp() {
+  async function sendQuotation() {
     if (!canSend || sending) return;
     const confirmed = window.confirm(
-      `Enviar ${data.quotation_number || 'la cotización'} directamente a ${contract.customer.name || 'Cliente'} (${contract.customer.phone})?`
+      `Preparar ${data.quotation_number || 'la cotización'} en el portal de ${contract.customer.name || 'Cliente'}? No se enviará por WhatsApp ni correo todavía.`
     );
     if (!confirmed) return;
 
@@ -29,29 +29,10 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
     setSendError('');
     setSendResult(null);
     try {
-      const response = await projectCoreClient.sendQuotationWhatsApp(projectId, {
-        quotationId: data.quotation_id || '',
-        quotationNumber: data.quotation_number || '',
-        customerId: contract.customer.customerId || '',
-        customerName: contract.customer.name || '',
-        phone: contract.customer.phone || '',
-        totalUsd: contract.pricing.totalUsd,
-        items: contract.items.map((item) => ({
-          title: item.title,
-          quantity: item.quantity,
-          unit: item.unit,
-          subtotalUsd: item.subtotalUsd
-        })),
-        installments: contract.payments.installments.map((payment) => ({
-          label: payment.label,
-          percentage: payment.percentage,
-          amountUsd: payment.amountUsd
-        })),
-        documentUrl: shareUrl
-      });
+      const response = await projectCoreClient.sendQuotation(projectId);
       setSendResult(response?.data || response);
     } catch (error) {
-      setSendError(error.message || 'No fue posible enviar la cotización por WhatsApp.');
+      setSendError(error.message || 'No fue posible enviar la cotización.');
     } finally {
       setSending(false);
     }
@@ -118,12 +99,17 @@ export default function VQSProjectSummary({ creation, contract, onBack }) {
             type="button"
             className="uq-primary-wide"
             disabled={!canSend || sending}
-            onClick={sendByWhatsApp}
-            title={!projectId ? 'No se recibió el identificador del proyecto' : !contract.customer.phone ? 'Agregá el teléfono del cliente' : 'Enviar mediante Orchestrator y WAHA'}
+            onClick={sendQuotation}
+            title={!projectId ? 'No se recibió el identificador del proyecto' : 'Preparar la cotización en el portal del cliente'}
           >
-            {sending ? 'Enviando…' : 'Enviar por WhatsApp'}
+            {sending ? 'Enviando…' : 'Enviar'}
           </button>
-          {sendResult && <small className="uq-muted">Enviado correctamente a +{sendResult.phone || contract.customer.phone}.</small>}
+          {sendResult && (
+            <small className="uq-muted">
+              Cotización preparada en el portal · sin envío por WhatsApp ni correo.
+              {sendResult?.publicUrl ? ` Portal: ${sendResult.publicUrl}` : ''}
+            </small>
+          )}
           {sendError && <small className="uq-error">{sendError}</small>}
 
           <button
