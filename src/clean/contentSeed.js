@@ -1,7 +1,7 @@
 export const contactSeed = {
   whatsappLabel: '+505 8522 8183',
   whatsappHref: 'https://wa.me/50585228183',
-  email: 'elansuministros@gmail.com',
+  email: 'visual@elankav.com',
   instagram: '@elanvisual',
 };
 
