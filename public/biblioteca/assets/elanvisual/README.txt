@@ -1,0 +1,1 @@
+ELAN ONE LAB web-preview assets. Derived read-only previews of approved ELANVISUAL source assets from connected Google Drive; originals remain unchanged in Drive.
