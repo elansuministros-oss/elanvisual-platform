@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>ELANVISUAL · Catálogo y cotización</title>
+<meta name="description" content="Catálogo interactivo de formatos y cotización ELANVISUAL">
+<link rel="stylesheet" href="styles.css">
+<meta name="elanvisual-version" content="client-quote-v0.1">
+</head>
+<body>
+<div class="shell">
+  <section class="top">
+    <header class="header">
+      <div class="brand">
+        <div class="logoBox" id="logoPlaceholder">ELANVISUAL</div>
+        <div class="brandText"><strong>Soluciones de comunicación visual</strong><small>Catálogo interactivo · Servicios Financieros NI</small></div>
+      </div>
+      <div class="headerMeta"><b>ELANVISUAL</b><br>Datos corporativos oficiales pendientes de cargar</div>
+    </header>
+    <div class="hero">
+      <div><h1>Catálogo y cotización<br>de formatos solicitados</h1><p>Buscá por número de ítem, nombre, material o palabra clave. Marcá los formatos que necesitás, indicá la cantidad y descargá una cotización con los precios disponibles. Los ítems todavía pendientes de precio quedan identificados para confirmación.</p></div>
+      <div class="clientFields">
+        <div class="field"><label>Empresa / Cliente</label><input id="clientName" placeholder="Nombre de la empresa"></div>
+        <div class="field"><label>Contacto</label><input id="contactName" placeholder="Nombre del contacto"></div>
+        <div class="field"><label>Correo</label><input id="clientEmail" type="email" placeholder="correo@empresa.com"></div>
+        <div class="field"><label>Referencia</label><input id="clientRef" placeholder="OC, proyecto o referencia"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="toolbar"><div class="toolbarInner">
+    <div class="search"><input id="search" autocomplete="off" placeholder="Buscar: roller, ítem 19, cenefa, tótem, coroplast…"></div>
+    <button class="btn btnSecondary" id="showAll">Ver todos</button>
+    <button class="btn btnPrimary" id="goQuote">Mi cotización <span id="cartBadge">0</span></button>
+  </div></div>
+
+  <div class="kpis">
+    <div class="kpi"><b id="kpiItems">22</b><span>formatos solicitados</span></div>
+    <div class="kpi"><b id="kpiVisible">22</b><span>resultados visibles</span></div>
+    <div class="kpi"><b id="kpiSelected">0</b><span>seleccionados</span></div>
+    <div class="kpi"><b id="kpiPriced">1</b><span>con precio unitario confirmado</span></div>
+  </div>
+
+  <div class="content">
+    <section class="panel">
+      <div class="panelHead"><div><h2>Formatos</h2><small>Terminología y medidas conservadas de la solicitud recibida.</small></div><small id="searchHint"></small></div>
+      <div class="desktopTable tableWrap"><table><thead><tr><th></th><th>Ítem</th><th>Formato / nombre</th><th>Aplicable</th><th>Medida</th><th>Cant. ref. NI</th><th>Precio unit.</th><th>Cant. solicitada</th><th>Total</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+      <div class="mobileCards" id="cards"></div>
+      <div class="noResults" id="noResults"><b>No encontré coincidencias.</b><br>Probá por número de ítem, material o una palabra del nombre.</div>
+    </section>
+
+    <aside class="panel cart" id="quotePanel">
+      <div class="panelHead"><div><h2>Mi cotización</h2><small>Selección actual</small></div></div>
+      <div class="cartBody"><div id="cart"></div><div class="cartActions"><button class="btn btnGold" id="downloadPdf">Descargar PDF</button><button class="btn btnSecondary" id="clearCart">Limpiar selección</button></div></div>
+    </aside>
+  </div>
+
+  <footer class="footer">
+    <div><h3>ELANVISUAL</h3><p>Identidad corporativa oficial pendiente de cargar: logo, RUC, contacto, dirección y datos de pago.</p></div>
+    <div><h3>Datos de pago</h3><div class="notice">Pendientes de cargar con la información oficial confirmada por ELANVISUAL.</div></div>
+  </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body></html>
