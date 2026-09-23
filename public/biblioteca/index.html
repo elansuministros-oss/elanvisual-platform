@@ -1,48 +1,30 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#f8fafc" />
-  <title>ELANVISUAL · Biblioteca</title>
-  <style>
-    :root{--bg:#f8fafc;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#0f172a;--ok:#0f766e;--lab:#b45309;--soft:#eef2ff}
-    *{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh}
-    .shell{max-width:1180px;margin:0 auto;padding:0 16px 36px}.top{position:sticky;top:0;z-index:10;background:rgba(248,250,252,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin:0 -16px;padding:12px 16px}.brand{font-weight:800;letter-spacing:.02em;font-size:18px}.subbrand{font-size:12px;color:var(--muted);margin-top:2px}.hero{padding:24px 0 18px}.eyebrow{font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.12em}.hero h1{font-size:30px;line-height:1.08;margin:8px 0 10px;letter-spacing:-.03em}.hero p{margin:0;color:var(--muted);font-size:15px;line-height:1.55}.statusbar{display:flex;gap:8px;overflow:auto;padding:14px 0 2px;scrollbar-width:none}.statusbar::-webkit-scrollbar{display:none}.chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:700}.chip.lab{color:var(--lab);background:#fff7ed;border-color:#fed7aa}.chip.ok{color:var(--ok);background:#ecfdf5;border-color:#a7f3d0}
-    .section-title{font-size:14px;font-weight:800;margin:22px 0 10px}.grid{display:grid;grid-template-columns:1fr;gap:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 5px 18px rgba(15,23,42,.04)}.card-head{display:flex;align-items:flex-start;gap:12px}.ico{width:42px;height:42px;border-radius:13px;background:var(--soft);display:grid;place-items:center;font-size:20px;flex:0 0 auto}.card h2{font-size:17px;margin:1px 0 5px;letter-spacing:-.01em}.card p{font-size:13px;color:var(--muted);line-height:1.45;margin:0}.meta{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:15px;padding-top:13px;border-top:1px solid var(--line)}.state{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.state.lab{color:var(--lab)}.state.next{color:#64748b}.state.ready{color:var(--ok)}.action{font-size:12px;font-weight:800;color:var(--ink)}
-    .focus{border-color:#c7d2fe;background:linear-gradient(180deg,#fff,#f8faff)}.focus .ico{background:#e0e7ff}.timeline{margin-top:18px;background:#0f172a;color:#fff;border-radius:20px;padding:18px}.timeline h3{margin:0 0 12px;font-size:16px}.step{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;padding:8px 0}.num{width:28px;height:28px;border-radius:50%;background:#fff;color:#0f172a;display:grid;place-items:center;font-size:12px;font-weight:900}.step b{font-size:13px}.step span{display:block;color:#cbd5e1;font-size:12px;line-height:1.4;margin-top:2px}.foot{padding:22px 2px 0;color:#94a3b8;font-size:11px;text-align:center}
-    @media(min-width:720px){.shell{padding-left:24px;padding-right:24px}.top{margin:0 -24px;padding-left:24px;padding-right:24px}.grid{grid-template-columns:repeat(2,1fr)}.hero{padding-top:34px}.hero h1{font-size:42px}}
-    @media(min-width:1024px){.grid{grid-template-columns:repeat(3,1fr)}.hero{display:grid;grid-template-columns:1.4fr .6fr;gap:28px;align-items:end}.statusbar{justify-content:flex-end}}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#f8fafc" />
+<title>ELANVISUAL · Biblioteca</title>
+<style>
+:root{--bg:#f8fafc;--card:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--ok:#0f766e;--lab:#b45309;--soft:#eef2ff}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{min-height:100vh}a{color:inherit;text-decoration:none}.shell{max-width:1180px;margin:0 auto;padding:0 16px 36px}.top{position:sticky;top:0;z-index:10;background:rgba(248,250,252,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin:0 -16px;padding:12px 16px}.brand{font-weight:800;letter-spacing:.02em;font-size:18px}.subbrand{font-size:12px;color:var(--muted);margin-top:2px}.hero{padding:24px 0 18px}.eyebrow{font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.12em}.hero h1{font-size:30px;line-height:1.08;margin:8px 0 10px;letter-spacing:-.03em}.hero p{margin:0;color:var(--muted);font-size:15px;line-height:1.55}.statusbar{display:flex;gap:8px;overflow:auto;padding:14px 0 2px}.chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:700}.chip.lab{color:var(--lab);background:#fff7ed;border-color:#fed7aa}.chip.ok{color:var(--ok);background:#ecfdf5;border-color:#a7f3d0}.section-title{font-size:14px;font-weight:800;margin:22px 0 10px}.grid{display:grid;grid-template-columns:1fr;gap:12px}.card{display:block;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 5px 18px rgba(15,23,42,.04)}.card-head{display:flex;align-items:flex-start;gap:12px}.ico{width:42px;height:42px;border-radius:13px;background:var(--soft);display:grid;place-items:center;font-size:20px;flex:0 0 auto}.card h2{font-size:17px;margin:1px 0 5px}.card p{font-size:13px;color:var(--muted);line-height:1.45;margin:0}.meta{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:15px;padding-top:13px;border-top:1px solid var(--line)}.state{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.state.lab{color:var(--lab)}.state.next{color:#64748b}.state.ready{color:var(--ok)}.action{font-size:12px;font-weight:800}.focus{border-color:#a7f3d0;background:linear-gradient(180deg,#fff,#f0fdf4)}.focus .ico{background:#d1fae5}.notice{margin-top:18px;background:#0f172a;color:#fff;border-radius:20px;padding:18px}.notice h3{margin:0 0 7px;font-size:16px}.notice p{margin:0;color:#cbd5e1;font-size:12px;line-height:1.5}.foot{padding:22px 2px 0;color:#94a3b8;font-size:11px;text-align:center}@media(min-width:720px){.shell{padding-left:24px;padding-right:24px}.top{margin:0 -24px;padding-left:24px;padding-right:24px}.grid{grid-template-columns:repeat(2,1fr)}.hero{padding-top:34px}.hero h1{font-size:42px}}@media(min-width:1024px){.grid{grid-template-columns:repeat(3,1fr)}.hero{display:grid;grid-template-columns:1.4fr .6fr;gap:28px;align-items:end}.statusbar{justify-content:flex-end}}
+</style>
 </head>
 <body>
-  <main class="shell">
-    <header class="top"><div class="brand">ELANVISUAL</div><div class="subbrand">ELAN ONE · Centro de módulos</div></header>
-    <section class="hero">
-      <div>
-        <div class="eyebrow">Biblioteca · LAB</div>
-        <h1>Un solo lugar para ver y abrir lo que vamos construyendo.</h1>
-        <p>Diseñado primero para móvil. Cada módulo aparecerá aquí con su estado real y acceso cuando esté disponible.</p>
-      </div>
-      <div class="statusbar">
-        <span class="chip lab">LAB</span><span class="chip ok">ResourceSpace READY</span><span class="chip">Mobile-first</span>
-      </div>
-    </section>
-
-    <div class="section-title">Módulos</div>
-    <section class="grid">
-      <article class="card focus"><div class="card-head"><div class="ico">🗂️</div><div><h2>Biblioteca Maestra</h2><p>Base central de archivos, recursos visuales y contenido reutilizable.</p></div></div><div class="meta"><span class="state lab">LAB · setup pendiente</span><span class="action">ResourceSpace</span></div></article>
-      <article class="card"><div class="card-head"><div class="ico">🎨</div><div><h2>Identidad y marca</h2><p>Logos, colores, tipografías, manuales y recursos oficiales de ELANVISUAL.</p></div></div><div class="meta"><span class="state next">Próximo</span><span class="action">Sin abrir</span></div></article>
-      <article class="card"><div class="card-head"><div class="ico">🖼️</div><div><h2>Biblioteca visual</h2><p>Fotos, videos, renders 3D, mockups y trabajos realizados.</p></div></div><div class="meta"><span class="state next">Próximo</span><span class="action">Sin abrir</span></div></article>
-      <article class="card"><div class="card-head"><div class="ico">🧰</div><div><h2>Biblioteca técnica</h2><p>Materiales, espesores, iluminación, procesos y archivos SVG / DXF / AI / PDF.</p></div></div><div class="meta"><span class="state next">Próximo</span><span class="action">Sin abrir</span></div></article>
-      <article class="card"><div class="card-head"><div class="ico">🏷️</div><div><h2>Catálogo comercial</h2><p>Productos y servicios listos para mostrar, cotizar y vender.</p></div></div><div class="meta"><span class="state next">Próximo</span><span class="action">Sin abrir</span></div></article>
-      <article class="card"><div class="card-head"><div class="ico">🧱</div><div><h2>Plantillas HTML</h2><p>Portadas, fichas, landing pages y componentes visuales bloqueados para reutilizar.</p></div></div><div class="meta"><span class="state next">Próximo</span><span class="action">Sin abrir</span></div></article>
-      <article class="card"><div class="card-head"><div class="ico">👤</div><div><h2>Clientes y proyectos</h2><p>Recursos vinculados a cliente, proyecto, cotización, aprobación y entrega.</p></div></div><div class="meta"><span class="state next">Próximo</span><span class="action">Sin abrir</span></div></article>
-      <article class="card"><div class="card-head"><div class="ico">⚙️</div><div><h2>Automatizaciones</h2><p>Estado de conexiones con ERPNext, n8n, WhatsApp, Gmail y Drive.</p></div></div><div class="meta"><span class="state lab">LAB</span><span class="action">Parcial</span></div></article>
-    </section>
-
-    <section class="timeline"><h3>Orden de construcción</h3><div class="step"><div class="num">1</div><div><b>Completar setup de ResourceSpace</b><span>Dejar la Biblioteca Maestra operativa y con acceso administrativo.</span></div></div><div class="step"><div class="num">2</div><div><b>Definir estructura y categorías</b><span>Crear campos y clasificación antes de cargar contenido.</span></div></div><div class="step"><div class="num">3</div><div><b>Abrir módulos uno por uno</b><span>Cada tarjeta tendrá enlace real cuando pase su validación.</span></div></div></section>
-    <div class="foot">ELAN ONE · Vista LAB · No representa todavía módulos validados en producción.</div>
-  </main>
+<main class="shell">
+<header class="top"><div class="brand">ELANVISUAL</div><div class="subbrand">ELAN ONE · Biblioteca</div></header>
+<section class="hero"><div><div class="eyebrow">Biblioteca · LAB</div><h1>Un solo lugar para encontrar y abrir los activos.</h1><p>Ruta operativa directa a la fuente validada en Google Drive, sin depender del preview externo de ResourceSpace.</p></div><div class="statusbar"><span class="chip lab">LAB</span><span class="chip ok">11 activos disponibles</span><span class="chip">Drive · solo lectura</span></div></section>
+<div class="section-title">Módulos</div>
+<section class="grid">
+<a class="card focus" href="/biblioteca/activos-elanvisual.html"><div class="card-head"><div class="ico">🗂️</div><div><h2>Biblioteca Maestra</h2><p>Los 11 activos ELANVISUAL recuperados y verificados, listos para abrir.</p></div></div><div class="meta"><span class="state ready">Operativa</span><span class="action">Abrir →</span></div></a>
+<article class="card"><div class="card-head"><div class="ico">🎨</div><div><h2>Identidad y marca</h2><p>Logos, isotipos, paleta y guía visual ya incluidos dentro de Biblioteca Maestra.</p></div></div><div class="meta"><span class="state ready">Disponible</span><span class="action">Incluido</span></div></article>
+<article class="card"><div class="card-head"><div class="ico">🖼️</div><div><h2>Biblioteca visual</h2><p>Personajes y recursos visuales recuperados de ELANVISUAL.</p></div></div><div class="meta"><span class="state ready">Disponible</span><span class="action">Incluido</span></div></article>
+<article class="card"><div class="card-head"><div class="ico">🧰</div><div><h2>Biblioteca técnica</h2><p>Materiales, procesos y archivos técnicos.</p></div></div><div class="meta"><span class="state next">Próximo</span><span class="action">Sin abrir</span></div></article>
+<article class="card"><div class="card-head"><div class="ico">🏷️</div><div><h2>Catálogo comercial</h2><p>Productos y servicios listos para mostrar, cotizar y vender.</p></div></div><div class="meta"><span class="state next">Próximo</span><span class="action">Sin abrir</span></div></article>
+<article class="card"><div class="card-head"><div class="ico">👤</div><div><h2>Clientes y proyectos</h2><p>Recursos vinculados a cliente, proyecto, cotización, aprobación y entrega.</p></div></div><div class="meta"><span class="state next">Próximo</span><span class="action">Sin abrir</span></div></article>
+</section>
+<section class="notice"><h3>ResourceSpace queda aislado del acceso de trabajo</h3><p>Su preview externo sigue en LAB y no bloquea la Biblioteca. Esta ruta usa directamente Google Drive en modo solo lectura y no toca originales, Gateway, WAHA, Access Core ni Legacy.</p></section>
+<div class="foot">ELAN ONE · Biblioteca ELANVISUAL · LAB</div>
+</main>
 </body>
 </html>
