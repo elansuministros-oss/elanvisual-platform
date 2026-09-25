@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ELAN Base · Proyectos · Concepto Visual V1</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<style>
+:root {
+  --black:#000000;
+  --yellow:#DEB738;
+  --ink:#111318;
+  --muted:#666a73;
+  --line:#d9dce2;
+  --soft:#f4f5f7;
+  --paper:#ffffff;
+  --bg:#eef0f3;
+  --success:#227447;
+  --warning:#9b6a00;
+  --danger:#a53131;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr)}
+.sidebar{background:var(--black);color:#fff;display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;height:100vh}
+.brand{padding:24px 22px 22px;border-bottom:1px solid rgba(255,255,255,.12)}
+.brand img{display:block;width:178px;max-width:100%;height:auto}
+.brand small{display:block;margin-top:12px;color:#c8c8c8;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.nav{padding:18px 12px;display:grid;gap:6px}
+.nav a{text-decoration:none;color:#d8d8d8;padding:12px 14px;border-radius:10px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:10px}
+.nav a:hover{background:#171717;color:#fff}
+.nav a.active{background:var(--yellow);color:var(--black)}
+.nav .dot{width:8px;height:8px;border:1px solid currentColor;border-radius:50%}
+.sidebarFooter{margin-top:auto;padding:18px 22px 22px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;color:#aaa;line-height:1.5}
+.main{min-width:0}
+.topbar{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:20}
+.crumb{font-size:13px;color:var(--muted);font-weight:700}
+.crumb b{color:var(--ink)}
+.topActions{display:flex;align-items:center;gap:10px}
+.userPill{background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:9px 13px;font-size:12px;font-weight:800}
+.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800}
+.btnPrimary{background:var(--yellow);color:#000}
+.btnDark{background:#111;color:#fff}
+.btnGhost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.content{padding:28px;max-width:1480px;margin:0 auto}
+.hero{background:var(--black);color:#fff;border-radius:18px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 420px;min-height:210px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+.heroCopy{padding:30px 32px;position:relative}
+.heroCopy:before{content:"";position:absolute;left:0;top:0;width:8px;height:100%;background:var(--yellow)}
+.eyebrow{color:var(--yellow);font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.hero h1{margin:0;font-size:38px;line-height:1.04;letter-spacing:-.03em}
+.hero p{max-width:720px;color:#d6d6d6;line-height:1.55;margin:14px 0 0;font-size:14px}
+.heroPanel{background:var(--yellow);color:#000;padding:26px;display:flex;flex-direction:column;justify-content:center}
+.heroPanel small{font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+.heroPanel strong{font-size:25px;margin:6px 0 14px}
+.heroPanel .meta{display:grid;gap:7px;font-size:13px}
+.heroPanel .meta span{display:flex;justify-content:space-between;gap:12px;border-top:1px solid rgba(0,0,0,.18);padding-top:7px}
+.heroPanel .meta b{text-align:right}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:18px 0}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;min-height:102px}
+.kpi small{display:block;color:var(--muted);font-size:12px;font-weight:800;margin-bottom:8px}
+.kpi b{font-size:28px}
+.kpi em{display:block;font-style:normal;font-size:11px;color:var(--muted);margin-top:5px}
+.workspaceTop{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:20px 0 14px}
+.search{flex:1;position:relative}
+.search input{width:100%;height:46px;border:1px solid var(--line);border-radius:12px;background:#fff;padding:0 15px 0 43px;outline:none}
+.search:before{content:"⌕";position:absolute;left:14px;top:7px;font-size:25px;color:#777}
+.viewBtns{display:flex;gap:8px}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(340px,.9fr);gap:18px;align-items:start}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.panelHead{padding:17px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:14px;align-items:center}
+.panelHead h2{margin:0;font-size:17px}
+.panelHead small{color:var(--muted)}
+.panelBody{padding:18px}
+.projectList{display:grid;gap:10px}
+.projectCard{border:1px solid var(--line);border-radius:12px;padding:15px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;background:#fff}
+.projectCard.active{border-color:var(--yellow);box-shadow:inset 4px 0 0 var(--yellow)}
+.projectCard h3{margin:0 0 5px;font-size:15px}
+.projectCard p{margin:0;color:var(--muted);font-size:12px;line-height:1.45}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:6px 9px;font-size:11px;font-weight:900;white-space:nowrap}
+.badgeYellow{background:#f5ecd0;color:#694d00}
+.badgeGreen{background:#e5f3eb;color:var(--success)}
+.badgeGray{background:#eef0f3;color:#555}
+.badgeRed{background:#f7e6e6;color:var(--danger)}
+.projectTitle{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.projectTitle h2{margin:0;font-size:23px;line-height:1.15}
+.projectTitle p{margin:6px 0 0;color:var(--muted);font-size:13px}
+.clientTag{background:#000;color:#fff;border-radius:10px;padding:8px 11px;font-size:11px;font-weight:900}
+.infoGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.info{border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:11px}
+.info small{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}
+.info b{font-size:13px}
+.pipeline{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:16px 0 20px}
+.step{text-align:center;padding:9px 4px;border-radius:8px;background:var(--soft);color:#777;font-size:10px;font-weight:900;line-height:1.2}
+.step.done{background:#111;color:#fff}
+.step.current{background:var(--yellow);color:#000}
+.sectionLabel{font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin:18px 0 8px}
+.quote{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.quoteHead,.quoteRow{display:grid;grid-template-columns:1fr 75px 105px 110px;gap:8px;align-items:center;padding:10px 12px}
+.quoteHead{background:#111;color:#fff;font-size:10px;text-transform:uppercase;font-weight:900}
+.quoteRow{font-size:12px;border-top:1px solid var(--line)}
+.quoteRow:first-of-type{border-top:0}
+.quoteRow .num{text-align:right;font-weight:800}
+.totals{margin-top:12px;margin-left:auto;width:min(100%,310px);display:grid;gap:7px}
+.totalLine{display:flex;justify-content:space-between;font-size:12px}
+.totalLine.final{border-top:2px solid #111;padding-top:8px;font-size:16px;font-weight:900}
+.actionBar{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.mobileBrand{display:none}
+@media (max-width:1100px){
+  .app{grid-template-columns:82px minmax(0,1fr)}
+  .brand img{width:46px;max-width:none;object-position:left;object-fit:cover}
+  .brand small,.nav a span:not(.dot),.sidebarFooter{display:none}
+  .nav a{justify-content:center;padding:13px}
+  .hero{grid-template-columns:1fr 320px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:760px){
+  .app{display:block}
+  .sidebar{display:none}
+  .topbar{height:auto;min-height:68px;padding:12px 16px}
+  .crumb{display:none}
+  .mobileBrand{display:block;width:150px;background:#000;padding:8px 10px;border-radius:8px}
+  .mobileBrand img{display:block;width:100%;height:auto}
+  .topActions .userPill{display:none}
+  .content{padding:16px}
+  .hero{grid-template-columns:1fr}
+  .heroCopy{padding:26px 24px 28px}
+  .hero h1{font-size:31px}
+  .heroPanel{padding:20px 24px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .workspaceTop{align-items:stretch;flex-direction:column}
+  .grid{grid-template-columns:1fr}
+  .pipeline{grid-template-columns:repeat(3,1fr)}
+  .quoteHead,.quoteRow{grid-template-columns:1fr 55px 80px}
+  .quoteHead > :nth-child(3),.quoteRow > :nth-child(3){display:none}
+  .infoGrid{grid-template-columns:1fr}
+}
+@media (max-width:450px){
+  .kpis{grid-template-columns:1fr}
+  .hero h1{font-size:28px}
+  .projectCard{grid-template-columns:1fr}
+  .projectCard .badge{justify-self:start}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL">
+      <small>ELAN Base · Administración</small>
+    </div>
+    <nav class="nav" aria-label="Navegación principal">
+      <a href="#"><i class="dot"></i><span>Inicio</span></a>
+      <a href="#"><i class="dot"></i><span>Clientes</span></a>
+      <a class="active" href="#"><i class="dot"></i><span>Proyectos</span></a>
+      <a href="#"><i class="dot"></i><span>Cotizaciones</span></a>
+      <a href="#"><i class="dot"></i><span>Producción</span></a>
+      <a href="#"><i class="dot"></i><span>Entregas</span></a>
+      <a href="#"><i class="dot"></i><span>Saldos</span></a>
+    </nav>
+    <div class="sidebarFooter">
+      Interfaz administrativa interna<br>
+      ELANVISUAL · Concepto visual V1
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="mobileBrand"><img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL"></div>
+      <div class="crumb">ELAN Base / <b>Proyectos</b></div>
+      <div class="topActions">
+        <span class="userPill">OWNER · Erick</span>
+        <button class="btn btnGhost">Nuevo cliente</button>
+        <button class="btn btnPrimary">+ Nuevo proyecto</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="hero">
+        <div class="heroCopy">
+          <div class="eyebrow">ELAN BASE · PROYECTOS</div>
+          <h1>Todo trabajo empieza<br>con un proyecto claro.</h1>
+          <p>Cliente, alcance, cotización y estado operativo reunidos en una sola vista. ERPNext queda detrás como fuente oficial; esta pantalla está pensada para trabajar rápido.</p>
+        </div>
+        <div class="heroPanel">
+          <small>Proyecto seleccionado</small>
+          <strong>Cambio de lona</strong>
+          <div class="meta">
+            <span><i>Cliente</i><b>Grupo Mega SA</b></span>
+            <span><i>Sucursal</i><b>Belmonte</b></span>
+            <span><i>Estado</i><b>Cotización</b></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="kpis">
+        <div class="kpi"><small>PROYECTOS ACTIVOS</small><b>12</b><em>Trabajos actualmente abiertos</em></div>
+        <div class="kpi"><small>COTIZACIONES ABIERTAS</small><b>7</b><em>Pendientes de decisión o ajuste</em></div>
+        <div class="kpi"><small>EN PRODUCCIÓN</small><b>4</b><em>Órdenes ya aprobadas</em></div>
+        <div class="kpi"><small>SALDOS PENDIENTES</small><b>3</b><em>Proyectos por cerrar</em></div>
+      </section>
+
+      <div class="workspaceTop">
+        <div class="search"><input value="" placeholder="Buscar cliente, proyecto, sucursal o cotización…"></div>
+        <div class="viewBtns">
+          <button class="btn btnGhost">Filtros</button>
+          <button class="btn btnDark">Vista proyectos</button>
+        </div>
+      </div>
+
+      <section class="grid">
+        <div class="panel">
+          <div class="panelHead">
+            <div><h2>Proyectos recientes</h2><small>Trabajos identificados por cliente y objetivo</small></div>
+            <button class="btn btnGhost">Ver todos</button>
+          </div>
+          <div class="panelBody">
+            <div class="projectList">
+              <article class="projectCard active">
+                <div>
+                  <h3>Cambio de lona – Sucursal Belmonte</h3>
+                  <p>Grupo Mega SA · Belmonte<br>COT-2026-0001 · Actualizado hoy</p>
+                </div>
+                <span class="badge badgeYellow">Cotización</span>
+              </article>
+              <article class="projectCard">
+                <div>
+                  <h3>Rotulación fachada – Granada</h3>
+                  <p>SERPROIM SA · Granada<br>COT-2026-0002 · Actualizado hoy</p>
+                </div>
+                <span class="badge badgeGreen">Producción</span>
+              </article>
+              <article class="projectCard">
+                <div>
+                  <h3>Señalización interna – Ticuantepe</h3>
+                  <p>Grupo Mega SA · Ticuantepe<br>COT-2026-0003 · Ayer</p>
+                </div>
+                <span class="badge badgeGray">Aprobación</span>
+              </article>
+              <article class="projectCard">
+                <div>
+                  <h3>Vinil promocional – 7 Sur</h3>
+                  <p>Grupo Mega SA · 7 Sur<br>COT-2026-0004 · 22 Sep</p>
+                </div>
+                <span class="badge badgeRed">Saldo pendiente</span>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <aside class="panel">
+          <div class="panelHead">
+            <div><h2>Ficha del proyecto</h2><small>Vista administrativa</small></div>
+            <button class="btn btnGhost">Editar</button>
+          </div>
+          <div class="panelBody">
+            <div class="projectTitle">
+              <div>
+                <h2>Cambio de lona – Sucursal Belmonte</h2>
+                <p>Trabajo comercial activo</p>
+              </div>
+              <span class="clientTag">GRUPO MEGA SA</span>
+            </div>
+
+            <div class="infoGrid">
+              <div class="info"><small>Cliente</small><b>Grupo Mega SA</b></div>
+              <div class="info"><small>Sucursal</small><b>Belmonte</b></div>
+              <div class="info"><small>Contacto</small><b>Mauricio Batres</b></div>
+              <div class="info"><small>Moneda</small><b>USD</b></div>
+            </div>
+
+            <div class="sectionLabel">Flujo del proyecto</div>
+            <div class="pipeline">
+              <div class="step done">PROYECTO</div>
+              <div class="step current">COTIZACIÓN</div>
+              <div class="step">APROBACIÓN</div>
+              <div class="step">ANTICIPO</div>
+              <div class="step">PRODUCCIÓN</div>
+              <div class="step">ENTREGA / SALDO</div>
+            </div>
+
+            <div class="sectionLabel">Cotización activa</div>
+            <div class="quote">
+              <div class="quoteHead"><span>Descripción</span><span>Cant.</span><span>P. unit.</span><span>Total</span></div>
+              <div class="quoteRow"><span>Lona impresa para fachada</span><span class="num">1</span><span class="num">US$ 280</span><span class="num">US$ 280</span></div>
+              <div class="quoteRow"><span>Instalación</span><span class="num">1</span><span class="num">US$ 60</span><span class="num">US$ 60</span></div>
+            </div>
+            <div class="totals">
+              <div class="totalLine"><span>Subtotal</span><b>US$ 340.00</b></div>
+              <div class="totalLine"><span>IVA 15%</span><b>US$ 51.00</b></div>
+              <div class="totalLine final"><span>Total</span><span>US$ 391.00</span></div>
+            </div>
+
+            <div class="actionBar">
+              <button class="btn btnPrimary">Editar cotización</button>
+              <button class="btn btnDark">Ver PDF</button>
+              <button class="btn btnGhost">Historial</button>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>
