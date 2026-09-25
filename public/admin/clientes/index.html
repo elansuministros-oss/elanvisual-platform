@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>ELAN Base · Clientes</title>
+<style>
+:root{--black:#000;--yellow:#DEB738;--ink:#111318;--muted:#666a73;--line:#d9dce2;--soft:#f4f5f7;--bg:#eef0f3;--ok:#227447;--danger:#a7271f;--blue:#075fc7}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr)}
+.sidebar{background:#000;color:#fff;display:flex;flex-direction:column;min-height:100vh;position:sticky;top:0;height:100vh}.brand{padding:24px 16px 22px;border-bottom:1px solid #ffffff1f}.brand img{width:178px;max-width:100%}.brand small{display:block;margin-top:10px;color:#fff;font-size:12px;letter-spacing:.08em;text-transform:uppercase}.nav{padding:18px 0;display:grid;gap:5px}.nav a{text-decoration:none;color:#f1f1f1;padding:12px 14px;border-radius:0 10px 10px 0;font-size:14px;font-weight:700;display:flex;align-items:center;gap:10px}.nav a:hover{background:#171717}.nav a.active{background:var(--yellow);color:#000}.dot{width:8px;height:8px;border:1px solid currentColor;border-radius:50%;flex:0 0 auto}.sidebarFooter{margin-top:auto;padding:18px 16px;border-top:1px solid #ffffff1f;color:#aaa;font-size:12px;line-height:1.5}
+.main{min-width:0}.topbar{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:20}.crumb{font-size:13px;color:var(--muted);font-weight:700}.crumb b{color:var(--ink)}.userPill{background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:9px 13px;font-size:12px;font-weight:800}.mobileBrand{display:none}
+.content{padding:28px;max-width:1480px;margin:0 auto}.hero{background:#000;color:#fff;border-radius:18px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 360px;min-height:170px;box-shadow:0 10px 30px #0000001f}.heroCopy{padding:28px 32px;position:relative}.heroCopy:before{content:"";position:absolute;left:0;top:0;width:8px;height:100%;background:var(--yellow)}.eyebrow{color:var(--yellow);font-size:11px;font-weight:900;letter-spacing:.12em;margin-bottom:9px}.hero h1{margin:0;font-size:34px;line-height:1.05}.hero p{margin:12px 0 0;color:#d6d6d6;line-height:1.5;font-size:13px;max-width:700px}.heroPanel{background:var(--yellow);color:#000;padding:24px;display:flex;flex-direction:column;justify-content:center}.heroPanel small{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.09em}.heroPanel strong{font-size:22px;margin:7px 0 5px}.heroPanel span{font-size:12px;line-height:1.45}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}.kpi{background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px}.kpi small{display:block;color:var(--muted);font-size:10px;font-weight:900;margin-bottom:7px;text-transform:uppercase}.kpi b{font-size:25px}.kpi em{display:block;font-style:normal;font-size:10px;color:var(--muted);margin-top:5px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}.panelHead{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}.panelHead h2{margin:0;font-size:17px}.panelHead small{display:block;color:var(--muted);font-size:11px;margin-top:4px}.panelBody{padding:16px 18px}.btn{border:0;border-radius:9px;padding:10px 13px;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}.btnPrimary{background:var(--yellow);color:#000}.btnDark{background:#111;color:#fff}.btnGhost{background:#fff;border:1px solid var(--line);color:var(--ink)}.btnDanger{background:#fff;border:1px solid #e4b2ae;color:var(--danger)}.btnSmall{padding:7px 9px;font-size:11px}
+.toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 190px 150px auto;gap:9px;margin-bottom:14px}.field,.select{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 11px;background:#fff;color:var(--ink)}.tableWrap{overflow:auto;border:1px solid var(--line);border-radius:12px}.dataTable{width:100%;border-collapse:collapse;font-size:12px;min-width:980px}.dataTable th,.dataTable td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}.dataTable th{background:#111;color:#fff;font-size:10px;text-transform:uppercase;white-space:nowrap}.dataTable tr:last-child td{border-bottom:0}.clientName{font-weight:900;font-size:13px}.sub{font-size:10px;color:var(--muted);margin-top:3px}.badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:900}.corporate{background:#fff0b8;color:#6b5100}.frequent{background:#e7f0ff;color:#174f8f}.occasional{background:#eee;color:#555}.active{background:#e5f3eb;color:var(--ok)}.inactive{background:#f5e5e3;color:var(--danger)}.actions{display:flex;gap:6px;flex-wrap:wrap}.empty{border:1px dashed #c9ccd2;background:var(--soft);border-radius:12px;padding:26px 18px;text-align:center;color:var(--muted);font-size:12px;line-height:1.5}.empty b{display:block;color:var(--ink);font-size:14px;margin-bottom:5px}.saveNote{margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5}.saveNote b{color:#7b5b00}
+.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;z-index:100}.modal.open{display:flex}.modalCard{background:#fff;width:min(920px,100%);max-height:92vh;overflow:auto;border-radius:16px;box-shadow:0 24px 70px #0007}.modalHead{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;z-index:2}.modalHead h2{margin:0;font-size:18px}.modalBody{padding:18px}.formGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.formField label{display:block;font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase;margin-bottom:6px}.formField input,.formField select,.formField textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff}.formField textarea{min-height:78px;resize:vertical}.span2{grid-column:span 2}.modalActions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.linkedBox{border:1px solid #ead793;background:#fff9df;border-radius:11px;padding:11px 12px;font-size:11px;line-height:1.5;margin-bottom:14px}.linkedBox a{color:#111;font-weight:900}
+@media(max-width:1000px){.app{grid-template-columns:82px minmax(0,1fr)}.brand img{width:46px;object-fit:cover;object-position:left}.brand small,.nav a span,.sidebarFooter{display:none}.nav a{justify-content:center;border-radius:0}.hero{grid-template-columns:1fr 300px}.toolbar{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.app{display:block}.sidebar{display:none}.topbar{height:auto;padding:12px 16px}.crumb{display:none}.mobileBrand{display:block;width:150px;background:#000;padding:8px;border-radius:8px}.mobileBrand img{width:100%}.content{padding:16px}.hero{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.toolbar,.formGrid{grid-template-columns:1fr}.span2{grid-column:auto}}
+@media(max-width:450px){.kpis{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL"><small>ELAN BASE · ADMINISTRACIÓN</small></div>
+  <nav class="nav">
+    <a href="/admin/"><i class="dot"></i><span>Inicio</span></a>
+    <a class="active" href="/admin/clientes/"><i class="dot"></i><span>Clientes</span></a>
+    <a href="/admin/corporativo/walmart/"><i class="dot"></i><span>Proyectos empresariales</span></a>
+    <a href="#"><i class="dot"></i><span>Cotizaciones</span></a>
+    <a href="#"><i class="dot"></i><span>Producción</span></a>
+    <a href="#"><i class="dot"></i><span>Entregas</span></a>
+    <a href="#"><i class="dot"></i><span>Saldos</span></a>
+  </nav>
+  <div class="sidebarFooter">Interfaz administrativa interna<br>ELANVISUAL</div>
+</aside>
+<main class="main">
+<header class="topbar"><div class="mobileBrand"><img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL"></div><div class="crumb">ELAN Base / <b>Clientes</b></div><span class="userPill">OWNER</span></header>
+<div class="content">
+<section class="hero">
+  <div class="heroCopy"><div class="eyebrow">ELAN BASE · CLIENTES</div><h1>Directorio comercial<br>de ELANVISUAL.</h1><p>Crear, clasificar, editar y administrar clientes. Esta interfaz temporal conserva un esquema preparado para migrarse después a ERPNext CENTRAL.</p></div>
+  <div class="heroPanel"><small>Persistencia actual</small><strong>Temporal en navegador</strong><span>Los datos no sustituyen la base central. Exportá respaldo JSON hasta que vuelva el servidor.</span></div>
+</section>
+<section class="kpis">
+  <div class="kpi"><small>Clientes</small><b id="kTotal">0</b><em>Total registrado</em></div>
+  <div class="kpi"><small>Corporativos</small><b id="kCorporate">0</b><em>Catálogo/reglas propias</em></div>
+  <div class="kpi"><small>Frecuentes</small><b id="kFrequent">0</b><em>Portal e historial</em></div>
+  <div class="kpi"><small>Ocasionales</small><b id="kOccasional">0</b><em>Acceso por cotización</em></div>
+</section>
+<section class="panel">
+  <div class="panelHead"><div><h2>Clientes</h2><small>Maestro temporal · preparado para ERPNext CENTRAL</small></div><button class="btn btnPrimary" id="newClient">+ Nuevo cliente</button></div>
+  <div class="panelBody">
+    <div class="toolbar">
+      <input class="field" id="search" placeholder="Buscar nombre, empresa, RUC, WhatsApp o correo">
+      <select class="select" id="typeFilter"><option value="">Todos los tipos</option><option value="corporate">Corporativo</option><option value="frequent">Frecuente</option><option value="occasional">Ocasional</option></select>
+      <select class="select" id="statusFilter"><option value="">Todos</option><option value="active">Activo</option><option value="inactive">Inactivo</option></select>
+      <div class="actions"><button class="btn btnGhost" id="importBtn">Importar</button><button class="btn btnDark" id="exportBtn">Exportar JSON</button><input id="importFile" type="file" accept="application/json" hidden></div>
+    </div>
+    <div class="tableWrap"><table class="dataTable"><thead><tr><th>Cliente</th><th>Tipo</th><th>Contacto principal</th><th>WhatsApp / correo</th><th>Estado</th><th>Acceso relacionado</th><th>Acciones</th></tr></thead><tbody id="clientBody"></tbody></table></div>
+    <div class="saveNote"><b>Modo temporal:</b> agregar, editar o eliminar aquí guarda solamente en este navegador. La eliminación del directorio no borra proyectos empresariales, cotizaciones ni documentos relacionados.</div>
+  </div>
+</section>
+</div>
+</main>
+</div>
+<div class="modal" id="clientModal" aria-hidden="true">
+  <div class="modalCard">
+    <div class="modalHead"><h2 id="modalTitle">Nuevo cliente</h2><button class="btn btnGhost btnSmall" id="closeModal">Cerrar</button></div>
+    <div class="modalBody">
+      <div id="linkedInfo"></div>
+      <div class="formGrid">
+        <div class="formField"><label>Nombre / empresa *</label><input id="fName"></div>
+        <div class="formField"><label>Clasificación *</label><select id="fType"><option value="corporate">Corporativo</option><option value="frequent">Frecuente</option><option value="occasional">Ocasional</option></select></div>
+        <div class="formField"><label>RUC</label><input id="fRuc"></div>
+        <div class="formField"><label>Estado</label><select id="fStatus"><option value="active">Activo</option><option value="inactive">Inactivo</option></select></div>
+        <div class="formField"><label>Contacto principal</label><input id="fContact"></div>
+        <div class="formField"><label>WhatsApp</label><input id="fWhatsapp"></div>
+        <div class="formField"><label>Correo</label><input id="fEmail" type="email"></div>
+        <div class="formField"><label>Dirección</label><input id="fAddress"></div>
+        <div class="formField span2"><label>Notas</label><textarea id="fNotes"></textarea></div>
+        <div class="formField"><label>Portal / acceso personalizado</label><input id="fPortal" placeholder="/clientes/... o /corporativo/..."></div>
+        <div class="formField"><label>Proyecto empresarial relacionado</label><input id="fProject" placeholder="/admin/corporativo/..."></div>
+      </div>
+      <div class="modalActions"><button class="btn btnGhost" id="cancelModal">Cancelar</button><button class="btn btnPrimary" id="saveClient">Guardar cliente</button></div>
+    </div>
+  </div>
+</div>
+<script>
+(()=>{
+const CLIENTS_KEY='elan_admin_clients_v1', ACTIVITY_KEY='elan_admin_activity_v1';
+const $=id=>document.getElementById(id); const clone=v=>JSON.parse(JSON.stringify(v));
+const seed=[{id:'CL-WALMART',name:'Walmart',type:'corporate',ruc:'',status:'active',contact:'',whatsapp:'',email:'',address:'',notes:'Proyecto empresarial corporativo conectado.',portal:'/corporativo/walmart/',project:'/admin/corporativo/walmart/',erpnext_id:null,source:'admin_temp',sync_state:'local_pending',created_at:null,updated_at:null}];
+function load(){try{const v=JSON.parse(localStorage.getItem(CLIENTS_KEY)||'null');if(Array.isArray(v))return v}catch(e){}return clone(seed)}
+let clients=load(), editingId=null;
+const esc=v=>String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+const typeLabel=t=>({corporate:'Corporativo',frequent:'Frecuente',occasional:'Ocasional'}[t]||t||'—');
+const typeClass=t=>({corporate:'corporate',frequent:'frequent',occasional:'occasional'}[t]||'occasional');
+function persist(){localStorage.setItem(CLIENTS_KEY,JSON.stringify(clients));}
+function activity(title,detail){let rows=[];try{const v=JSON.parse(localStorage.getItem(ACTIVITY_KEY)||'[]');if(Array.isArray(v))rows=v}catch(e){}rows.push({id:'ACT-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),section:'clients',title,detail,href:'/admin/clientes/',at:new Date().toISOString(),read:false});localStorage.setItem(ACTIVITY_KEY,JSON.stringify(rows.slice(-100)))}
+function counts(){$('kTotal').textContent=clients.length;$('kCorporate').textContent=clients.filter(x=>x.type==='corporate').length;$('kFrequent').textContent=clients.filter(x=>x.type==='frequent').length;$('kOccasional').textContent=clients.filter(x=>x.type==='occasional').length}
+function filtered(){const q=$('search').value.trim().toLowerCase(),t=$('typeFilter').value,s=$('statusFilter').value;return clients.filter(c=>(!t||c.type===t)&&(!s||c.status===s)&&(!q||[c.name,c.ruc,c.contact,c.whatsapp,c.email].join(' ').toLowerCase().includes(q)))}
+function related(c){if(c.project)return `<a href="${esc(c.project)}">Proyecto empresarial</a>`;if(c.portal)return `<a href="${esc(c.portal)}" target="_blank">Portal cliente</a>`;return '<span class="sub">Sin acceso permanente</span>'}
+function render(){counts();const rows=filtered();$('clientBody').innerHTML=rows.length?rows.map(c=>`<tr><td><div class="clientName">${esc(c.name)}</div><div class="sub">${c.ruc?'RUC '+esc(c.ruc):'Sin RUC cargado'}</div></td><td><span class="badge ${typeClass(c.type)}">${esc(typeLabel(c.type))}</span></td><td>${esc(c.contact||'—')}</td><td><div>${esc(c.whatsapp||'—')}</div><div class="sub">${esc(c.email||'')}</div></td><td><span class="badge ${c.status==='active'?'active':'inactive'}">${c.status==='active'?'Activo':'Inactivo'}</span></td><td>${related(c)}</td><td><div class="actions"><button class="btn btnGhost btnSmall" data-edit="${esc(c.id)}">Editar</button><button class="btn btnDanger btnSmall" data-delete="${esc(c.id)}">Eliminar</button></div></td></tr>`).join(''):`<tr><td colspan="7"><div class="empty"><b>Sin clientes para mostrar</b>Creá un cliente o cambiá los filtros.</div></td></tr>`;document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openModal(b.dataset.edit));document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>removeClient(b.dataset.delete))}
+function blank(){return {id:'',name:'',type:'frequent',ruc:'',status:'active',contact:'',whatsapp:'',email:'',address:'',notes:'',portal:'',project:'',erpnext_id:null,source:'admin_temp',sync_state:'local_pending',created_at:null,updated_at:null}}
+function openModal(id=null){editingId=id;const c=id?clone(clients.find(x=>x.id===id)):blank();$('modalTitle').textContent=id?'Editar cliente':'Nuevo cliente';$('fName').value=c.name||'';$('fType').value=c.type||'frequent';$('fRuc').value=c.ruc||'';$('fStatus').value=c.status||'active';$('fContact').value=c.contact||'';$('fWhatsapp').value=c.whatsapp||'';$('fEmail').value=c.email||'';$('fAddress').value=c.address||'';$('fNotes').value=c.notes||'';$('fPortal').value=c.portal||'';$('fProject').value=c.project||'';$('linkedInfo').innerHTML=c.project?`<div class="linkedBox">Este cliente está relacionado con un proyecto empresarial. Editar esta ficha <b>no modifica</b> el módulo corporativo. <a href="${esc(c.project)}">Abrir proyecto</a></div>`:'';$('clientModal').classList.add('open');$('clientModal').setAttribute('aria-hidden','false')}
+function closeModal(){$('clientModal').classList.remove('open');$('clientModal').setAttribute('aria-hidden','true');editingId=null}
+function uid(){return 'CL-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase()}
+$('saveClient').onclick=()=>{const name=$('fName').value.trim();if(!name){alert('El nombre o empresa es obligatorio.');return}const now=new Date().toISOString(),existing=editingId?clients.find(x=>x.id===editingId):null;const c={...(existing||blank()),id:editingId||uid(),name,type:$('fType').value,ruc:$('fRuc').value.trim(),status:$('fStatus').value,contact:$('fContact').value.trim(),whatsapp:$('fWhatsapp').value.trim(),email:$('fEmail').value.trim(),address:$('fAddress').value.trim(),notes:$('fNotes').value.trim(),portal:$('fPortal').value.trim(),project:$('fProject').value.trim(),erpnext_id:existing?.erpnext_id||null,source:'admin_temp',sync_state:'local_pending',created_at:existing?.created_at||now,updated_at:now};if(editingId){clients=clients.map(x=>x.id===editingId?c:x);activity('Cliente actualizado',c.name+' · '+typeLabel(c.type))}else{clients.push(c);activity('Cliente creado',c.name+' · '+typeLabel(c.type))}persist();render();closeModal()};
+function removeClient(id){const c=clients.find(x=>x.id===id);if(!c)return;const linked=c.project||c.portal?"\n\nEsto NO eliminará su proyecto empresarial, portal, cotizaciones ni documentos relacionados.":'';if(!confirm('¿Eliminar '+c.name+' del directorio temporal?'+linked))return;clients=clients.filter(x=>x.id!==id);persist();activity('Cliente eliminado del directorio',c.name);render()}
+$('newClient').onclick=()=>openModal();$('closeModal').onclick=closeModal;$('cancelModal').onclick=closeModal;$('clientModal').onclick=e=>{if(e.target===$('clientModal'))closeModal()};['search','typeFilter','statusFilter'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',render));
+$('exportBtn').onclick=()=>{const out={schema:'ELAN_ONE_CLIENTS_TEMP_V1',exported_at:new Date().toISOString(),target:'ERPNext CENTRAL',clients};const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ELAN_ONE_CLIENTES_TEMP.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)};
+$('importBtn').onclick=()=>$('importFile').click();$('importFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text()),rows=Array.isArray(data)?data:data.clients;if(!Array.isArray(rows))throw new Error();if(!confirm('¿Reemplazar el directorio temporal actual por '+rows.length+' clientes importados?'))return;clients=rows.map(x=>({...blank(),...x,erpnext_id:x.erpnext_id||null,source:x.source||'admin_temp',sync_state:'local_pending'}));persist();activity('Directorio de clientes importado',clients.length+' registros');render()}catch(err){alert('El archivo JSON no contiene un directorio de clientes válido.')}finally{e.target.value=''}};
+window.addEventListener('storage',e=>{if(e.key===CLIENTS_KEY){clients=load();render()}});render();
+})();
+</script>
+</body>
+</html>
