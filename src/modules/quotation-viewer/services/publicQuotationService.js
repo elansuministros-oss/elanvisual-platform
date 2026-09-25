@@ -82,6 +82,71 @@ function normalizeCustomerPortalKey(value) {
     : '';
 }
 
+function readLocalArray(key) {
+  try {
+    const value = JSON.parse(window.localStorage.getItem(key) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
+function slugifyLocal(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function portalSlug(value) {
+  const parts = String(value || '').split('/').filter(Boolean);
+  return parts.at(-1) || '';
+}
+
+function getLocalCustomerPortal(code) {
+  const clients = readLocalArray('elan_admin_clients_v1');
+  const quotations = readLocalArray('elan_admin_quotes_v1');
+  const customer = clients.find((item) =>
+    slugifyLocal(item?.name) === code ||
+    portalSlug(item?.portal) === code
+  );
+
+  if (!customer) return null;
+
+  const projects = quotations
+    .filter((quotation) =>
+      quotation?.client_id === customer.id ||
+      String(quotation?.client_name || '').trim().toLowerCase() ===
+        String(customer.name || '').trim().toLowerCase()
+    )
+    .map((quotation) => ({
+      projectId: quotation.reference || quotation.id,
+      projectNumber: quotation.reference || '',
+      projectTitle: quotation.project || 'Proyecto ELANVISUAL',
+      quotationId: quotation.id,
+      quotationNumber: quotation.id,
+      issuedAt: quotation.date || quotation.created_at || null,
+      totalUsd: Number(quotation.total || 0),
+      status: quotation.status || 'draft',
+      viewUrl: quotation.published_url || ''
+    }));
+
+  return {
+    customer: {
+      id: customer.id,
+      name: customer.name,
+      email: customer.email || '',
+      phone: customer.whatsapp || ''
+    },
+    counts: {
+      quotations: projects.length
+    },
+    projects
+  };
+}
+
 export async function getPublicCustomerDossier(accessCode) {
   const code = normalizeCustomerAccessCode(accessCode);
 
@@ -161,27 +226,36 @@ export async function getPublicCustomerPortal(accessCode) {
 
   url.searchParams.set('_refresh', String(Date.now()));
 
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: HEADERS,
-    cache: 'no-store'
-  });
+  try {
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: HEADERS,
+      cache: 'no-store'
+    });
 
-  const payload = await response.json().catch(() => ({}));
+    const payload = await response.json().catch(() => ({}));
 
-  if (!response.ok) {
-    const error = new Error(
-      payload?.error?.message ||
-      'No fue posible abrir el espacio del cliente.'
-    );
-    error.status = response.status;
-    error.code =
-      payload?.error?.code ||
-      'PUBLIC_CUSTOMER_PORTAL_FAILED';
-    throw error;
+    if (!response.ok) {
+      const localPortal = getLocalCustomerPortal(code);
+      if (localPortal) return localPortal;
+
+      const error = new Error(
+        payload?.error?.message ||
+        'No fue posible abrir el espacio del cliente.'
+      );
+      error.status = response.status;
+      error.code =
+        payload?.error?.code ||
+        'PUBLIC_CUSTOMER_PORTAL_FAILED';
+      throw error;
+    }
+
+    return payload?.data || {};
+  } catch (cause) {
+    const localPortal = getLocalCustomerPortal(code);
+    if (localPortal) return localPortal;
+    throw cause;
   }
-
-  return payload?.data || {};
 }
 
 
