@@ -29,7 +29,7 @@
   <div class="brand"><img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL"><small>ELAN BASE · ADMINISTRACIÓN</small></div>
   <nav class="nav">
     <a class="active" href="/admin/"><i class="dot"></i><span>Inicio</span><i class="navBadge" id="badgeHome"></i></a>
-    <a href="#"><i class="dot"></i><span>Clientes</span><i class="navBadge" id="badgeClients"></i></a>
+    <a href="/admin/clientes/"><i class="dot"></i><span>Clientes</span><i class="navBadge" id="badgeClients"></i></a>
     <a href="/admin/corporativo/walmart/"><i class="dot"></i><span>Proyectos empresariales</span></a>
     <a href="#"><i class="dot"></i><span>Cotizaciones</span><i class="navBadge" id="badgeQuotes"></i></a>
     <a href="#"><i class="dot"></i><span>Producción</span><i class="navBadge" id="badgeProduction"></i></a>
@@ -103,6 +103,7 @@
 (()=>{
 const ACTIVITY_KEY='elan_admin_activity_v1';
 const PENDING_KEY='elan_admin_pending_v1';
+const CLIENTS_KEY='elan_admin_clients_v1';
 const $=id=>document.getElementById(id);
 const safeParse=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key)||'null');return Array.isArray(v)?v:fallback}catch(e){return fallback}};
 let activities=safeParse(ACTIVITY_KEY,[]), pending=safeParse(PENDING_KEY,[]);
@@ -113,9 +114,9 @@ function setBadge(id,n){const el=$(id);if(!el)return;el.textContent=n>99?'99+':S
 function renderBadges(){setBadge('badgeHome',unread());setBadge('badgeClients',activities.filter(x=>!x.read&&x.section==='clients').length);setBadge('badgeQuotes',activities.filter(x=>!x.read&&x.section==='quotes').length);setBadge('badgeProduction',activities.filter(x=>!x.read&&x.section==='production').length);setBadge('badgeDelivery',activities.filter(x=>!x.read&&x.section==='delivery').length);setBadge('badgeBalances',activities.filter(x=>!x.read&&x.section==='balances').length)}
 function renderActivities(){const box=$('activityList');const rows=[...activities].sort((a,b)=>new Date(b.at||0)-new Date(a.at||0)).slice(0,10);if(!rows.length){box.innerHTML='<div class="empty"><b>Sin movimientos nuevos</b>Los movimientos reales aparecerán aquí a medida que conectemos Clientes, Cotizaciones, Producción, Entregas y Saldos.</div>';return}box.innerHTML=rows.map(x=>`<div class="activity ${x.read?'':'unread'}" data-id="${esc(x.id)}"><i class="activityDot"></i><div><div class="activityTitle">${esc(x.title||'Movimiento')}</div>${x.detail?`<div class="activityDetail">${esc(x.detail)}</div>`:''}${x.href?`<a class="activityLink" href="${esc(x.href)}">Abrir</a>`:''}</div><div class="activityTime">${esc(timeLabel(x.at))}</div></div>`).join('')}
 function renderPending(){const box=$('pendingList');const rows=pending.filter(x=>x.status!=='done').slice(0,10);if(!rows.length){box.innerHTML='<div class="empty"><b>Sin pendientes registrados</b>Cuando una cotización, producción, entrega o saldo requiera acción aparecerá aquí.</div>';return}box.innerHTML=rows.map(x=>`<div class="pending"><div><strong>${esc(x.title||'Pendiente')}</strong>${x.detail?`<span>${esc(x.detail)}</span>`:''}</div>${x.href?`<a href="${esc(x.href)}">Abrir</a>`:''}</div>`).join('')}
-function updateCounts(){const stats={clients:0,quotes:0,approvals:0,production:0,delivery:0,balances:0};pending.filter(x=>x.status!=='done').forEach(x=>{if(x.section==='quotes')stats.quotes++;if(x.kind==='approval')stats.approvals++;if(x.section==='production')stats.production++;if(x.section==='delivery')stats.delivery++;if(x.section==='balances')stats.balances++;if(x.section==='clients')stats.clients++});$('kClients').textContent=stats.clients;$('kQuotes').textContent=stats.quotes;$('kApprovals').textContent=stats.approvals;$('kProduction').textContent=stats.production;$('kDelivery').textContent=stats.delivery;$('kBalances').textContent=stats.balances;$('flowQuotes').textContent=stats.quotes;$('flowApproval').textContent=stats.approvals;$('flowProduction').textContent=stats.production;$('flowDelivery').textContent=stats.delivery;$('flowBalances').textContent=stats.balances}
+function updateCounts(){const stats={clients:safeParse(CLIENTS_KEY,[]).length,quotes:0,approvals:0,production:0,delivery:0,balances:0};pending.filter(x=>x.status!=='done').forEach(x=>{if(x.section==='quotes')stats.quotes++;if(x.kind==='approval')stats.approvals++;if(x.section==='production')stats.production++;if(x.section==='delivery')stats.delivery++;if(x.section==='balances')stats.balances++});$('kClients').textContent=stats.clients;$('kQuotes').textContent=stats.quotes;$('kApprovals').textContent=stats.approvals;$('kProduction').textContent=stats.production;$('kDelivery').textContent=stats.delivery;$('kBalances').textContent=stats.balances;$('flowQuotes').textContent=stats.quotes;$('flowApproval').textContent=stats.approvals;$('flowProduction').textContent=stats.production;$('flowDelivery').textContent=stats.delivery;$('flowBalances').textContent=stats.balances}
 $('markRead').onclick=()=>{if(!activities.length)return;activities=activities.map(x=>({...x,read:true}));localStorage.setItem(ACTIVITY_KEY,JSON.stringify(activities));renderActivities();renderBadges()};
-window.addEventListener('storage',e=>{if(e.key===ACTIVITY_KEY){activities=safeParse(ACTIVITY_KEY,[]);renderActivities();renderBadges()}if(e.key===PENDING_KEY){pending=safeParse(PENDING_KEY,[]);renderPending();updateCounts()}});
+window.addEventListener('storage',e=>{if(e.key===ACTIVITY_KEY){activities=safeParse(ACTIVITY_KEY,[]);renderActivities();renderBadges()}if(e.key===PENDING_KEY){pending=safeParse(PENDING_KEY,[]);renderPending();updateCounts()}if(e.key===CLIENTS_KEY){updateCounts()}});
 renderActivities();renderPending();renderBadges();updateCounts();
 })();
 </script>
