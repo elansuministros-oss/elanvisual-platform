@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node -e \"const fs=require('fs'),crypto=require('crypto'),p='public/admin/corporativo/walmart/index.html',b=fs.readFileSync(p),h=crypto.createHash('sha1').update('blob '+b.length+'\\0').update(b).digest('hex'),e='7ce202efd3ec384ea7ccd25ec58964c060b2450b';if(h!==e){console.error('PROTECTED_WALMART_ADMIN_MISMATCH: '+h+' != '+e);process.exit(1)}console.log('PROTECTED_WALMART_ADMIN_OK '+h)\" && vite build",
     "preview": "vite preview",
     "test:vqs": "node scripts/vqs-contract-check.mjs && node scripts/vqs-bulk-import-check.mjs && node scripts/vqs-connect-proxy-check.mjs && node scripts/vqs-project-create-retry-check.mjs && node scripts/vqs-save-validation-check.mjs && node scripts/vqs-source-type-regression-check.mjs",
     "test:otoc": "node scripts/erp-otoc-contract-check.mjs",
