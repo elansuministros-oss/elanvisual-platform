@@ -97,6 +97,7 @@ const esc=v=>String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const typeLabel=t=>({corporate:'Corporativo',frequent:'Frecuente',occasional:'Ocasional'}[t]||t||'—');
 const typeClass=t=>({corporate:'corporate',frequent:'frequent',occasional:'occasional'}[t]||'occasional');
 function persist(){localStorage.setItem(CLIENTS_KEY,JSON.stringify(clients));}
+if(!localStorage.getItem(CLIENTS_KEY))persist();
 function activity(title,detail){let rows=[];try{const v=JSON.parse(localStorage.getItem(ACTIVITY_KEY)||'[]');if(Array.isArray(v))rows=v}catch(e){}rows.push({id:'ACT-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),section:'clients',title,detail,href:'/admin/clientes/',at:new Date().toISOString(),read:false});localStorage.setItem(ACTIVITY_KEY,JSON.stringify(rows.slice(-100)))}
 function counts(){$('kTotal').textContent=clients.length;$('kCorporate').textContent=clients.filter(x=>x.type==='corporate').length;$('kFrequent').textContent=clients.filter(x=>x.type==='frequent').length;$('kOccasional').textContent=clients.filter(x=>x.type==='occasional').length}
 function filtered(){const q=$('search').value.trim().toLowerCase(),t=$('typeFilter').value,s=$('statusFilter').value;return clients.filter(c=>(!t||c.type===t)&&(!s||c.status===s)&&(!q||[c.name,c.ruc,c.contact,c.whatsapp,c.email].join(' ').toLowerCase().includes(q)))}
