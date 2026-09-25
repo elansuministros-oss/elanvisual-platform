@@ -1,0 +1,13 @@
+.header{background:#101828;border-bottom-color:#26334a}.brandText strong{color:#fff}.brandText small{color:#cbd5e1}.clientBrand{background:#fff;padding:8px 14px;border-radius:14px}.clientBrand span{color:#475467}.elanLogo{filter:none}.footerBrand img{filter:none}
+
+/* Cliente Walmart: catálogo a ancho completo. La confirmación y la cotización quedan debajo del catálogo para no interrumpir medida, precio, cantidad y total. */
+.content{grid-template-columns:1fr}
+.cart{position:relative;top:auto}
+.tableWrap{max-height:none}
+.cartBody{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
+#cart{grid-column:1;grid-row:1 / span 2}
+.verifyBox{grid-column:2;grid-row:1;margin:0}
+.cartActions{grid-column:2;grid-row:2}
+
+@media(max-width:1040px){.cartBody{display:block}.verifyBox{margin:16px 0}}
+@media(max-width:720px){.clientBrand{padding:6px 9px}.clientBrand img{width:100px}}

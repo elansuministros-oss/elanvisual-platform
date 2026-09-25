@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>Walmart · Catálogo y cotización ELANVISUAL</title>
+<meta name="description" content="Portal personalizado Walmart para consultar formatos y generar cotizaciones ELANVISUAL">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="walmart-theme.css">
+<meta name="elanvisual-version" content="walmart-client-quote-v0.2">
+</head>
+<body>
+<div class="shell">
+  <section class="top">
+    <header class="header">
+      <div class="brand vendorBrand">
+        <img class="elanLogo" src="assets/elanvisual-logo.svg" alt="ELANVISUAL">
+        <div class="brandText"><strong>Soluciones de comunicación visual</strong><small>Portal de cotización personalizado</small></div>
+      </div>
+      <div class="clientBrand" aria-label="Cliente Walmart">
+        <span>Preparado para</span>
+        <img src="assets/walmart-logo.svg" alt="Walmart">
+      </div>
+    </header>
+    <div class="hero">
+      <div class="heroCopy">
+        <div class="eyebrow"><img src="assets/walmart-spark.svg" alt=""> SERVICIOS FINANCIEROS · NICARAGUA</div>
+        <h1>Catálogo y cotización<br>personalizada para Walmart</h1>
+        <p>Consultá los formatos solicitados usando la misma nomenclatura del documento original. Buscá por número de ítem, nombre, material o palabra clave, seleccioná cantidades y generá tu cotización con los precios disponibles.</p>
+        <div class="heroBadges"><span>Cliente fijo: Walmart</span><span>21 formatos</span><span>Precios pendientes quedan en blanco</span></div>
+      </div>
+      <div class="requesterCard">
+        <div class="requesterHead"><div><b>Datos de quien solicita</b><small>La empresa ya está identificada como Walmart.</small></div><span class="securePill">Verificación requerida</span></div>
+        <div class="clientFields">
+          <div class="field"><label>Responsable de compra *</label><input id="contactName" placeholder="Nombre y apellido" autocomplete="name"></div>
+          <div class="field"><label>Área / cargo</label><input id="contactRole" placeholder="Ej. Compras / Mercadeo"></div>
+          <div class="field"><label>Celular / WhatsApp *</label><input id="contactPhone" type="tel" placeholder="Ej. 8888 8888" autocomplete="tel"></div>
+          <div class="field"><label>Correo</label><input id="clientEmail" type="email" placeholder="correo@empresa.com" autocomplete="email"></div>
+          <div class="field"><label>RUC Walmart (opcional)</label><input id="clientRuc" placeholder="RUC de la empresa"></div>
+          <div class="field"><label>Referencia / OC</label><input id="clientRef" placeholder="OC, proyecto o referencia"></div>
+          <div class="field full"><label>Tratamiento de IVA</label><select id="taxMode"><option value="without">Precio sin IVA</option><option value="with">Agregar IVA 15%</option></select></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="toolbar"><div class="toolbarInner">
+    <div class="search"><input id="search" autocomplete="off" placeholder="Buscar: roller, ítem 19, cenefa, tótem, coroplast…"></div>
+    <button class="btn btnSecondary" id="showAll">Ver todos</button>
+    <button class="btn btnPrimary" id="goQuote">Mi cotización <span id="cartBadge">0</span></button>
+  </div></div>
+
+  <div class="kpis">
+    <div class="kpi"><b id="kpiItems">21</b><span>formatos solicitados</span></div>
+    <div class="kpi"><b id="kpiVisible">21</b><span>resultados visibles</span></div>
+    <div class="kpi"><b id="kpiSelected">0</b><span>seleccionados</span></div>
+    <div class="kpi"><b id="kpiPriced">1</b><span>con precio confirmado</span></div>
+  </div>
+
+  <div class="content">
+    <section class="panel">
+      <div class="panelHead"><div><h2>Formatos solicitados</h2><small>Nombres, ítems, medidas y terminología conservados de la solicitud original.</small></div><small id="searchHint"></small></div>
+      <div class="desktopTable tableWrap"><table><thead><tr><th></th><th>Referencia</th><th>Ítem</th><th>Formato / nombre</th><th>Aplicable</th><th>Medida</th><th>Cant. ref. NI</th><th>Precio unit.</th><th>Cant. solicitada</th><th>Total</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+      <div class="mobileCards" id="cards"></div>
+      <div class="noResults" id="noResults"><b>No encontré coincidencias.</b><br>Probá por número de ítem, material o una palabra del nombre.</div>
+    </section>
+
+    <aside class="panel cart" id="quotePanel">
+      <div class="panelHead"><div><h2>Mi cotización</h2><small>Selección actual</small></div></div>
+      <div class="cartBody">
+        <div id="cart"></div>
+        <div class="verifyBox" id="verifyBox">
+          <b>Confirmación del solicitante</b>
+          <p>Antes de emitir una cotización final, la persona solicitante debe confirmar desde su celular que conoce y autoriza esta solicitud.</p>
+          <div class="verifyStatus" id="verifyStatus">Aún no confirmada.</div>
+          <button class="btn btnWhatsApp" id="startVerification">Confirmar solicitud por WhatsApp</button>
+          <label class="manualConfirm"><input type="checkbox" id="manualVerified"> Ya envié la confirmación desde el número indicado</label>
+          <small>LAB: esta versión valida el flujo de confirmación desde el mismo teléfono. La validación automática del remitente se conectará al canal empresarial antes de PRODUCCIÓN.</small>
+        </div>
+        <div class="cartActions"><button class="btn btnGold" id="downloadPdf">Descargar PDF</button><button class="btn btnSecondary" id="clearCart">Limpiar selección</button></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="footer">
+    <div class="footerBrand"><img src="assets/elanvisual-logo.svg" alt="ELANVISUAL"><p>Ingeniería, rotulación e imagen corporativa.</p><p><b>RUC:</b> 4012805831001E<br><b>Web:</b> visual.elankav.com<br><b>WhatsApp:</b> +505 7882 8089</p></div>
+    <div><h3>Cuentas autorizadas</h3><div class="accounts">
+      <div class="account"><b>BAC Credomatic · NIO</b>372105585</div>
+      <div class="account"><b>Banco LAFISE · NIO</b>130093768</div>
+      <div class="account"><b>Banco LAFISE · USD</b>119234795</div>
+      <div class="account"><b>Banpro · USD</b>10020710081659</div>
+    </div></div>
+  </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body></html>
