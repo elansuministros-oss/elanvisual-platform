@@ -27,6 +27,34 @@
         });
       })();
     </script>
+    <script>
+      (() => {
+        const ensureAdminAccess = () => {
+          const footer = document.querySelector('.site-footer');
+          if (!footer || footer.querySelector('[data-elan-admin-access]')) return false;
+          const columns = footer.querySelectorAll(':scope > div');
+          const target = columns[2] || footer;
+          const link = document.createElement('a');
+          link.href = '/admin/';
+          link.textContent = 'Acceso admin';
+          link.setAttribute('data-elan-admin-access', 'true');
+          link.style.color = '#ddd';
+          link.style.textDecoration = 'none';
+          link.style.fontSize = '13px';
+          link.style.marginTop = '4px';
+          link.addEventListener('mouseenter', () => { link.style.color = '#fff'; });
+          link.addEventListener('mouseleave', () => { link.style.color = '#ddd'; });
+          target.appendChild(link);
+          return true;
+        };
+        if (!ensureAdminAccess()) {
+          const observer = new MutationObserver(() => {
+            if (ensureAdminAccess()) observer.disconnect();
+          });
+          observer.observe(document.documentElement, { childList: true, subtree: true });
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
