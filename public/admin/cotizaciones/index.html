@@ -180,7 +180,15 @@
 
       <div class="editor-actions">
         <button class="btn danger" id="deleteQuote">Eliminar</button>
-        <div class="actions"><button class="btn ghost" id="exportOne">Exportar JSON publicable</button><button class="btn primary" id="save">Guardar cotización</button></div>
+        <div class="actions">
+          <button class="btn ghost" id="importOne">Importar JSON</button>
+          <button class="btn ghost" id="viewPortal">Ver portal del cliente</button>
+          <button class="btn ghost" id="viewAsClient">Ver como cliente</button>
+          <button class="btn ghost" id="copyPortalLink">Copiar enlace</button>
+          <button class="btn dark" id="sendQuote">Enviar cotización</button>
+          <button class="btn primary" id="save">Guardar cotización</button>
+          <input id="importOneFile" type="file" accept="application/json" hidden>
+        </div>
       </div>
     </div>
   </div>
@@ -235,7 +243,31 @@ function dl(name,obj){const b=new Blob([JSON.stringify(obj,null,2)],{type:'appli
 function exp(id){const q=qs.find(x=>x.id===id);if(q)dl(q.id+'.json',pub(q))}
 $('save').onclick=()=>{if(!$('fClient').value||!$('fProject').value.trim()||!lines.length){alert('Seleccioná cliente, proyecto y al menos una línea.');return}const q=build(),before=editing?qs.find(x=>x.id===editing):null;if(editing)qs=qs.map(x=>x.id===editing?q:x);else qs.push(q);saveQ();pend(q);act(before&&before.status!==q.status?'Estado de cotización actualizado':before?'Cotización actualizada':'Cotización creada',q.id+' · '+q.client_name);render();close()};
 $('deleteQuote').onclick=()=>{const q=qs.find(x=>x.id===editing);if(!q||!confirm('¿Eliminar '+q.id+' del directorio temporal?'))return;qs=qs.filter(x=>x.id!==editing);saveQ();pend({...q,status:'void'});act('Cotización eliminada',q.id);render();close()};
-$('exportOne').onclick=()=>{const q=build();dl(q.id+'.json',pub(q))};
+function absoluteUrl(path){if(!path)return'';try{return new URL(path,location.origin).href}catch(e){return''}}
+function currentPortalUrl(){const c=selectedClient();return absoluteUrl(c?.portal||'')}
+function savedQuote(){return editing?qs.find(x=>x.id===editing):null}
+function currentQuoteUrl(){const q=savedQuote();return absoluteUrl(q?.published_url||'')}
+function requirePortal(){const url=currentPortalUrl();if(!url)alert('Este cliente todavía no tiene un portal configurado en Clientes.');return url}
+function copyText(text){if(navigator.clipboard?.writeText)return navigator.clipboard.writeText(text);const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();return Promise.resolve()}
+function importIntoEditor(data){
+  const q=(data&&typeof data==='object'&&!Array.isArray(data))?(data.quote||data.cotizacion||data):null;if(!q)throw new Error('Formato no válido');
+  const importedItems=Array.isArray(q.items)?q.items:Array.isArray(q.lineas)?q.lineas:null;if(!importedItems)throw new Error('El JSON no contiene items');
+  const matched=q.client_id?cs.find(c=>c.id===q.client_id):q.client_name?cs.find(c=>String(c.name||'').toLowerCase()===String(q.client_name).toLowerCase()):null;if(matched)$('fClient').value=matched.id;
+  if(q.project!=null||q.proyecto!=null)$('fProject').value=String(q.project??q.proyecto??'');
+  if(q.date)$('fDate').value=q.date;if(q.valid_until)$('fValid').value=q.valid_until;if(q.status&&$('fStatus').querySelector(`option[value="${CSS.escape(String(q.status))}"]`))$('fStatus').value=q.status;if(q.reference!=null)$('fReference').value=String(q.reference||'');
+  lines=importedItems.map(i=>({...i,description:String(i.description??i.title??i.descripcion??''),specification:String(i.specification??i.especificacion??''),qty:Number(i.qty??i.quantity??i.cantidad??1),unit:String(i.unit??i.unidad??'unidad'),unit_price:Number(i.unit_price??i.price??i.precio_unitario??0),price_source:i.price_source||'json_import',price_snapshot_at:i.price_snapshot_at||new Date().toISOString()}));
+  const taxEnabled=q.tax_enabled!==undefined?!!q.tax_enabled:(q.tax_percent!==undefined?Number(q.tax_percent)>0:($('fTaxEnabled').checked));$('fTaxEnabled').checked=taxEnabled;
+  const retPct=Number(q.withholding_percent??q.retention_percent??0);$('fRetentionEnabled').checked=q.withholding_enabled!==undefined?!!q.withholding_enabled:retPct>0;$('fRetention').value=retPct;
+  const plan=q.payment_plan||q.payment?.plan||((Number(q.second_payment_percent||0)>0)?'60_20_20':'60_40');if(['60_40','60_20_20'].includes(plan))$('fPaymentPlan').value=plan;
+  if(q.exchange_rate!=null)$('fExchange').value=q.exchange_rate||'';if(q.payment_note!=null||q.payment?.note!=null)$('fPayNote').value=String(q.payment_note??q.payment?.note??'');
+  syncClient();togglePicker();syncPaymentPlan();renderLines();updTotals();
+}
+$('importOne').onclick=()=>$('importOneFile').click();
+$('importOneFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());importIntoEditor(data);alert('JSON cargado en el cotizador. Revisá la información y luego guardá la cotización.')}catch(err){alert('No se pudo cargar el JSON. Debe contener una cotización con su lista de items.')}finally{e.target.value=''}};
+$('viewPortal').onclick=()=>{const url=requirePortal();if(url)window.open(url,'_blank','noopener')};
+$('viewAsClient').onclick=()=>{const url=currentQuoteUrl();if(url){window.open(url,'_blank','noopener');return}alert('Esta cotización todavía no tiene un enlace público publicado. Podés revisar el portal del cliente con “Ver portal del cliente”.')};
+$('copyPortalLink').onclick=async()=>{const url=requirePortal();if(!url)return;try{await copyText(url);alert('Enlace del portal copiado.')}catch(e){alert('No se pudo copiar el enlace automáticamente.')}};
+$('sendQuote').onclick=()=>{const url=requirePortal();if(!url)return;const c=selectedClient()||{},phone=String(c.whatsapp||'').replace(/\D/g,''),msg='Hola, le compartimos su cotización de ELANVISUAL. Puede revisarla desde su portal: '+url,wa='https://wa.me/'+(phone||'')+'?text='+encodeURIComponent(msg);window.open(wa,'_blank','noopener')};
 $('addLine').onclick=()=>{lines.push({description:'',specification:'',qty:1,unit:'unidad',unit_price:0,price_source:'manual',price_snapshot_at:new Date().toISOString()});renderLines()};
 $('addCatalog').onclick=()=>{const p=(typeof PRODUCTS!=='undefined'?PRODUCTS:[])[Number($('catalogProduct').value)];if(!p){alert('Seleccioná un producto Walmart.');return}const b=String(p.base_cm_fuente||'').replace(/cm/gi,'').trim(),h=String(p.altura_cm_fuente||'').replace(/cm/gi,'').trim();lines.push({description:'Ítem #'+p.item_fuente+' · '+p.nombre_material_formato,specification:[p.descripcion_cliente,b||h?(b||'—')+' × '+(h||'—')+' cm':'',p.formato_aplicable].filter(Boolean).join(' · '),qty:1,unit:'unidad',unit_price:Number(p.quote_price?.unit_price||0),catalog_item:p.item_fuente,price_source:'walmart_catalog_snapshot',price_snapshot_at:new Date().toISOString()});renderLines();$('catalogProduct').value=''};
 $('fTaxEnabled').onchange=updTotals;$('fRetentionEnabled').onchange=updTotals;$('fRetention').oninput=updTotals;$('fExchange').oninput=updTotals;$('fPaymentPlan').onchange=()=>{syncPaymentPlan()};
