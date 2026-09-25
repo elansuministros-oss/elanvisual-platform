@@ -6,8 +6,8 @@ const synonymText=p=>{let s='';const n=norm(p.nombre_material_formato);if(n.incl
 const searchable=p=>norm([p.item_fuente,p.formato_aplicable,p.pais_cobertura,p.area,p.nombre_material_formato,p.descripcion_cliente,p.sujecion_implementacion,p.acabados_consideraciones,p.tipo_impresion,p.impresion,p.base_cm_fuente,p.altura_cm_fuente,synonymText(p)].join(' '));
 const measure=p=>`${p.base_cm_fuente??'—'} × ${p.altura_cm_fuente??'—'}`;
 const priceOf=p=>p.quote_price?.unit_price??null;
-const currencyOf=p=>p.quote_price?.currency||'NIO';
-const money=(n,currency='NIO')=>new Intl.NumberFormat('es-NI',{style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n||0));
+const currencyOf=p=>p.quote_price?.currency||'USD';
+const money=(n,currency='USD')=>new Intl.NumberFormat('en-US',{style:'currency',currency,minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n||0));
 const taxMode=()=>document.getElementById('taxMode')?.value||'without';
 function matches(p,q){if(!q)return true;const terms=norm(q).split(/\s+/).filter(Boolean);const hay=searchable(p);return terms.every(t=>hay.includes(t));}
 function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
@@ -42,7 +42,7 @@ function bind(){
   document.querySelectorAll('.det').forEach(el=>el.onclick=e=>{const id=Number(e.currentTarget.dataset.id);state.open.has(id)?state.open.delete(id):state.open.add(id);render();});
 }
 function selectedProducts(){return PRODUCTS.filter(p=>state.selected.has(p.item_fuente));}
-function calcTotals(){let known=0,pending=0;for(const p of selectedProducts()){const pr=priceOf(p),q=ensureQty(p);if(pr==null)pending++;else known+=pr*q;}const iva=taxMode()==='with'?known*COMPANY.ivaRate:0;return{known,pending,iva,total:known+iva,currency:'NIO'};}
+function calcTotals(){let known=0,pending=0;for(const p of selectedProducts()){const pr=priceOf(p),q=ensureQty(p);if(pr==null)pending++;else known+=pr*q;}const iva=taxMode()==='with'?known*COMPANY.ivaRate:0;return{known,pending,iva,total:known+iva,currency:'USD'};}
 function renderCart(){
   const chosen=selectedProducts(),box=document.getElementById('cart');
   if(!chosen.length){box.innerHTML='<div class="empty">Marcá uno o más formatos para preparar tu cotización.</div>';return;}
