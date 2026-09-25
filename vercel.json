@@ -25,6 +25,34 @@
       "destination": "/biblioteca/index.html"
     },
     {
+      "source": "/corporativo/walmart",
+      "destination": "/client-quotes/servicios-financieros-ni/index.html"
+    },
+    {
+      "source": "/corporativo/walmart/",
+      "destination": "/client-quotes/servicios-financieros-ni/index.html"
+    },
+    {
+      "source": "/corporativo/walmart/:path*",
+      "destination": "/client-quotes/servicios-financieros-ni/:path*"
+    },
+    {
+      "source": "/clientes/:slug",
+      "destination": "/clientes/index.html"
+    },
+    {
+      "source": "/clientes/:slug/",
+      "destination": "/clientes/index.html"
+    },
+    {
+      "source": "/cotizacion/:id",
+      "destination": "/cotizacion/index.html"
+    },
+    {
+      "source": "/cotizacion/:id/",
+      "destination": "/cotizacion/index.html"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

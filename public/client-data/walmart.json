@@ -1,0 +1,12 @@
+{
+  "slug": "walmart",
+  "name": "Walmart",
+  "subtitle": "Servicios Financieros Nicaragua",
+  "type": "corporate",
+  "catalog": {
+    "enabled": true,
+    "url": "/corporativo/walmart/",
+    "label": "Abrir catálogo corporativo"
+  },
+  "quotes": []
+}

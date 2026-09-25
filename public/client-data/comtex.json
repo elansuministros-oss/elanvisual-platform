@@ -1,0 +1,8 @@
+{
+  "slug": "comtex",
+  "name": "Comtex",
+  "subtitle": "Portal de cotizaciones ELANVISUAL",
+  "type": "frequent",
+  "catalog": {"enabled": false},
+  "quotes": []
+}

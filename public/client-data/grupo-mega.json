@@ -1,0 +1,8 @@
+{
+  "slug": "grupo-mega",
+  "name": "Grupo Mega",
+  "subtitle": "Portal de cotizaciones ELANVISUAL",
+  "type": "frequent",
+  "catalog": {"enabled": false},
+  "quotes": []
+}
