@@ -1,0 +1,45 @@
+{
+  "id": "EV-WM-PRUEBA-5Q9X",
+  "client_name": "Walmart",
+  "project": "Servicios Financieros Nicaragua · Cotización de prueba",
+  "date": "2026-09-25",
+  "valid_until": "2026-10-10",
+  "status": "PRUEBA INTERNA",
+  "reference": "Prueba de flujo · No enviar al cliente",
+  "currency": "USD",
+  "items": [
+    {
+      "description": "Ítem #19 · ROLLER UP 85 × 200 cm",
+      "qty": 2,
+      "unit_price": 60,
+      "total": 120
+    },
+    {
+      "description": "Ítem #66 · RÓTULO MÓVIL PARA TÓTEM · Coroplast 4 mm · 90 × 100 cm",
+      "qty": 4,
+      "unit_price": 23,
+      "total": 92
+    },
+    {
+      "description": "Ítem #71 · RÓTULO MÓVIL PARA COLGANTE · PVC 3 mm · 170 × 145 cm",
+      "qty": 2,
+      "unit_price": 62,
+      "total": 124
+    },
+    {
+      "description": "Ítem #82 · TEND CARD acrílico · 22 × 28 cm",
+      "qty": 6,
+      "unit_price": 36,
+      "total": 216
+    },
+    {
+      "description": "Ítem #87 · MINI LATERALES DE GÓNDOLA · Coroplast 4 mm · 40 × 60 cm",
+      "qty": 8,
+      "unit_price": 7,
+      "total": 56
+    }
+  ],
+  "subtotal": 608,
+  "tax": 91.2,
+  "total": 699.2
+}
