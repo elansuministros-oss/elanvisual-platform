@@ -126,7 +126,6 @@
         <div class="portalRow"><input id="portalUrl" readonly value="https://visual.elankav.com/corporativo/walmart/"><button class="btn btnGhost" id="copyPortal">Copiar enlace</button><a class="btn btnDark" href="/corporativo/walmart/" target="_blank">Abrir</a></div>
       </div>
     </div>
-
     <div class="saveBar"><button class="btn btnDark" id="exportBtn">Exportar JSON</button><button class="btn btnGhost" id="restoreBtn">Restaurar publicados</button></div>
   </div>
 </section>
@@ -181,9 +180,9 @@ const KEY='elan_admin_walmart_v2';
 const LEGACY_KEY='elan_admin_walmart_v1';
 const baseSource=(typeof PRODUCTS!=='undefined'?PRODUCTS:[]).map(p=>({...p,active:true,quote_price:{...(p.quote_price||{})}}));
 const defaults={products:baseSource,rules:{deposit:60,balance:40,tax:15,retention:0}};
-let state=load(), editingIndex=null, pendingImage=null;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const clone=v=>JSON.parse(JSON.stringify(v));
+let state=load(), editingIndex=null, pendingImage=null;
 function load(){
   try{
     const saved=JSON.parse(localStorage.getItem(KEY)||'null');
