@@ -4,33 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<title>ELANVISUAL · Portal de cliente</title>
-<link rel="stylesheet" href="/assets/client-portal.css">
+<title>ELANVISUAL · Acceso cliente</title>
 </head>
 <body>
-<main class="wrap">
-  <header class="topbar">
-    <img src="/client-quotes/servicios-financieros-ni/assets/elanvisual-logo.svg" alt="ELANVISUAL" class="logo">
-    <span class="pill">PORTAL DE CLIENTE</span>
-  </header>
-  <section class="hero">
-    <div>
-      <div class="eyebrow" id="clientType">CLIENTE</div>
-      <h1 id="clientName">Cargando…</h1>
-      <p id="clientSubtitle"></p>
-    </div>
-    <a id="catalogBtn" class="btn primary hidden" href="#">Abrir catálogo corporativo</a>
-  </section>
-  <section class="panel">
-    <div class="panelHead">
-      <div><h2>Mis cotizaciones</h2><p>Cotizaciones publicadas por ELANVISUAL para este cliente.</p></div>
-      <span id="quoteCount" class="count">0</span>
-    </div>
-    <div id="quotes" class="quotes"></div>
-    <div id="empty" class="empty hidden"><b>No hay cotizaciones publicadas todavía.</b><span>Cuando ELANVISUAL publique una cotización, aparecerá aquí.</span></div>
-  </section>
-  <footer>Acceso temporal por enlace · visual.elankav.com · Solo lectura</footer>
-</main>
-<script src="/assets/client-portal.js"></script>
+<script>
+(()=>{
+  const parts=(location.pathname||'').split('/').filter(Boolean);
+  const slug=parts[1]||'';
+  if(!slug){location.replace('/');return;}
+  location.replace('/cliente/'+encodeURIComponent(decodeURIComponent(slug))+'/');
+})();
+</script>
 </body>
 </html>
