@@ -12,15 +12,16 @@
     "test:copilot": "node scripts/elan-copilot-unified-context-check.mjs"
   },
   "dependencies": {
+    "@assistant-ui/react": "^0.15.17",
     "@supabase/supabase-js": "^2.107.0",
+    "@vercel/functions": "^3.9.9",
     "lucide-react": "^0.542.0",
     "openai": "^6.44.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "@assistant-ui/react": "^0.15.17",
-    "react-webcam-pro": "^1.2.0",
     "react-record-webcam": "^2.0.1",
+    "react-webcam-pro": "^1.2.0",
     "styled-components": "^6.5.3"
   },
   "devDependencies": {
