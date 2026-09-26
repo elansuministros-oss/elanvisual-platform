@@ -9,6 +9,10 @@
       "destination": "/api/ops?path=:path*"
     },
     {
+      "source": "/admin/api/public-publish",
+      "destination": "/api/public-publish"
+    },
+    {
       "source": "/vqs-preview",
       "destination": "/vqs-preview.html"
     },
