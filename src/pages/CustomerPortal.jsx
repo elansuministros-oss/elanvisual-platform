@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ArrowRight,
-  Check,
-  ChevronDown,
   FileText,
   FolderKanban,
   Search,
@@ -15,7 +13,6 @@ import {
 } from '../modules/quotation-viewer/services/publicQuotationService';
 
 import '../styles/customer-portal.css';
-import '../styles/customer-portal-picker.css';
 
 const PHRASES = [
   'Las grandes ideas comienzan cuando decidimos hacerlas visibles.',
@@ -33,16 +30,10 @@ const PHRASES = [
 ];
 
 function readAccessCode() {
-  const path = window.location.pathname || '';
-  const legacy = path.match(
+  const match = window.location.pathname.match(
     /^\/c\/([A-Za-z0-9_-]{22})\/?$/
   );
-  if (legacy?.[1]) return legacy[1];
-
-  const readable = path.match(
-    /^\/cliente\/([a-z0-9][a-z0-9-]{4,94}[a-z0-9])\/?$/
-  );
-  return readable?.[1] || '';
+  return match?.[1] || '';
 }
 
 function nextPhrase() {
@@ -102,7 +93,6 @@ export default function CustomerPortal() {
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [selectedQuotationId, setSelectedQuotationId] = useState('');
-  const [selectorOpen, setSelectorOpen] = useState(false);
   const [approvalBusy, setApprovalBusy] = useState(false);
   const [approvalResult, setApprovalResult] = useState(null);
   const [approvalError, setApprovalError] = useState('');
@@ -308,77 +298,27 @@ export default function CustomerPortal() {
         </div>
 
         {projects.length > 0 && (
-          <section className="customer-portal-picker" aria-label="Seleccionar cotización">
-            <span className="customer-portal-picker-label">
-              Seleccioná una cotización
-            </span>
-
-            <button
-              type="button"
-              className="customer-portal-picker-trigger"
-              onClick={() => setSelectorOpen((current) => !current)}
-              aria-expanded={selectorOpen}
+          <label className="customer-portal-select-wrap">
+            <span>Seleccioná una cotización</span>
+            <select
+              value={selectedQuotationId}
+              onChange={(event) =>
+                setSelectedQuotationId(event.target.value)
+              }
             >
-              <span className="customer-portal-picker-current">
-                <strong>
-                  {selectedProject?.projectTitle || 'Elegí un proyecto'}
-                </strong>
-                {selectedProject && (
-                  <small>
-                    {selectedProject.quotationNumber} · {money(selectedProject.totalUsd)}
-                  </small>
-                )}
-              </span>
-              <ChevronDown
-                size={20}
-                className={selectorOpen ? 'is-open' : ''}
-              />
-            </button>
-
-            {selectorOpen && (
-              <div className="customer-portal-picker-grid">
-                {projects.map((item) => {
-                  const selected = item.quotationId === selectedQuotationId;
-
-                  return (
-                    <button
-                      type="button"
-                      key={item.quotationId}
-                      className={
-                        'customer-portal-picker-card' +
-                        (selected ? ' is-selected' : '')
-                      }
-                      onClick={() => {
-                        setSelectedQuotationId(item.quotationId);
-                        setSelectorOpen(false);
-                        setApprovalError('');
-                        setApprovalResult(null);
-                      }}
-                    >
-                      <span className="customer-portal-picker-card-head">
-                        <strong>{item.projectTitle}</strong>
-                        {selected && <Check size={18} aria-hidden="true" />}
-                      </span>
-
-                      <span className="customer-portal-picker-card-meta">
-                        <span>{item.quotationNumber}</span>
-                        <strong>{money(item.totalUsd)}</strong>
-                      </span>
-
-                      <span
-                        className={
-                          'customer-portal-status ' +
-                          statusClass(item.status)
-                        }
-                      >
-                        {statusLabel(item.status)}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </section>
+              <option value="">
+                Elegí un proyecto
+              </option>
+              {projects.map((item) => (
+                <option
+                  key={item.quotationId}
+                  value={item.quotationId}
+                >
+                  {item.projectTitle}
+                </option>
+              ))}
+            </select>
+          </label>
         )}
 
         {selectedProject && (
