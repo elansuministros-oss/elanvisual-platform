@@ -26,9 +26,31 @@ function publicItem(item = {}) {
   };
 }
 
-function publicQuote(quote = {}, client = {}) {
+function publicPayment(quote = {}) {
   const plan = text(quote.payment_plan || '60_40');
-  const second = number(quote.second_payment_percent);
+  const isKnownPlan = plan === '60_40' || plan === '60_20_20';
+  const depositPercent = isKnownPlan ? 60 : number(quote.deposit_percent || 60);
+  const secondPercent = plan === '60_20_20'
+    ? 20
+    : plan === '60_40'
+      ? 0
+      : number(quote.second_payment_percent);
+  const balancePercent = plan === '60_20_20'
+    ? 20
+    : plan === '60_40'
+      ? 40
+      : number(quote.balance_percent || Math.max(0, 100 - depositPercent - secondPercent));
+
+  return {
+    plan,
+    deposit: `${depositPercent}% del total de la cotización.`,
+    second: secondPercent > 0 ? `${secondPercent}% durante el proceso.` : '',
+    balance: `${balancePercent}% contraentrega.`,
+    note: text(quote.payment_note)
+  };
+}
+
+function publicQuote(quote = {}, client = {}) {
   return {
     id: text(quote.id),
     client_name: text(quote.client_name || client.name),
@@ -48,13 +70,7 @@ function publicQuote(quote = {}, client = {}) {
     reference: text(quote.reference),
     currency: 'USD',
     items: Array.isArray(quote.items) ? quote.items.map(publicItem) : [],
-    payment: {
-      plan,
-      deposit: `${number(quote.deposit_percent || 60)}% del total de la cotización.`,
-      second: second > 0 ? `${second}% durante el proceso.` : '',
-      balance: `${number(quote.balance_percent || (plan === '60_20_20' ? 20 : 40))}% contraentrega.`,
-      note: text(quote.payment_note)
-    },
+    payment: publicPayment(quote),
     subtotal: number(quote.subtotal),
     tax: number(quote.tax),
     withholding: number(quote.withholding),
