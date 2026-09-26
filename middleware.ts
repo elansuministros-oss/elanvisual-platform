@@ -43,5 +43,5 @@ export default async function middleware(request: Request) {
 }
 
 export const config = {
-  matcher: ['/admin', '/admin/:path*'],
+  matcher: ['/admin', '/admin/:path*', '/api/public-publish'],
 };
