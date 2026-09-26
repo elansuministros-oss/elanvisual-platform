@@ -87,6 +87,16 @@ function statusClass(value) {
   return 'is-active';
 }
 
+function quotationPortalUrl(viewUrl, accessCode) {
+  try {
+    const url = new URL(String(viewUrl || ''), window.location.origin);
+    url.searchParams.set('portal', accessCode);
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return String(viewUrl || '');
+  }
+}
+
 export default function CustomerPortal() {
   const accessCode = useMemo(() => readAccessCode(), []);
   const [portal, setPortal] = useState(null);
@@ -354,7 +364,7 @@ export default function CustomerPortal() {
               {selectedProject.viewUrl && (
                 <a
                   className="customer-portal-open customer-portal-open-secondary"
-                  href={selectedProject.viewUrl}
+                  href={quotationPortalUrl(selectedProject.viewUrl, accessCode)}
                 >
                   Abrir cotización
                   <ArrowRight size={17} />
