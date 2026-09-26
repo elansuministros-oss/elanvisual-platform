@@ -29,6 +29,79 @@
     </script>
     <script>
       (() => {
+        const match = (window.location.pathname || '').match(/^\/c\/([A-Za-z0-9_-]{22})\/?$/);
+        if (!match) return;
+
+        const token = match[1];
+        const readArray = (key) => {
+          try {
+            const value = JSON.parse(window.localStorage.getItem(key) || '[]');
+            return Array.isArray(value) ? value : [];
+          } catch {
+            return [];
+          }
+        };
+        const tokenFromPortal = (value) => {
+          const found = String(value || '').match(/^\/c\/([A-Za-z0-9_-]{22})\/?$/);
+          return found?.[1] || '';
+        };
+
+        const clients = readArray('elan_admin_clients_v1');
+        const customer = clients.find((item) =>
+          String(item?.portal_token || '') === token || tokenFromPortal(item?.portal) === token
+        );
+        if (!customer) return;
+
+        const quotes = readArray('elan_admin_quotes_v1').filter((quote) =>
+          quote?.client_id === customer.id ||
+          String(quote?.client_name || '').trim().toLowerCase() ===
+            String(customer.name || '').trim().toLowerCase()
+        );
+        if (!quotes.length) return;
+
+        fetch('/admin/api/public-publish', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            portalToken: token,
+            client: {
+              id: customer.id || '',
+              name: customer.name || '',
+              ruc: customer.ruc || '',
+              contact: customer.contact || '',
+              phone: customer.whatsapp || '',
+              email: customer.email || '',
+              address: customer.address || ''
+            },
+            quotes
+          })
+        }).then(async (response) => {
+          if (!response.ok) return;
+          const payload = await response.json().catch(() => ({}));
+          const published = new Map(
+            (payload?.data?.quotations || []).map((item) => [String(item.id), String(item.url || '')])
+          );
+          if (!published.size) return;
+          const now = new Date().toISOString();
+          const updated = readArray('elan_admin_quotes_v1').map((quote) => {
+            const url = published.get(String(quote.id));
+            return url ? {
+              ...quote,
+              published_url: url,
+              published_at: now,
+              sync_state: 'published_temp'
+            } : quote;
+          });
+          window.localStorage.setItem('elan_admin_quotes_v1', JSON.stringify(updated));
+        }).catch(() => {});
+      })();
+    </script>
+    <script>
+      (() => {
         const ensureAdminAccess = () => {
           const footer = document.querySelector('.site-footer');
           if (!footer || footer.querySelector('[data-elan-admin-access]')) return false;
