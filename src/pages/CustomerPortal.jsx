@@ -163,6 +163,26 @@ export default function CustomerPortal() {
     [projects, selectedQuotationId]
   );
 
+  const selectedReceipts = useMemo(() => {
+    if (!selectedProject) return [];
+    return (Array.isArray(portal?.receipts) ? portal.receipts : []).filter(
+      (item) => String(item.quotationId || '') === String(selectedProject.quotationId || '')
+    );
+  }, [portal, selectedProject]);
+
+  const paidUsd = selectedProject
+    ? Number(
+        selectedProject.paidUsd ??
+        selectedReceipts.reduce((sum, item) => sum + Number(item.amountUsd || 0), 0)
+      )
+    : 0;
+  const balanceUsd = selectedProject
+    ? Number(
+        selectedProject.balanceUsd ??
+        Math.max(0, Number(selectedProject.totalUsd || 0) - paidUsd)
+      )
+    : 0;
+
   async function approveSelectedQuotation() {
     if (!selectedProject || approvalBusy) return;
 
@@ -397,6 +417,67 @@ export default function CustomerPortal() {
                 <span>
                   Los términos de pago de esta cotización quedan vigentes para continuar el proyecto.
                 </span>
+              </div>
+            )}
+
+            {(selectedReceipts.length > 0 || paidUsd > 0) && (
+              <div style={{
+                marginTop: 18,
+                paddingTop: 16,
+                borderTop: '1px solid #e4e7ec'
+              }}>
+                <span className="customer-portal-selected-label">Pagos y recibos</span>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))',
+                  gap: 10,
+                  marginTop: 8
+                }}>
+                  <div style={{padding: 12, border: '1px solid #e4e7ec', borderRadius: 12}}>
+                    <small style={{color: '#667085'}}>Total</small>
+                    <strong style={{display: 'block', marginTop: 4}}>{money(selectedProject.totalUsd)}</strong>
+                  </div>
+                  <div style={{padding: 12, border: '1px solid #e4e7ec', borderRadius: 12}}>
+                    <small style={{color: '#667085'}}>Pagado</small>
+                    <strong style={{display: 'block', marginTop: 4}}>{money(paidUsd)}</strong>
+                  </div>
+                  <div style={{padding: 12, border: '1px solid #e4e7ec', borderRadius: 12}}>
+                    <small style={{color: '#667085'}}>Saldo</small>
+                    <strong style={{display: 'block', marginTop: 4}}>{money(balanceUsd)}</strong>
+                  </div>
+                </div>
+
+                {selectedReceipts.map((receipt) => (
+                  <div
+                    key={receipt.receiptNumber || receipt.receiptCode}
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 12,
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginTop: 10,
+                      padding: 12,
+                      border: '1px solid #e4e7ec',
+                      borderRadius: 12,
+                      background: '#f8fafc'
+                    }}
+                  >
+                    <div>
+                      <strong>{receipt.receiptNumber}</strong>
+                      <div style={{fontSize: 12, color: '#667085', marginTop: 3}}>
+                        Anticipo · {date(receipt.paidAt)} · {money(receipt.amountUsd)}
+                      </div>
+                    </div>
+                    <a
+                      className="customer-portal-open customer-portal-open-secondary"
+                      href={receipt.viewUrl}
+                    >
+                      Ver recibo / Descargar PDF
+                      <ArrowRight size={17} />
+                    </a>
+                  </div>
+                ))}
               </div>
             )}
           </section>
