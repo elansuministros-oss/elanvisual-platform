@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>ELAN Base · Proveedores</title>
+<style>
+:root{--y:#DEB738;--i:#111318;--m:#666a73;--l:#d9dce2;--s:#f4f5f7;--bg:#eef0f3;--ok:#227447;--d:#a7271f;--b:#075fc7}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--i);font-family:Arial,Helvetica,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr)}
+.side{background:#000;color:#fff;min-height:100vh;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}.brand{padding:24px 16px 22px;border-bottom:1px solid #ffffff1f}.brand img{width:178px;max-width:100%}.brand small{display:block;margin-top:10px;font-size:12px;letter-spacing:.08em}.nav{padding:18px 0;display:grid;gap:5px}.nav a{color:#f1f1f1;text-decoration:none;padding:12px 14px;font-size:14px;font-weight:700;display:flex;gap:10px;align-items:center}.nav a:hover{background:#171717}.nav a.active{background:var(--y);color:#000}.dot{width:8px;height:8px;border:1px solid currentColor;border-radius:50%;flex:0 0 auto}.foot{margin-top:auto;padding:18px 16px;border-top:1px solid #ffffff1f;color:#aaa;font-size:12px;line-height:1.5}
+.main{min-width:0}.top{height:72px;background:#fff;border-bottom:1px solid var(--l);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:20}.crumb{font-size:13px;color:var(--m);font-weight:700}.pill{background:var(--s);border:1px solid var(--l);border-radius:999px;padding:9px 13px;font-size:12px;font-weight:800}.content{padding:28px;max-width:1480px;margin:auto}
+.hero{background:#000;color:#fff;border-radius:18px;overflow:hidden;display:grid;grid-template-columns:1fr 380px}.hero>div{padding:28px 32px}.heroCopy{position:relative}.heroCopy:before{content:"";position:absolute;left:0;top:0;width:8px;height:100%;background:var(--y)}.eye{color:var(--y);font-size:11px;font-weight:900;letter-spacing:.12em}.hero h1{margin:9px 0 0;font-size:34px;line-height:1.06}.hero p{color:#d6d6d6;font-size:13px;line-height:1.5;max-width:760px}.heroPanel{background:var(--y);color:#000;display:flex;flex-direction:column;justify-content:center}.heroPanel small{font-size:10px;font-weight:900;text-transform:uppercase}.heroPanel strong{font-size:22px;margin:7px 0}.heroPanel span{font-size:12px;line-height:1.45}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.kpi,.panel{background:#fff;border:1px solid var(--l);border-radius:14px}.kpi{padding:15px}.kpi small{display:block;color:var(--m);font-size:10px;font-weight:900;text-transform:uppercase}.kpi b{display:block;font-size:25px;margin-top:6px}.kpi em{font-style:normal;color:var(--m);font-size:10px}.panel{overflow:hidden;margin-bottom:18px}.ph{padding:16px 18px;border-bottom:1px solid var(--l);display:flex;justify-content:space-between;gap:12px;align-items:center}.ph h2{margin:0;font-size:17px}.ph small{display:block;color:var(--m);font-size:11px;margin-top:4px}.pb{padding:16px 18px}
+.btn{border:0;border-radius:9px;padding:10px 13px;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}.primary{background:var(--y);color:#000}.dark{background:#111;color:#fff}.ghost{background:#fff;border:1px solid var(--l);color:var(--i)}.danger{background:#fff;border:1px solid #e4b2ae;color:var(--d)}.sm{padding:7px 9px;font-size:11px}.toolbar{display:grid;grid-template-columns:minmax(230px,1fr) 220px 160px auto;gap:9px;margin-bottom:14px}.field{width:100%;border:1px solid var(--l);border-radius:9px;padding:10px;background:#fff;color:var(--i)}.actions{display:flex;gap:6px;flex-wrap:wrap}
+.wrap{overflow:auto;border:1px solid var(--l);border-radius:12px}table{width:100%;border-collapse:collapse;font-size:12px}.list{min-width:1060px}.priceList{min-width:1120px}th,td{padding:10px;border-bottom:1px solid var(--l);text-align:left;vertical-align:middle}th{background:#111;color:#fff;font-size:10px;text-transform:uppercase;white-space:nowrap}tr:last-child td{border-bottom:0}.name{font-weight:900;font-size:13px}.sub{font-size:10px;color:var(--m);margin-top:3px;line-height:1.35}.badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:900}.active{background:#e5f3eb;color:var(--ok)}.inactive{background:#f5e5e3;color:var(--d)}.ref{background:#fff0b8;color:#6b5100}.historical{background:#eee;color:#555}.money{font-weight:900;white-space:nowrap}.empty{padding:25px;text-align:center;color:var(--m);background:var(--s);line-height:1.5}.note{margin-top:12px;font-size:11px;color:var(--m);line-height:1.5}.note b{color:#7b5b00}.priceSearch{display:grid;grid-template-columns:1fr 220px 160px;gap:9px;margin-bottom:12px}
+.modal{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;z-index:100}.modal.open{display:flex}.card{background:#fff;width:min(940px,100%);max-height:94vh;overflow:auto;border-radius:16px;box-shadow:0 24px 70px #0007}.card.wide{width:min(1180px,100%)}.mh{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--l);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;z-index:20}.mh h2{margin:0;font-size:18px}.mb{padding:18px}.formGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.ff label{display:block;font-size:10px;color:var(--m);font-weight:900;text-transform:uppercase;margin-bottom:6px}.ff input,.ff select,.ff textarea{width:100%;border:1px solid var(--l);border-radius:8px;padding:10px;background:#fff}.ff textarea{min-height:80px;resize:vertical}.span2{grid-column:span 2}.modalActions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}.supplierHead{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;padding:16px;border:1px solid var(--l);border-radius:12px;background:var(--s);margin-bottom:14px}.supplierHead h3{margin:0 0 4px;font-size:20px}.supplierHead p{margin:0;color:var(--m);font-size:11px;line-height:1.5}.detailGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.fact{background:#fff;border:1px solid var(--l);border-radius:8px;padding:9px}.fact small{display:block;color:var(--m);font-size:9px;text-transform:uppercase;font-weight:900}.fact b{display:block;font-size:11px;margin-top:4px;overflow-wrap:anywhere}.sectionBar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:16px 0 9px}.sectionBar h3{margin:0;font-size:15px}.sectionBar small{color:var(--m)}
+@media(max-width:1050px){.app{grid-template-columns:82px 1fr}.brand img{width:46px;object-fit:cover;object-position:left}.brand small,.nav span,.foot{display:none}.nav a{justify-content:center}.hero{grid-template-columns:1fr 300px}.kpis{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr 1fr}.detailGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.app{display:block}.side{display:none}.content{padding:16px}.top{height:auto;padding:14px}.hero{grid-template-columns:1fr}.kpis,.toolbar,.priceSearch,.formGrid,.detailGrid{grid-template-columns:1fr}.span2{grid-column:auto}.modal{padding:0}.card{max-height:100vh;border-radius:0}.supplierHead{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand"><img src="/assets/branding/elanvisual.svg" alt="ELANVISUAL"><small>ELAN BASE · ADMINISTRACIÓN</small></div>
+  <nav class="nav">
+    <a href="/admin/"><i class="dot"></i><span>Inicio</span></a>
+    <a href="/admin/clientes/"><i class="dot"></i><span>Clientes</span></a>
+    <a class="active" href="/admin/proveedores/"><i class="dot"></i><span>Proveedores</span></a>
+    <a href="/admin/corporativo/walmart/"><i class="dot"></i><span>Proyectos empresariales</span></a>
+    <a href="/admin/cotizaciones/"><i class="dot"></i><span>Cotizaciones</span></a>
+    <a href="/admin/produccion/"><i class="dot"></i><span>Producción</span></a>
+    <a href="/admin/entregas/"><i class="dot"></i><span>Entregas</span></a>
+    <a href="#"><i class="dot"></i><span>Saldos</span></a>
+  </nav>
+  <div class="foot">Interfaz administrativa interna<br>ELANVISUAL</div>
+</aside>
+<main class="main">
+<header class="top"><div class="crumb">ELAN Base / <b>Proveedores</b></div><span class="pill">OWNER</span></header>
+<div class="content">
+<section class="hero">
+  <div class="heroCopy"><div class="eye">ELAN BASE · PROVEEDORES</div><h1>Costos comparables.<br>Proveedores disponibles.</h1><p>Directorio interno para registrar proveedores, especialidades y precios de referencia. Los precios de esta biblioteca sirven para comparar y estimar; el costo real de cada trabajo se confirmará posteriormente en la Orden de Compra.</p></div>
+  <div class="heroPanel"><small>Persistencia actual</small><strong>Temporal en navegador</strong><span>Los registros permanecen en este navegador mientras el módulo se valida antes de conectarlo al sistema central.</span></div>
+</section>
+<section class="kpis">
+  <div class="kpi"><small>Proveedores</small><b id="kTotal">0</b><em>Total registrado</em></div>
+  <div class="kpi"><small>Activos</small><b id="kActive">0</b><em>Disponibles para consulta</em></div>
+  <div class="kpi"><small>Precios vigentes</small><b id="kPrices">0</b><em>Referencias comparables</em></div>
+  <div class="kpi"><small>Históricos</small><b id="kHistory">0</b><em>Precios anteriores conservados</em></div>
+</section>
+<section class="panel">
+  <div class="ph"><div><h2>Maestro de proveedores</h2><small>Contacto, especialidad y biblioteca de precios por proveedor.</small></div><button class="btn primary" id="newSupplier">+ Nuevo proveedor</button></div>
+  <div class="pb">
+    <div class="toolbar">
+      <input class="field" id="search" placeholder="Buscar proveedor, contacto, servicio o WhatsApp">
+      <select class="field" id="specialtyFilter"><option value="">Todas las especialidades</option></select>
+      <select class="field" id="statusFilter"><option value="">Todos</option><option value="active">Activo</option><option value="inactive">Inactivo</option></select>
+      <div class="actions"><button class="btn ghost" id="importBtn">Importar</button><button class="btn dark" id="exportBtn">Exportar JSON</button><input id="importFile" type="file" accept="application/json" hidden></div>
+    </div>
+    <div class="wrap"><table class="list"><thead><tr><th>Proveedor</th><th>Especialidad</th><th>Contacto</th><th>WhatsApp / correo</th><th>Precios vigentes</th><th>Última actualización</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="supplierBody"></tbody></table></div>
+    <div class="note"><b>Regla:</b> la biblioteca de precios es una referencia para comparar proveedores. No sustituye el precio confirmado de una Orden de Compra para un trabajo específico.</div>
+  </div>
+</section>
+<section class="panel">
+  <div class="ph"><div><h2>Comparador de precios de referencia</h2><small>Consulta transversal de precios vigentes registrados en todos los proveedores.</small></div></div>
+  <div class="pb">
+    <div class="priceSearch"><input class="field" id="priceSearch" placeholder="Buscar producto, material, servicio o especificación"><select class="field" id="unitFilter"><option value="">Todas las unidades</option></select><select class="field" id="currencyFilter"><option value="">Todas las monedas</option><option value="USD">USD</option><option value="NIO">NIO</option></select></div>
+    <div class="wrap"><table class="priceList"><thead><tr><th>Producto / servicio</th><th>Especificación</th><th>Proveedor</th><th>Unidad</th><th>Precio</th><th>Moneda</th><th>IVA</th><th>Fecha</th></tr></thead><tbody id="compareBody"></tbody></table></div>
+  </div>
+</section>
+</div>
+</main>
+</div>
+
+<div class="modal" id="supplierModal">
+  <div class="card">
+    <div class="mh"><h2 id="supplierModalTitle">Nuevo proveedor</h2><button class="btn ghost sm" data-close="supplierModal">Cerrar</button></div>
+    <div class="mb">
+      <div class="formGrid">
+        <div class="ff"><label>Empresa / proveedor *</label><input id="fName"></div>
+        <div class="ff"><label>Estado</label><select id="fStatus"><option value="active">Activo</option><option value="inactive">Inactivo</option></select></div>
+        <div class="ff span2"><label>Especialidades *</label><input id="fSpecialty" placeholder="Ej. Impresión gran formato, acrílico, metal, bordado"></div>
+        <div class="ff"><label>Contacto principal</label><input id="fContact"></div>
+        <div class="ff"><label>WhatsApp</label><input id="fWhatsapp"></div>
+        <div class="ff"><label>Correo</label><input id="fEmail" type="email"></div>
+        <div class="ff"><label>RUC</label><input id="fRuc"></div>
+        <div class="ff span2"><label>Dirección</label><input id="fAddress"></div>
+        <div class="ff span2"><label>Notas</label><textarea id="fNotes" placeholder="Condiciones, tiempos, calidad, crédito, mínimos, observaciones..."></textarea></div>
+      </div>
+      <div class="modalActions"><button class="btn ghost" data-close="supplierModal">Cancelar</button><button class="btn primary" id="saveSupplier">Guardar proveedor</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="detailModal">
+  <div class="card wide">
+    <div class="mh"><h2>Proveedor</h2><button class="btn ghost sm" data-close="detailModal">Cerrar</button></div>
+    <div class="mb">
+      <div class="supplierHead">
+        <div><h3 id="dName">—</h3><p id="dSpecialty">—</p><div class="detailGrid"><div class="fact"><small>Contacto</small><b id="dContact">—</b></div><div class="fact"><small>WhatsApp</small><b id="dWhatsapp">—</b></div><div class="fact"><small>Correo</small><b id="dEmail">—</b></div><div class="fact"><small>RUC</small><b id="dRuc">—</b></div></div></div>
+        <div class="actions"><button class="btn ghost sm" id="editSupplier">Editar proveedor</button><button class="btn primary sm" id="newPrice">+ Nuevo precio</button></div>
+      </div>
+      <div class="sectionBar"><div><h3>Biblioteca de precios</h3><small>Agregar un nuevo precio conserva el anterior como histórico.</small></div><select class="field" id="priceStatusFilter" style="width:auto"><option value="active">Vigentes</option><option value="">Todos</option><option value="historical">Históricos</option></select></div>
+      <div class="wrap"><table class="priceList"><thead><tr><th>Producto / servicio</th><th>Especificación</th><th>Unidad</th><th>Precio</th><th>Moneda</th><th>IVA</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="priceBody"></tbody></table></div>
+      <div class="note" id="dNotes"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="priceModal">
+  <div class="card">
+    <div class="mh"><h2>Nuevo precio de referencia</h2><button class="btn ghost sm" data-close="priceModal">Cerrar</button></div>
+    <div class="mb">
+      <div class="formGrid">
+        <div class="ff span2"><label>Producto / servicio *</label><input id="pName" placeholder="Ej. Impresión vinil adhesivo"></div>
+        <div class="ff span2"><label>Especificación</label><input id="pSpec" placeholder="Ej. Full color, 1.22 × 2.44 m, PVC 5 mm"></div>
+        <div class="ff"><label>Unidad *</label><select id="pUnit"><option value="m²">m²</option><option value="metro lineal">metro lineal</option><option value="unidad">unidad</option><option value="lámina">lámina</option><option value="rollo">rollo</option><option value="paquete">paquete</option><option value="pie">pie</option><option value="kg">kg</option><option value="hora">hora</option><option value="servicio">servicio</option><option value="otro">otro</option></select></div>
+        <div class="ff"><label>Precio *</label><input id="pPrice" type="number" min="0" step=".01"></div>
+        <div class="ff"><label>Moneda</label><select id="pCurrency"><option value="USD">USD</option><option value="NIO">NIO</option></select></div>
+        <div class="ff"><label>IVA</label><select id="pTax"><option value="not_included">No incluido</option><option value="included">Incluido</option><option value="not_applicable">No aplica / no informado</option></select></div>
+        <div class="ff"><label>Fecha del precio</label><input id="pDate" type="date"></div>
+        <div class="ff"><label>Fuente</label><input id="pSource" placeholder="WhatsApp, correo, cotización, llamada..."></div>
+        <div class="ff span2"><label>Observaciones</label><textarea id="pNotes" placeholder="Mínimo, entrega, calidad, condiciones especiales..."></textarea></div>
+      </div>
+      <div class="note">Si ya existe un precio vigente del mismo proveedor para el mismo producto, especificación y unidad, se conservará como <b>histórico</b> y este nuevo registro quedará vigente.</div>
+      <div class="modalActions"><button class="btn ghost" data-close="priceModal">Cancelar</button><button class="btn primary" id="savePrice">Guardar nuevo precio</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+const KEY='elan_admin_suppliers_v1',$=id=>document.getElementById(id),cp=v=>JSON.parse(JSON.stringify(v));
+let suppliers=load(),editingSupplier=null,currentSupplier=null;
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch(e){return[]}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(suppliers))}
+const esc=v=>String(v??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
+const today=()=>new Date().toISOString().slice(0,10);
+const uid=p=>`${p}-${Date.now()}-${Math.random().toString(36).slice(2,7).toUpperCase()}`;
+const norm=v=>String(v||'').trim().toLowerCase().replace(/\s+/g,' ');
+const money=n=>Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+function activePrices(s){return (s.prices||[]).filter(p=>p.status!=='historical')}
+function lastUpdated(s){const dates=(s.prices||[]).map(p=>p.created_at||p.date).filter(Boolean).sort();return dates.at(-1)?.slice(0,10)||s.updated_at?.slice(0,10)||'—'}
+function specialties(){return [...new Set(suppliers.flatMap(s=>String(s.specialty||'').split(',').map(x=>x.trim()).filter(Boolean)))].sort((a,b)=>a.localeCompare(b,'es'))}
+function units(){return [...new Set(suppliers.flatMap(s=>(s.prices||[]).filter(p=>p.status!=='historical').map(p=>p.unit).filter(Boolean)))].sort((a,b)=>a.localeCompare(b,'es'))}
+function refreshFilters(){const current=$('specialtyFilter').value;$('specialtyFilter').innerHTML='<option value="">Todas las especialidades</option>'+specialties().map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');if([...$('specialtyFilter').options].some(o=>o.value===current))$('specialtyFilter').value=current;const unit=$('unitFilter').value;$('unitFilter').innerHTML='<option value="">Todas las unidades</option>'+units().map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');if([...$('unitFilter').options].some(o=>o.value===unit))$('unitFilter').value=unit}
+function counts(){const allPrices=suppliers.flatMap(s=>s.prices||[]);$('kTotal').textContent=suppliers.length;$('kActive').textContent=suppliers.filter(s=>s.status!=='inactive').length;$('kPrices').textContent=allPrices.filter(p=>p.status!=='historical').length;$('kHistory').textContent=allPrices.filter(p=>p.status==='historical').length}
+function renderSuppliers(){refreshFilters();counts();const q=norm($('search').value),sp=norm($('specialtyFilter').value),st=$('statusFilter').value;const rows=suppliers.filter(s=>(!st||s.status===st)&&(!sp||norm(s.specialty).includes(sp))&&(!q||norm([s.name,s.specialty,s.contact,s.whatsapp,s.email].join(' ')).includes(q)));$('supplierBody').innerHTML=rows.length?rows.map(s=>`<tr><td><div class="name">${esc(s.name)}</div><div class="sub">${esc(s.ruc||'Sin RUC registrado')}</div></td><td>${esc(s.specialty||'—')}</td><td>${esc(s.contact||'—')}</td><td><div>${esc(s.whatsapp||'—')}</div><div class="sub">${esc(s.email||'')}</div></td><td><b>${activePrices(s).length}</b></td><td>${esc(lastUpdated(s))}</td><td><span class="badge ${s.status==='inactive'?'inactive':'active'}">${s.status==='inactive'?'Inactivo':'Activo'}</span></td><td><div class="actions"><button class="btn ghost sm" data-open="${esc(s.id)}">Abrir</button><button class="btn ghost sm" data-edit="${esc(s.id)}">Editar</button></div></td></tr>`).join(''):'<tr><td colspan="8" class="empty">Todavía no hay proveedores registrados.<br>Creá el primero con “+ Nuevo proveedor”.</td></tr>';document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openDetail(b.dataset.open));document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openSupplier(b.dataset.edit));renderCompare()}
+function renderCompare(){const q=norm($('priceSearch').value),unit=$('unitFilter').value,currency=$('currencyFilter').value;const rows=suppliers.filter(s=>s.status!=='inactive').flatMap(s=>(s.prices||[]).filter(p=>p.status!=='historical').map(p=>({...p,supplier_name:s.name,supplier_id:s.id}))).filter(p=>(!unit||p.unit===unit)&&(!currency||p.currency===currency)&&(!q||norm([p.name,p.specification,p.supplier_name].join(' ')).includes(q))).sort((a,b)=>norm(a.name).localeCompare(norm(b.name),'es')||Number(a.price)-Number(b.price));$('compareBody').innerHTML=rows.length?rows.map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.specification||'—')}</td><td><button class="btn ghost sm" data-price-supplier="${esc(p.supplier_id)}">${esc(p.supplier_name)}</button></td><td>${esc(p.unit)}</td><td class="money">${money(p.price)}</td><td>${esc(p.currency)}</td><td>${p.tax==='included'?'Incluido':p.tax==='not_included'?'No incluido':'—'}</td><td>${esc(p.date||'—')}</td></tr>`).join(''):'<tr><td colspan="8" class="empty">No hay precios vigentes que coincidan con la búsqueda.</td></tr>';document.querySelectorAll('[data-price-supplier]').forEach(b=>b.onclick=()=>openDetail(b.dataset.priceSupplier))}
+function openSupplier(id=null){editingSupplier=id;const s=id?cp(suppliers.find(x=>x.id===id)):{name:'',status:'active',specialty:'',contact:'',whatsapp:'',email:'',ruc:'',address:'',notes:''};if(!s)return;$('supplierModalTitle').textContent=id?'Editar proveedor':'Nuevo proveedor';$('fName').value=s.name||'';$('fStatus').value=s.status||'active';$('fSpecialty').value=s.specialty||'';$('fContact').value=s.contact||'';$('fWhatsapp').value=s.whatsapp||'';$('fEmail').value=s.email||'';$('fRuc').value=s.ruc||'';$('fAddress').value=s.address||'';$('fNotes').value=s.notes||'';$('supplierModal').classList.add('open')}
+function saveSupplier(){const name=$('fName').value.trim(),specialty=$('fSpecialty').value.trim();if(!name||!specialty){alert('Completá el nombre del proveedor y su especialidad.');return}const now=new Date().toISOString(),old=editingSupplier?suppliers.find(x=>x.id===editingSupplier):null,s={...(old||{}),id:old?.id||uid('SUP'),name,status:$('fStatus').value,specialty,contact:$('fContact').value.trim(),whatsapp:$('fWhatsapp').value.trim(),email:$('fEmail').value.trim(),ruc:$('fRuc').value.trim(),address:$('fAddress').value.trim(),notes:$('fNotes').value.trim(),prices:old?.prices||[],created_at:old?.created_at||now,updated_at:now};if(old)suppliers=suppliers.map(x=>x.id===old.id?s:x);else suppliers.push(s);persist();closeModal('supplierModal');renderSuppliers();if(currentSupplier===s.id)openDetail(s.id)}
+function openDetail(id){const s=suppliers.find(x=>x.id===id);if(!s)return;currentSupplier=id;$('dName').textContent=s.name;$('dSpecialty').textContent=s.specialty||'Sin especialidad';$('dContact').textContent=s.contact||'—';$('dWhatsapp').textContent=s.whatsapp||'—';$('dEmail').textContent=s.email||'—';$('dRuc').textContent=s.ruc||'—';$('dNotes').innerHTML=s.notes?'<b>Notas:</b> '+esc(s.notes):'';$('priceStatusFilter').value='active';renderPrices();$('detailModal').classList.add('open')}
+function renderPrices(){const s=suppliers.find(x=>x.id===currentSupplier);if(!s)return;const st=$('priceStatusFilter').value,rows=(s.prices||[]).filter(p=>!st||(st==='active'?p.status!=='historical':p.status==='historical')).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));$('priceBody').innerHTML=rows.length?rows.map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.specification||'—')}</td><td>${esc(p.unit)}</td><td class="money">${money(p.price)}</td><td>${esc(p.currency)}</td><td>${p.tax==='included'?'Incluido':p.tax==='not_included'?'No incluido':'—'}</td><td>${esc(p.date||'—')}</td><td><span class="badge ${p.status==='historical'?'historical':'ref'}">${p.status==='historical'?'Histórico':'Vigente'}</span></td><td><div class="actions">${p.status==='historical'?'':`<button class="btn ghost sm" data-archive="${esc(p.id)}">Archivar</button>`}<button class="btn danger sm" data-delete-price="${esc(p.id)}">Eliminar</button></div></td></tr>`).join(''):'<tr><td colspan="9" class="empty">Este proveedor todavía no tiene precios de referencia registrados.</td></tr>';document.querySelectorAll('[data-archive]').forEach(b=>b.onclick=()=>archivePrice(b.dataset.archive));document.querySelectorAll('[data-delete-price]').forEach(b=>b.onclick=()=>deletePrice(b.dataset.deletePrice))}
+function openPrice(){if(!currentSupplier)return;$('pName').value='';$('pSpec').value='';$('pUnit').value='m²';$('pPrice').value='';$('pCurrency').value='USD';$('pTax').value='not_included';$('pDate').value=today();$('pSource').value='';$('pNotes').value='';$('priceModal').classList.add('open')}
+function savePrice(){const s=suppliers.find(x=>x.id===currentSupplier),name=$('pName').value.trim(),specification=$('pSpec').value.trim(),unit=$('pUnit').value,price=Number($('pPrice').value);if(!s||!name||!unit||!Number.isFinite(price)||price<0){alert('Completá producto/servicio, unidad y precio.');return}const now=new Date().toISOString();const same=p=>p.status!=='historical'&&norm(p.name)===norm(name)&&norm(p.specification)===norm(specification)&&p.unit===unit;(s.prices||[]).forEach(p=>{if(same(p)){p.status='historical';p.valid_until=$('pDate').value||today();p.updated_at=now}});s.prices=s.prices||[];s.prices.push({id:uid('PRICE'),name,specification,unit,price,currency:$('pCurrency').value,tax:$('pTax').value,date:$('pDate').value||today(),source:$('pSource').value.trim(),notes:$('pNotes').value.trim(),status:'active',created_at:now,updated_at:now});s.updated_at=now;persist();closeModal('priceModal');renderPrices();renderSuppliers()}
+function archivePrice(id){const s=suppliers.find(x=>x.id===currentSupplier),p=s?.prices?.find(x=>x.id===id);if(!p)return;p.status='historical';p.valid_until=today();p.updated_at=new Date().toISOString();persist();renderPrices();renderSuppliers()}
+function deletePrice(id){const s=suppliers.find(x=>x.id===currentSupplier);if(!s||!confirm('¿Eliminar este registro de precio?'))return;s.prices=(s.prices||[]).filter(p=>p.id!==id);s.updated_at=new Date().toISOString();persist();renderPrices();renderSuppliers()}
+function closeModal(id){$(id).classList.remove('open');if(id==='supplierModal')editingSupplier=null;if(id==='detailModal')currentSupplier=null}
+function download(){const blob=new Blob([JSON.stringify({schema:'ELAN_ONE_SUPPLIERS_TEMP_V1',suppliers},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ELAN_ONE_PROVEEDORES_TEMP.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+async function importFile(file){try{const d=JSON.parse(await file.text()),rows=Array.isArray(d)?d:Array.isArray(d.suppliers)?d.suppliers:[];if(!rows.length)throw new Error();if(!confirm(`¿Importar ${rows.length} proveedor(es)?`))return;rows.forEach(r=>{const s={...r,id:r.id||uid('SUP'),prices:Array.isArray(r.prices)?r.prices:[]};const i=suppliers.findIndex(x=>x.id===s.id);if(i>=0)suppliers[i]=s;else suppliers.push(s)});persist();renderSuppliers()}catch(e){alert('El archivo no contiene un respaldo válido de proveedores.')}}
+$('newSupplier').onclick=()=>openSupplier();$('saveSupplier').onclick=saveSupplier;$('newPrice').onclick=openPrice;$('savePrice').onclick=savePrice;$('editSupplier').onclick=()=>{const id=currentSupplier;closeModal('detailModal');openSupplier(id)};$('priceStatusFilter').onchange=renderPrices;['search','specialtyFilter','statusFilter'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',renderSuppliers));['priceSearch','unitFilter','currencyFilter'].forEach(id=>$(id).addEventListener(id==='priceSearch'?'input':'change',renderCompare));$('exportBtn').onclick=download;$('importBtn').onclick=()=>$('importFile').click();$('importFile').onchange=async e=>{const f=e.target.files?.[0];if(f)await importFile(f);e.target.value=''};document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>closeModal(b.dataset.close));document.querySelectorAll('.modal').forEach(m=>m.onclick=e=>{if(e.target===m)closeModal(m.id)});renderSuppliers();
+})();
+</script>
+</body>
+</html>
