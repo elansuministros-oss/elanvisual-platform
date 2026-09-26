@@ -6,6 +6,7 @@ export { config };
 const TTL_SECONDS = 60 * 60 * 24 * 30;
 const TOKEN_RE = /^[A-Za-z0-9_-]{22}$/;
 const QUOTE_RE = /^[A-Za-z0-9._-]{3,120}$/;
+const RECEIPT_RE = /^\d{10}$/;
 
 function text(value) {
   return String(value ?? '').trim();
@@ -39,7 +40,6 @@ async function approveTemporaryQuotation(req, res, path) {
   const quoteKey = `elan-one-public:quote:${quotationId}`;
   const portal = await cache.get(portalKey);
 
-  // Si no pertenece al circuito temporal, conservar el comportamiento VQS existente.
   if (!portal) return false;
 
   const projects = Array.isArray(portal.projects) ? portal.projects : [];
@@ -132,6 +132,40 @@ export default async function handler(req, res) {
   }
 
   if (method === 'GET') {
+    const receipt = path.match(
+      /^public\/portal\/([A-Za-z0-9_-]{22})\/receipts\/(\d{10})$/
+    );
+    if (receipt && TOKEN_RE.test(receipt[1]) && RECEIPT_RE.test(receipt[2])) {
+      try {
+        const cache = getCache();
+        const portal = await cache.get(`elan-one-public:portal:${receipt[1]}`);
+        const belongs = Array.isArray(portal?.receipts) && portal.receipts.some(
+          (item) => text(item?.receiptCode) === receipt[2]
+        );
+        if (!belongs) {
+          res.setHeader('Cache-Control', 'no-store');
+          return res.status(404).json({
+            error: { message: 'El recibo no pertenece a este portal.' }
+          });
+        }
+        const data = await cache.get(
+          `elan-one-public:receipt:${receipt[1]}:${receipt[2]}`
+        );
+        if (data) {
+          res.setHeader('Cache-Control', 'no-store');
+          res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+          return res.status(200).json({
+            data,
+            source: 'elan_one_vercel_runtime_cache_lab'
+          });
+        }
+      } catch {
+        return res.status(503).json({
+          error: { message: 'No fue posible consultar el recibo en este momento.' }
+        });
+      }
+    }
+
     const portal = path.match(/^public\/portal\/([A-Za-z0-9_-]{22})$/);
     if (portal) {
       try {
