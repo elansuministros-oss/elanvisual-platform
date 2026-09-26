@@ -13,6 +13,10 @@
       "destination": "/api/public-publish"
     },
     {
+      "source": "/admin/api/public-receipts",
+      "destination": "/api/public-receipts"
+    },
+    {
       "source": "/vqs-preview",
       "destination": "/vqs-preview.html"
     },
