@@ -13,6 +13,12 @@ function number(value) {
   return Number.isFinite(result) ? result : 0;
 }
 
+function isApproved(value) {
+  return ['approved', 'accepted', 'aprobada', 'aprobado'].includes(
+    text(value).toLowerCase()
+  );
+}
+
 function publicItem(item = {}) {
   const qty = number(item.qty ?? item.quantity ?? 0);
   const unitPrice = number(item.unit_price ?? item.unitPrice ?? 0);
@@ -112,25 +118,66 @@ export default async function handler(req, res) {
   }
 
   const cache = getCache();
-  await Promise.all(normalizedQuotes.map(({ public: quote }) =>
+  const portalKey = `elan-one-public:portal:${portalToken}`;
+  const existingPortal = await cache.get(portalKey);
+  const existingQuotes = await Promise.all(
+    normalizedQuotes.map(({ public: quote }) =>
+      cache.get(`elan-one-public:quote:${quote.id}`)
+    )
+  );
+
+  const mergedQuotes = normalizedQuotes.map((entry, index) => {
+    const previous = existingQuotes[index] || {};
+    return {
+      raw: entry.raw,
+      public: {
+        ...entry.public,
+        status: isApproved(previous.status) ? 'approved' : entry.public.status,
+        ...(previous.approval ? { approval: previous.approval } : {}),
+        ...(Array.isArray(previous.receipts) ? { receipts: previous.receipts } : {}),
+        ...(previous.paid_total_usd != null ? { paid_total_usd: previous.paid_total_usd } : {}),
+        ...(previous.balance_usd != null ? { balance_usd: previous.balance_usd } : {}),
+        ...(previous.advance_confirmed ? { advance_confirmed: true } : {})
+      }
+    };
+  });
+
+  await Promise.all(mergedQuotes.map(({ public: quote }) =>
     cache.set(`elan-one-public:quote:${quote.id}`, quote, {
       ttl: TTL_SECONDS,
       tags: [`elan-one-quote-${quote.id}`]
     })
   ));
 
-  const projects = normalizedQuotes.map(({ raw, public: quote }) => ({
-    projectId: text(raw.reference || raw.id),
-    projectNumber: text(raw.reference),
-    projectTitle: text(raw.project || 'Proyecto ELANVISUAL'),
-    quotationId: quote.id,
-    quotationNumber: quote.id,
-    issuedAt: text(raw.date || raw.created_at),
-    totalUsd: number(raw.total),
-    status: text(raw.status || 'draft'),
-    viewUrl: `/cotizacion/${encodeURIComponent(quote.id)}/`
-  }));
+  const previousProjects = Array.isArray(existingPortal?.projects)
+    ? existingPortal.projects
+    : [];
+  const projects = mergedQuotes.map(({ raw, public: quote }) => {
+    const previous = previousProjects.find(
+      (item) => text(item?.quotationId || item?.quotationNumber) === quote.id
+    ) || {};
+    return {
+      projectId: text(raw.reference || raw.id),
+      projectNumber: text(raw.reference),
+      projectTitle: text(raw.project || 'Proyecto ELANVISUAL'),
+      quotationId: quote.id,
+      quotationNumber: quote.id,
+      issuedAt: text(raw.date || raw.created_at),
+      totalUsd: number(raw.total),
+      status: isApproved(previous.status) || isApproved(quote.status)
+        ? 'approved'
+        : text(raw.status || 'draft'),
+      viewUrl: `/cotizacion/${encodeURIComponent(quote.id)}/`,
+      ...(previous.approvedAt ? { approvedAt: previous.approvedAt } : {}),
+      ...(previous.paidUsd != null ? { paidUsd: previous.paidUsd } : {}),
+      ...(previous.balanceUsd != null ? { balanceUsd: previous.balanceUsd } : {}),
+      ...(Array.isArray(previous.receipts) ? { receipts: previous.receipts } : {})
+    };
+  });
 
+  const existingReceipts = Array.isArray(existingPortal?.receipts)
+    ? existingPortal.receipts
+    : [];
   const portal = {
     customer: {
       id: text(client.id),
@@ -138,13 +185,17 @@ export default async function handler(req, res) {
       email: text(client.email),
       phone: text(client.phone || client.whatsapp)
     },
-    counts: { quotations: projects.length },
+    counts: {
+      quotations: projects.length,
+      receipts: existingReceipts.length
+    },
     projects,
+    receipts: existingReceipts,
     publishedAt: new Date().toISOString(),
     source: 'elan_one_vercel_runtime_cache_lab'
   };
 
-  await cache.set(`elan-one-public:portal:${portalToken}`, portal, {
+  await cache.set(portalKey, portal, {
     ttl: TTL_SECONDS,
     tags: [`elan-one-portal-${portalToken}`]
   });
